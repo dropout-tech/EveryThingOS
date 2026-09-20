@@ -1,0 +1,22 @@
+@import url("../../../../../tokens.css");
+
+.login-pf body,
+.login-pf {
+  background: #1a1612 !important;
+  color: #f4efe4 !important;
+}
+
+#kc-header-wrapper,
+#kc-page-title {
+  color: #65c5bc !important;
+}
+
+.btn-primary {
+  background: #65c5bc !important;
+  border: none !important;
+  color: #1a1612 !important;
+}
+
+#kc-logo-wrapper {
+  background: none !important;
+}

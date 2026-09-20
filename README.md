@@ -1,38 +1,42 @@
-# EveryThingOS
+# DropOut OS（EveryThingOS）
 
-中小企業用得起的一體作業系統：**CRM、ERP、魅力圈／行銷漏斗、名單清庫、網址連結追蹤**，全部用開源組裝，同一個登入、同一份客戶主檔、同一條歸因。
+琢奧科技的中小企業作業系統。**CRM、ERP、魅力圈、清庫、短網址、官網**同一登入、同一主檔、同一套 DropOut 皮。
 
-> 對話中的「ABCOS」即本專案。目標不是再造一套 Salesforce + SAP + ClickFunnels，而是做成 **Odoo 級廣度的開源作業系統**：儀表板與流程每家公司可自己控，CRM／ERP／魅力圈／清庫／連結追蹤編在同一套體驗裡。
+- **一百個產業包**可切換，滿足一百種現場情境
+- **每年 NT$100,000（未稅）**，含系統、不含模組加購
+- **免費顧問導入**：選定產業包、改流程與 Dashboard、帶你們跑完一筆真實生意
 
-## 現況
+## 現在就可以看的畫面
 
-本儲存庫目前是**架構規劃階段**。五個方向問題已有第一輪答案（全產業、自用後再賣、可設定主畫面與流程、官網＋社群＋LINE＋Email、彈性閉環）。尚未實作、尚未自架驗證。
+產品外殼在 `web/`（Next.js），已套 `dropout.tw` 識別：`do` 字標、墨色底、青綠與橘色。
 
-完整規劃請看：
+```bash
+cd web && npm install && npm run dev
+```
 
-- [架構總覽](docs/ARCHITECTURE.md) — 四支柱、系統邊界、整合方式、部署拓樸、路線圖
-- [開源盤點](docs/OPEN-SOURCE-CATALOG.md) — 各領域可選專案、授權、取捨與建議
+- `/` 產品主張
+- `/industries` 100 個產業包
+- `/pricing` 一年十萬
+- `/consulting` 免費導入步驟
+- `/saas` 取代哪些雲端工具
+- `/workspace` 套皮作業系統（右上角切產業，CRM／ERP／漏斗／清庫／短網址跟著變）
 
-## 四支柱（第一期範圍）
+## 開源組裝與套皮
 
-| 支柱 | 使用者要完成的事 | 建議開源核心 |
-| --- | --- | --- |
-| CRM | 名單、商機、跟進、客戶 360 | ERPNext 客戶／商機，或 Frappe CRM |
-| ERP | 報價、訂單、庫存、進銷存、會計 | ERPNext |
-| 魅力圈／漏斗 | 落地頁、磁鐵、表單、信件序列、計分 | Mautic + Frappe Builder |
-| 通道衛生 | 名單清庫、短網址、UTM、點擊歸因 | Reacher + Shlink |
+架構仍是 ERPNext + Mautic + Reacher + Shlink + Keycloak + Activepieces。員工看不到原廠皮。
 
-平台核（所有產業共用）：Party 主檔、事件、同意、可設定工作區與流程。產業差異用「產業包」開關，不寫死進核心。
+- 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)
+- 主題檔：[branding/README.md](branding/README.md)
 
-共用底座：Keycloak（單一登入）、Activepieces（跨系統膠水）、PostgreSQL／MariaDB、物件儲存。
+## 商業條款（寫進產品裡的那一版）
 
-## 設計原則
+| 項目 | 內容 |
+| --- | --- |
+| 年費 | NT$100,000 未稅／公司／年 |
+| 導入 | 免費顧問，含在年費 |
+| 帳號 | 不收人頭費 |
+| 產業包 | 100 包可切換，不另收費 |
+| 金流／簡訊／LINE／電子發票 | 外部供應商原價，我們做適配 |
 
-1. **組裝，不重寫。** 業務系統用現成開源；我們只做身分、主檔、事件與外殼。
-2. **一個客戶真相。** CRM 與 ERP 共用 Party；行銷只同步影子檔。
-3. **授權先於功能。** 避開會把產品鎖進專有版本的模組（例如 Odoo Enterprise 會計）。
-4. **可設定，不寫死產業。** 主畫面與流程是平台能力；產業包可開關。官網第一期就在產品內，LINE／社群走同一套通道適配器。
-
-## 接下來
-
-方向已凍在 [架構文件第 0 節](docs/ARCHITECTURE.md#0-決策紀錄五題第一輪)。下一動是第 1 期：可複製的 ERPNext 工作區（自用示範站），仍不自研檢查器或漏斗引擎。
+下一動仍是把示範站接到可複製的 ERPNext site；外殼與一百包已經可給業務與顧問用。

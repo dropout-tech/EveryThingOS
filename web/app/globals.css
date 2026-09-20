@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #1a1612;
+  --ink-2: #241e18;
+  --cream: #f4efe4;
+  --cream-dim: #d8d0c0;
+  --teal: #65c5bc;
+  --teal-deep: #3ca59e;
+  --gold: #d0bd91;
+  --orange: #e08a3c;
+  --navy: #1e3a5f;
+  --line: rgba(244, 239, 228, 0.12);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-cream: var(--cream);
+  --color-cream-dim: var(--cream-dim);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-gold: var(--gold);
+  --color-orange: var(--orange);
+  --color-navy: var(--navy);
+  --font-sans: var(--font-noto);
+  --font-display: var(--font-outfit);
+}
+
+html,
+body {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+body {
+  font-family: var(--font-sans), "Noto Sans TC", sans-serif;
+  min-height: 100%;
+}
+
+::selection {
+  background: var(--teal);
+  color: var(--ink);
+}
+
+.grid-skin {
+  background-color: var(--ink);
+  background-image:
+    linear-gradient(rgba(100, 197, 188, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 197, 188, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.display {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+}

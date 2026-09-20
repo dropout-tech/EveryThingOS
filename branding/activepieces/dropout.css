@@ -1,0 +1,6 @@
+@import "../tokens.css";
+
+:root {
+  --primary-color: #65c5bc;
+  --primary-text: #1a1612;
+}

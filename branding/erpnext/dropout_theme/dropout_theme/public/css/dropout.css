@@ -1,0 +1,31 @@
+@import "tokens.css";
+
+body.frappe,
+.navbar,
+.standard-sidebar,
+.layout-side-section,
+.desk-page {
+  background: var(--do-ink) !important;
+  color: var(--do-cream) !important;
+}
+
+.navbar-brand img,
+.splash img {
+  max-height: 36px;
+}
+
+.app-logo {
+  content: url("/assets/dropout_theme/images/logo-hud-lockup-on-dark.png");
+}
+
+.btn-primary,
+.page-head .btn-primary {
+  background: var(--do-teal) !important;
+  border-color: var(--do-teal) !important;
+  color: var(--do-ink) !important;
+}
+
+.indicator-pill.green,
+.indicator.green {
+  background: var(--do-teal-deep) !important;
+}

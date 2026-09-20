@@ -1,0 +1,33 @@
+/* DropOut OS tokens — shared by every skinned service */
+:root {
+  --do-ink: #1a1612;
+  --do-ink-2: #241e18;
+  --do-cream: #f4efe4;
+  --do-cream-dim: #d8d0c0;
+  --do-teal: #65c5bc;
+  --do-teal-deep: #3ca59e;
+  --do-gold: #d0bd91;
+  --do-orange: #e08a3c;
+  --do-navy: #1e3a5f;
+}
+
+body,
+.navbar,
+.navbar-default {
+  background: var(--do-ink) !important;
+  color: var(--do-cream) !important;
+}
+
+a,
+.btn-primary,
+.primary {
+  color: var(--do-teal);
+}
+
+.btn-primary,
+button.primary,
+.btn.btn-primary {
+  background: var(--do-teal) !important;
+  border-color: var(--do-teal) !important;
+  color: var(--do-ink) !important;
+}

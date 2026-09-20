@@ -1,0 +1,6192 @@
+[
+  {
+    "id": "apparel-store",
+    "code": "IND-001",
+    "nameZh": "服飾店",
+    "nameEn": "Apparel",
+    "group": "零售",
+    "itemType": "件／SKU",
+    "fulfillment": "門市出貨",
+    "tagline": "款式、庫存、會員與回購同一條",
+    "pains": [
+      "斷碼還在賣",
+      "會員散在 IG 私訊",
+      "週年慶對不到舊客"
+    ],
+    "kpis": [
+      "庫存週轉",
+      "回購率",
+      "客單價",
+      "未取件"
+    ],
+    "workflow": {
+      "id": "apparel-store",
+      "name": "季節上市",
+      "stages": [
+        "企劃",
+        "進貨",
+        "上架",
+        "銷售",
+        "回購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "Instagram Shop"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "企劃 → 進貨 → 上架 → 銷售 → 回購"
+  },
+  {
+    "id": "electronics-store",
+    "code": "IND-002",
+    "nameZh": "3C 通路",
+    "nameEn": "Electronics retail",
+    "group": "零售",
+    "itemType": "序號商品",
+    "fulfillment": "門市／宅配",
+    "tagline": "序號、保固、進銷存一次對上",
+    "pains": [
+      "序號手寫遺失",
+      "保固查不到買過什麼",
+      "促銷把毛利吃光"
+    ],
+    "kpis": [
+      "毛利率",
+      "序號未綁定",
+      "配件附帶率",
+      "維修週轉"
+    ],
+    "workflow": {
+      "id": "electronics-store",
+      "name": "銷售加保固",
+      "stages": [
+        "詢價",
+        "出貨",
+        "綁序號",
+        "保固",
+        "配件回購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "保固登記表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢價 → 出貨 → 綁序號 → 保固 → 配件回購"
+  },
+  {
+    "id": "convenience-franchise",
+    "code": "IND-003",
+    "nameZh": "超商加盟主",
+    "nameEn": "Convenience franchise",
+    "group": "零售",
+    "itemType": "日配品",
+    "fulfillment": "門市上架",
+    "tagline": "報廢、訂貨、排班不再月底重算",
+    "pains": [
+      "報廢靠感覺",
+      "訂貨跟總部系統對不齊",
+      "工讀班表口頭約"
+    ],
+    "kpis": [
+      "報廢率",
+      "缺貨 SKU",
+      "工時",
+      "來客數"
+    ],
+    "workflow": {
+      "id": "convenience-franchise",
+      "name": "日配迴圈",
+      "stages": [
+        "訂貨",
+        "驗收",
+        "上架",
+        "報廢",
+        "對帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "總部訂貨 APP"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂貨 → 驗收 → 上架 → 報廢 → 對帳"
+  },
+  {
+    "id": "bookstore",
+    "code": "IND-004",
+    "nameZh": "書店／文具",
+    "nameEn": "Bookstore",
+    "group": "零售",
+    "itemType": "ISBN／品項",
+    "fulfillment": "門市與展售",
+    "tagline": "新書、讀友、活動票券同一主檔",
+    "pains": [
+      "讀友名單在臉書社團",
+      "講座報名另一套表單",
+      "滯銷退書算不清"
+    ],
+    "kpis": [
+      "週轉",
+      "會員到店",
+      "講座轉換",
+      "退書率"
+    ],
+    "workflow": {
+      "id": "bookstore",
+      "name": "選書到讀友",
+      "stages": [
+        "進書",
+        "陳列",
+        "讀友",
+        "講座",
+        "回購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "KKTIX"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "進書 → 陳列 → 讀友 → 講座 → 回購"
+  },
+  {
+    "id": "pet-supplies",
+    "code": "IND-005",
+    "nameZh": "寵物用品店",
+    "nameEn": "Pet supplies",
+    "group": "零售",
+    "itemType": "寵物品項",
+    "fulfillment": "門市／定期購",
+    "tagline": "毛孩檔案帶動飼料定期購",
+    "pains": [
+      "飼主只在 LINE 下單",
+      "定期購常漏",
+      "疫苗日沒人提醒"
+    ],
+    "kpis": [
+      "定期購續約",
+      "客單",
+      "缺貨",
+      "回店"
+    ],
+    "workflow": {
+      "id": "pet-supplies",
+      "name": "毛孩養成",
+      "stages": [
+        "建檔",
+        "首購",
+        "定期購",
+        "提醒",
+        "回店"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "訂閱電商外掛"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "建檔 → 首購 → 定期購 → 提醒 → 回店"
+  },
+  {
+    "id": "select-shop",
+    "code": "IND-006",
+    "nameZh": "選物／手作店",
+    "nameEn": "Select shop",
+    "group": "零售",
+    "itemType": "限量款",
+    "fulfillment": "門市與官網",
+    "tagline": "限量款預購、粉絲與庫存對得上",
+    "pains": [
+      "預購 excel 爆掉",
+      "粉絲看不到剩餘",
+      "市集庫存對不到店內"
+    ],
+    "kpis": [
+      "預購達成",
+      "市集轉換",
+      "庫存差異",
+      "複購"
+    ],
+    "workflow": {
+      "id": "select-shop",
+      "name": "限量預購",
+      "stages": [
+        "企劃",
+        "預購",
+        "製作",
+        "取貨",
+        "複購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "Pinkoi"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "企劃 → 預購 → 製作 → 取貨 → 複購"
+  },
+  {
+    "id": "drugstore",
+    "code": "IND-007",
+    "nameZh": "藥妝店",
+    "nameEn": "Drugstore",
+    "group": "零售",
+    "itemType": "批號商品",
+    "fulfillment": "門市",
+    "tagline": "批號、效期、會員點數同一套",
+    "pains": [
+      "效期靠抽屜翻",
+      "點數另一張卡",
+      "藥師諮詢沒紀錄"
+    ],
+    "kpis": [
+      "效期 90 天內",
+      "點數核銷",
+      "客單",
+      "諮詢轉購"
+    ],
+    "workflow": {
+      "id": "drugstore",
+      "name": "效期與會員",
+      "stages": [
+        "進貨",
+        "效期",
+        "陳列",
+        "諮詢",
+        "結帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "點數卡機"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "進貨 → 效期 → 陳列 → 諮詢 → 結帳"
+  },
+  {
+    "id": "optician",
+    "code": "IND-008",
+    "nameZh": "眼鏡行",
+    "nameEn": "Optician",
+    "group": "零售",
+    "itemType": "鏡片／鏡框",
+    "fulfillment": "門市交付",
+    "tagline": "驗光、度數、再購週期可追",
+    "pains": [
+      "度數寫在紙卡",
+      "兩年後找不到客人",
+      "隱眼訂閱常斷"
+    ],
+    "kpis": [
+      "再驗光率",
+      "隱眼續訂",
+      "客單",
+      "庫存框"
+    ],
+    "workflow": {
+      "id": "optician",
+      "name": "驗光到取鏡",
+      "stages": [
+        "預約",
+        "驗光",
+        "選框",
+        "取件",
+        "再購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "驗光紙卡"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 驗光 → 選框 → 取件 → 再購"
+  },
+  {
+    "id": "furniture",
+    "code": "IND-009",
+    "nameZh": "傢俱家飾",
+    "nameEn": "Furniture",
+    "group": "零售",
+    "itemType": "大件 SKU",
+    "fulfillment": "配送安裝",
+    "tagline": "訂金、交期、安裝班次連在一起",
+    "pains": [
+      "交期只在聊天室",
+      "安裝師傅對不到訂單",
+      "客訴找不到合約"
+    ],
+    "kpis": [
+      "準交率",
+      "安裝一次過",
+      "訂金未清",
+      "客訴"
+    ],
+    "workflow": {
+      "id": "furniture",
+      "name": "訂製配送",
+      "stages": [
+        "賞屋",
+        "報價",
+        "訂金",
+        "配送",
+        "安裝"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "師傅 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "賞屋 → 報價 → 訂金 → 配送 → 安裝"
+  },
+  {
+    "id": "florist",
+    "code": "IND-010",
+    "nameZh": "花店",
+    "nameEn": "Florist",
+    "group": "零售",
+    "itemType": "花束／盆花",
+    "fulfillment": "當日配送",
+    "tagline": "節日檔期、訂花、路線一次排",
+    "pains": [
+      "節日爆單用手寫",
+      "路線重疊",
+      "企業月配對不到發票"
+    ],
+    "kpis": [
+      "節日達成",
+      "準時送達",
+      "企業月配",
+      "耗損"
+    ],
+    "workflow": {
+      "id": "florist",
+      "name": "訂花配送",
+      "stages": [
+        "接單",
+        "設計",
+        "出貨",
+        "配送",
+        "月結"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "Uber 外送"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "接單 → 設計 → 出貨 → 配送 → 月結"
+  },
+  {
+    "id": "sporting-goods",
+    "code": "IND-011",
+    "nameZh": "運動用品店",
+    "nameEn": "Sporting goods",
+    "group": "零售",
+    "itemType": "尺寸 SKU",
+    "fulfillment": "門市",
+    "tagline": "尺寸、隊員團購、季節清倉可管",
+    "pains": [
+      "團購另開試算表",
+      "尺寸斷碼",
+      "球季結束堆倉"
+    ],
+    "kpis": [
+      "團購轉換",
+      "斷碼",
+      "清倉毛利",
+      "會員"
+    ],
+    "workflow": {
+      "id": "sporting-goods",
+      "name": "球隊團購",
+      "stages": [
+        "詢價",
+        "團購",
+        "配碼",
+        "取貨",
+        "補件"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "Google 表單團購"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢價 → 團購 → 配碼 → 取貨 → 補件"
+  },
+  {
+    "id": "secondhand",
+    "code": "IND-012",
+    "nameZh": "中古／二手店",
+    "nameEn": "Secondhand",
+    "group": "零售",
+    "itemType": "獨一件",
+    "fulfillment": "門市與線上",
+    "tagline": "鑑定、上架、成交、保證同一件貨",
+    "pains": [
+      "一件貨多平台重複賣",
+      "鑑定照散落雲端",
+      "保固口頭說"
+    ],
+    "kpis": [
+      "週轉天",
+      "重複上架",
+      "鑑定完成",
+      "保證理賠"
+    ],
+    "workflow": {
+      "id": "secondhand",
+      "name": "鑑定上架",
+      "stages": [
+        "收件",
+        "鑑定",
+        "上架",
+        "成交",
+        "交貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Shopify",
+      "POS 機獨立系統",
+      "Excel 庫存",
+      "Facebook 商店",
+      "蝦皮／FB 市集"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "收件 → 鑑定 → 上架 → 成交 → 交貨"
+  },
+  {
+    "id": "full-service-restaurant",
+    "code": "IND-013",
+    "nameZh": "正餐廳",
+    "nameEn": "Restaurant",
+    "group": "餐飲",
+    "itemType": "菜色／桌次",
+    "fulfillment": "內用與外帶",
+    "tagline": "訂位、出餐、食材耗用連在一起",
+    "pains": [
+      "訂位在電話本",
+      "缺料才發現",
+      "包場報價另做"
+    ],
+    "kpis": [
+      "翻桌率",
+      "食材耗用",
+      "訂位未到",
+      "客單"
+    ],
+    "workflow": {
+      "id": "full-service-restaurant",
+      "name": "訂位出餐",
+      "stages": [
+        "訂位",
+        "備料",
+        "出餐",
+        "結帳",
+        "會員"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "訂位專線 APP"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂位 → 備料 → 出餐 → 結帳 → 會員"
+  },
+  {
+    "id": "cafe",
+    "code": "IND-014",
+    "nameZh": "咖啡廳",
+    "nameEn": "Cafe",
+    "group": "餐飲",
+    "itemType": "飲品／豆",
+    "fulfillment": "內用外帶",
+    "tagline": "豆批次、會員、外帶尖峰可看",
+    "pains": [
+      "豆子批次沒紀錄",
+      "會員貼紙",
+      "外帶尖峰人手不夠"
+    ],
+    "kpis": [
+      "杯量",
+      "豆耗用",
+      "會員回訪",
+      "尖峰等候"
+    ],
+    "workflow": {
+      "id": "cafe",
+      "name": "烘豆到杯",
+      "stages": [
+        "進豆",
+        "烘焙",
+        "出品",
+        "會員",
+        "回購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "貼紙集點"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "進豆 → 烘焙 → 出品 → 會員 → 回購"
+  },
+  {
+    "id": "bubble-tea",
+    "code": "IND-015",
+    "nameZh": "手搖飲",
+    "nameEn": "Beverage shop",
+    "group": "餐飲",
+    "itemType": "杯飲",
+    "fulfillment": "門市",
+    "tagline": "配方、原物料、尖峰出杯可管",
+    "pains": [
+      "配方在師傅腦子",
+      "原物料週日才盤",
+      "聯名杯錯過粉絲"
+    ],
+    "kpis": [
+      "出杯數",
+      "原料耗損",
+      "等候秒數",
+      "聯名轉換"
+    ],
+    "workflow": {
+      "id": "bubble-tea",
+      "name": "配方出杯",
+      "stages": [
+        "備料",
+        "出杯",
+        "盤點",
+        "活動",
+        "會員"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "排隊機"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "備料 → 出杯 → 盤點 → 活動 → 會員"
+  },
+  {
+    "id": "bakery",
+    "code": "IND-016",
+    "nameZh": "烘焙坊",
+    "nameEn": "Bakery",
+    "group": "餐飲",
+    "itemType": "批／顆",
+    "fulfillment": "門市與預訂",
+    "tagline": "預訂、當日烤量、過期報廢對得上",
+    "pains": [
+      "預訂 LINE 接爆",
+      "烤量憑感覺",
+      "過期丟掉沒記"
+    ],
+    "kpis": [
+      "預訂達成",
+      "報廢",
+      "當日完售",
+      "企業下午茶"
+    ],
+    "workflow": {
+      "id": "bakery",
+      "name": "預訂烘焙",
+      "stages": [
+        "預訂",
+        "備料",
+        "烘焙",
+        "取貨",
+        "報廢"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "LINE 預訂"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預訂 → 備料 → 烘焙 → 取貨 → 報廢"
+  },
+  {
+    "id": "izakaya",
+    "code": "IND-017",
+    "nameZh": "居酒屋",
+    "nameEn": "Izakaya",
+    "group": "餐飲",
+    "itemType": "串燒／桌",
+    "fulfillment": "內用",
+    "tagline": "桌席、備料、清酒庫存同一晚對完",
+    "pains": [
+      "清酒盤點月底才做",
+      "包廂電話訂",
+      "員工餐與報廢混"
+    ],
+    "kpis": [
+      "翻桌",
+      "酒類週轉",
+      "包廂利用率",
+      "客單"
+    ],
+    "workflow": {
+      "id": "izakaya",
+      "name": "夜場營運",
+      "stages": [
+        "訂位",
+        "備料",
+        "出餐",
+        "結帳",
+        "盤點"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "包廂電話本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂位 → 備料 → 出餐 → 結帳 → 盤點"
+  },
+  {
+    "id": "cloud-kitchen",
+    "code": "IND-018",
+    "nameZh": "外送廚房",
+    "nameEn": "Cloud kitchen",
+    "group": "餐飲",
+    "itemType": "餐盒",
+    "fulfillment": "外送平台",
+    "tagline": "多平台接單、出餐、對帳一次看",
+    "pains": [
+      "三個平台各登一次",
+      "出餐逾時",
+      "對帳對三天"
+    ],
+    "kpis": [
+      "出餐逾時",
+      "平台抽成後毛利",
+      "差評",
+      "備料"
+    ],
+    "workflow": {
+      "id": "cloud-kitchen",
+      "name": "多平台出餐",
+      "stages": [
+        "接單",
+        "出餐",
+        "騎手",
+        "對帳",
+        "備料"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "UberEats／Foodpanda"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "接單 → 出餐 → 騎手 → 對帳 → 備料"
+  },
+  {
+    "id": "commissary",
+    "code": "IND-019",
+    "nameZh": "中央廚房",
+    "nameEn": "Commissary",
+    "group": "餐飲",
+    "itemType": "半成品批",
+    "fulfillment": "配送分店",
+    "tagline": "配方、批次、分店叫貨可追",
+    "pains": [
+      "分店 LINE 叫貨",
+      "批次找不到來源",
+      "配送溫度沒記"
+    ],
+    "kpis": [
+      "準時配送",
+      "批次追溯",
+      "分店缺貨",
+      "成本"
+    ],
+    "workflow": {
+      "id": "commissary",
+      "name": "叫貨配送",
+      "stages": [
+        "叫貨",
+        "生產",
+        "批次",
+        "配送",
+        "驗收"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "分店 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "叫貨 → 生產 → 批次 → 配送 → 驗收"
+  },
+  {
+    "id": "food-truck",
+    "code": "IND-020",
+    "nameZh": "餐車",
+    "nameEn": "Food truck",
+    "group": "餐飲",
+    "itemType": "餐點",
+    "fulfillment": "據點擺攤",
+    "tagline": "擺攤日曆、備料、當日營收可看",
+    "pains": [
+      "擺攤日曆在私訊",
+      "備料過或不足",
+      "現金盤點亂"
+    ],
+    "kpis": [
+      "日營收",
+      "據點轉換",
+      "備料準確率",
+      "天候取消"
+    ],
+    "workflow": {
+      "id": "food-truck",
+      "name": "擺攤日",
+      "stages": [
+        "檔期",
+        "備料",
+        "擺攤",
+        "盤點",
+        "下一個點"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "Google 日曆"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "檔期 → 備料 → 擺攤 → 盤點 → 下一個點"
+  },
+  {
+    "id": "hotpot-chain",
+    "code": "IND-021",
+    "nameZh": "火鍋連鎖",
+    "nameEn": "Hotpot chain",
+    "group": "餐飲",
+    "itemType": "套餐／桌",
+    "fulfillment": "分店內用",
+    "tagline": "分店訂位、湯頭成本、會員跨店",
+    "pains": [
+      "跨店會員對不到",
+      "湯頭成本月底才算",
+      "訂位系統各店不同"
+    ],
+    "kpis": [
+      "跨店回訪",
+      "湯頭成本",
+      "候位",
+      "客單"
+    ],
+    "workflow": {
+      "id": "hotpot-chain",
+      "name": "連鎖訂位",
+      "stages": [
+        "訂位",
+        "候位",
+        "內用",
+        "會員",
+        "成本"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "各店訂位 APP"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂位 → 候位 → 內用 → 會員 → 成本"
+  },
+  {
+    "id": "vegetarian-restaurant",
+    "code": "IND-022",
+    "nameZh": "素食餐廳",
+    "nameEn": "Vegetarian restaurant",
+    "group": "餐飲",
+    "itemType": "套餐",
+    "fulfillment": "內用外帶",
+    "tagline": "過敏原、法會桌、會員同一套",
+    "pains": [
+      "法會桌手寫",
+      "過敏原口頭問",
+      "外帶與內用庫存打架"
+    ],
+    "kpis": [
+      "法會桌數",
+      "過敏標示",
+      "外帶佔比",
+      "回訪"
+    ],
+    "workflow": {
+      "id": "vegetarian-restaurant",
+      "name": "桌席與過敏",
+      "stages": [
+        "訂桌",
+        "過敏",
+        "出餐",
+        "法會檔",
+        "會員"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "排隊 App",
+      "外送平台後台",
+      "電子菜單",
+      "班表系統",
+      "法會 Excel"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂桌 → 過敏 → 出餐 → 法會檔 → 會員"
+  },
+  {
+    "id": "cram-school",
+    "code": "IND-023",
+    "nameZh": "補習班",
+    "nameEn": "Cram school",
+    "group": "教育",
+    "itemType": "課程堂數",
+    "fulfillment": "開課／點名",
+    "tagline": "招生、排課、堂數、師資拆帳接起來",
+    "pains": [
+      "家長問剩幾堂要翻三本",
+      "老師請假補課口頭約",
+      "月底重算鐘點"
+    ],
+    "kpis": [
+      "在籍",
+      "出席率",
+      "剩餘堂數",
+      "續報"
+    ],
+    "workflow": {
+      "id": "cram-school",
+      "name": "招生到續報",
+      "stages": [
+        "名單",
+        "試聽",
+        "報名",
+        "點名",
+        "續報"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "點名紙本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "名單 → 試聽 → 報名 → 點名 → 續報"
+  },
+  {
+    "id": "talent-center",
+    "code": "IND-024",
+    "nameZh": "才藝中心",
+    "nameEn": "Talent academy",
+    "group": "教育",
+    "itemType": "課程／展演",
+    "fulfillment": "上課與演出",
+    "tagline": "課程、展演票、家長溝通同一檔",
+    "pains": [
+      "展演服裝費另算",
+      "換班常算錯堂數",
+      "師資檔期衝突"
+    ],
+    "kpis": [
+      "在籍",
+      "展演轉換",
+      "換班誤差",
+      "師資工時"
+    ],
+    "workflow": {
+      "id": "talent-center",
+      "name": "課與展演",
+      "stages": [
+        "體驗",
+        "報名",
+        "排課",
+        "展演",
+        "續報"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "服裝費 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "體驗 → 報名 → 排課 → 展演 → 續報"
+  },
+  {
+    "id": "language-school",
+    "code": "IND-025",
+    "nameZh": "語言學校",
+    "nameEn": "Language school",
+    "group": "教育",
+    "itemType": "級班／堂",
+    "fulfillment": "開班",
+    "tagline": "程度、轉班、簽證出勤可報",
+    "pains": [
+      "程度測試另一套",
+      "出勤給移民署要重匯",
+      "教材庫存亂"
+    ],
+    "kpis": [
+      "出席",
+      "轉班率",
+      "完課",
+      "教材"
+    ],
+    "workflow": {
+      "id": "language-school",
+      "name": "分級開班",
+      "stages": [
+        "測驗",
+        "分班",
+        "出勤",
+        "成績",
+        "續讀"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "移民署出勤表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "測驗 → 分班 → 出勤 → 成績 → 續讀"
+  },
+  {
+    "id": "billiards-academy",
+    "code": "IND-026",
+    "nameZh": "桌球／運動教室",
+    "nameEn": "Sports academy",
+    "group": "教育",
+    "itemType": "教練課／場次",
+    "fulfillment": "上課與場租",
+    "tagline": "預約、點名、教練拆帳、場地對得上",
+    "pains": [
+      "請假補課在訊息裡翻",
+      "教練薪水月底重算",
+      "場地衝突"
+    ],
+    "kpis": [
+      "出席",
+      "剩餘堂數",
+      "教練拆帳",
+      "場地利用率"
+    ],
+    "workflow": {
+      "id": "billiards-academy",
+      "name": "預約到拆帳",
+      "stages": [
+        "預約",
+        "點名",
+        "補課",
+        "場地",
+        "拆帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "教練 LINE 群"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 點名 → 補課 → 場地 → 拆帳"
+  },
+  {
+    "id": "preschool",
+    "code": "IND-027",
+    "nameZh": "幼兒園／托嬰",
+    "nameEn": "Preschool",
+    "group": "教育",
+    "itemType": "名額／日托",
+    "fulfillment": "到園照護",
+    "tagline": "招生、到園、過敏、家長聯絡簿數位化",
+    "pains": [
+      "過敏紙本",
+      "接送人對不到",
+      "繳費與出勤分開"
+    ],
+    "kpis": [
+      "到園率",
+      "名額",
+      "未繳",
+      "聯絡完成"
+    ],
+    "workflow": {
+      "id": "preschool",
+      "name": "到園日常",
+      "stages": [
+        "招生",
+        "建檔",
+        "到園",
+        "聯絡",
+        "繳費"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "聯絡簿 App"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "招生 → 建檔 → 到園 → 聯絡 → 繳費"
+  },
+  {
+    "id": "online-course",
+    "code": "IND-028",
+    "nameZh": "線上課程",
+    "nameEn": "Online courses",
+    "group": "教育",
+    "itemType": "課程權限",
+    "fulfillment": "開通教材",
+    "tagline": "名單、付款、權限、完課信同一條",
+    "pains": [
+      "付款後手動開權限",
+      "完課沒跟進高價課",
+      "退費對不到觀看"
+    ],
+    "kpis": [
+      "完課率",
+      "升級轉換",
+      "退費",
+      "開通時效"
+    ],
+    "workflow": {
+      "id": "online-course",
+      "name": "購買到完課",
+      "stages": [
+        "名單",
+        "結帳",
+        "開通",
+        "完課",
+        "升級"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "Teachable／金流後台"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "名單 → 結帳 → 開通 → 完課 → 升級"
+  },
+  {
+    "id": "corporate-training",
+    "code": "IND-029",
+    "nameZh": "企業培訓",
+    "nameEn": "Corporate training",
+    "group": "教育",
+    "itemType": "梯次／人天",
+    "fulfillment": "開課交付",
+    "tagline": "B2B 報價、學員名單、滿意度、請款",
+    "pains": [
+      "學員名單客戶遲到才給",
+      "滿意度 Google 表單",
+      "請款對不到梯次"
+    ],
+    "kpis": [
+      "人天",
+      "滿意度",
+      "請款天數",
+      "續約"
+    ],
+    "workflow": {
+      "id": "corporate-training",
+      "name": "B2B 開課",
+      "stages": [
+        "商機",
+        "報價",
+        "開課",
+        "滿意度",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "SurveyMonkey"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "商機 → 報價 → 開課 → 滿意度 → 請款"
+  },
+  {
+    "id": "music-studio",
+    "code": "IND-030",
+    "nameZh": "音樂教室",
+    "nameEn": "Music studio",
+    "group": "教育",
+    "itemType": "一對一堂",
+    "fulfillment": "上課",
+    "tagline": "老師檔期、樂器、家長請假同一曆",
+    "pains": [
+      "老師 Google 日曆各用各的",
+      "樂器維修中還被約",
+      "請假規則口頭"
+    ],
+    "kpis": [
+      "滿堂率",
+      "老師工時",
+      "樂器可用",
+      "續報"
+    ],
+    "workflow": {
+      "id": "music-studio",
+      "name": "一對一排課",
+      "stages": [
+        "體驗",
+        "配老師",
+        "排課",
+        "請假",
+        "續報"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "老師私人日曆"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "體驗 → 配老師 → 排課 → 請假 → 續報"
+  },
+  {
+    "id": "after-school",
+    "code": "IND-031",
+    "nameZh": "安親班",
+    "nameEn": "After-school",
+    "group": "教育",
+    "itemType": "日托名額",
+    "fulfillment": "安親照顧",
+    "tagline": "接送、作業、餐點過敏、月費",
+    "pains": [
+      "接送人常變",
+      "作業回報用貼圖",
+      "月費與到班對不齊"
+    ],
+    "kpis": [
+      "到班",
+      "未繳月費",
+      "接送異常",
+      "滿額"
+    ],
+    "workflow": {
+      "id": "after-school",
+      "name": "安親日常",
+      "stages": [
+        "招生",
+        "到班",
+        "作業",
+        "接送",
+        "月費"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "家長群組"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "招生 → 到班 → 作業 → 接送 → 月費"
+  },
+  {
+    "id": "vocational-license",
+    "code": "IND-032",
+    "nameZh": "證照職訓",
+    "nameEn": "Vocational training",
+    "group": "教育",
+    "itemType": "梯次名額",
+    "fulfillment": "上課與報檢",
+    "tagline": "招生、出勤、報檢、補助核銷",
+    "pains": [
+      "補助核銷另一套 excel",
+      "出勤缺課影響報檢",
+      "教材版本亂"
+    ],
+    "kpis": [
+      "報檢通過",
+      "出勤",
+      "補助核銷",
+      "滿班"
+    ],
+    "workflow": {
+      "id": "vocational-license",
+      "name": "職訓到報檢",
+      "stages": [
+        "招生",
+        "開班",
+        "出勤",
+        "報檢",
+        "核銷"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Google 表單報名",
+      "LINE 群組點名",
+      "Excel 堂數",
+      "Calendly",
+      "勞動部表單"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "招生 → 開班 → 出勤 → 報檢 → 核銷"
+  },
+  {
+    "id": "clinic",
+    "code": "IND-033",
+    "nameZh": "診所",
+    "nameEn": "Clinic",
+    "group": "健康美容",
+    "itemType": "診次／處置",
+    "fulfillment": "看診",
+    "tagline": "預約、病歷摘要、耗材、回診",
+    "pains": [
+      "預約電話占線",
+      "回診靠護理師記",
+      "耗材月底盤"
+    ],
+    "kpis": [
+      "回診率",
+      "未到診",
+      "耗材",
+      "客單"
+    ],
+    "workflow": {
+      "id": "clinic",
+      "name": "預約看診",
+      "stages": [
+        "預約",
+        "報到",
+        "看診",
+        "處置",
+        "回診"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "診所預約機"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 報到 → 看診 → 處置 → 回診"
+  },
+  {
+    "id": "dental",
+    "code": "IND-034",
+    "nameZh": "牙醫診所",
+    "nameEn": "Dental clinic",
+    "group": "健康美容",
+    "itemType": "療程",
+    "fulfillment": "看診／療程",
+    "tagline": "療程計畫、預約、耗材批號、收款",
+    "pains": [
+      "療程進度口頭",
+      "植牙批號難追",
+      "分期收款 excel"
+    ],
+    "kpis": [
+      "療程完成",
+      "未到",
+      "應收",
+      "耗材批號"
+    ],
+    "workflow": {
+      "id": "dental",
+      "name": "療程計畫",
+      "stages": [
+        "初診",
+        "計畫",
+        "預約",
+        "處置",
+        "收款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "牙技所 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "初診 → 計畫 → 預約 → 處置 → 收款"
+  },
+  {
+    "id": "tcm",
+    "code": "IND-035",
+    "nameZh": "中醫診所",
+    "nameEn": "TCM clinic",
+    "group": "健康美容",
+    "itemType": "診次／藥袋",
+    "fulfillment": "看診與調劑",
+    "tagline": "預約、處方、藥材批次、回診",
+    "pains": [
+      "藥材批次手寫",
+      "回診間隔憑感覺",
+      "科學中藥庫存"
+    ],
+    "kpis": [
+      "回診",
+      "藥材耗用",
+      "未取藥",
+      "新診"
+    ],
+    "workflow": {
+      "id": "tcm",
+      "name": "處方調劑",
+      "stages": [
+        "預約",
+        "看診",
+        "調劑",
+        "取藥",
+        "回診"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "藥材盤點本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 看診 → 調劑 → 取藥 → 回診"
+  },
+  {
+    "id": "pharmacy",
+    "code": "IND-036",
+    "nameZh": "藥局",
+    "nameEn": "Pharmacy",
+    "group": "健康美容",
+    "itemType": "藥品批號",
+    "fulfillment": "門市與調劑",
+    "tagline": "處方、健保、自費、效期",
+    "pains": [
+      "效期抽屜翻",
+      "慢箋提醒靠人",
+      "自費組合難追"
+    ],
+    "kpis": [
+      "慢箋回購",
+      "效期風險",
+      "自費客單",
+      "庫存"
+    ],
+    "workflow": {
+      "id": "pharmacy",
+      "name": "調劑與效期",
+      "stages": [
+        "收方",
+        "調劑",
+        "衛教",
+        "慢箋",
+        "效期"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "健保藥局系統外帳"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "收方 → 調劑 → 衛教 → 慢箋 → 效期"
+  },
+  {
+    "id": "hair-salon",
+    "code": "IND-037",
+    "nameZh": "美髮沙龍",
+    "nameEn": "Hair salon",
+    "group": "健康美容",
+    "itemType": "設計師時段",
+    "fulfillment": "服務",
+    "tagline": "設計師檔期、配方、會員、耗材",
+    "pains": [
+      "指定設計師常撞",
+      "染劑配方在腦子",
+      "會員卡紙本"
+    ],
+    "kpis": [
+      "指定率",
+      "未到",
+      "客單",
+      "耗材"
+    ],
+    "workflow": {
+      "id": "hair-salon",
+      "name": "指定服務",
+      "stages": [
+        "預約",
+        "諮詢",
+        "服務",
+        "結帳",
+        "回訪"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "StyleLounge 類 APP"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 諮詢 → 服務 → 結帳 → 回訪"
+  },
+  {
+    "id": "nail-lash",
+    "code": "IND-038",
+    "nameZh": "美甲美睫",
+    "nameEn": "Nail & lash",
+    "group": "健康美容",
+    "itemType": "工位時段",
+    "fulfillment": "服務",
+    "tagline": "工位、款式圖庫、回補、耗材",
+    "pains": [
+      "款式只在 IG",
+      "回補日沒提醒",
+      "卸甲超時"
+    ],
+    "kpis": [
+      "回補率",
+      "工位利用率",
+      "客單",
+      "超時"
+    ],
+    "workflow": {
+      "id": "nail-lash",
+      "name": "款式到回補",
+      "stages": [
+        "圖庫",
+        "預約",
+        "服務",
+        "回補",
+        "耗材"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "IG 私訊預約"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "圖庫 → 預約 → 服務 → 回補 → 耗材"
+  },
+  {
+    "id": "aesthetic-clinic",
+    "code": "IND-039",
+    "nameZh": "醫美診所",
+    "nameEn": "Aesthetic clinic",
+    "group": "健康美容",
+    "itemType": "療程堂數",
+    "fulfillment": "療程",
+    "tagline": "諮詢、同意、療程、耗材批號",
+    "pains": [
+      "諮詢後消失",
+      "剩餘堂數口頭",
+      "儀器耗材批號"
+    ],
+    "kpis": [
+      "諮詢轉換",
+      "剩餘堂數",
+      "再購",
+      "未到"
+    ],
+    "workflow": {
+      "id": "aesthetic-clinic",
+      "name": "諮詢療程",
+      "stages": [
+        "名單",
+        "諮詢",
+        "同意",
+        "療程",
+        "再購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "醫美 CRM 雲端"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "名單 → 諮詢 → 同意 → 療程 → 再購"
+  },
+  {
+    "id": "gym",
+    "code": "IND-040",
+    "nameZh": "健身房",
+    "nameEn": "Gym",
+    "group": "健康美容",
+    "itemType": "會籍／教練課",
+    "fulfillment": "到店訓練",
+    "tagline": "會籍、體測、教練課、續約",
+    "pains": [
+      "會籍快到期才發現",
+      "教練課另本",
+      "體驗沒跟進"
+    ],
+    "kpis": [
+      "在籍",
+      "續約",
+      "教練課消耗",
+      "體驗轉換"
+    ],
+    "workflow": {
+      "id": "gym",
+      "name": "會籍續約",
+      "stages": [
+        "體驗",
+        "入會",
+        "體測",
+        "教練課",
+        "續約"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "門禁卡系統"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "體驗 → 入會 → 體測 → 教練課 → 續約"
+  },
+  {
+    "id": "yoga-pilates",
+    "code": "IND-041",
+    "nameZh": "瑜珈／皮拉提斯",
+    "nameEn": "Yoga & pilates",
+    "group": "健康美容",
+    "itemType": "堂票／課表",
+    "fulfillment": "上課",
+    "tagline": "課表、代課、堂票、教室容量",
+    "pains": [
+      "代課常超賣",
+      "堂票過期糾紛",
+      "教室衝突"
+    ],
+    "kpis": [
+      "滿堂",
+      "過期堂票",
+      "代課",
+      "續票"
+    ],
+    "workflow": {
+      "id": "yoga-pilates",
+      "name": "課表堂票",
+      "stages": [
+        "體驗",
+        "購票",
+        "預約",
+        "上課",
+        "續票"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "ClassPass 類"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "體驗 → 購票 → 預約 → 上課 → 續票"
+  },
+  {
+    "id": "counseling",
+    "code": "IND-042",
+    "nameZh": "心理諮商所",
+    "nameEn": "Counseling",
+    "group": "健康美容",
+    "itemType": "時段",
+    "fulfillment": "諮商",
+    "tagline": "預約、同意、出席、收費、督導時數",
+    "pains": [
+      "預約隱私難管",
+      "未到收費規則口頭",
+      "督導時數另記"
+    ],
+    "kpis": [
+      "出席",
+      "未到",
+      "應收",
+      "個案量"
+    ],
+    "workflow": {
+      "id": "counseling",
+      "name": "諮商時段",
+      "stages": [
+        "詢問",
+        "同意",
+        "預約",
+        "晤談",
+        "收費"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "預約 App",
+      "病歷／會員卡",
+      "簡訊櫃台",
+      "Instagram 私訊",
+      "簡單心理／私密表單"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": true,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢問 → 同意 → 預約 → 晤談 → 收費"
+  },
+  {
+    "id": "accounting-firm",
+    "code": "IND-043",
+    "nameZh": "會計事務所",
+    "nameEn": "Accounting firm",
+    "group": "專業服務",
+    "itemType": "案件／公司戶",
+    "fulfillment": "交付報表",
+    "tagline": "客戶、票據、申報、請款同一案件",
+    "pains": [
+      "申報日曆在人腦",
+      "票據影像散落",
+      "請款落後"
+    ],
+    "kpis": [
+      "準時申報",
+      "應收天數",
+      "戶數",
+      "工時"
+    ],
+    "workflow": {
+      "id": "accounting-firm",
+      "name": "申報案件",
+      "stages": [
+        "收件",
+        "做帳",
+        "申報",
+        "交付",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "財稅雲 + Excel"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "收件 → 做帳 → 申報 → 交付 → 請款"
+  },
+  {
+    "id": "law-firm",
+    "code": "IND-044",
+    "nameZh": "律師事務所",
+    "nameEn": "Law firm",
+    "group": "專業服務",
+    "itemType": "案件",
+    "fulfillment": "委任交付",
+    "tagline": "諮詢、委任、時數、請款、檔案",
+    "pains": [
+      "時數手寫",
+      "檔案在個人碟",
+      "諮詢沒轉委任"
+    ],
+    "kpis": [
+      "諮詢轉換",
+      "時數",
+      "應收",
+      "結案天"
+    ],
+    "workflow": {
+      "id": "law-firm",
+      "name": "委任案件",
+      "stages": [
+        "諮詢",
+        "委任",
+        "辦理",
+        "結案",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "Clio／個人碟"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "諮詢 → 委任 → 辦理 → 結案 → 請款"
+  },
+  {
+    "id": "consulting-firm",
+    "code": "IND-045",
+    "nameZh": "顧問公司",
+    "nameEn": "Consulting firm",
+    "group": "專業服務",
+    "itemType": "專案人天",
+    "fulfillment": "交付里程碑",
+    "tagline": "商機、提案、人天、里程碑請款",
+    "pains": [
+      "人天 excel",
+      "範圍蔓延沒記",
+      "知識在個人"
+    ],
+    "kpis": [
+      "利用率",
+      "專案毛利",
+      "應收",
+      "續約"
+    ],
+    "workflow": {
+      "id": "consulting-firm",
+      "name": "專案交付",
+      "stages": [
+        "商機",
+        "提案",
+        "執行",
+        "里程碑",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "Notion + Excel"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "商機 → 提案 → 執行 → 里程碑 → 請款"
+  },
+  {
+    "id": "design-studio",
+    "code": "IND-046",
+    "nameZh": "設計工作室",
+    "nameEn": "Design studio",
+    "group": "專業服務",
+    "itemType": "設計案件",
+    "fulfillment": "交付檔案",
+    "tagline": "brief、修稿次數、授權、請款",
+    "pains": [
+      "修稿無限",
+      "檔案版次亂",
+      "授權口頭"
+    ],
+    "kpis": [
+      "修稿次數",
+      "專案毛利",
+      "準時",
+      "應收"
+    ],
+    "workflow": {
+      "id": "design-studio",
+      "name": "設計交付",
+      "stages": [
+        "brief",
+        "草圖",
+        "定稿",
+        "交付",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "Figma 外的管案表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "brief → 草圖 → 定稿 → 交付 → 請款"
+  },
+  {
+    "id": "photo-studio",
+    "code": "IND-047",
+    "nameZh": "攝影工作室",
+    "nameEn": "Photo studio",
+    "group": "專業服務",
+    "itemType": "檔期／方案",
+    "fulfillment": "拍攝與交件",
+    "tagline": "檔期、方案、選片、後製、交件",
+    "pains": [
+      "檔期 Google 日曆",
+      "選片連結常過期",
+      "後製排程口頭"
+    ],
+    "kpis": [
+      "檔期利用率",
+      "交件天數",
+      "加購",
+      "應收"
+    ],
+    "workflow": {
+      "id": "photo-studio",
+      "name": "拍攝交件",
+      "stages": [
+        "詢問",
+        "定案",
+        "拍攝",
+        "選片",
+        "交件"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "選片外掛"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢問 → 定案 → 拍攝 → 選片 → 交件"
+  },
+  {
+    "id": "pr-agency",
+    "code": "IND-048",
+    "nameZh": "廣告公關",
+    "nameEn": "PR agency",
+    "group": "專業服務",
+    "itemType": "Campaign",
+    "fulfillment": "露出交付",
+    "tagline": "brief、媒體、露出、成效、請款",
+    "pains": [
+      "露出剪報散落",
+      "成效截圖",
+      "請款對不到檔期"
+    ],
+    "kpis": [
+      "檔期達成",
+      "露出則數",
+      "毛利",
+      "續約"
+    ],
+    "workflow": {
+      "id": "pr-agency",
+      "name": "campaign 交付",
+      "stages": [
+        "提案",
+        "執行",
+        "露出",
+        "報告",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "剪報 excel"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "提案 → 執行 → 露出 → 報告 → 請款"
+  },
+  {
+    "id": "recruiting",
+    "code": "IND-049",
+    "nameZh": "人力仲介",
+    "nameEn": "Recruiting",
+    "group": "專業服務",
+    "itemType": "職缺／人選",
+    "fulfillment": "推薦到職",
+    "tagline": "職缺、人選、推薦、到職、保證期",
+    "pains": [
+      "人選在聊天室",
+      "保證期沒人追",
+      "客戶職缺重複"
+    ],
+    "kpis": [
+      "到職率",
+      "保證期內離職",
+      "推薦週期",
+      "應收"
+    ],
+    "workflow": {
+      "id": "recruiting",
+      "name": "推薦到職",
+      "stages": [
+        "職缺",
+        "尋才",
+        "推薦",
+        "到職",
+        "保證"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "104 後台 + 試算表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "職缺 → 尋才 → 推薦 → 到職 → 保證"
+  },
+  {
+    "id": "translation",
+    "code": "IND-050",
+    "nameZh": "翻譯社",
+    "nameEn": "Translation house",
+    "group": "專業服務",
+    "itemType": "字數／件",
+    "fulfillment": "交付譯文",
+    "tagline": "字數、譯者、審稿、交期、請款",
+    "pains": [
+      "譯者檔期口頭",
+      "字數對不齊",
+      "審稿版次亂"
+    ],
+    "kpis": [
+      "準時",
+      "字數毛利",
+      "重譯率",
+      "應收"
+    ],
+    "workflow": {
+      "id": "translation",
+      "name": "譯件",
+      "stages": [
+        "詢價",
+        "派件",
+        "審稿",
+        "交付",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "譯者 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢價 → 派件 → 審稿 → 交付 → 請款"
+  },
+  {
+    "id": "interior-design",
+    "code": "IND-051",
+    "nameZh": "室內設計",
+    "nameEn": "Interior design",
+    "group": "專業服務",
+    "itemType": "工程案",
+    "fulfillment": "設計與監工",
+    "tagline": "丈量、報價、變更、監工、請款",
+    "pains": [
+      "變更單口頭",
+      "監工照片在群組",
+      "請款對不到進度"
+    ],
+    "kpis": [
+      "變更次數",
+      "進度",
+      "應收",
+      "客變成本"
+    ],
+    "workflow": {
+      "id": "interior-design",
+      "name": "設計監工",
+      "stages": [
+        "諮詢",
+        "合約",
+        "設計",
+        "監工",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "工地群組"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "諮詢 → 合約 → 設計 → 監工 → 請款"
+  },
+  {
+    "id": "me-contractor",
+    "code": "IND-052",
+    "nameZh": "水電工程行",
+    "nameEn": "ME contractor",
+    "group": "專業服務",
+    "itemType": "工單",
+    "fulfillment": "完工",
+    "tagline": "叫修、備料、完工照、保固",
+    "pains": [
+      "叫修電話留言",
+      "備料常跑空",
+      "保固找不到單"
+    ],
+    "kpis": [
+      "完工期",
+      "再修率",
+      "備料準",
+      "應收"
+    ],
+    "workflow": {
+      "id": "me-contractor",
+      "name": "叫修工單",
+      "stages": [
+        "叫修",
+        "派工",
+        "備料",
+        "完工",
+        "保固"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "電話留言本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "叫修 → 派工 → 備料 → 完工 → 保固"
+  },
+  {
+    "id": "it-msp",
+    "code": "IND-053",
+    "nameZh": "IT 維運",
+    "nameEn": "IT MSP",
+    "group": "專業服務",
+    "itemType": "合約／工單",
+    "fulfillment": "維運交付",
+    "tagline": "合約、資產、工單、SLA、續約",
+    "pains": [
+      "資產 excel",
+      "SLA 逾時才知",
+      "帳號權限口頭"
+    ],
+    "kpis": [
+      "SLA 達成",
+      "未關工單",
+      "合約到期",
+      "毛利"
+    ],
+    "workflow": {
+      "id": "it-msp",
+      "name": "MSP 合約",
+      "stages": [
+        "簽約",
+        "盤點",
+        "工單",
+        "報告",
+        "續約"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "遠端工具各一套"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "簽約 → 盤點 → 工單 → 報告 → 續約"
+  },
+  {
+    "id": "cleaning-co",
+    "code": "IND-054",
+    "nameZh": "清潔公司",
+    "nameEn": "Cleaning company",
+    "group": "專業服務",
+    "itemType": "據點班次",
+    "fulfillment": "到點服務",
+    "tagline": "據點、班表、耗材、客訴、請款",
+    "pains": [
+      "班表紙本",
+      "代班常漏",
+      "客訴在群組"
+    ],
+    "kpis": [
+      "準時",
+      "客訴",
+      "據點續約",
+      "耗材"
+    ],
+    "workflow": {
+      "id": "cleaning-co",
+      "name": "據點班次",
+      "stages": [
+        "估價",
+        "排班",
+        "執行",
+        "回報",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Monday.com",
+      "QuickBooks",
+      "Docusign",
+      "HubSpot",
+      "員工 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "估價 → 排班 → 執行 → 回報 → 請款"
+  },
+  {
+    "id": "metal-shop",
+    "code": "IND-055",
+    "nameZh": "金屬加工",
+    "nameEn": "Metal fabrication",
+    "group": "製造",
+    "itemType": "工單／件",
+    "fulfillment": "完工出貨",
+    "tagline": "詢價、BOM、工單、品檢、出貨",
+    "pains": [
+      "BOM 在師傅腦子",
+      "工單紙本",
+      "交期常延"
+    ],
+    "kpis": [
+      "準交",
+      "報廢",
+      "機台利用率",
+      "應收"
+    ],
+    "workflow": {
+      "id": "metal-shop",
+      "name": "工單出貨",
+      "stages": [
+        "詢價",
+        "BOM",
+        "工單",
+        "品檢",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "師傅配方紙"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "詢價 → BOM → 工單 → 品檢 → 出貨"
+  },
+  {
+    "id": "electronics-oem",
+    "code": "IND-056",
+    "nameZh": "電子代工",
+    "nameEn": "Electronics OEM",
+    "group": "製造",
+    "itemType": "工單／批",
+    "fulfillment": "出貨",
+    "tagline": "BOM、SMT 工單、批次、客供料",
+    "pains": [
+      "客供料對不齊",
+      "ECN 改版亂",
+      "批次追溯慢"
+    ],
+    "kpis": [
+      "準交",
+      "客供差異",
+      "一次通過",
+      "在製"
+    ],
+    "workflow": {
+      "id": "electronics-oem",
+      "name": "ECN 到出貨",
+      "stages": [
+        "訂單",
+        "BOM",
+        "工單",
+        "品檢",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "客戶 ECN 郵件"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "訂單 → BOM → 工單 → 品檢 → 出貨"
+  },
+  {
+    "id": "food-processing",
+    "code": "IND-057",
+    "nameZh": "食品加工",
+    "nameEn": "Food processing",
+    "group": "製造",
+    "itemType": "批次公斤",
+    "fulfillment": "出貨",
+    "tagline": "配方、批次、效期、通路訂單",
+    "pains": [
+      "批次追溯靠紙",
+      "效期與訂單打架",
+      "通路退貨難追"
+    ],
+    "kpis": [
+      "追溯時間",
+      "效期報廢",
+      "準交",
+      "退貨"
+    ],
+    "workflow": {
+      "id": "food-processing",
+      "name": "配方批次",
+      "stages": [
+        "訂單",
+        "配方",
+        "生產",
+        "效期",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "HACCP 紙本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "訂單 → 配方 → 生產 → 效期 → 出貨"
+  },
+  {
+    "id": "textile",
+    "code": "IND-058",
+    "nameZh": "紡織成衣",
+    "nameEn": "Textile apparel",
+    "group": "製造",
+    "itemType": "款／色碼",
+    "fulfillment": "出貨",
+    "tagline": "打樣、色碼、裁床、出貨、補片",
+    "pains": [
+      "補片對不到款",
+      "色差客訴",
+      "外發加工進度"
+    ],
+    "kpis": [
+      "準交",
+      "補片",
+      "外發逾期",
+      "色差"
+    ],
+    "workflow": {
+      "id": "textile",
+      "name": "打樣到出貨",
+      "stages": [
+        "打樣",
+        "下單",
+        "生產",
+        "品檢",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "加工廠 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "打樣 → 下單 → 生產 → 品檢 → 出貨"
+  },
+  {
+    "id": "print-pack",
+    "code": "IND-059",
+    "nameZh": "印刷包裝",
+    "nameEn": "Print & pack",
+    "group": "製造",
+    "itemType": "印件",
+    "fulfillment": "出貨",
+    "tagline": "檔案版次、印量、後加工、交期",
+    "pains": [
+      "檔案版次錯印",
+      "後加工外包進度",
+      "加印對不到報價"
+    ],
+    "kpis": [
+      "錯印",
+      "準交",
+      "加印毛利",
+      "應收"
+    ],
+    "workflow": {
+      "id": "print-pack",
+      "name": "印件",
+      "stages": [
+        "詢價",
+        "打樣",
+        "印刷",
+        "加工",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "檔案雲端資料夾"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "詢價 → 打樣 → 印刷 → 加工 → 出貨"
+  },
+  {
+    "id": "plastic-injection",
+    "code": "IND-060",
+    "nameZh": "塑膠射出",
+    "nameEn": "Plastic injection",
+    "group": "製造",
+    "itemType": "模／件",
+    "fulfillment": "出貨",
+    "tagline": "模具、工單、穴數、品檢",
+    "pains": [
+      "模具保養沒記",
+      "換模時間吃掉產能",
+      "客訴穴號難追"
+    ],
+    "kpis": [
+      "機台稼動",
+      "換模時間",
+      "不良率",
+      "準交"
+    ],
+    "workflow": {
+      "id": "plastic-injection",
+      "name": "模具工單",
+      "stages": [
+        "訂單",
+        "調機",
+        "生產",
+        "品檢",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "機台紙本表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "訂單 → 調機 → 生產 → 品檢 → 出貨"
+  },
+  {
+    "id": "woodshop",
+    "code": "IND-061",
+    "nameZh": "木工家具廠",
+    "nameEn": "Woodshop",
+    "group": "製造",
+    "itemType": "訂製件",
+    "fulfillment": "出貨安裝",
+    "tagline": "丈量、BOM、木料、安裝",
+    "pains": [
+      "木料剩餘難用",
+      "變更後 BOM 沒改",
+      "安裝與工廠脫節"
+    ],
+    "kpis": [
+      "準交",
+      "木料利用率",
+      "變更",
+      "安裝一次過"
+    ],
+    "workflow": {
+      "id": "woodshop",
+      "name": "訂製木作",
+      "stages": [
+        "丈量",
+        "報價",
+        "生產",
+        "出貨",
+        "安裝"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "工廠群組"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "丈量 → 報價 → 生產 → 出貨 → 安裝"
+  },
+  {
+    "id": "chem-materials",
+    "code": "IND-062",
+    "nameZh": "化學材料",
+    "nameEn": "Chemical materials",
+    "group": "製造",
+    "itemType": "批次公斤",
+    "fulfillment": "出貨",
+    "tagline": "SDS、批次、效期、危險品運送",
+    "pains": [
+      "SDS 版本舊",
+      "批次與證書對不齊",
+      "危險品法規欄口頭"
+    ],
+    "kpis": [
+      "證書齊",
+      "準交",
+      "效期",
+      "客訴"
+    ],
+    "workflow": {
+      "id": "chem-materials",
+      "name": "批次出貨",
+      "stages": [
+        "詢價",
+        "QC",
+        "出貨",
+        "證書",
+        "應收"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "SDS 資料夾"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "詢價 → QC → 出貨 → 證書 → 應收"
+  },
+  {
+    "id": "craft-maker",
+    "code": "IND-063",
+    "nameZh": "手作工坊小製造",
+    "nameEn": "Craft maker",
+    "group": "製造",
+    "itemType": "限量批",
+    "fulfillment": "出貨／市集",
+    "tagline": "材料、工時、限量、通路",
+    "pains": [
+      "工時沒記所以定價盲",
+      "市集與官網庫存打架",
+      "材料浪費"
+    ],
+    "kpis": [
+      "工時成本",
+      "完售",
+      "庫存差異",
+      "複購"
+    ],
+    "workflow": {
+      "id": "craft-maker",
+      "name": "限量生產",
+      "stages": [
+        "設計",
+        "備料",
+        "製作",
+        "上架",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "Pinkoi + 市集本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "設計 → 備料 → 製作 → 上架 → 出貨"
+  },
+  {
+    "id": "agri-processing",
+    "code": "IND-064",
+    "nameZh": "農產加工",
+    "nameEn": "Agri processing",
+    "group": "製造",
+    "itemType": "批次",
+    "fulfillment": "出貨",
+    "tagline": "契作、收購、加工批次、通路",
+    "pains": [
+      "契作帳在 LINE",
+      "收購重量手寫",
+      "加工批次難追"
+    ],
+    "kpis": [
+      "收購差異",
+      "批次追溯",
+      "通路退貨",
+      "準交"
+    ],
+    "workflow": {
+      "id": "agri-processing",
+      "name": "契作加工",
+      "stages": [
+        "契作",
+        "收購",
+        "加工",
+        "包裝",
+        "出貨"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "鼎新 ERP",
+      "Excel BOM",
+      "紙本工單",
+      "Email 詢價",
+      "產銷履歷紙"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": false
+    },
+    "sampleLoop": "契作 → 收購 → 加工 → 包裝 → 出貨"
+  },
+  {
+    "id": "general-contractor",
+    "code": "IND-065",
+    "nameZh": "營造廠",
+    "nameEn": "General contractor",
+    "group": "營建不動產",
+    "itemType": "工程案",
+    "fulfillment": "完工驗收",
+    "tagline": "估價、發包、進度、變更、請款",
+    "pains": [
+      "變更單口頭",
+      "分包進度群組",
+      "請款對進度難"
+    ],
+    "kpis": [
+      "進度",
+      "變更金額",
+      "分包逾期",
+      "應收"
+    ],
+    "workflow": {
+      "id": "general-contractor",
+      "name": "工程案",
+      "stages": [
+        "估價",
+        "合約",
+        "施工",
+        "驗收",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "工務所白板"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "估價 → 合約 → 施工 → 驗收 → 請款"
+  },
+  {
+    "id": "fire-me",
+    "code": "IND-066",
+    "nameZh": "消防水電工程",
+    "nameEn": "Fire & ME",
+    "group": "營建不動產",
+    "itemType": "工單／案",
+    "fulfillment": "竣工",
+    "tagline": "圖說、材料、申報、竣工",
+    "pains": [
+      "申報日漏",
+      "材料與圖說不符",
+      "竣工文件散"
+    ],
+    "kpis": [
+      "準竣工",
+      "材料差異",
+      "申報逾期",
+      "應收"
+    ],
+    "workflow": {
+      "id": "fire-me",
+      "name": "申報竣工",
+      "stages": [
+        "勘場",
+        "報價",
+        "施工",
+        "申報",
+        "竣工"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "主管機關表單"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "勘場 → 報價 → 施工 → 申報 → 竣工"
+  },
+  {
+    "id": "fit-out",
+    "code": "IND-067",
+    "nameZh": "室內裝修",
+    "nameEn": "Fit-out",
+    "group": "營建不動產",
+    "itemType": "裝修案",
+    "fulfillment": "完工",
+    "tagline": "報價、工期、客變、驗收",
+    "pains": [
+      "客變微信講完就做",
+      "工期延遲沒預警",
+      "尾款難收"
+    ],
+    "kpis": [
+      "工期",
+      "客變",
+      "尾款",
+      "客訴"
+    ],
+    "workflow": {
+      "id": "fit-out",
+      "name": "裝修案",
+      "stages": [
+        "丈量",
+        "報價",
+        "施工",
+        "驗收",
+        "尾款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "工班 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "丈量 → 報價 → 施工 → 驗收 → 尾款"
+  },
+  {
+    "id": "realtor",
+    "code": "IND-068",
+    "nameZh": "房屋仲介",
+    "nameEn": "Realtor",
+    "group": "營建不動產",
+    "itemType": "物件／客戶",
+    "fulfillment": "成交",
+    "tagline": "物件、帶看、議價、成交、分潤",
+    "pains": [
+      "物件在個人臉書",
+      "帶看沒回寫",
+      "分潤吵架"
+    ],
+    "kpis": [
+      "帶看轉換",
+      "成交天數",
+      "分潤",
+      "庫存物件"
+    ],
+    "workflow": {
+      "id": "realtor",
+      "name": "帶看到成交",
+      "stages": [
+        "物件",
+        "客戶",
+        "帶看",
+        "議價",
+        "成交"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "樂居／個人 FB"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "物件 → 客戶 → 帶看 → 議價 → 成交"
+  },
+  {
+    "id": "property-mgmt",
+    "code": "IND-069",
+    "nameZh": "物業管理",
+    "nameEn": "Property management",
+    "group": "營建不動產",
+    "itemType": "社區／工單",
+    "fulfillment": "工單完成",
+    "tagline": "住戶、公設、工單、管理費",
+    "pains": [
+      "報修電話留言",
+      "管理費催收 excel",
+      "包商保固找不到"
+    ],
+    "kpis": [
+      "工單時效",
+      "管理費收繳",
+      "客訴",
+      "包商逾期"
+    ],
+    "workflow": {
+      "id": "property-mgmt",
+      "name": "社區工單",
+      "stages": [
+        "報修",
+        "派工",
+        "完工",
+        "管理費",
+        "報告"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "社區 APP 一種一個"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "報修 → 派工 → 完工 → 管理費 → 報告"
+  },
+  {
+    "id": "warehouse-park",
+    "code": "IND-070",
+    "nameZh": "倉儲園區",
+    "nameEn": "Warehouse park",
+    "group": "營建不動產",
+    "itemType": "儲位",
+    "fulfillment": "進出倉",
+    "tagline": "租約、儲位、進出、帳單",
+    "pains": [
+      "儲位 excel",
+      "進出與合約脫節",
+      "超租難算"
+    ],
+    "kpis": [
+      "出租率",
+      "進出準確",
+      "超租收入",
+      "逾期帳"
+    ],
+    "workflow": {
+      "id": "warehouse-park",
+      "name": "儲位租約",
+      "stages": [
+        "租約",
+        "進倉",
+        "在倉",
+        "出倉",
+        "帳單"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "WMS 獨立帳"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "租約 → 進倉 → 在倉 → 出倉 → 帳單"
+  },
+  {
+    "id": "rental-assets",
+    "code": "IND-071",
+    "nameZh": "設備租賃",
+    "nameEn": "Equipment rental",
+    "group": "營建不動產",
+    "itemType": "資產編號",
+    "fulfillment": "出租歸還",
+    "tagline": "資產、檔期、維修、押金、損壞",
+    "pains": [
+      "檔期撞租",
+      "歸還損壞口頭",
+      "押金 excel"
+    ],
+    "kpis": [
+      "利用率",
+      "損壞",
+      "逾期未還",
+      "維修"
+    ],
+    "workflow": {
+      "id": "rental-assets",
+      "name": "租賃檔期",
+      "stages": [
+        "詢價",
+        "出租",
+        "歸還",
+        "檢查",
+        "押金"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "資產貼紙本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢價 → 出租 → 歸還 → 檢查 → 押金"
+  },
+  {
+    "id": "landscaping",
+    "code": "IND-072",
+    "nameZh": "景觀園藝",
+    "nameEn": "Landscaping",
+    "group": "營建不動產",
+    "itemType": "工地／養護",
+    "fulfillment": "完工與定期養護",
+    "tagline": "設計、施工、植栽、養護合約",
+    "pains": [
+      "養護排程口頭",
+      "植栽死亡責任不清",
+      "季節工難排"
+    ],
+    "kpis": [
+      "養護準時",
+      "補植",
+      "合約續",
+      "毛利"
+    ],
+    "workflow": {
+      "id": "landscaping",
+      "name": "施工養護",
+      "stages": [
+        "勘查",
+        "報價",
+        "施工",
+        "養護",
+        "續約"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Sinyi 雲端",
+      "工地 LINE 群",
+      "估價 Excel",
+      "圖資資料夾",
+      "園丁 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "勘查 → 報價 → 施工 → 養護 → 續約"
+  },
+  {
+    "id": "freight",
+    "code": "IND-073",
+    "nameZh": "貨運公司",
+    "nameEn": "Freight",
+    "group": "運輸物流",
+    "itemType": "運單",
+    "fulfillment": "送達",
+    "tagline": "攬收、路線、簽收、異常、對帳",
+    "pains": [
+      "簽收紙本",
+      "異常在群組",
+      "對帳三天"
+    ],
+    "kpis": [
+      "準時率",
+      "異常",
+      "簽收完整",
+      "應收"
+    ],
+    "workflow": {
+      "id": "freight",
+      "name": "運單",
+      "stages": [
+        "攬收",
+        "轉運",
+        "配送",
+        "簽收",
+        "對帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "GPS 與財務分開"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "攬收 → 轉運 → 配送 → 簽收 → 對帳"
+  },
+  {
+    "id": "courier",
+    "code": "IND-074",
+    "nameZh": "快遞",
+    "nameEn": "Courier",
+    "group": "運輸物流",
+    "itemType": "件",
+    "fulfillment": "當日送達",
+    "tagline": "進件、路線、失敗再送、客服",
+    "pains": [
+      "失敗再送靠司機記",
+      "客服查不到件",
+      "尖峰爆倉"
+    ],
+    "kpis": [
+      "當日達成",
+      "失敗再送",
+      "查件時間",
+      "客訴"
+    ],
+    "workflow": {
+      "id": "courier",
+      "name": "當日件",
+      "stages": [
+        "進件",
+        "分貨",
+        "配送",
+        "再送",
+        "結案"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "司機私人 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "進件 → 分貨 → 配送 → 再送 → 結案"
+  },
+  {
+    "id": "customs-broker",
+    "code": "IND-075",
+    "nameZh": "報關行",
+    "nameEn": "Customs broker",
+    "group": "運輸物流",
+    "itemType": "報單",
+    "fulfillment": "放行",
+    "tagline": "文件、報單、繳稅、放行、請款",
+    "pains": [
+      "文件缺件才發現",
+      "放行時間客戶一直問",
+      "請款對不到櫃"
+    ],
+    "kpis": [
+      "一次過文件",
+      "放行時效",
+      "應收",
+      "客詢"
+    ],
+    "workflow": {
+      "id": "customs-broker",
+      "name": "報單放行",
+      "stages": [
+        "收件",
+        "報關",
+        "繳稅",
+        "放行",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "關港貿各登入"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "收件 → 報關 → 繳稅 → 放行 → 請款"
+  },
+  {
+    "id": "3pl-warehouse",
+    "code": "IND-076",
+    "nameZh": "第三方倉儲",
+    "nameEn": "3PL warehouse",
+    "group": "運輸物流",
+    "itemType": "SKU／儲位",
+    "fulfillment": "進出倉",
+    "tagline": "ASN、上架、揀貨、盤差、帳單",
+    "pains": [
+      "盤差月底才知",
+      "客退難追批次",
+      "帳單對 SKU 費時"
+    ],
+    "kpis": [
+      "盤差",
+      "揀準",
+      "出貨時效",
+      "帳單天數"
+    ],
+    "workflow": {
+      "id": "3pl-warehouse",
+      "name": "進出倉",
+      "stages": [
+        "ASN",
+        "上架",
+        "揀貨",
+        "出貨",
+        "帳單"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "客戶各要一套報表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "ASN → 上架 → 揀貨 → 出貨 → 帳單"
+  },
+  {
+    "id": "moving-co",
+    "code": "IND-077",
+    "nameZh": "搬家公司",
+    "nameEn": "Moving company",
+    "group": "運輸物流",
+    "itemType": "案件",
+    "fulfillment": "搬運完成",
+    "tagline": "勘場、報價、車班、保險、客訴",
+    "pains": [
+      "勘場照片群組",
+      "車班衝突",
+      "保險口頭"
+    ],
+    "kpis": [
+      "準時抵達",
+      "件損",
+      "車班利用率",
+      "好評"
+    ],
+    "workflow": {
+      "id": "moving-co",
+      "name": "搬家案",
+      "stages": [
+        "勘場",
+        "報價",
+        "執行",
+        "回報",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "車班白板"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "勘場 → 報價 → 執行 → 回報 → 請款"
+  },
+  {
+    "id": "fleet-rental",
+    "code": "IND-078",
+    "nameZh": "車隊租賃",
+    "nameEn": "Fleet rental",
+    "group": "運輸物流",
+    "itemType": "車牌",
+    "fulfillment": "出租還車",
+    "tagline": "車況、保險、違規、檔期",
+    "pains": [
+      "還車檢查紙本",
+      "違規罰單對人慢",
+      "保養逾期"
+    ],
+    "kpis": [
+      "利用率",
+      "停場維修",
+      "罰單處理天",
+      "出險"
+    ],
+    "workflow": {
+      "id": "fleet-rental",
+      "name": "租車檔期",
+      "stages": [
+        "預約",
+        "交車",
+        "還車",
+        "檢查",
+        "結算"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "車隊 GPS 獨立帳",
+      "紙本托運單",
+      "對帳 Excel",
+      "監理罰單郵寄"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 交車 → 還車 → 檢查 → 結算"
+  },
+  {
+    "id": "bnb",
+    "code": "IND-079",
+    "nameZh": "民宿",
+    "nameEn": "B&B",
+    "group": "旅宿活動",
+    "itemType": "房晚",
+    "fulfillment": "入住退房",
+    "tagline": "官網訂房、清潔、早餐、評價",
+    "pains": [
+      "多平台超賣",
+      "清潔班表口頭",
+      "早餐人數當日才知"
+    ],
+    "kpis": [
+      "住房率",
+      "超賣",
+      "評價",
+      "清潔準時"
+    ],
+    "workflow": {
+      "id": "bnb",
+      "name": "住房",
+      "stages": [
+        "訂房",
+        "確認",
+        "入住",
+        "清潔",
+        "評價"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "Airbnb + Booking"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂房 → 確認 → 入住 → 清潔 → 評價"
+  },
+  {
+    "id": "hotel",
+    "code": "IND-080",
+    "nameZh": "旅館",
+    "nameEn": "Hotel",
+    "group": "旅宿活動",
+    "itemType": "房晚／宴會",
+    "fulfillment": "入住",
+    "tagline": "房態、團體、宴會、會員",
+    "pains": [
+      "宴會與住房搶場地",
+      "團體 master 帳難",
+      "會員跨渠道"
+    ],
+    "kpis": [
+      "住房率",
+      "RevPAR",
+      "宴會毛利",
+      "會員"
+    ],
+    "workflow": {
+      "id": "hotel",
+      "name": "房態宴會",
+      "stages": [
+        "詢問",
+        "訂房",
+        "入住",
+        "加購",
+        "結帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "PMS 與官網分開"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢問 → 訂房 → 入住 → 加購 → 結帳"
+  },
+  {
+    "id": "travel-agency",
+    "code": "IND-081",
+    "nameZh": "旅行社",
+    "nameEn": "Travel agency",
+    "group": "旅宿活動",
+    "itemType": "團位／票",
+    "fulfillment": "出團",
+    "tagline": "詢團、名冊、保險、出團、售後",
+    "pains": [
+      "名冊 excel",
+      "保險對不到人",
+      "領隊回報群組"
+    ],
+    "kpis": [
+      "成團率",
+      "名冊正確",
+      "客訴",
+      "毛利"
+    ],
+    "workflow": {
+      "id": "travel-agency",
+      "name": "成團出團",
+      "stages": [
+        "詢問",
+        "收訂",
+        "名冊",
+        "出團",
+        "售後"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "航空 GDS 外帳"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢問 → 收訂 → 名冊 → 出團 → 售後"
+  },
+  {
+    "id": "event-agency",
+    "code": "IND-082",
+    "nameZh": "活動策展",
+    "nameEn": "Event agency",
+    "group": "旅宿活動",
+    "itemType": "場次",
+    "fulfillment": "活動當日",
+    "tagline": "檔期、廠商、名冊、現場、結案",
+    "pains": [
+      "名冊當日還在改",
+      "廠商進場衝突",
+      "結案成本爆"
+    ],
+    "kpis": [
+      "準時進場",
+      "出席",
+      "成本差",
+      "續約"
+    ],
+    "workflow": {
+      "id": "event-agency",
+      "name": "場次執行",
+      "stages": [
+        "提案",
+        "籌備",
+        "現場",
+        "結案",
+        "請款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "Excel run of show"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "提案 → 籌備 → 現場 → 結案 → 請款"
+  },
+  {
+    "id": "wedding",
+    "code": "IND-083",
+    "nameZh": "婚禮顧問",
+    "nameEn": "Wedding planner",
+    "group": "旅宿活動",
+    "itemType": "婚禮案",
+    "fulfillment": "當日執行",
+    "tagline": "檔期、廠商、流程、收款",
+    "pains": [
+      "檔期撞",
+      "廠商聯絡人散",
+      "尾款難收"
+    ],
+    "kpis": [
+      "檔期",
+      "清單完成",
+      "尾款",
+      "好評"
+    ],
+    "workflow": {
+      "id": "wedding",
+      "name": "婚禮案",
+      "stages": [
+        "諮詢",
+        "訂金",
+        "籌備",
+        "當日",
+        "尾款"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "Pinterest + LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "諮詢 → 訂金 → 籌備 → 當日 → 尾款"
+  },
+  {
+    "id": "venue-rental",
+    "code": "IND-084",
+    "nameZh": "場地租借",
+    "nameEn": "Venue rental",
+    "group": "旅宿活動",
+    "itemType": "時段",
+    "fulfillment": "進撤場",
+    "tagline": "檔期、押金、設備、清潔",
+    "pains": [
+      "檔期電話重疊",
+      "設備損壞口頭",
+      "清潔加班費"
+    ],
+    "kpis": [
+      "利用率",
+      "損壞",
+      "超時",
+      "回租"
+    ],
+    "workflow": {
+      "id": "venue-rental",
+      "name": "場地檔期",
+      "stages": [
+        "詢問",
+        "訂金",
+        "進場",
+        "撤場",
+        "押金"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "Google 日曆公開"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢問 → 訂金 → 進場 → 撤場 → 押金"
+  },
+  {
+    "id": "campground",
+    "code": "IND-085",
+    "nameZh": "露營區",
+    "nameEn": "Campground",
+    "group": "旅宿活動",
+    "itemType": "營位晚",
+    "fulfillment": "入住",
+    "tagline": "營位、天氣、押金、商店",
+    "pains": [
+      "雨天退訂規則口頭",
+      "營位手畫",
+      "商店與住房分開"
+    ],
+    "kpis": [
+      "住房率",
+      "雨天退訂",
+      "商店客單",
+      "評價"
+    ],
+    "workflow": {
+      "id": "campground",
+      "name": "營位",
+      "stages": [
+        "訂位",
+        "確認",
+        "入住",
+        "加購",
+        "退房"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "露營訂位粉專"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "訂位 → 確認 → 入住 → 加購 → 退房"
+  },
+  {
+    "id": "small-attraction",
+    "code": "IND-086",
+    "nameZh": "小型場域／館所",
+    "nameEn": "Attraction",
+    "group": "旅宿活動",
+    "itemType": "票券",
+    "fulfillment": "入園",
+    "tagline": "票種、時段、導覽、商店",
+    "pains": [
+      "現場排隊不明",
+      "導覽時段超賣",
+      "團體報價另算"
+    ],
+    "kpis": [
+      "入園",
+      "時段滿",
+      "商店",
+      "團體"
+    ],
+    "workflow": {
+      "id": "small-attraction",
+      "name": "票券時段",
+      "stages": [
+        "購票",
+        "入園",
+        "導覽",
+        "商店",
+        "離園"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Booking.com 後台",
+      "Airbnb",
+      "活動報名表單",
+      "票務系統",
+      "現場售票機"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": false,
+        "manufacturing": false,
+        "pos": true,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "購票 → 入園 → 導覽 → 商店 → 離園"
+  },
+  {
+    "id": "farm",
+    "code": "IND-087",
+    "nameZh": "農場",
+    "nameEn": "Farm",
+    "group": "農林漁牧",
+    "itemType": "批／盒",
+    "fulfillment": "出貨／體驗",
+    "tagline": "契作、採收、通路、體驗票",
+    "pains": [
+      "採收量當日才知",
+      "體驗與批發搶貨",
+      "通路退貨"
+    ],
+    "kpis": [
+      "採收",
+      "通路準交",
+      "體驗票",
+      "耗損"
+    ],
+    "workflow": {
+      "id": "farm",
+      "name": "採收到通路",
+      "stages": [
+        "種植",
+        "採收",
+        "分級",
+        "出貨",
+        "體驗"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "農產批發 LINE",
+      "產銷履歷表",
+      "Excel 批次",
+      "產銷 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "種植 → 採收 → 分級 → 出貨 → 體驗"
+  },
+  {
+    "id": "fishery",
+    "code": "IND-088",
+    "nameZh": "漁產",
+    "nameEn": "Fishery",
+    "group": "農林漁牧",
+    "itemType": "批次公斤",
+    "fulfillment": "出貨",
+    "tagline": "船次、冰溫、拍賣、通路",
+    "pains": [
+      "船次紙本",
+      "溫度斷鏈",
+      "通路要證明慢"
+    ],
+    "kpis": [
+      "溫度完整",
+      "準交",
+      "耗損",
+      "單價"
+    ],
+    "workflow": {
+      "id": "fishery",
+      "name": "船次出貨",
+      "stages": [
+        "出海",
+        "卸貨",
+        "分級",
+        "出貨",
+        "對帳"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "農產批發 LINE",
+      "產銷履歷表",
+      "Excel 批次",
+      "拍賣市場帳"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "出海 → 卸貨 → 分級 → 出貨 → 對帳"
+  },
+  {
+    "id": "nursery",
+    "code": "IND-089",
+    "nameZh": "種苗／花草栽培",
+    "nameEn": "Nursery",
+    "group": "農林漁牧",
+    "itemType": "盆／苗",
+    "fulfillment": "出貨",
+    "tagline": "批次、季節、通路、耗損",
+    "pains": [
+      "季節預測靠經驗",
+      "耗損沒記",
+      "通路訂單電話"
+    ],
+    "kpis": [
+      "耗損",
+      "季節完售",
+      "準交",
+      "再訂"
+    ],
+    "workflow": {
+      "id": "nursery",
+      "name": "栽培出貨",
+      "stages": [
+        "育苗",
+        "養成",
+        "訂單",
+        "出貨",
+        "再訂"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "農產批發 LINE",
+      "產銷履歷表",
+      "Excel 批次",
+      "花市電話"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "育苗 → 養成 → 訂單 → 出貨 → 再訂"
+  },
+  {
+    "id": "livestock",
+    "code": "IND-090",
+    "nameZh": "畜牧",
+    "nameEn": "Livestock",
+    "group": "農林漁牧",
+    "itemType": "批次／頭",
+    "fulfillment": "出貨",
+    "tagline": "飼養、用藥、出貨、履歷",
+    "pains": [
+      "用藥停藥期口頭",
+      "出貨重量手寫",
+      "履歷補件"
+    ],
+    "kpis": [
+      "停藥合規",
+      "飼料轉換",
+      "出貨重",
+      "客訴"
+    ],
+    "workflow": {
+      "id": "livestock",
+      "name": "飼養出貨",
+      "stages": [
+        "進養",
+        "飼養",
+        "停藥",
+        "出貨",
+        "履歷"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "農產批發 LINE",
+      "產銷履歷表",
+      "Excel 批次",
+      "獸醫紀錄本"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": true,
+        "pos": false,
+        "projects": false,
+        "batch": true
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "進養 → 飼養 → 停藥 → 出貨 → 履歷"
+  },
+  {
+    "id": "auto-shop",
+    "code": "IND-091",
+    "nameZh": "汽車保養廠",
+    "nameEn": "Auto shop",
+    "group": "公共與其他",
+    "itemType": "工單／車牌",
+    "fulfillment": "完工交車",
+    "tagline": "預約、零件、工單、保固、回廠",
+    "pains": [
+      "零件等很久客人不滿",
+      "保固找不到工單",
+      "回廠提醒靠師傅"
+    ],
+    "kpis": [
+      "準時交車",
+      "零件等待",
+      "回廠",
+      "客單"
+    ],
+    "workflow": {
+      "id": "auto-shop",
+      "name": "保養工單",
+      "stages": [
+        "預約",
+        "檢查",
+        "零件",
+        "完工",
+        "回廠"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "零件商 LINE"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "預約 → 檢查 → 零件 → 完工 → 回廠"
+  },
+  {
+    "id": "ngo",
+    "code": "IND-092",
+    "nameZh": "協會／NGO",
+    "nameEn": "NGO",
+    "group": "公共與其他",
+    "itemType": "個案／捐款",
+    "fulfillment": "服務與徵信",
+    "tagline": "個案、志工、捐款、活動、徵信",
+    "pains": [
+      "捐款 excel",
+      "志工班表口頭",
+      "個案紀錄紙本"
+    ],
+    "kpis": [
+      "捐款續捐",
+      "志工時數",
+      "活動出席",
+      "個案追蹤"
+    ],
+    "workflow": {
+      "id": "ngo",
+      "name": "服務與徵信",
+      "stages": [
+        "收案",
+        "服務",
+        "活動",
+        "捐款",
+        "徵信"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "郵局劃撥 + 表單"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "收案 → 服務 → 活動 → 捐款 → 徵信"
+  },
+  {
+    "id": "faith-org",
+    "code": "IND-093",
+    "nameZh": "宗教團體",
+    "nameEn": "Faith organization",
+    "group": "公共與其他",
+    "itemType": "會友／活動",
+    "fulfillment": "牧養與活動",
+    "tagline": "會友、奉獻、活動、場地",
+    "pains": [
+      "奉獻現金難對",
+      "探訪紀錄在個人",
+      "場地衝突"
+    ],
+    "kpis": [
+      "聚會出席",
+      "奉獻",
+      "探訪",
+      "場地"
+    ],
+    "workflow": {
+      "id": "faith-org",
+      "name": "會友牧養",
+      "stages": [
+        "邀請",
+        "聚會",
+        "關懷",
+        "奉獻",
+        "活動"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "Line 官方 + 現金袋"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "邀請 → 聚會 → 關懷 → 奉獻 → 活動"
+  },
+  {
+    "id": "d2c-brand",
+    "code": "IND-094",
+    "nameZh": "品牌電商 D2C",
+    "nameEn": "D2C brand",
+    "group": "公共與其他",
+    "itemType": "SKU",
+    "fulfillment": "出貨",
+    "tagline": "官網、廣告、庫存、客服、回購",
+    "pains": [
+      "廣告與庫存脫節",
+      "客服三個後台",
+      "回購找不到人"
+    ],
+    "kpis": [
+      "ROAS",
+      "回購",
+      "缺貨",
+      "客服 SLA"
+    ],
+    "workflow": {
+      "id": "d2c-brand",
+      "name": "廣告到回購",
+      "stages": [
+        "獲客",
+        "結帳",
+        "出貨",
+        "客服",
+        "回購"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "Meta 廣告 + Shopify"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "獲客 → 結帳 → 出貨 → 客服 → 回購"
+  },
+  {
+    "id": "live-commerce",
+    "code": "IND-095",
+    "nameZh": "直播帶貨",
+    "nameEn": "Live commerce",
+    "group": "公共與其他",
+    "itemType": "場次 SKU",
+    "fulfillment": "出貨",
+    "tagline": "場次、留言下單、對帳、出貨",
+    "pains": [
+      "留言下單截圖",
+      "缺貨當下不知道",
+      "對帳對三天"
+    ],
+    "kpis": [
+      "場次營收",
+      "缺貨",
+      "出貨時效",
+      "退貨"
+    ],
+    "workflow": {
+      "id": "live-commerce",
+      "name": "場次履約",
+      "stages": [
+        "備貨",
+        "直播",
+        "對單",
+        "出貨",
+        "售後"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "直播平台後台"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "備貨 → 直播 → 對單 → 出貨 → 售後"
+  },
+  {
+    "id": "insurance-broker",
+    "code": "IND-096",
+    "nameZh": "保險經紀",
+    "nameEn": "Insurance broker",
+    "group": "公共與其他",
+    "itemType": "保單／客戶",
+    "fulfillment": "續期與理賠協助",
+    "tagline": "客戶、保單、續期、轉介、活動",
+    "pains": [
+      "續期日前才想起",
+      "家庭單分散",
+      "轉介沒追"
+    ],
+    "kpis": [
+      "續期率",
+      "轉介",
+      "客均件",
+      "活動到店"
+    ],
+    "workflow": {
+      "id": "insurance-broker",
+      "name": "續期服務",
+      "stages": [
+        "開發",
+        "建議書",
+        "承保",
+        "續期",
+        "轉介"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "保險公司各後台"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "開發 → 建議書 → 承保 → 續期 → 轉介"
+  },
+  {
+    "id": "vet-clinic",
+    "code": "IND-097",
+    "nameZh": "寵物醫院",
+    "nameEn": "Veterinary clinic",
+    "group": "公共與其他",
+    "itemType": "病歷／毛孩",
+    "fulfillment": "看診",
+    "tagline": "毛孩檔案、疫苗、住院、耗材",
+    "pains": [
+      "疫苗到期 LINE 提醒不穩",
+      "住院醫囑紙本",
+      "耗材批號"
+    ],
+    "kpis": [
+      "疫苗回診",
+      "住院週轉",
+      "耗材",
+      "客單"
+    ],
+    "workflow": {
+      "id": "vet-clinic",
+      "name": "毛孩病歷",
+      "stages": [
+        "掛號",
+        "看診",
+        "處置",
+        "住院",
+        "回診"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "疫苗簡訊機"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "掛號 → 看診 → 處置 → 住院 → 回診"
+  },
+  {
+    "id": "coworking",
+    "code": "IND-098",
+    "nameZh": "共享空間",
+    "nameEn": "Coworking",
+    "group": "公共與其他",
+    "itemType": "座位／會議室",
+    "fulfillment": "使用與請款",
+    "tagline": "會員、門禁、會議室、活動",
+    "pains": [
+      "會議室超賣",
+      "門禁與會籍脫節",
+      "活動名單另表"
+    ],
+    "kpis": [
+      "出租率",
+      "會議室",
+      "會籍續",
+      "活動轉換"
+    ],
+    "workflow": {
+      "id": "coworking",
+      "name": "會籍空間",
+      "stages": [
+        "參觀",
+        "入會",
+        "使用",
+        "活動",
+        "續約"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "門禁卡 + Google 日曆"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "參觀 → 入會 → 使用 → 活動 → 續約"
+  },
+  {
+    "id": "franchise-hq",
+    "code": "IND-099",
+    "nameZh": "連鎖加盟總部",
+    "nameEn": "Franchise HQ",
+    "group": "公共與其他",
+    "itemType": "加盟主／店",
+    "fulfillment": "督導與供貨",
+    "tagline": "加盟、訂貨、督導、品牌規範",
+    "pains": [
+      "訂貨各店 LINE",
+      "督導表紙本",
+      "規範版本不一"
+    ],
+    "kpis": [
+      "店數",
+      "訂貨達標",
+      "督導缺失",
+      "加盟費"
+    ],
+    "workflow": {
+      "id": "franchise-hq",
+      "name": "加盟營運",
+      "stages": [
+        "加盟",
+        "開店",
+        "訂貨",
+        "督導",
+        "續約"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "加盟主群組"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "加盟 → 開店 → 訂貨 → 督導 → 續約"
+  },
+  {
+    "id": "cross-border-trade",
+    "code": "IND-100",
+    "nameZh": "跨境貿易",
+    "nameEn": "Cross-border trade",
+    "group": "公共與其他",
+    "itemType": "櫃／SKU",
+    "fulfillment": "報關出貨",
+    "tagline": "詢價、訂艙、報關、交貨、外匯",
+    "pains": [
+      "船期 excel",
+      "文件缺件",
+      "匯率與成本脫節"
+    ],
+    "kpis": [
+      "準交",
+      "文件一次過",
+      "毛利",
+      "應收外匯"
+    ],
+    "workflow": {
+      "id": "cross-border-trade",
+      "name": "貿易交貨",
+      "stages": [
+        "詢價",
+        "訂艙",
+        "報關",
+        "交貨",
+        "結匯"
+      ]
+    },
+    "saasReplaced": [
+      "Salesforce／HubSpot",
+      "SAP／鼎新／NetSuite",
+      "ClickFunnels／Unbounce",
+      "Mailchimp／Klaviyo",
+      "Bitly／UTM 試算表",
+      "Google 試算表主檔",
+      "LINE 官方帳號後台",
+      "Wix／Shopify 官網",
+      "Salesforce",
+      "Mailchimp",
+      "Wix",
+      "Bitly",
+      "貨代郵件 + 試算表"
+    ],
+    "modules": {
+      "crm": true,
+      "erp": {
+        "inventory": true,
+        "manufacturing": false,
+        "pos": false,
+        "projects": true,
+        "batch": false
+      },
+      "funnel": true,
+      "hygiene": true,
+      "website": true,
+      "line": true
+    },
+    "sampleLoop": "詢價 → 訂艙 → 報關 → 交貨 → 結匯"
+  }
+]

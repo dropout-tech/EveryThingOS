@@ -1,0 +1,25 @@
+@import "../../tokens.css";
+
+.modal-header,
+.navbar,
+.app-header,
+body {
+  background: var(--do-ink) !important;
+  color: var(--do-cream) !important;
+}
+
+.mautic-logo,
+.media-left img {
+  content: url("/media/images/dropout-lockup.png");
+}
+
+.btn-primary,
+.btn-save {
+  background: var(--do-teal) !important;
+  border-color: var(--do-teal) !important;
+  color: var(--do-ink) !important;
+}
+
+a {
+  color: var(--do-teal);
+}

@@ -1,0 +1,14 @@
+@import "../tokens.css";
+
+:root {
+  --brand-color: #65c5bc;
+  --brand-color-dark: #3ca59e;
+  --text-color: #f4efe4;
+  --primary-color: #1a1612;
+}
+
+body,
+.shlink-web-client {
+  background: #1a1612 !important;
+  color: #f4efe4 !important;
+}
