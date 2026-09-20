@@ -52,7 +52,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
   return (
     <div className="space-y-4">
       <ActionNote>{note}</ActionNote>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3">
         {columns.map((column) => (
           <section key={column.stage} className="rounded-2xl border border-[var(--line)] bg-ink-2 p-3">
             <h3 className="text-sm text-teal">{column.stage}</h3>

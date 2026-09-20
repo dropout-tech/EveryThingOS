@@ -121,7 +121,7 @@ function hash(input: string) {
 
 function pick(seed: number, min: number, max: number) {
   const span = max - min + 1;
-  return min + (seed % span);
+  return min + ((seed >>> 0) % span);
 }
 
 export function formatTwd(amount: number) {
@@ -212,10 +212,10 @@ export function buildBooks(pack: IndustryPack): Books {
   const batchOn = pack.modules.erp.batch;
   const monthSales = pick(seed, 48, 220) * 1000;
   const monthCost = Math.round(monthSales * (inventoryOn ? 0.62 : 0.38));
-  const ar = pick(seed >> 2, 80, 360) * 1000;
-  const ap = inventoryOn ? pick(seed >> 3, 40, 180) * 1000 : pick(seed >> 3, 8, 40) * 1000;
-  const cash = pick(seed >> 4, 90, 420) * 1000;
-  const inventoryValue = inventoryOn ? pick(seed >> 5, 60, 280) * 1000 : 0;
+  const ar = pick(seed >>> 2, 80, 360) * 1000;
+  const ap = inventoryOn ? pick(seed >>> 3, 40, 180) * 1000 : pick(seed >>> 3, 8, 40) * 1000;
+  const cash = pick(seed >>> 4, 90, 420) * 1000;
+  const inventoryValue = inventoryOn ? pick(seed >>> 5, 60, 280) * 1000 : 0;
   const overdueAr = Math.round(ar * 0.18);
   const vatPayable = Math.round(monthSales * 0.05 - monthCost * 0.05);
 
@@ -270,7 +270,7 @@ export function buildBooks(pack: IndustryPack): Books {
           sku: "SKU-B",
           name: `常備${pack.itemType}`,
           warehouse: "本倉",
-          onHand: pick(seed >> 1, 20, 80),
+          onHand: pick(seed >>> 1, 20, 80),
           safety: 10,
           batch: batchOn ? "LOT-2508" : undefined,
         },
@@ -278,7 +278,7 @@ export function buildBooks(pack: IndustryPack): Books {
           sku: "SKU-C",
           name: "包材／配件",
           warehouse: pack.modules.erp.pos ? "門市倉" : "本倉",
-          onHand: pick(seed >> 2, 40, 200),
+          onHand: pick(seed >>> 2, 40, 200),
           safety: 30,
         },
       ]
@@ -289,7 +289,7 @@ export function buildBooks(pack: IndustryPack): Books {
     current: pick(seed + index, 4, 20) * 1000,
     d30: pick(seed + 8 + index, 0, 12) * 1000,
     d60: index === 0 ? pick(seed, 6, 18) * 1000 : 0,
-    d90: index === 0 ? pick(seed >> 3, 4, 14) * 1000 : 0,
+    d90: index === 0 ? pick(seed >>> 3, 4, 14) * 1000 : 0,
   }));
 
   const journals: LedgerLine[] = [
