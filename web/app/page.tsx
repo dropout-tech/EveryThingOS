@@ -22,12 +22,12 @@ export default function HomePage() {
             {COMMERCIAL.legalName} · DropOut OS
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl leading-tight font-medium md:text-6xl">
-            企業正在付費的那些 SaaS，
-            <span className="text-teal">用一套皮收進來。</span>
+            取代鼎新 A1、億看 ECOUNT，
+            <span className="text-teal">但打開就知道下一步。</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-cream-dim">
-            CRM、ERP、魅力圈、名單清庫、短網址、官網。員工只登入 DropOut。
-            {count} 個產業包可切換，顧問免費導入，{PRICE_LABEL}。
+            進銷存、帳款、稅、電子發票對齊它們的等級。再加上 CRM、魅力圈、清庫。
+            員工用現場的話做事，不用先背「銷貨單」。{count} 個產業包，{PRICE_LABEL}，顧問免費導入。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -37,10 +37,10 @@ export default function HomePage() {
               打開作業系統
             </Link>
             <Link
-              href="/industries"
+              href="/workspace/erp/compare"
               className="rounded-full border border-gold px-6 py-3 text-gold hover:bg-ink-2"
             >
-              看 {count} 個產業情境
+              和 A1／億看對照
             </Link>
           </div>
           <p className="mt-4 text-sm text-cream-dim">{PRICE_NOTE}</p>
@@ -78,6 +78,7 @@ export default function HomePage() {
             <p className="display text-xs tracking-[0.2em] text-orange uppercase">Commercial</p>
             <h2 className="mt-3 text-2xl">{PRICE_LABEL}／年</h2>
             <ul className="mt-4 space-y-2 text-cream-dim">
+              <li>進銷存＋財務對齊鼎新 A1／億看，操作改成下一步</li>
               <li>全模組：CRM、ERP、魅力圈、清庫、短網址、官網</li>
               <li>{count} 個產業包，可依現場改 Dashboard 與流程</li>
               <li>免費顧問導入，不另收導入專案費</li>

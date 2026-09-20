@@ -19,9 +19,9 @@ export const PILLARS = [
   },
   {
     id: "erp",
-    name: "營運 ERP",
-    replaces: "SAP、鼎新、NetSuite、進銷存 Excel",
-    detail: "報價、訂單、庫存、工單、應收。沒有庫存的服務業可關掉節點。",
+    name: "生意（進銷存＋財務）",
+    replaces: "鼎新 A1、億看 ECOUNT",
+    detail: "對齊 A1／億看等級：報價到收款、採購到付款、庫存、帳齡、傳票、營業稅與電子發票。用「下一步」不是程式名稱。",
   },
   {
     id: "funnel",
@@ -39,7 +39,9 @@ export const PILLARS = [
 
 export const SAAS_MATRIX = [
   { category: "CRM", tools: ["Salesforce", "HubSpot", "Pipedrive", "Zoho CRM"], pillar: "CRM" },
-  { category: "ERP／進銷存", tools: ["SAP Business One", "鼎新", "NetSuite", "Odoo 雲端年費"], pillar: "ERP" },
+  { category: "台灣雲端進銷存", tools: ["鼎新 A1 進銷存", "鼎新 A1 會計", "鼎新電子發票模組"], pillar: "生意" },
+  { category: "全模組雲端 ERP", tools: ["億看 ECOUNT"], pillar: "生意" },
+  { category: "ERP／進銷存", tools: ["SAP Business One", "NetSuite", "Odoo 雲端年費"], pillar: "生意" },
   { category: "會計應收", tools: ["QuickBooks", "Xero", "快速會計"], pillar: "ERP" },
   { category: "電商／POS", tools: ["Shopify", "Shopline", "Square"], pillar: "ERP" },
   { category: "行銷漏斗", tools: ["ClickFunnels", "Kartra", "Unbounce"], pillar: "魅力圈" },

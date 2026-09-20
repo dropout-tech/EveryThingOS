@@ -22,7 +22,7 @@ export default function PricingPage() {
           <p className="mt-2 text-5xl font-medium">NT${formatted}</p>
           <p className="mt-2 text-cream-dim">一年 · 未稅 · 一間公司一個站</p>
           <ul className="mt-6 space-y-3 text-cream-dim">
-            <li>CRM、ERP、魅力圈、清庫、短網址、官網全開</li>
+            <li>對齊鼎新 A1／億看：進銷存、帳款、稅、電子發票，不拆三張月租</li>
             <li>{n} 個產業包，流程與 Dashboard 可改</li>
             <li>免費顧問導入：選定產業包、主檔、跑通一筆真實生意</li>
             <li>不收每人帳號費、不收模組加購</li>
@@ -37,7 +37,7 @@ export default function PricingPage() {
         </article>
         <section className="mt-12 space-y-3 text-sm text-cream-dim">
           <h2 className="text-lg text-cream">刻意不收的錢</h2>
-          <p>沒有「CRM 加購」「行銷自動化加購」「產業包加購」。十萬是把現場接起來的年費，不是模組菜單。</p>
+          <p>鼎新 A1 常把進銷存、會計、電子發票拆開月租；億看月費低但畫面密。這裡十萬含導入，模組不另開帳單。</p>
           <p>金流、簡訊、LINE 官方、電子發票屬外部網路服務，依各供應商計費，我們做適配不吃價差。</p>
           <p>第二年起同樣 NT$100,000／年，含版本升級與顧問時數內的流程微調。</p>
         </section>

@@ -1,7 +1,8 @@
-import { DataTable, ModuleFrame } from "@/components/ModuleFrame";
+import { CrmBoard } from "@/components/CrmBoard";
+import { ModuleFrame } from "@/components/ModuleFrame";
 import { currentIndustry, demoRecords } from "@/lib/workspace";
 
-export const metadata = { title: "CRM" };
+export const metadata = { title: "客人" };
 
 export default async function CrmPage() {
   const pack = await currentIndustry();
@@ -9,20 +10,19 @@ export default async function CrmPage() {
 
   return (
     <ModuleFrame
-      kicker="DropOut CRM"
-      title={`${pack.nameZh} 的關係`}
-      hint="階段來自此產業包，可在設定裡改名或增減。主檔與 ERP 同一個人。"
+      kicker="客人"
+      title="把人放在格子裡，不要先開客戶主檔"
+      hint="階段名稱來自產業包。最後一格「轉成一張報價」會進銷售流水，同一個人不必在 CRM 與進銷存各建一次。"
     >
-      <ol className="flex flex-wrap gap-2">
-        {pack.workflow.stages.map((stage) => (
-          <li key={stage} className="rounded-full border border-teal/40 px-3 py-1 text-sm text-teal">
-            {stage}
-          </li>
-        ))}
-      </ol>
-      <DataTable
-        columns={["對象", "階段", "計分", "通道"]}
-        rows={leads.map((lead) => [lead.name, lead.stage, String(lead.score), lead.channel])}
+      <CrmBoard
+        pack={{
+          id: pack.id,
+          itemType: pack.itemType,
+          fulfillment: pack.fulfillment,
+          modules: pack.modules,
+          workflow: pack.workflow,
+        }}
+        initial={leads}
       />
     </ModuleFrame>
   );
