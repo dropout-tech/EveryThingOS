@@ -24,7 +24,7 @@ export function EnterWorkspaceButton({ industryId, label }: { industryId: string
         });
       }}
     >
-      {pending ? "載入產業包…" : label}
+      {pending ? "打開中…" : label}
     </button>
   );
 }

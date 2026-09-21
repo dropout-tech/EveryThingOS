@@ -19,8 +19,8 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
   return (
     <ModuleFrame
       kicker="客人"
-      title="把人放在格子裡，不要先開客戶主檔"
-      hint="階段名稱來自產業包。最後一格「轉成一張報價」會進銷售流水，同一個人不必在 CRM 與進銷存各建一次。"
+      title="人放在格子裡，往右跟到答應"
+      hint="格子名稱照這個行業。最後一格「轉成一張報價」會進生意，同一個人不必建兩次。"
     >
       <CrmBoard
         pack={{

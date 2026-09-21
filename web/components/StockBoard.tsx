@@ -33,8 +33,8 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases }
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
-        低於安全庫存的列會變橘色。點「請購」就進採購，不必記住「庫存異動」與「請購單」是兩個程式。
-        存貨金額 {formatTwd(inventoryValue)}。
+        低於安全庫存會變橘色。點「請購」就去進貨，不必記兩張單。
+        貨值 {formatTwd(inventoryValue)}。
       </p>
       <ActionNote>{note}</ActionNote>
       <div className="glass overflow-x-auto">

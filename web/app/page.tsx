@@ -56,7 +56,7 @@ export default function HomePage() {
           <article className="glass p-8">
             <p className="display text-xs tracking-[0.2em] text-cream-dim uppercase">年費</p>
             <h2 className="mt-3 text-2xl">{PRICE_LABEL}</h2>
-            <p className="mt-3 text-cream-dim">含系統與免費顧問導入。不收人頭費、不加購模組。</p>
+            <p className="mt-3 text-cream-dim">含每天使用與顧問到現場。不收人頭費、不另外加購功能。</p>
             <Link href="/pricing" className="mt-6 inline-block text-sm text-cream hover:underline">
               看費用怎麼算
             </Link>

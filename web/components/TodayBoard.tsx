@@ -53,7 +53,7 @@ export function TodayList({ books }: { books: Books }) {
 export function DailyFlow({ current }: { current?: string }) {
   return (
     <nav className="glass px-4 py-4" aria-label="每天這條路">
-      <p className="text-xs text-cream-dim">每天就走這四步，不要在選單裡找程式。</p>
+      <p className="text-xs text-cream-dim">每天就走這四步，不必在選單裡找來找去。</p>
       <ol className="mt-3 grid gap-2 sm:grid-cols-4">
         {DAILY_FLOW.map((step, index) => {
           const active = current ? step.href === current || current.startsWith(step.href) : false;

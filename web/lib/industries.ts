@@ -30,7 +30,7 @@ export function enabledErpLabels(pack: IndustryPack): string[] {
   const labels: string[] = ["報價", "訂單", "應收"];
   if (pack.modules.erp.inventory) labels.push("庫存");
   if (pack.modules.erp.pos) labels.push("POS");
-  if (pack.modules.erp.manufacturing) labels.push("工單／BOM");
+  if (pack.modules.erp.manufacturing) labels.push("工單／用料");
   if (pack.modules.erp.projects) labels.push("專案");
   if (pack.modules.erp.batch) labels.push("批次");
   return labels;

@@ -28,15 +28,15 @@ export const ERP_PARITY: ParityRow[] = [
     capability: "報價 → 訂單 → 出貨／履行 → 發票 → 收款",
     a1: "有，但要進不同作業（報價單、銷貨單、收款單）",
     ecount: "有，選單深、單據名稱偏會計",
-    dropout: "同一條故事線，每步只顯示下一步按鈕",
-    better: "不用先背程式名稱",
+    dropout: "同一條線走完，每步只顯示下一步",
+    better: "不必先背單據名稱",
   },
   {
     capability: "採購 → 進貨 → 應付 → 付款",
     a1: "進銷存基本功能",
     ecount: "採購／進貨完整",
-    dropout: "同一條；缺料時從庫存卡片直接開請購",
-    better: "倉管看得懂，不必找「進貨單」",
+    dropout: "缺貨時從倉庫直接請購，進貨與應付在同一條",
+    better: "倉管看得懂，不必找另一張進貨單",
   },
   {
     capability: "多倉、庫存、盤點、安全庫存",
@@ -53,11 +53,11 @@ export const ERP_PARITY: ParityRow[] = [
     better: "書店不會看到效期欄",
   },
   {
-    capability: "BOM／工單／輕製造",
-    a1: "偏進銷存，製造弱",
-    ecount: "強（BOM、多製程、外包）",
-    dropout: "ERPNext 製造模組；產業包開關",
-    better: "買賣業不被迫學工單",
+    capability: "用料／工單／輕工廠",
+    a1: "偏進銷存，工廠比較弱",
+    ecount: "強（用料、多製程、外包）",
+    dropout: "有工廠才打開工單；賣東西的店看不到",
+    better: "買賣業不必學工單",
   },
   {
     capability: "應收／應付帳齡、沖帳、訂金",
@@ -70,41 +70,41 @@ export const ERP_PARITY: ParityRow[] = [
     capability: "進銷存拋轉傳票、損益／資產負債",
     a1: "雲端會計另租，單據拋轉",
     ecount: "會計內建",
-    dropout: "單據自動產生分錄；三大報表在財務頁",
-    better: "不另買「會計模組」",
+    dropout: "開單就入帳；損益與資產負債在收錢那頁",
+    better: "不必再買一套會計",
   },
   {
     capability: "台灣營業稅 5%、統編、電子發票",
     a1: "電子發票／營業稅另租模組＋關貿小平台",
     ecount: "稅制要自己調，電子發票通常外掛",
-    dropout: "稅額內建；電子發票走加值中心適配（不自研財政部連線）",
-    better: "年費含適配，不拆三張帳單",
+    dropout: "稅額內建；電子發票交給加值中心上傳",
+    better: "年費含接發票，不拆三張帳單",
   },
   {
     capability: "POS／電商訂單",
     a1: "POS、蝦皮等電商另租",
     ecount: "客戶線上下單",
-    dropout: "POS／電商當通道適配器，庫存同一份",
-    better: "不和官網、LINE 拆成三套庫存",
+    dropout: "門市與電商訂單進同一份庫存",
+    better: "不必和官網、LINE 各記一份貨",
   },
   {
-    capability: "經營儀表板",
+    capability: "每天打開看到的數字",
     a1: "業績、存貨、應收",
     ecount: "報表多、畫面密",
-    dropout: "依角色：老闆看錢、業務看漏斗、倉管看出貨、會計看帳齡",
+    dropout: "老闆看錢、業務看客人、倉管看出貨、會計看誰欠錢",
     better: "打開就知道今天做哪三件事",
   },
   {
-    capability: "CRM／行銷漏斗／清庫／短網址",
-    a1: "掌客雲另算；沒有漏斗與清庫",
-    ecount: "幾乎沒有行銷自動化",
-    dropout: "四支柱內建",
+    capability: "客人、行銷、擋假信、短網址",
+    a1: "掌客雲另算；沒有活動頁與擋假信",
+    ecount: "幾乎沒有自動寄信",
+    dropout: "客人、生意、行銷都在同一套畫面",
     better: "這是 A1／億看做不到的一層",
   },
   {
     capability: "導入與價錢",
-    a1: "模組月租（進銷存＋會計＋發票常破兩千／月），導入另計",
-    ecount: "約 1,500／月全模組，畫面像傳統 ERP",
+    a1: "進銷存、會計、發票常拆開月租，導入另計",
+    ecount: "約 1,500／月全功能，畫面像傳統進銷存",
     dropout: "NT$100,000／年含免費顧問導入",
     better: "一次講清楚，現場有人帶",
   },
@@ -296,7 +296,7 @@ export function buildBooks(pack: IndustryPack): Books {
     {
       no: "JV-0918",
       date: "09/18",
-      memo: `銷貨 ${pack.fulfillment}（自動拋轉）`,
+      memo: `銷貨 ${pack.fulfillment}（開單就入帳）`,
       debit: "應收帳款",
       credit: "銷貨收入／稅額",
       amount: sales[2].amount + sales[2].tax,
@@ -304,7 +304,7 @@ export function buildBooks(pack: IndustryPack): Books {
     {
       no: "JV-0919",
       date: "09/19",
-      memo: inventoryOn ? "進貨入庫（自動拋轉）" : "費用認列（自動拋轉）",
+      memo: inventoryOn ? "進貨入庫（開單就入帳）" : "費用認列（開單就入帳）",
       debit: inventoryOn ? "存貨" : "營業費用",
       credit: "應付帳款",
       amount: purchases[0].amount,
@@ -327,7 +327,7 @@ export function buildBooks(pack: IndustryPack): Books {
     },
     {
       title: sales[3].invoiceNo ? `電子發票 ${sales[3].invoiceNo} 待上傳` : "開立發票",
-      detail: "稅額已算 5%。上傳走加值中心，不是自己連財政部。",
+      detail: "稅額已算 5%。開好就交給加值中心上傳。",
       href: "/workspace/erp/finance",
       tone: "ok",
     },
@@ -379,7 +379,7 @@ export function nextLabel(step: SalesStep, pack: Pick<IndustryPack, "fulfillment
     case "fulfill":
       return "開立發票";
     case "invoice":
-      return "收款沖帳";
+      return "記入已收";
     default:
       return "完成";
   }

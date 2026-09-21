@@ -4,7 +4,7 @@ import { BrandMark } from "./BrandMark";
 
 const links = [
   { href: "/industries", label: "一百產業" },
-  { href: "/saas", label: "取代 SaaS" },
+  { href: "/saas", label: "可以停掉的訂閱" },
   { href: "/pricing", label: "一年十萬" },
   { href: "/consulting", label: "免費導入" },
 ];

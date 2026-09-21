@@ -23,11 +23,11 @@ export const metadata: Metadata = {
     template: "%s｜DropOut OS",
   },
   description:
-    "中小企業作業系統。CRM、ERP、魅力圈、清庫、短網址同一套皮。一百個產業包，每年 NT$100,000，免費顧問導入。",
+    "中小企業每天做事的畫面。回覆、客人、生意、收錢同一套。一百種行業，每年 NT$100,000，顧問到現場免費帶。",
   metadataBase: new URL("https://os.dropout.tw"),
   openGraph: {
-    title: "DropOut OS｜一套系統解決企業 SaaS 問題",
-    description: "一百個產業情境、免費顧問導入、每年十萬。",
+    title: "DropOut OS｜打開就知道下一步",
+    description: "一百種行業、免費顧問到現場、每年十萬。",
   },
 };
 

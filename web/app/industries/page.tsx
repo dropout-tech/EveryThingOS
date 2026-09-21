@@ -13,10 +13,10 @@ export default function IndustriesPage() {
     <>
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-5 py-14">
-        <p className="display text-xs tracking-[0.22em] text-teal uppercase">Industry packs</p>
-        <h1 className="scene-type mt-3 text-4xl font-medium">{total} 個產業，同一套作業系統</h1>
+        <p className="display text-xs tracking-[0.22em] text-teal uppercase">一百產業</p>
+        <h1 className="scene-type mt-3 text-4xl font-medium">{total} 種行業，同一套每天怎麼做</h1>
         <p className="mt-4 max-w-2xl text-cream-dim">
-          每一包都設定好物項、履行方式、流程階段與 KPI。導入時打開最接近的一包，再改你們自己的例外。
+          每一包都設定好在賣什麼、怎麼交給客人、客人怎麼往前走、每天看哪些數字。導入時打開最接近的一包，再改你們真正不一樣的地方。
         </p>
         <div className="mt-10 space-y-12">
           {groups.map((group) => (

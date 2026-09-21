@@ -23,7 +23,7 @@ export async function OsShell({ industry, children }: OsShellProps) {
         </div>
         <SideNav />
         <p className="px-4 py-3 text-[11px] leading-5 text-cream-dim">
-          先走「做事」。通道要時再進來。
+          左邊先做事。官網、信件、短網址要用再點。
         </p>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">

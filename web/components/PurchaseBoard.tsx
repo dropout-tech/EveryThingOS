@@ -20,15 +20,15 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial }: Purch
     if (row.next === "完成") return;
     const next = advancePurchase(row);
     setRows((current) => current.map((item) => (item.no === row.no ? next : item)));
-    setNote(`${row.no} 已${row.next}。入庫與應付在同一條，不必另開進貨單程式。`);
+    setNote(`${row.no} 已${row.next}。入庫與應付在同一條，不必另開一張進貨單。`);
   }
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
         {inventory
-          ? "請購 → 進貨 → 入庫 → 應付。缺料從倉庫卡片過來，不必先找「進貨單」程式。"
-          : `這包關掉倉庫。履行是「${fulfillment}」，這裡只剩經常費用與外包。`}
+          ? "請購 → 進貨 → 入庫 → 應付。缺貨從倉庫點過來，不必另外找進貨單。"
+          : `這一行沒有倉庫。交給客人的方式是「${fulfillment}」，這裡只記經常費用與外包。`}
       </p>
       <ActionNote>{note}</ActionNote>
       <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">

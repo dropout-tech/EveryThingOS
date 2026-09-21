@@ -30,15 +30,15 @@ export default async function ErpHubPage() {
         ))}
       </ol>
       <p className="text-sm text-cream-dim">
-        這家公司的履行是「{pack.fulfillment}」。
-        {pack.modules.erp.inventory ? " 倉庫開著。" : " 倉庫已關。"}
+        這一行交給客人的方式是「{pack.fulfillment}」。
+        {pack.modules.erp.inventory ? " 有倉庫。" : " 沒有倉庫。"}
         從「{firstOpen.plain}」接著做。
       </p>
       <Link href="/workspace/erp/sales" className="glass-cta rounded-full px-5 py-2.5 text-sm">
         從「{firstOpen.plain}」開始
       </Link>
       <details className="text-sm text-cream-dim">
-        <summary className="cursor-pointer">現場用語對照會計／A1</summary>
+        <summary className="cursor-pointer">現場怎麼講，對上會計與 A1</summary>
         <ul className="mt-3 grid gap-2 md:grid-cols-2">
           {SALES_STEPS.map((step) => (
             <li key={step.id}>

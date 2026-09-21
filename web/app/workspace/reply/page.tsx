@@ -10,9 +10,9 @@ export default async function ReplyPage() {
 
   return (
     <ModuleFrame
-      kicker="DropOut Reply"
+      kicker="回覆"
       title={`${pack.nameZh} 的留言轉私訊`}
-      hint="對齊 ManyChat 的 comment-to-DM，底層用 OpenReply（MIT）。命中關鍵字才私訊，同一個人可轉進客人看板。"
+      hint="留言出現關鍵字才私訊。同一個人可以轉進客人。現在按送出不會真的傳到 Instagram。"
     >
       <ReplyBoard
         pack={{ id: pack.id, workflow: pack.workflow }}

@@ -12,7 +12,7 @@ const work = [
 
 const channels = [
   { href: "/workspace/funnel", label: "魅力圈" },
-  { href: "/workspace/hygiene", label: "清庫" },
+  { href: "/workspace/hygiene", label: "擋假信" },
   { href: "/workspace/links", label: "短網址" },
   { href: "/workspace/website", label: "官網" },
 ];
@@ -51,20 +51,20 @@ function NavLinks({
 export function SideNav({ variant = "side" }: { variant?: "side" | "top" }) {
   if (variant === "top") {
     return (
-      <nav className="flex gap-1 overflow-x-auto px-3 py-2 text-sm" aria-label="作業系統">
+      <nav className="flex gap-1 overflow-x-auto px-3 py-2 text-sm" aria-label="工作選單">
         <NavLinks items={[...work, ...channels, ...settings]} variant="top" />
       </nav>
     );
   }
 
   return (
-    <nav className="flex flex-1 flex-col gap-5 p-3 text-sm" aria-label="作業系統">
+    <nav className="flex flex-1 flex-col gap-5 p-3 text-sm" aria-label="工作選單">
       <div className="flex flex-col gap-1">
         <p className="px-3 pb-1 text-[11px] tracking-[0.18em] text-cream-dim uppercase">做事</p>
         <NavLinks items={work} variant="side" />
       </div>
       <div className="flex flex-col gap-1">
-        <p className="px-3 pb-1 text-[11px] tracking-[0.18em] text-cream-dim uppercase">通道</p>
+        <p className="px-3 pb-1 text-[11px] tracking-[0.18em] text-cream-dim uppercase">對外</p>
         <NavLinks items={channels} variant="side" />
       </div>
       <div className="mt-auto flex flex-col gap-1">

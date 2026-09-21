@@ -29,9 +29,9 @@ export function demoRecords(pack: IndustryPack) {
     { code: "do-qr", dest: "名片 QR", clicks: 77, source: "qr" },
   ];
   const hygiene = [
-    { email: "owner@example.com", result: "safe", action: "進 CRM 與培育" },
-    { email: "info@example.com", result: "risky", action: "進 CRM，序列降級" },
-    { email: "temp@mailinator.com", result: "invalid", action: "擋下，不寄信" },
+    { email: "owner@example.com", result: "可用", action: "進客人，之後可以寄信" },
+    { email: "info@example.com", result: "不穩", action: "進客人，先不要狂寄" },
+    { email: "temp@mailinator.com", result: "假的", action: "擋下，不寄信" },
   ];
   return { leads, orders, links, hygiene };
 }

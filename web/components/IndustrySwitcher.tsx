@@ -15,7 +15,7 @@ export function IndustrySwitcher({ current, options }: IndustrySwitcherProps) {
 
   return (
     <label className="flex min-w-0 items-center gap-2 text-xs text-cream-dim">
-      <span className="shrink-0">產業包</span>
+      <span className="shrink-0">這一行</span>
       <select
         key={current.id}
         className="glass-chip max-w-[16rem] truncate rounded-full border-0 px-3 py-1.5 text-cream"

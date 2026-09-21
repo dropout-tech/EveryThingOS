@@ -42,7 +42,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
     if (doc.next === "完成") return;
     const next = advanceSalesDoc(doc, pack);
     setDocs((current) => current.map((item) => (item.no === doc.no ? next : item)));
-    setNote(`${doc.party}：${doc.next}。同一張單往前走，不必再開「${labelFor(next.step)}」程式。`);
+    setNote(`${doc.party}：${doc.next}。同一張單往前走，不必切到另一個畫面再開單。`);
   }
 
   function onCreate(event: FormEvent) {
@@ -67,7 +67,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
-        一張單只顯示一個下一步。不必在「銷貨單」與「收款單」之間找路。
+        一張單只顯示一個下一步。不必在兩張單之間找路。
       </p>
       <form
         onSubmit={onCreate}
@@ -96,7 +96,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
         <button type="submit" className="glass-cta rounded-full px-4 py-2 text-sm">
           開一張報價
         </button>
-        <p className="text-xs text-cream-dim">稅 5% 自動加。物項用這個產業包的「{pack.itemType}」。</p>
+        <p className="text-xs text-cream-dim">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
       </form>
       <ActionNote>{note}</ActionNote>
       <div className="grid gap-3 lg:grid-cols-5">
@@ -141,19 +141,4 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
       </div>
     </div>
   );
-}
-
-function labelFor(step: SalesDoc["step"]) {
-  switch (step) {
-    case "order":
-      return "訂單";
-    case "fulfill":
-      return "銷貨單";
-    case "invoice":
-      return "電子發票";
-    case "paid":
-      return "收款單";
-    default:
-      return "報價單";
-  }
 }

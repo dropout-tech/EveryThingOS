@@ -22,20 +22,20 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
       return;
     }
     setAging((current) => current.map((item) => (item.party === row.party ? result.row : item)));
-    setNote(`已收 ${row.party} ${formatTwd(result.collected)}。傳票自動拋轉，不必另開收款單。`);
+    setNote(`已收 ${row.party} ${formatTwd(result.collected)}。開單就入帳，不必另開一張收款單。`);
   }
 
   function onUpload(no: string) {
     setInvoices((current) =>
       current.map((item) => (item.no === no ? { ...item, status: "已上傳" } : item)),
     );
-    setNote(`${no} 已交給加值中心。我們不自研財政部連線。`);
+    setNote(`${no} 已交給加值中心上傳。`);
   }
 
   return (
     <div className="space-y-8">
       <p className="text-sm text-cream-dim">
-        進銷存單據自動拋轉傳票。稅額 5% 已含在單上。電子發票開立後交給加值中心上傳，不自研財政部連線。
+        開單就入帳。稅額 5% 已算在單上。電子發票開好後交給加值中心上傳。
       </p>
       <ActionNote>{note}</ActionNote>
       <section>
@@ -84,7 +84,7 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
           </ul>
         </div>
         <div className="glass-chip p-4">
-          <h3>自動傳票</h3>
+          <h3>自動入帳</h3>
           <ul className="mt-3 space-y-3 text-sm">
             {books.journals.map((row) => (
               <li key={row.no}>
