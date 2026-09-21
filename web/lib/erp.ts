@@ -1,3 +1,4 @@
+import { industryTodayJobs } from "./operator-day";
 import type { IndustryPack } from "./types";
 
 export type SalesStep = "quote" | "order" | "fulfill" | "invoice" | "paid";
@@ -312,26 +313,12 @@ export function buildBooks(pack: IndustryPack): Books {
   ];
 
   const lowStock = stock.filter((row) => row.onHand < row.safety);
-  const today: Books["today"] = [
-    {
-      title: `催收 ${formatTwd(overdueAr)}`,
-      detail: "有人超過約定日還沒付錢。點進去一筆一筆收。",
-      href: "/workspace/erp/finance",
-      tone: "urgent",
-    },
-    {
-      title: inventoryOn && lowStock.length ? `${lowStock[0].name} 低於安全庫存` : `今天要完成的履行：${pack.fulfillment}`,
-      detail: inventoryOn && lowStock.length ? "別等缺貨才問供應商。直接開請購。" : "服務業沒有倉庫，看的是今天要交付的案子。",
-      href: inventoryOn ? "/workspace/erp/stock" : "/workspace/erp/sales",
-      tone: "warn",
-    },
-    {
-      title: sales[3].invoiceNo ? `電子發票 ${sales[3].invoiceNo} 待上傳` : "開立發票",
-      detail: "稅額已算 5%。開好就交給加值中心上傳。",
-      href: "/workspace/erp/finance",
-      tone: "ok",
-    },
-  ];
+  const today: Books["today"] = industryTodayJobs(pack, {
+    overdueLabel: formatTwd(overdueAr),
+    overdueAmount: overdueAr,
+    inventoryOn,
+    lowStockName: lowStock[0]?.name,
+  });
 
   const pnl = [
     { label: "本月銷貨（未稅）", amount: monthSales },

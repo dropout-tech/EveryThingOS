@@ -40,7 +40,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
     const inbox = peekDemoState<SalesDoc[]>(demoKey("inbox", pack.id), []);
     writeDemoState(demoKey("inbox", pack.id), [quote, ...inbox]);
     setLeads((current) => current.filter((item) => item.name !== lead.name));
-    setNote(`${lead.name} 已變成報價 ${quote.no}。同一個人，不必再新建一次客人。`);
+    setNote(`${lead.name} 已變成一筆生意 ${quote.no}。同一個人，不必再新建一次客人。`);
     window.setTimeout(() => router.push("/workspace/erp/sales"), 700);
   }
 
@@ -59,7 +59,8 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
                 column.cards.map((lead) => {
-                  const last = stages.indexOf(lead.stage) >= stages.length - 1;
+                  const stageIndex = stages.indexOf(lead.stage);
+                  const last = stageIndex >= stages.length - 1;
                   return (
                     <li key={lead.name} className="glass-chip p-3">
                       <p>{lead.name}</p>
@@ -67,7 +68,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
                         {lead.channel} · 熱度 {lead.score}
                       </p>
                       <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-cream">
-                        {last ? "轉成一張報價" : "下一步：跟進"}
+                        {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}
                       </button>
                     </li>
                   );

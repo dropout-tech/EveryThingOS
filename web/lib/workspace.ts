@@ -4,6 +4,11 @@ import type { IndustryPack } from "./types";
 
 export const INDUSTRY_COOKIE = "dropout_industry";
 
+export async function hasChosenIndustry(): Promise<boolean> {
+  const jar = await cookies();
+  return Boolean(jar.get(INDUSTRY_COOKIE)?.value);
+}
+
 export async function currentIndustry(): Promise<IndustryPack> {
   const jar = await cookies();
   return getIndustry(jar.get(INDUSTRY_COOKIE)?.value ?? DEFAULT_INDUSTRY_ID);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
+import { hasChosenIndustry } from "@/lib/workspace";
 
 const links = [
   { href: "/industries", label: "一百產業" },
@@ -10,6 +11,8 @@ const links = [
 ];
 
 export async function SiteHeader() {
+  const chosen = await hasChosenIndustry();
+
   return (
     <header className="glass glass-bar sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
@@ -23,8 +26,11 @@ export async function SiteHeader() {
         </nav>
         <div className="flex items-center gap-3">
           <AppearanceBar />
-          <Link href="/workspace" className="glass-cta rounded-full px-4 py-2 text-sm font-medium">
-            開始今天
+          <Link
+            href={chosen ? "/workspace" : "/#industry"}
+            className="glass-cta rounded-full px-4 py-2 text-sm font-medium"
+          >
+            {chosen ? "開始今天" : "先選行業"}
           </Link>
         </div>
       </div>

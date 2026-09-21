@@ -26,6 +26,18 @@ export function industriesByGroup(): { group: string; items: IndustryPack[] }[] 
   }));
 }
 
+export type IndustryChoice = Pick<IndustryPack, "id" | "nameZh" | "nameEn" | "group" | "tagline">;
+
+export function listIndustryChoices(): IndustryChoice[] {
+  return industries.map(({ id, nameZh, nameEn, group, tagline }) => ({
+    id,
+    nameZh,
+    nameEn,
+    group,
+    tagline,
+  }));
+}
+
 export function enabledErpLabels(pack: IndustryPack): string[] {
   const labels: string[] = ["報價", "訂單", "應收"];
   if (pack.modules.erp.inventory) labels.push("庫存");

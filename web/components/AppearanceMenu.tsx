@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ScenePicker } from "./ScenePicker";
 import { ThemeToggle } from "./ThemeToggle";
-import type { UiScene } from "@/lib/scene";
 import type { UiTheme } from "@/lib/theme";
 
-export function AppearanceMenu({ theme, scene }: { theme: UiTheme; scene: UiScene }) {
+export function AppearanceMenu({ theme }: { theme: UiTheme }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
@@ -34,8 +32,7 @@ export function AppearanceMenu({ theme, scene }: { theme: UiTheme; scene: UiScen
         <div className="glass fixed top-16 right-4 z-[60] flex min-w-[12.5rem] flex-col gap-3 p-3 md:right-6">
           <p className="text-[11px] tracking-[0.16em] text-cream-dim uppercase">顏色</p>
           <ThemeToggle current={theme} />
-          <p className="text-[11px] tracking-[0.16em] text-cream-dim uppercase">風景</p>
-          <ScenePicker current={scene} />
+          <p className="text-[11px] leading-5 text-cream-dim">往下滑，背景會從海面走到海底。這不是換照片，是同一條海。</p>
         </div>
       ) : null}
     </div>

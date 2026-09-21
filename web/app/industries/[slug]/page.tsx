@@ -26,9 +26,7 @@ export default async function IndustryDetailPage({ params }: Props) {
     <>
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-5 py-14">
-        <p className="text-sm text-cream-dim">
-          {pack.group} · {pack.code}
-        </p>
+        <p className="text-sm text-cream-dim">{pack.group}</p>
         <h1 className="mt-2 text-4xl font-medium">{pack.nameZh}</h1>
         <p className="mt-3 text-cream-dim">{pack.tagline}</p>
         <p className="mt-2 text-sm text-gold">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatTwd, type Books } from "@/lib/erp";
-import { DAILY_FLOW } from "@/lib/flow";
+import type { DayStep } from "@/lib/operator-day";
 
 export function MoneyStrip({ books }: { books: Books }) {
   const cells = [
@@ -50,15 +50,15 @@ export function TodayList({ books }: { books: Books }) {
   );
 }
 
-export function DailyFlow({ current }: { current?: string }) {
+export function DailyFlow({ steps, current }: { steps: DayStep[]; current?: string }) {
   return (
     <nav className="glass px-4 py-4" aria-label="每天這條路">
-      <p className="text-xs text-cream-dim">每天就走這四步，不必在選單裡找來找去。</p>
-      <ol className="mt-3 grid gap-2 sm:grid-cols-4">
-        {DAILY_FLOW.map((step, index) => {
+      <p className="text-xs text-cream-dim">每天就走這幾步。格子名稱照這個行業，不必在選單裡找。</p>
+      <ol className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map((step, index) => {
           const active = current ? step.href === current || current.startsWith(step.href) : false;
           return (
-            <li key={step.href}>
+            <li key={`${step.href}-${step.label}`}>
               <Link
                 href={step.href}
                 className={`glass-chip block px-3 py-3 ${active ? "text-cream" : "text-cream-dim"}`}

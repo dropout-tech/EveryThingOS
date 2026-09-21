@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
+import { GlassPointer } from "@/components/GlassPointer";
+import { LiquidGlassFilter } from "@/components/LiquidGlassFilter";
+import { OceanColumn } from "@/components/OceanColumn";
 import { QuoteToast } from "@/components/QuoteToast";
 import { currentScene } from "@/lib/scene-server";
 import { currentTheme } from "@/lib/theme-server";
@@ -23,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s｜DropOut OS",
   },
   description:
-    "中小企業每天做事的畫面。回覆、客人、生意、收錢同一套。一百種行業，每年 NT$100,000，顧問到現場免費帶。",
+    "中小企業每天做事的畫面。先選行業，今天要做的三件事才會變成你的話。一百種行業，每年 NT$100,000，顧問到現場免費帶。",
   metadataBase: new URL("https://os.dropout.tw"),
   openGraph: {
     title: "DropOut OS｜打開就知道下一步",
@@ -38,7 +41,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
-        <div className="liquid-stage" aria-hidden="true" />
+        <LiquidGlassFilter />
+        <GlassPointer />
+        <OceanColumn />
         <div className="page-shell">{children}</div>
         <QuoteToast />
       </body>
