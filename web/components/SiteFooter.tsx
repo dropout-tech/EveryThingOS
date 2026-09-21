@@ -13,13 +13,13 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="flex gap-5">
-          <Link href="/industries" className="hover:text-teal">
+          <Link href="/industries" className="hover:text-cream">
             產業包
           </Link>
-          <Link href="/pricing" className="hover:text-teal">
+          <Link href="/pricing" className="hover:text-cream">
             定價
           </Link>
-          <a href={`mailto:${COMMERCIAL.email}`} className="hover:text-teal">
+          <a href={`mailto:${COMMERCIAL.email}`} className="hover:text-cream">
             {COMMERCIAL.email}
           </a>
         </div>

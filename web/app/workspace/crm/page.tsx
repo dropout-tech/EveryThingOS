@@ -19,8 +19,8 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
   return (
     <ModuleFrame
       kicker="客人"
-      title="人放在格子裡，往右跟到答應"
-      hint="格子名稱照這個行業。最後一格「轉成一筆生意」會進下一張單，同一個人不必建兩次。"
+      title="往右，跟到答應"
+      hint="最後一格會變成一張單。"
     >
       <CrmBoard
         pack={{

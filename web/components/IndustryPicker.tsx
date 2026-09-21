@@ -148,13 +148,12 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
         </button>
         {open ? (
           <div className="glass absolute right-0 z-[70] mt-2 w-[min(22rem,calc(100vw-2rem))] p-3">
-            <p className="text-[11px] text-cream-dim">換一行，今天要做的事會跟著變。</p>
             <input
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜尋：服飾、教室、診所…"
-              className="glass-well mt-2 w-full rounded-2xl px-3 py-2 text-sm text-cream outline-none"
+              className="glass-well w-full rounded-2xl px-3 py-2 text-sm text-cream outline-none"
               autoComplete="off"
             />
             <div className="mt-3">{list}</div>
@@ -167,14 +166,15 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
   return (
     <div id="industry" className="space-y-3">
       <label className="block">
-        <span className="text-sm text-cream-dim">你做哪一行？先點分類，或直接打兩個字。</span>
+        <span className="sr-only">你做哪一行</span>
         <input
           ref={inputRef}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="例如：服飾、桌球、牙醫、民宿"
-          className="glass-well mt-2 w-full rounded-2xl px-4 py-3 text-base text-cream outline-none"
+          className="glass-well w-full rounded-2xl px-4 py-3 text-base text-cream outline-none"
           autoComplete="off"
+          autoFocus
         />
       </label>
       {list}

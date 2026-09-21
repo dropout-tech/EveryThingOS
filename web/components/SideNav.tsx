@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { DayStep } from "@/lib/operator-day";
 
 const channels = [
-  { href: "/workspace/funnel", label: "魅力圈" },
+  { href: "/workspace/funnel", label: "把人帶來" },
   { href: "/workspace/hygiene", label: "擋假信" },
   { href: "/workspace/links", label: "短網址" },
   { href: "/workspace/website", label: "官網" },

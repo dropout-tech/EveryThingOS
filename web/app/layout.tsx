@@ -3,7 +3,6 @@ import { Noto_Sans_TC, Outfit } from "next/font/google";
 import { GlassPointer } from "@/components/GlassPointer";
 import { LiquidGlassFilter } from "@/components/LiquidGlassFilter";
 import { OceanColumn } from "@/components/OceanColumn";
-import { QuoteToast } from "@/components/QuoteToast";
 import { currentScene } from "@/lib/scene-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
@@ -25,12 +24,11 @@ export const metadata: Metadata = {
     default: "DropOut OS｜琢奧科技",
     template: "%s｜DropOut OS",
   },
-  description:
-    "中小企業每天做事的畫面。先選行業，今天要做的三件事才會變成你的話。一百種行業，每年 NT$100,000，顧問到現場免費帶。",
+  description: "打開就做下一件事。每年 NT$100,000，顧問到現場。",
   metadataBase: new URL("https://os.dropout.tw"),
   openGraph: {
     title: "DropOut OS｜打開就知道下一步",
-    description: "一百種行業、免費顧問到現場、每年十萬。",
+    description: "打開就做下一件事。每年十萬，顧問到現場。",
     images: [{ url: "/brand/og-dropout-os.png", width: 1200, height: 630, alt: "DropOut OS" }],
   },
 };
@@ -46,7 +44,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <GlassPointer />
         <OceanColumn />
         <div className="page-shell">{children}</div>
-        <QuoteToast />
       </body>
     </html>
   );

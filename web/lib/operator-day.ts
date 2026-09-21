@@ -62,6 +62,8 @@ export function industryDayPath(pack: IndustryPack): DayStep[] {
 export function industryTodayJobs(
   pack: IndustryPack,
   money: {
+    person: string;
+    debtor: string;
     overdueLabel: string;
     overdueAmount: number;
     inventoryOn: boolean;
@@ -69,50 +71,41 @@ export function industryTodayJobs(
   },
 ): DayJob[] {
   const path = industryDayPath(pack);
-  const pains = pack.pains;
   const stages = pack.workflow.stages;
-  const first = path[0];
-  const second = path[1] ?? path[0];
-  const lastStage = stages[stages.length - 1] ?? "收尾";
+  const waiting = stages[0] ?? "今天";
+  const nextStage = stages[1] ?? waiting;
+  const follow = path.find((step) => step.href !== "/workspace/crm");
 
   const jobs: DayJob[] = [
     {
-      title: pains[0] ?? `先做「${stages[0] ?? "今天"}」`,
-      detail: `這是「${pack.nameZh}」現在最常卡住的。從「${stages[0] ?? first.label}」開始。`,
-      href: first.href,
+      title: `${money.person} 還停在「${waiting}」`,
+      detail: `下一步是「${nextStage}」。`,
+      href: "/workspace/crm",
       tone: "urgent",
     },
   ];
 
-  if (second) {
+  if (follow) {
     jobs.push({
-      title: `接著做「${second.label}」`,
-      detail: pains[1] ?? pack.sampleLoop,
-      href: second.href,
+      title: `然後「${follow.label}」`,
+      detail: follow.hint,
+      href: follow.href,
       tone: "warn",
     });
   }
 
   if (money.overdueAmount > 0) {
     jobs.push({
-      title: `把欠款收回來 ${money.overdueLabel}`,
-      detail: `走完「${lastStage}」才算今天做完。錢沒進來，前面都白做。`,
+      title: `${money.debtor} 還欠 ${money.overdueLabel}`,
+      detail: "錢沒進來，前面都白做。",
       href: "/workspace/erp/finance",
       tone: "ok",
     });
   } else if (money.inventoryOn && money.lowStockName) {
     jobs.push({
       title: `${money.lowStockName} 快沒了`,
-      detail: "先補貨，再繼續賣。不要等缺貨才問。",
+      detail: "先補，再繼續賣。",
       href: "/workspace/erp/stock",
-      tone: "ok",
-    });
-  } else {
-    const last = path[path.length - 1] ?? first;
-    jobs.push({
-      title: `收尾：${last.label}`,
-      detail: pack.sampleLoop,
-      href: last.href,
       tone: "ok",
     });
   }

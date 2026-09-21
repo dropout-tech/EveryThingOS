@@ -66,9 +66,6 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-cream-dim">
-        一張單只顯示一個下一步。不必在兩張單之間找路。
-      </p>
       <form
         onSubmit={onCreate}
         className="glass flex flex-wrap items-end gap-2 p-4"

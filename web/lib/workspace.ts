@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { DEFAULT_INDUSTRY_ID, getIndustry } from "./industries";
+import { practiceCast } from "./practice";
 import type { IndustryPack } from "./types";
 
 export const INDUSTRY_COOKIE = "dropout_industry";
@@ -16,16 +17,17 @@ export async function currentIndustry(): Promise<IndustryPack> {
 
 export function demoRecords(pack: IndustryPack) {
   const stages = pack.workflow.stages;
+  const people = practiceCast(pack.id);
   const leads = [
-    { name: `${pack.nameZh} 新名單 A`, stage: stages[0], score: 12, channel: "官網" },
-    { name: `${pack.nameZh} 新名單 B`, stage: stages[1] ?? stages[0], score: 38, channel: "社群短網址" },
-    { name: `${pack.nameZh} 合格線索`, stage: stages[Math.min(2, stages.length - 1)], score: 71, channel: "Email" },
-    { name: `${pack.nameZh} 既有客戶`, stage: stages[stages.length - 1], score: 88, channel: "LINE" },
+    { name: people[0], stage: stages[0], score: 12, channel: "現場" },
+    { name: people[1], stage: stages[1] ?? stages[0], score: 38, channel: "IG" },
+    { name: people[2], stage: stages[Math.min(2, stages.length - 1)], score: 71, channel: "LINE" },
+    { name: people[3], stage: stages[stages.length - 1], score: 88, channel: "官網" },
   ];
   const orders = [
     { no: "SO-10421", party: leads[3].name, item: pack.itemType, status: pack.fulfillment, amount: "NT$28,600" },
     { no: "SO-10418", party: leads[2].name, item: pack.itemType, status: stages[Math.min(3, stages.length - 1)], amount: "NT$12,400" },
-    { no: "SO-10409", party: "舊客複購", item: pack.itemType, status: "已收款", amount: "NT$9,800" },
+    { no: "SO-10409", party: people[4], item: pack.itemType, status: "已收款", amount: "NT$9,800" },
   ];
   const links = [
     { code: "do-home", dest: "官網首頁", clicks: 1284, source: "website" },

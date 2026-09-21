@@ -26,7 +26,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
     if (!last) {
       const stage = stages[index + 1];
       setLeads((current) => current.map((item) => (item.name === lead.name ? { ...item, stage } : item)));
-      setNote(`${lead.name} 移到「${stage}」。格子名稱照這個行業，可以改。`);
+      setNote(`${lead.name} → ${stage}`);
       return;
     }
 
@@ -40,7 +40,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
     const inbox = peekDemoState<SalesDoc[]>(demoKey("inbox", pack.id), []);
     writeDemoState(demoKey("inbox", pack.id), [quote, ...inbox]);
     setLeads((current) => current.filter((item) => item.name !== lead.name));
-    setNote(`${lead.name} 已變成一筆生意 ${quote.no}。同一個人，不必再新建一次客人。`);
+    setNote(`${lead.name} 變成 ${quote.no}`);
     window.setTimeout(() => router.push("/workspace/erp/sales"), 700);
   }
 

@@ -1,4 +1,5 @@
 import { industryTodayJobs } from "./operator-day";
+import { practiceCast } from "./practice";
 import type { IndustryPack } from "./types";
 
 export type SalesStep = "quote" | "order" | "fulfill" | "invoice" | "paid";
@@ -204,11 +205,11 @@ export type Books = {
   einvoices: { no: string; status: string; amount: number; related: string }[];
 };
 
-const PARTIES = ["長翔商行", "九豆柴房", "守護者據點", "博美台灣", "提摩設計", "鄉育合作", "內湖門市客戶"];
 const VENDORS = ["中盤供應", "原廠台灣", "物流夥伴", "包材行"];
 
 export function buildBooks(pack: IndustryPack): Books {
   const seed = hash(pack.id);
+  const parties = practiceCast(pack.id);
   const inventoryOn = pack.modules.erp.inventory;
   const batchOn = pack.modules.erp.batch;
   const monthSales = pick(seed, 48, 220) * 1000;
@@ -225,7 +226,7 @@ export function buildBooks(pack: IndustryPack): Books {
     const tax = Math.round(amount * 0.05);
     return {
       no: `SO-${10400 + index}`,
-      party: PARTIES[(seed + index) % PARTIES.length],
+      party: parties[index % parties.length],
       item: pack.itemType,
       qty: pick(seed + index, 1, 12),
       amount,
@@ -285,7 +286,7 @@ export function buildBooks(pack: IndustryPack): Books {
       ]
     : [];
 
-  const arAging = PARTIES.slice(0, 4).map((party, index) => ({
+  const arAging = parties.slice(0, 4).map((party, index) => ({
     party,
     current: pick(seed + index, 4, 20) * 1000,
     d30: pick(seed + 8 + index, 0, 12) * 1000,
@@ -314,6 +315,8 @@ export function buildBooks(pack: IndustryPack): Books {
 
   const lowStock = stock.filter((row) => row.onHand < row.safety);
   const today: Books["today"] = industryTodayJobs(pack, {
+    person: parties[0],
+    debtor: arAging[0]?.party ?? parties[1],
     overdueLabel: formatTwd(overdueAr),
     overdueAmount: overdueAr,
     inventoryOn,
