@@ -26,7 +26,7 @@ export function QuoteToast() {
       {open ? null : (
         <button
           type="button"
-          className="glass-pill fixed right-4 bottom-4 z-40 px-3 py-2 text-xs md:right-6 md:bottom-6"
+          className="quote-fab glass-pill px-3 py-2 text-xs"
           onClick={() => {
             sessionStorage.removeItem(DISMISS_KEY);
             setQuote(quoteForDay());
@@ -40,8 +40,8 @@ export function QuoteToast() {
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
           <button
             type="button"
-            className="absolute inset-0 bg-black/25"
-            aria-label="關閉激勵句"
+            className="absolute inset-0 bg-black/45"
+            aria-label="點背景關閉"
             onClick={dismiss}
           />
           <article
