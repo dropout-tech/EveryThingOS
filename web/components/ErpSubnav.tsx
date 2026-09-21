@@ -27,7 +27,7 @@ export function ErpSubnav({ showStock }: ErpSubnavProps) {
             key={item.href}
             href={item.href}
             className={`rounded-full px-3 py-1.5 text-sm ${
-              active ? "glass-cta" : "glass-pill text-cream-dim hover:text-cream"
+              active ? "glass-cta" : "text-cream-dim hover:text-cream"
             }`}
           >
             {item.label}

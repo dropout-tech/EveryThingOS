@@ -15,7 +15,7 @@ export default async function ReplyPage() {
       hint="對齊 ManyChat 的 comment-to-DM，底層用 OpenReply（MIT）。命中關鍵字才私訊，同一個人可轉進客人看板。"
     >
       <ReplyBoard
-        pack={{ id: pack.id, nameZh: pack.nameZh, workflow: pack.workflow }}
+        pack={{ id: pack.id, workflow: pack.workflow }}
         initialRules={seedReplyRules(pack)}
         initialInbox={seedReplyInbox(pack)}
       />

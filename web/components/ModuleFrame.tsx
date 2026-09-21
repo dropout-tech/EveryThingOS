@@ -11,8 +11,8 @@ export function ModuleFrame({ kicker, title, hint, children }: ModuleFrameProps)
   return (
     <section className="space-y-5">
       <header>
-        <p className="display text-xs tracking-[0.22em] text-teal uppercase">{kicker}</p>
-        <h2 className="mt-1 text-2xl font-medium">{title}</h2>
+        <p className="scene-type display text-xs tracking-[0.22em] uppercase">{kicker}</p>
+        <h2 className="scene-type mt-1 text-2xl font-medium">{title}</h2>
         {hint ? <p className="mt-2 max-w-2xl text-sm text-cream-dim">{hint}</p> : null}
       </header>
       {children}

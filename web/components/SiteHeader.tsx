@@ -16,7 +16,7 @@ export async function SiteHeader() {
         <BrandMark />
         <nav className="hidden items-center gap-6 text-sm text-cream-dim md:flex">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-teal">
+            <Link key={link.href} href={link.href} className="hover:text-cream">
               {link.label}
             </Link>
           ))}
@@ -24,7 +24,7 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3">
           <AppearanceBar />
           <Link href="/workspace" className="glass-cta rounded-full px-4 py-2 text-sm font-medium">
-            進入作業系統
+            開始今天
           </Link>
         </div>
       </div>

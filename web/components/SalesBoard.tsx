@@ -71,7 +71,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
       </p>
       <form
         onSubmit={onCreate}
-        className="glass flex flex-wrap items-end gap-2 p-3"
+        className="glass flex flex-wrap items-end gap-2 p-4"
       >
         <label className="text-sm">
           <span className="block text-xs text-cream-dim">誰在問</span>
@@ -101,7 +101,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
       <ActionNote>{note}</ActionNote>
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
-          <section key={column.id} className="glass p-3">
+          <section key={column.id} className="glass-well p-3">
             <h3 className="text-sm">
               {column.plain}
               <span className="ml-1 text-xs text-cream-dim">{column.formal}</span>
@@ -109,7 +109,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
             <ul className="mt-3 space-y-2">
               {column.docs.length ? (
                 column.docs.map((doc) => (
-                  <li key={doc.no} className="glass p-3">
+                  <li key={doc.no} className="glass-chip p-3">
                     <p className="text-xs text-cream-dim">{doc.no}</p>
                     <p className="mt-1">{doc.party}</p>
                     <p className="text-sm text-cream-dim">

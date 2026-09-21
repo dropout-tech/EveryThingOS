@@ -23,7 +23,7 @@ export async function OsShell({ industry, children }: OsShellProps) {
         </div>
         <SideNav />
         <p className="px-4 py-3 text-[11px] leading-5 text-cream-dim">
-          全模組已套琢奧識別。底層仍是開源組裝，員工只看到 DropOut OS。
+          先走「做事」。通道要時再進來。
         </p>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -39,8 +39,8 @@ export async function OsShell({ industry, children }: OsShellProps) {
             <div className="flex items-center gap-3">
               <AppearanceBar />
               <IndustrySwitcher current={industry} options={industries} />
-              <Link href="/" className="text-xs text-cream-dim hover:text-teal">
-                回介紹
+              <Link href="/" className="text-xs text-cream-dim hover:text-cream">
+                介紹
               </Link>
             </div>
           </div>

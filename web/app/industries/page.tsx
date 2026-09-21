@@ -14,7 +14,7 @@ export default function IndustriesPage() {
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-5 py-14">
         <p className="display text-xs tracking-[0.22em] text-teal uppercase">Industry packs</p>
-        <h1 className="mt-3 text-4xl font-medium">{total} 個產業，同一套作業系統</h1>
+        <h1 className="scene-type mt-3 text-4xl font-medium">{total} 個產業，同一套作業系統</h1>
         <p className="mt-4 max-w-2xl text-cream-dim">
           每一包都設定好物項、履行方式、流程階段與 KPI。導入時打開最接近的一包，再改你們自己的例外。
         </p>
@@ -30,7 +30,7 @@ export default function IndustriesPage() {
                   <li key={item.id}>
                     <Link
                       href={`/industries/${item.id}`}
-                      className="block h-full rounded-2xl border border-[var(--line)] p-4 hover:border-teal"
+                      className="glass-well block h-full p-4 hover:bg-white/10"
                     >
                       <p className="text-xs text-cream-dim">{item.code}</p>
                       <p className="mt-1 font-medium">{item.nameZh}</p>

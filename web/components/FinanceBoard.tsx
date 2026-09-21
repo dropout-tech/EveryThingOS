@@ -40,7 +40,7 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
       <ActionNote>{note}</ActionNote>
       <section>
         <h3 className="text-lg">誰欠我們（帳齡）</h3>
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-[var(--line)]">
+        <div className="glass mt-3 overflow-x-auto">
           <table className="w-full min-w-[40rem] text-left text-sm">
             <thead className="bg-ink-2 text-cream-dim">
               <tr>
@@ -72,7 +72,7 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
         </div>
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-[var(--line)] p-4">
+        <div className="glass-chip p-4">
           <h3>本月損益</h3>
           <ul className="mt-3 space-y-2 text-sm">
             {books.pnl.map((row) => (
@@ -83,7 +83,7 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
             ))}
           </ul>
         </div>
-        <div className="rounded-2xl border border-[var(--line)] p-4">
+        <div className="glass-chip p-4">
           <h3>自動傳票</h3>
           <ul className="mt-3 space-y-3 text-sm">
             {books.journals.map((row) => (
@@ -105,7 +105,7 @@ export function FinanceBoard({ packId, books }: FinanceBoardProps) {
         <h3 className="text-lg">電子發票</h3>
         <ul className="mt-3 space-y-2 text-sm">
           {invoices.map((row) => (
-            <li key={row.no} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--line)] px-4 py-3">
+            <li key={row.no} className="glass-chip flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <span>
                 {row.no} · 對應 {row.related}
               </span>

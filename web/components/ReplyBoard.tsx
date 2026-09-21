@@ -8,7 +8,7 @@ import { matchRule, sanitizeImportedHandle, type ReplyComment, type ReplyRule } 
 import type { IndustryPack } from "@/lib/types";
 
 type ReplyBoardProps = {
-  pack: Pick<IndustryPack, "id" | "nameZh" | "workflow">;
+  pack: Pick<IndustryPack, "id" | "workflow">;
   initialRules: ReplyRule[];
   initialInbox: ReplyComment[];
 };
@@ -91,18 +91,18 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
   return (
     <div className="space-y-4">
       <ActionNote>{note}</ActionNote>
-      <p className="glass px-4 py-3 text-sm text-cream-dim">
-        底層是 <span className="text-cream">OpenReply</span>（MIT，ManyChat 的留言轉私訊替代）。這裡是 DropOut 皮與示範配對。Instagram／Facebook 的 webhook、App Review 還沒接到這個環境。
+      <p className="glass-chip px-4 py-3 text-sm text-cream-dim">
+        底層是 <span className="text-cream">OpenReply</span>（MIT）。命中才私訊。Meta webhook 還沒接。
       </p>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
-        <section className="space-y-3">
+        <section className="glass p-4">
           <h3 className="text-lg">等回的留言</h3>
           {waiting.length ? (
-            <ul className="space-y-3">
+            <ul className="mt-3 space-y-3">
               {waiting.map((comment) => {
                 const rule = matchRule(comment.text, rules);
                 return (
-                  <li key={comment.id} className="glass p-4">
+                  <li key={comment.id} className="glass-chip p-4">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <p className="font-medium">{comment.handle}</p>
                       <p className="text-xs text-cream-dim">
@@ -129,17 +129,17 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
               })}
             </ul>
           ) : (
-            <p className="glass p-4 text-sm text-cream-dim">這一輪留言都處理完了。</p>
+            <p className="glass-chip p-4 text-sm text-cream-dim">這一輪留言都處理完了。</p>
           )}
           {sent.length ? (
             <p className="text-xs text-cream-dim">已送出 {sent.length} 則示範私訊。正式站由 OpenReply 寫 Meta 對話，再經事件進 CRM。</p>
           ) : null}
         </section>
-        <aside className="space-y-3">
+        <aside className="glass space-y-3 p-4">
           <h3 className="text-lg">關鍵字 → 私訊</h3>
           <ul className="space-y-2">
             {rules.map((rule) => (
-              <li key={rule.id} className="glass p-3 text-sm">
+              <li key={rule.id} className="glass-chip p-3 text-sm">
                 <p className="text-teal">{rule.keyword}</p>
                 <p className="mt-1 text-cream-dim">{rule.dm}</p>
                 <p className="mt-1 text-xs text-cream-dim">公開回覆：{rule.publicReply}</p>
@@ -147,7 +147,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
             ))}
           </ul>
           <form
-            className="glass space-y-2 p-3"
+            className="glass-chip space-y-2 p-3"
             onSubmit={(event) => {
               event.preventDefault();
               onAddRule();

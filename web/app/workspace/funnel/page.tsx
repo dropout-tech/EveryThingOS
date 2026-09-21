@@ -9,20 +9,23 @@ export default async function FunnelPage() {
 
   return (
     <ModuleFrame
-      kicker="DropOut Funnel"
-      title={`${pack.nameZh} 魅力圈`}
-      hint="官網與落地頁走 Frappe Builder，序列與計分走 Mautic。對外仍是 DropOut 皮。"
+      kicker="魅力圈"
+      title={`${pack.nameZh} 從看到進來`}
+      hint="官網與落地頁走 Frappe Builder，序列走 Mautic。合格後進客人看板。"
     >
-      <ol className="grid gap-3 md:grid-cols-3">
+      <ol className="glass flex flex-col overflow-hidden md:flex-row">
         {stages.map((stage, index) => (
-          <li key={stage} className="rounded-2xl border border-[var(--line)] p-4">
-            <p className="display text-xs text-teal">{String(index + 1).padStart(2, "0")}</p>
+          <li
+            key={stage}
+            className={`flex-1 px-4 py-5 ${index ? "border-t border-[var(--line)] md:border-t-0 md:border-l" : ""}`}
+          >
+            <p className="display text-[11px] text-cream-dim">{String(index + 1).padStart(2, "0")}</p>
             <p className="mt-2 text-lg">{stage}</p>
           </li>
         ))}
       </ol>
       <p className="text-sm text-cream-dim">
-        此產業預設工作流：{pack.sampleLoop}。行銷合格後進 CRM 階段「{pack.workflow.stages[0]}」。
+        此產業：{pack.sampleLoop}。合格後進「{pack.workflow.stages[0]}」。
       </p>
     </ModuleFrame>
   );

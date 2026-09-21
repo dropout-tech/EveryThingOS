@@ -37,7 +37,7 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases }
         存貨金額 {formatTwd(inventoryValue)}。
       </p>
       <ActionNote>{note}</ActionNote>
-      <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
+      <div className="glass overflow-x-auto">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead className="bg-ink-2 text-cream-dim">
             <tr>

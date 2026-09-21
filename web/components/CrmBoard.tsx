@@ -54,19 +54,19 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
       <ActionNote>{note}</ActionNote>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3">
         {columns.map((column) => (
-          <section key={column.stage} className="glass p-3">
-            <h3 className="text-sm text-teal">{column.stage}</h3>
+          <section key={column.stage} className="glass-well p-3">
+            <h3 className="text-sm">{column.stage}</h3>
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
                 column.cards.map((lead) => {
                   const last = stages.indexOf(lead.stage) >= stages.length - 1;
                   return (
-                    <li key={lead.name} className="glass p-3">
+                    <li key={lead.name} className="glass-chip p-3">
                       <p>{lead.name}</p>
                       <p className="mt-1 text-xs text-cream-dim">
                         {lead.channel} · 計分 {lead.score}
                       </p>
-                      <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-teal">
+                      <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-cream">
                         {last ? "轉成一張報價" : "下一步：跟進"}
                       </button>
                     </li>

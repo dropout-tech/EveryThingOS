@@ -10,7 +10,7 @@
 
 ## 現在就可以看的畫面
 
-產品外殼在 `web/`（Next.js）。黑／白兩套，背後是大海／青山／湖泊風景，讓蘋果 **Liquid Glass** 有東西可折射。進站會跳出創業激勵句，右下角「今日一句」可再叫出。預覽上 Vercel（專案根目錄是 `web/`）。
+產品外殼在 `web/`（Next.js）。風景當背景，介面是少數幾塊可折射的玻璃，不是滿版方格。進站右下角會出現創業一句，不擋住操作。每天路徑是 **回覆 → 客人 → 生意 → 收錢**。
 
 ```bash
 cd web && npm install && npm run dev
@@ -21,7 +21,7 @@ cd web && npm install && npm run dev
 - `/pricing` 一年十萬
 - `/consulting` 免費導入步驟
 - `/saas` 取代哪些雲端工具
-- `/workspace` 套皮作業系統（右上角切產業、黑白、海山湖；CRM／ERP／漏斗／回覆／清庫／短網址跟著變）
+- `/workspace` 今天：先做一件大事，數字一條，四步路徑
 - `/workspace/erp` 生意：銷售流水、採購、倉庫（服務業會藏）、帳款與稅
 - `/workspace/erp/compare` 與 `/saas`：和鼎新 A1、億看 ECOUNT 一項一項對
 - `/workspace/reply` 社群回覆：OpenReply 風格的留言轉私訊（示範配對，Meta 還沒接）

@@ -14,7 +14,7 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
   const [pending, start] = useTransition();
 
   return (
-    <div className="flex rounded-full border border-[var(--line)] bg-[var(--glass-fill)] p-0.5 text-xs backdrop-blur-xl" role="group" aria-label="介面顏色">
+    <div className="flex rounded-full bg-white/10 p-0.5 text-xs" role="group" aria-label="介面顏色">
       {options.map((option) => {
         const active = current === option.id;
         return (

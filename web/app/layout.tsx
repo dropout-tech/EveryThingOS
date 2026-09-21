@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   return (
     <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
-      <body className="min-h-full grid-skin antialiased">
+      <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
         <div className="liquid-stage" aria-hidden="true" />
         <div className="page-shell">{children}</div>

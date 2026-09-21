@@ -15,10 +15,10 @@ export default function PricingPage() {
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-5 py-14">
         <p className="display text-xs tracking-[0.22em] text-orange uppercase">Pricing</p>
-        <h1 className="mt-3 text-4xl font-medium">{PRICE_LABEL}</h1>
+        <h1 className="scene-type mt-3 text-4xl font-medium">{PRICE_LABEL}</h1>
         <p className="mt-4 text-cream-dim">{PRICE_NOTE}</p>
-        <article className="mt-10 rounded-3xl border border-teal/40 bg-ink-2 p-8">
-          <p className="text-sm text-teal">DropOut OS 年約</p>
+        <article className="glass glass-hero mt-10 p-8">
+          <p className="text-sm text-cream-dim">DropOut OS 年約</p>
           <p className="mt-2 text-5xl font-medium">NT${formatted}</p>
           <p className="mt-2 text-cream-dim">一年 · 未稅 · 一間公司一個站</p>
           <ul className="mt-6 space-y-3 text-cream-dim">
@@ -28,10 +28,7 @@ export default function PricingPage() {
             <li>不收每人帳號費、不收模組加購</li>
             <li>全畫面套琢奧識別</li>
           </ul>
-          <Link
-            href="/consulting"
-            className="mt-8 inline-block rounded-full bg-teal px-6 py-3 font-medium text-ink"
-          >
+          <Link href="/consulting" className="glass-cta mt-8 inline-block rounded-full px-6 py-3 font-medium">
             約免費導入顧問
           </Link>
         </article>

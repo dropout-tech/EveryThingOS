@@ -1,3 +1,4 @@
+import { AppearanceBar } from "@/components/AppearanceBar";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { currentIndustry } from "@/lib/workspace";
 
@@ -8,45 +9,35 @@ export default async function SettingsPage() {
 
   return (
     <ModuleFrame
-      kicker="Workspace"
+      kicker="設定"
       title="這家公司可改的東西"
-      hint="對標 Odoo Studio／A1 參數設定，但用產業包先藏欄位。不另收 Studio 費。"
+      hint="產業包先藏欄位。外觀在右上角。不另收 Studio 費。"
     >
-      <dl className="grid gap-4 md:grid-cols-2">
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">目前產業包</dt>
-          <dd className="mt-1">
+      <div className="glass glass-hero space-y-5 p-6 md:p-8">
+        <div>
+          <p className="text-sm text-cream-dim">目前產業包</p>
+          <p className="mt-1 text-lg">
             {pack.code} {pack.nameZh}
-          </dd>
+          </p>
         </div>
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">流程階段</dt>
-          <dd className="mt-1">{pack.workflow.stages.join(" → ")}</dd>
+        <div>
+          <p className="text-sm text-cream-dim">客人階段</p>
+          <p className="mt-1">{pack.workflow.stages.join(" → ")}</p>
         </div>
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">LINE 通道</dt>
-          <dd className="mt-1">{pack.modules.line ? "預設開啟（Chatwoot 適配器）" : "此包預設關閉，可再開"}</dd>
+        <div>
+          <p className="text-sm text-cream-dim">外觀</p>
+          <p className="mt-1 text-sm text-cream-dim">黑／白與海／山／湖。玻璃要靠風景折射。</p>
+          <div className="mt-3">
+            <AppearanceBar />
+          </div>
         </div>
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">介面</dt>
-          <dd className="mt-1">黑／白 + 海／山／湖風景。Liquid Glass 必須有東西可折射，右上角一起切。</dd>
+        <div>
+          <p className="text-sm text-cream-dim">還沒接到現場的</p>
+          <p className="mt-1 text-sm leading-7 text-cream-dim">
+            ERPNext 過帳、Keycloak、Mautic、Reacher、Shlink、OpenReply Meta webhook、電子發票加值中心。現在是產品殼。
+          </p>
         </div>
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">社群回覆</dt>
-          <dd className="mt-1">OpenReply（MIT）做 IG／FB 留言轉私訊，取代 ManyChat。產品殼已有示範配對。</dd>
-        </div>
-        <div className="glass p-4">
-          <dt className="text-sm text-cream-dim">對齊等級</dt>
-          <dd className="mt-1">鼎新 A1 進銷存＋會計＋電子發票，或億看 ECOUNT 全模組。畫面改成下一步，不改成更多選單。</dd>
-        </div>
-        <div className="glass p-4 md:col-span-2">
-          <dt className="text-sm text-cream-dim">還沒接到現場的</dt>
-          <dd className="mt-1 text-sm leading-7 text-cream-dim">
-            ERPNext 過帳、Keycloak 登入、Mautic 魅力圈、Reacher 清庫、Shlink 短網址、OpenReply Meta webhook、電子發票加值中心、公開預覽網址（Vercel 還沒接到 GitHub）。
-            現在這層是產品殼與示範帳簿，用來把操作與外觀定下來。
-          </dd>
-        </div>
-      </dl>
+      </div>
     </ModuleFrame>
   );
 }

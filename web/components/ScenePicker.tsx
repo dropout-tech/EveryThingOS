@@ -9,7 +9,7 @@ export function ScenePicker({ current }: { current: UiScene }) {
   const [pending, start] = useTransition();
 
   return (
-    <div className="flex rounded-full border border-[var(--line)] bg-[var(--glass-fill)] p-0.5 text-xs backdrop-blur-xl" role="group" aria-label="背景風景">
+    <div className="flex rounded-full bg-white/10 p-0.5 text-xs" role="group" aria-label="背景風景">
       {SCENES.map((option) => {
         const active = current === option.id;
         return (

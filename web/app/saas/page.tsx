@@ -11,11 +11,11 @@ export default function SaasPage() {
       <SiteHeader />
       <main className="mx-auto max-w-5xl px-5 py-14">
         <p className="display text-xs tracking-[0.22em] text-gold uppercase">Replace the stack</p>
-        <h1 className="mt-3 text-4xl font-medium">先取代鼎新 A1 或億看 ECOUNT</h1>
+        <h1 className="scene-type mt-3 text-4xl font-medium">先取代鼎新 A1 或億看 ECOUNT</h1>
         <p className="mt-4 max-w-2xl text-cream-dim">
-          能力對齊台灣中小企業最常用的兩套雲端進銷存／ERP。更好用的地方：現場語言、產業包藏欄位、今天三件事、以及它們沒有的行銷閉環。
+          能力對齊台灣中小企業最常用的兩套雲端進銷存／ERP。更好用的地方：現場語言、產業包藏欄位、今天先做一件、以及它們沒有的行銷閉環。
         </p>
-        <div className="mt-10 overflow-x-auto rounded-2xl border border-[var(--line)]">
+        <div className="glass mt-10 overflow-x-auto">
           <table className="w-full min-w-[56rem] text-left text-sm">
             <thead className="bg-ink-2 text-cream-dim">
               <tr>
@@ -38,7 +38,7 @@ export default function SaasPage() {
           </table>
         </div>
         <h2 className="mt-14 text-2xl">其他常被併進來的工具</h2>
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--line)]">
+        <div className="glass mt-6 overflow-x-auto">
           <table className="w-full min-w-[36rem] text-left text-sm">
             <thead className="bg-ink-2 text-cream-dim">
               <tr>
