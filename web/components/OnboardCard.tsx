@@ -56,7 +56,7 @@ export function OnboardCard() {
 
   return (
     <Lens className="w-full" radius={40}>
-      <div className="p-8 md:p-10">
+      <div className="px-10 py-8 md:px-12 md:py-10">
         <p className="display text-[11px] tracking-[0.22em] text-cream-dim uppercase">
           {STEPS[step]} · {step + 1}/3
         </p>
@@ -117,14 +117,11 @@ export function OnboardCard() {
                     <button
                       type="button"
                       onClick={() => toggle(item.id)}
-                      className={`glass-chip flex w-full items-center justify-between px-4 py-3 text-left ${
+                      className={`glass-chip flex w-full items-center justify-between px-4 py-2.5 text-left text-sm ${
                         on ? "text-cream" : "text-cream-dim"
                       }`}
                     >
-                      <span>
-                        <span className="block text-sm">{item.label}</span>
-                        <span className="block text-xs opacity-70">{item.hint}</span>
-                      </span>
+                      <span>{item.label}</span>
                       <span className="display text-[11px]">{on ? "開" : "關"}</span>
                     </button>
                   </li>
