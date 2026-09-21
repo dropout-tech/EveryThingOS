@@ -33,7 +33,7 @@ function edgeMap(width: number, height: number, radius: number) {
       const ox = Math.max(dx, 0);
       const oy = Math.max(dy, 0);
       const dist = Math.hypot(ox, oy) + Math.min(Math.max(dx, dy), 0) - r;
-      const edge = Math.exp(-Math.abs(dist) * 0.11);
+      const edge = Math.exp(-Math.abs(dist) * 0.28);
       const i = (y * w + x) * 4;
       data[i] = 128 + ((x - cx) / cx) * edge * 118;
       data[i + 1] = 128 + ((y - cy) / cy) * edge * 118;
@@ -50,6 +50,7 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
   const filterId = `lens-${rawId}`;
   const root = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState("");
+  const [scale, setScale] = useState(36);
   const [shift, setShift] = useState({ x: 0, y: 0, sx: 1, sy: 1, px: 28, py: 18 });
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
       const rect = node.getBoundingClientRect();
       if (rect.width < 8 || rect.height < 8) return;
       setMap(edgeMap(rect.width, rect.height, radius));
+      setScale(Math.round(Math.min(64, Math.max(22, Math.min(rect.width, rect.height) * 0.08))));
     }
 
     paint();
@@ -118,16 +120,16 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
           <feDisplacementMap
             in="SourceGraphic"
             in2="map"
-            scale="70"
+            scale={String(scale)}
             xChannelSelector="R"
             yChannelSelector="G"
             result="mid"
           />
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="78" xChannelSelector="R" yChannelSelector="G" result="r" />
+          <feDisplacementMap in="SourceGraphic" in2="map" scale={String(scale + 6)} xChannelSelector="R" yChannelSelector="G" result="r" />
           <feColorMatrix in="r" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="70" xChannelSelector="R" yChannelSelector="G" result="g" />
+          <feDisplacementMap in="SourceGraphic" in2="map" scale={String(scale)} xChannelSelector="R" yChannelSelector="G" result="g" />
           <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-          <feDisplacementMap in="SourceGraphic" in2="map" scale="62" xChannelSelector="R" yChannelSelector="G" result="b" />
+          <feDisplacementMap in="SourceGraphic" in2="map" scale={String(Math.max(12, scale - 6))} xChannelSelector="R" yChannelSelector="G" result="b" />
           <feColorMatrix in="b" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
           <feBlend in="green" in2="blue" mode="screen" result="gb" />
           <feBlend in="red" in2="gb" mode="screen" />
