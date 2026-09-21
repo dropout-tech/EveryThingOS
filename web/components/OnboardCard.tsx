@@ -117,8 +117,8 @@ export function OnboardCard() {
                     <button
                       type="button"
                       onClick={() => toggle(item.id)}
-                      className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left ${
-                        on ? "glass-cta" : "glass-chip text-cream-dim"
+                      className={`glass-chip flex w-full items-center justify-between px-4 py-3 text-left ${
+                        on ? "text-cream" : "text-cream-dim"
                       }`}
                     >
                       <span>
