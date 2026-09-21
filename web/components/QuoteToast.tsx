@@ -65,6 +65,9 @@ export function QuoteToast() {
               >
                 換一句
               </button>
+              <button type="button" className="glass-pill px-4 py-2 text-sm" onClick={dismiss}>
+                關閉
+              </button>
             </div>
           </article>
         </div>
