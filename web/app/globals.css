@@ -14,8 +14,8 @@ html[data-theme="black"] {
   --navy: #12141c;
   --line: rgba(255, 255, 255, 0.28);
   --grid: rgba(255, 255, 255, 0.04);
-  --glass-fill: rgba(255, 255, 255, 0.045);
-  --glass-fill-strong: rgba(255, 255, 255, 0.16);
+  --glass-fill: rgba(10, 16, 26, 0.34);
+  --glass-fill-strong: rgba(10, 16, 26, 0.5);
   --glass-stroke: rgba(255, 255, 255, 0.42);
   --glass-highlight: rgba(255, 255, 255, 0.78);
   --glass-shadow: rgba(0, 0, 0, 0.28);
@@ -240,8 +240,8 @@ body {
 }
 
 .glass-well {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 14, 22, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 28px;
 }
 
@@ -254,7 +254,7 @@ body {
 
 .glass-chip {
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(8, 14, 22, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 20px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32);

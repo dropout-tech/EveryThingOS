@@ -23,7 +23,7 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
   if (/請款|結帳|收款|發票|對帳|訂金|尾款|帳單|押金|報關|沖帳|續約|續報/.test(t)) {
     return { href: "/workspace/erp/finance", hint: "收到錢才算完" };
   }
-  if (/進貨|備料|上架|盤點|庫存|生產|訂貨|效期|BOM|打樣|加工|烘焙|進書|陳列|報廢|分級/.test(t)) {
+  if (/進貨|進豆|備料|上架|盤點|庫存|生產|訂貨|效期|BOM|打樣|加工|烘焙|進書|陳列|報廢|分級/.test(t)) {
     return pack.modules.erp.inventory
       ? { href: "/workspace/erp/stock", hint: "貨夠不夠" }
       : { href: "/workspace/erp/purchase", hint: "跟廠商要" };
@@ -93,18 +93,18 @@ export function industryTodayJobs(
     });
   }
 
-  if (money.inventoryOn && money.lowStockName) {
-    jobs.push({
-      title: `${money.lowStockName} 快沒了`,
-      detail: "先補貨，再繼續賣。不要等缺貨才問。",
-      href: "/workspace/erp/stock",
-      tone: "ok",
-    });
-  } else if (money.overdueAmount > 0) {
+  if (money.overdueAmount > 0) {
     jobs.push({
       title: `把欠款收回來 ${money.overdueLabel}`,
       detail: `走完「${lastStage}」才算今天做完。錢沒進來，前面都白做。`,
       href: "/workspace/erp/finance",
+      tone: "ok",
+    });
+  } else if (money.inventoryOn && money.lowStockName) {
+    jobs.push({
+      title: `${money.lowStockName} 快沒了`,
+      detail: "先補貨，再繼續賣。不要等缺貨才問。",
+      href: "/workspace/erp/stock",
       tone: "ok",
     });
   } else {
