@@ -3,7 +3,9 @@ import Link from "next/link";
 import { BrandMark } from "./BrandMark";
 import { IndustrySwitcher } from "./IndustrySwitcher";
 import { SideNav } from "./SideNav";
+import { ThemeToggle } from "./ThemeToggle";
 import { listIndustries } from "@/lib/industries";
+import { currentTheme } from "@/lib/theme-server";
 import type { IndustryPack } from "@/lib/types";
 
 type OsShellProps = {
@@ -11,8 +13,9 @@ type OsShellProps = {
   children: ReactNode;
 };
 
-export function OsShell({ industry, children }: OsShellProps) {
+export async function OsShell({ industry, children }: OsShellProps) {
   const industries = listIndustries();
+  const theme = await currentTheme();
 
   return (
     <div className="flex min-h-screen bg-ink text-cream">
@@ -36,6 +39,7 @@ export function OsShell({ industry, children }: OsShellProps) {
               </h1>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle current={theme} />
               <IndustrySwitcher current={industry} options={industries} />
               <Link href="/" className="text-xs text-cream-dim hover:text-teal">
                 回介紹

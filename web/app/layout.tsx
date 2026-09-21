@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
+import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
 
 const noto = Noto_Sans_TC({
@@ -25,14 +26,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DropOut OS｜一套系統解決企業 SaaS 問題",
     description: "一百個產業情境、免費顧問導入、每年十萬。",
-    images: ["/brand/og-brand-260713.png"],
   },
-  icons: { icon: "/brand/favicon.ico" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = await currentTheme();
+
   return (
-    <html lang="zh-TW" className={`${noto.variable} ${outfit.variable} h-full`}>
+    <html lang="zh-TW" data-theme={theme} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full grid-skin antialiased">{children}</body>
     </html>
   );

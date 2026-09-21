@@ -10,7 +10,7 @@
 
 ## 現在就可以看的畫面
 
-產品外殼在 `web/`（Next.js），已套 `dropout.tw` 識別：`do` 字標、墨色底、青綠與橘色。
+產品外殼在 `web/`（Next.js）。介面只有黑／白兩套，右上角切換。預覽上 Vercel（專案根目錄是 `web/`）。
 
 ```bash
 cd web && npm install && npm run dev
