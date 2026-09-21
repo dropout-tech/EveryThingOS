@@ -2,6 +2,21 @@
 
 產品外殼（`web/`）是黑／白兩套介面，右上角切換；背後是**一條從海面到海底的連續風景**，往下滑玻璃才有東西可折射。底下開源系統之後也走同一組對比，不再用青綠／橘色當主色。
 
+## Logo
+
+DropOut OS 的標是**玻璃水滴 + 海面漣漪**，黑白都能用。
+
+| 檔 | 用途 |
+| --- | --- |
+| `web/app/icon.svg` | 瀏覽器分頁 |
+| `web/app/apple-icon.png` | 加到主畫面 |
+| `web/public/brand/dropout-mark.svg` | 簡潔標（深底） |
+| `web/public/brand/dropout-app-icon.png` | App 圖示 |
+| `web/public/brand/og-dropout-os.png` | 分享圖 |
+| `branding/logo/` | 同一套，給套皮與對外 |
+
+頁首用 `BrandMark`：水滴在玻璃方塊裡，旁邊是 DropOut OS。琢奧舊的青綠「do」字標仍留在 `logo-full.png`，那是公司字，不是 OS 產品標。
+
 | 系統 | 主題位置 | 怎麼掛 |
 | --- | --- | --- |
 | DropOut OS 外殼 | `web/` | Next.js，已套皮 |

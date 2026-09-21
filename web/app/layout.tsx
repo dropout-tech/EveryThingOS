@@ -31,6 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "DropOut OS｜打開就知道下一步",
     description: "一百種行業、免費顧問到現場、每年十萬。",
+    images: [{ url: "/brand/og-dropout-os.png", width: 1200, height: 630, alt: "DropOut OS" }],
   },
 };
 

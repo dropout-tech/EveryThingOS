@@ -147,6 +147,31 @@ body {
   font-family: var(--font-display), var(--font-sans), sans-serif;
 }
 
+.brand-glyph {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  overflow: hidden;
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 0.7rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 0 0 0.5px rgba(255, 255, 255, 0.3);
+}
+
+.brand-glyph-compact {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 0.55rem;
+}
+
+html[data-theme="white"] .brand-glyph {
+  background: rgba(255, 255, 255, 0.42);
+}
+
 .scene-type {
   text-shadow: var(--type-shadow);
 }
