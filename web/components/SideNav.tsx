@@ -30,7 +30,7 @@ export function SideNav({ variant = "side" }: { variant?: "side" | "top" }) {
             key={item.href}
             href={item.href}
             className={`shrink-0 rounded-full px-3 py-1.5 ${
-              isActive(path, item.href) ? "bg-ink text-teal" : "text-cream-dim"
+              isActive(path, item.href) ? "glass-cta" : "text-cream-dim"
             }`}
           >
             {item.label}
@@ -46,8 +46,8 @@ export function SideNav({ variant = "side" }: { variant?: "side" | "top" }) {
         <Link
           key={item.href}
           href={item.href}
-          className={`rounded-lg px-3 py-2 ${
-            isActive(path, item.href) ? "bg-ink text-teal" : "text-cream-dim hover:bg-ink hover:text-teal"
+          className={`rounded-2xl px-3 py-2 ${
+            isActive(path, item.href) ? "glass-cta" : "text-cream-dim hover:text-cream"
           }`}
         >
           {item.label}

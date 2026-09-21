@@ -12,7 +12,7 @@ export function MoneyStrip({ books }: { books: Books }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {cells.map((cell) => (
-        <article key={cell.label} className="rounded-2xl border border-[var(--line)] bg-ink-2 p-4">
+        <article key={cell.label} className="glass p-4">
           <p className="text-xs text-cream-dim">{cell.label}</p>
           <p className={`mt-2 display text-2xl ${cell.warn ? "text-orange" : "text-teal"}`}>
             {formatTwd(cell.value)}
@@ -24,12 +24,6 @@ export function MoneyStrip({ books }: { books: Books }) {
 }
 
 export function TodayList({ books }: { books: Books }) {
-  const tone = {
-    urgent: "border-orange text-orange",
-    warn: "border-gold text-gold",
-    ok: "border-teal text-teal",
-  } as const;
-
   return (
     <section>
       <h2 className="text-lg">今天只要做這三件</h2>
@@ -39,10 +33,7 @@ export function TodayList({ books }: { books: Books }) {
       <ol className="mt-4 grid gap-3 md:grid-cols-3">
         {books.today.map((item, index) => (
           <li key={item.title}>
-            <Link
-              href={item.href}
-              className={`block h-full rounded-2xl border p-4 ${tone[item.tone]}`}
-            >
+            <Link href={item.href} className="glass block h-full p-4">
               <p className="display text-xs">0{index + 1}</p>
               <p className="mt-2 text-cream">{item.title}</p>
               <p className="mt-2 text-sm text-cream-dim">{item.detail}</p>

@@ -20,7 +20,7 @@ export default async function WorkspaceHome() {
       <MoneyStrip books={books} />
       <TodayList books={books} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-[var(--line)] p-5">
+        <section className="glass p-5">
           <div className="flex items-center justify-between">
             <h3>客人現在在哪</h3>
             <Link href="/workspace/crm" className="text-sm text-teal">
@@ -36,7 +36,7 @@ export default async function WorkspaceHome() {
             ))}
           </ul>
         </section>
-        <section className="rounded-2xl border border-[var(--line)] p-5">
+        <section className="glass p-5">
           <div className="flex items-center justify-between">
             <h3>該請人付錢</h3>
             <Link href="/workspace/erp/finance" className="text-sm text-teal">

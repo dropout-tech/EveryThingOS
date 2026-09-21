@@ -28,7 +28,7 @@ export function DataTable({
   rows: string[][];
 }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
+    <div className="glass overflow-x-auto">
       <table className="w-full min-w-[40rem] text-left text-sm">
         <thead className="bg-ink-2 text-cream-dim">
           <tr>

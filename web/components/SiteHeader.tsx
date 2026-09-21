@@ -14,7 +14,7 @@ export async function SiteHeader() {
   const theme = await currentTheme();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-ink/90 backdrop-blur">
+    <header className="glass glass-bar sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
         <BrandMark />
         <nav className="hidden items-center gap-6 text-sm text-cream-dim md:flex">
@@ -26,7 +26,7 @@ export async function SiteHeader() {
         </nav>
         <div className="flex items-center gap-3">
           <ThemeToggle current={theme} />
-          <Link href="/workspace" className="rounded-full bg-teal px-4 py-2 text-sm font-medium text-ink hover:bg-teal-deep">
+          <Link href="/workspace" className="glass-cta rounded-full px-4 py-2 text-sm font-medium">
             進入作業系統
           </Link>
         </div>

@@ -13,7 +13,7 @@ export default async function ErpHubPage() {
     <div className="space-y-8">
       <ol className="grid gap-2 md:grid-cols-5">
         {columns.map((column, index) => (
-          <li key={column.id} className="rounded-2xl border border-[var(--line)] bg-ink-2 p-3">
+          <li key={column.id} className="glass p-3">
             <p className="display text-[11px] text-teal">
               {index + 1}. {column.plain}
             </p>
@@ -35,10 +35,10 @@ export default async function ErpHubPage() {
         {pack.modules.erp.manufacturing ? " 工單／BOM 開著。" : " 沒有工廠選單。"}
       </p>
       <div className="flex flex-wrap gap-3">
-        <Link href="/workspace/erp/sales" className="rounded-full bg-teal px-4 py-2 text-sm text-ink">
+        <Link href="/workspace/erp/sales" className="glass-cta rounded-full px-4 py-2 text-sm">
           從「客人在問」開始
         </Link>
-        <Link href="/workspace/erp/compare" className="rounded-full border border-gold px-4 py-2 text-sm text-gold">
+        <Link href="/workspace/erp/compare" className="glass-pill px-4 py-2 text-sm">
           和 A1／億看一項一項對
         </Link>
       </div>

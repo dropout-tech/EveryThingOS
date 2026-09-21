@@ -3,7 +3,7 @@ import { COMMERCIAL, PRICE_LABEL } from "@/lib/commercial";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-[var(--line)] px-5 py-10 text-sm text-cream-dim">
+    <footer className="glass glass-bar mt-8 px-5 py-10 text-sm text-cream-dim">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="display text-cream">{COMMERCIAL.product}</p>

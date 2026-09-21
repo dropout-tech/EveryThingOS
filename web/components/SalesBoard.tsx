@@ -71,7 +71,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
       </p>
       <form
         onSubmit={onCreate}
-        className="flex flex-wrap items-end gap-2 rounded-2xl border border-[var(--line)] bg-ink-2 p-3"
+        className="glass flex flex-wrap items-end gap-2 p-3"
       >
         <label className="text-sm">
           <span className="block text-xs text-cream-dim">誰在問</span>
@@ -93,7 +93,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
             className="mt-1 w-32 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream"
           />
         </label>
-        <button type="submit" className="rounded-full bg-teal px-4 py-2 text-sm text-ink">
+        <button type="submit" className="glass-cta rounded-full px-4 py-2 text-sm">
           開一張報價
         </button>
         <p className="text-xs text-cream-dim">稅 5% 自動加。物項用這個產業包的「{pack.itemType}」。</p>
@@ -101,7 +101,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
       <ActionNote>{note}</ActionNote>
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
-          <section key={column.id} className="rounded-2xl border border-[var(--line)] bg-ink-2 p-3">
+          <section key={column.id} className="glass p-3">
             <h3 className="text-sm">
               {column.plain}
               <span className="ml-1 text-xs text-cream-dim">{column.formal}</span>
@@ -109,7 +109,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
             <ul className="mt-3 space-y-2">
               {column.docs.length ? (
                 column.docs.map((doc) => (
-                  <li key={doc.no} className="rounded-xl border border-[var(--line)] p-3">
+                  <li key={doc.no} className="glass p-3">
                     <p className="text-xs text-cream-dim">{doc.no}</p>
                     <p className="mt-1">{doc.party}</p>
                     <p className="text-sm text-cream-dim">
@@ -126,7 +126,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
                       type="button"
                       disabled={doc.next === "完成"}
                       onClick={() => onAdvance(doc)}
-                      className="mt-2 w-full rounded-full bg-teal/15 py-1.5 text-xs text-teal disabled:opacity-40"
+                      className="glass-pill mt-2 w-full py-1.5 text-xs disabled:opacity-40"
                     >
                       {doc.next}
                     </button>

@@ -18,8 +18,8 @@ export async function OsShell({ industry, children }: OsShellProps) {
   const theme = await currentTheme();
 
   return (
-    <div className="flex min-h-screen bg-ink text-cream">
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-[var(--line)] bg-ink-2 md:flex">
+    <div className="flex min-h-screen text-cream">
+      <aside className="glass glass-nav sticky top-0 hidden h-screen w-56 shrink-0 flex-col md:flex">
         <div className="border-b border-[var(--line)] px-4 py-4">
           <BrandMark href="/workspace" compact />
         </div>
@@ -29,7 +29,7 @@ export async function OsShell({ industry, children }: OsShellProps) {
         </p>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-[var(--line)]">
+        <header className="glass glass-bar sticky top-0 z-30">
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div>
               <p className="display text-xs tracking-[0.2em] text-teal uppercase">DropOut OS</p>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
+import { QuoteToast } from "@/components/QuoteToast";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
 
@@ -34,7 +35,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   return (
     <html lang="zh-TW" data-theme={theme} className={`${noto.variable} ${outfit.variable} h-full`}>
-      <body className="min-h-full grid-skin antialiased">{children}</body>
+      <body className="min-h-full grid-skin antialiased">
+        <div className="liquid-stage" aria-hidden="true" />
+        <div className="page-shell">{children}</div>
+        <QuoteToast />
+      </body>
     </html>
   );
 }

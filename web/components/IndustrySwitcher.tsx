@@ -18,7 +18,7 @@ export function IndustrySwitcher({ current, options }: IndustrySwitcherProps) {
       <span className="shrink-0">產業包</span>
       <select
         key={current.id}
-        className="max-w-[16rem] truncate rounded-full border border-[var(--line)] bg-ink-2 px-3 py-1.5 text-cream"
+        className="max-w-[16rem] truncate rounded-full border border-[var(--line)] bg-[var(--glass-fill)] px-3 py-1.5 text-cream backdrop-blur-xl"
         defaultValue={current.id}
         disabled={pending}
         onChange={(event) => {

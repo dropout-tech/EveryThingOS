@@ -10,7 +10,7 @@
 
 ## 現在就可以看的畫面
 
-產品外殼在 `web/`（Next.js）。介面只有黑／白兩套，右上角切換。預覽上 Vercel（專案根目錄是 `web/`）。
+產品外殼在 `web/`（Next.js）。黑／白兩套，套蘋果 **Liquid Glass** 材質（毛玻璃、高光邊緣、背景光斑）。進站會跳出創業激勵句，右下角「今日一句」可再叫出。預覽上 Vercel（專案根目錄是 `web/`）。
 
 ```bash
 cd web && npm install && npm run dev
@@ -26,6 +26,20 @@ cd web && npm install && npm run dev
 - `/workspace/erp/compare` 與 `/saas`：和鼎新 A1、億看 ECOUNT 一項一項對
 
 工作區裡點「下一步」會在這個瀏覽器走動，用來證明比 A1／億看直觀。**正式過帳還沒接到 ERPNext**，畫面上有這句說明。
+
+## 還沒完整的
+
+| 項目 | 狀態 |
+| --- | --- |
+| 產品殼、100 產業包、A1 下一步操作、黑白、Liquid Glass、激勵句 | 可看 |
+| ERPNext 過帳、主檔權威 | 未接 |
+| Keycloak 登入 | 未接 |
+| Mautic／Postal 魅力圈寄信 | 未接 |
+| Reacher 清庫、Shlink 短網址 | 未接 |
+| 電子發票加值中心 | 適配尚未接 |
+| 公開預覽網址 | Vercel 專案 `dropout-os` 已建，GitHub 還沒授權 |
+
+下一動仍是把示範站接到可複製的 ERPNext site。
 
 ## 開源組裝與套皮
 
@@ -44,5 +58,3 @@ cd web && npm install && npm run dev
 | 帳號 | 不收人頭費 |
 | 產業包 | 100 包可切換，不另收費 |
 | 金流／簡訊／LINE／電子發票 | 外部供應商原價，我們做適配 |
-
-下一動仍是把示範站接到可複製的 ERPNext site；外殼與一百包已經可給業務與顧問用。

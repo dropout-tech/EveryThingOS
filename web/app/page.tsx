@@ -30,26 +30,20 @@ export default function HomePage() {
             員工用現場的話做事，不用先背「銷貨單」。{count} 個產業包，{PRICE_LABEL}，顧問免費導入。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/workspace"
-              className="rounded-full bg-teal px-6 py-3 font-medium text-ink hover:bg-teal-deep"
-            >
+            <Link href="/workspace" className="glass-cta rounded-full px-6 py-3 font-medium">
               打開作業系統
             </Link>
-            <Link
-              href="/workspace/erp/compare"
-              className="rounded-full border border-gold px-6 py-3 text-gold hover:bg-ink-2"
-            >
+            <Link href="/workspace/erp/compare" className="glass-pill px-6 py-3">
               和 A1／億看對照
             </Link>
           </div>
           <p className="mt-4 text-sm text-cream-dim">{PRICE_NOTE}</p>
         </section>
 
-        <section className="border-y border-[var(--line)] bg-ink-2/60">
-          <div className="mx-auto grid max-w-6xl gap-6 px-5 py-14 md:grid-cols-4">
+        <section className="px-5 py-14">
+          <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-4">
             {PILLARS.map((pillar) => (
-              <article key={pillar.id}>
+              <article key={pillar.id} className="glass p-5">
                 <h2 className="text-lg font-medium">{pillar.name}</h2>
                 <p className="mt-2 text-sm text-cream-dim">{pillar.detail}</p>
                 <p className="mt-3 text-xs text-gold">取代 {pillar.replaces}</p>
@@ -66,7 +60,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
             {groups.map((group) => (
-              <span key={group} className="rounded-full border border-[var(--line)] px-3 py-1 text-sm">
+              <span key={group} className="glass-pill px-3 py-1 text-sm">
                 {group}
               </span>
             ))}
@@ -74,7 +68,7 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto grid max-w-6xl gap-8 px-5 pb-20 md:grid-cols-2">
-          <article className="rounded-3xl border border-[var(--line)] p-8">
+          <article className="glass p-8">
             <p className="display text-xs tracking-[0.2em] text-orange uppercase">Commercial</p>
             <h2 className="mt-3 text-2xl">{PRICE_LABEL}／年</h2>
             <ul className="mt-4 space-y-2 text-cream-dim">
@@ -88,7 +82,7 @@ export default function HomePage() {
               看費用怎麼算
             </Link>
           </article>
-          <article className="rounded-3xl border border-[var(--line)] p-8">
+          <article className="glass p-8">
             <p className="display text-xs tracking-[0.2em] text-teal uppercase">Consulting</p>
             <h2 className="mt-3 text-2xl">顧問去現場，導入不另外開帳單</h2>
             <p className="mt-4 text-cream-dim">
