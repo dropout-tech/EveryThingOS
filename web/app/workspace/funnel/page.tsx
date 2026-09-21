@@ -1,18 +1,14 @@
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { currentIndustry } from "@/lib/workspace";
 
-export const metadata = { title: "魅力圈" };
+export const metadata = { title: "把人帶來" };
 
 export default async function FunnelPage() {
   const pack = await currentIndustry();
-  const stages = ["被人看到", "留下資料", "擋假信", "持續聯絡", pack.fulfillment, "熟客再買"];
+  const stages = ["被人看到", "留下資料", "持續聯絡", pack.fulfillment];
 
   return (
-    <ModuleFrame
-      kicker="魅力圈"
-      title={`${pack.nameZh} 從看到進來`}
-      hint="官網、活動頁、後續信件都在這裡。名單過了再進客人。"
-    >
+    <ModuleFrame kicker="把人帶來" title="從看到進來">
       <ol className="glass flex flex-col overflow-hidden md:flex-row">
         {stages.map((stage, index) => (
           <li
@@ -24,9 +20,6 @@ export default async function FunnelPage() {
           </li>
         ))}
       </ol>
-      <p className="text-sm text-cream-dim">
-        這一行平常怎麼走：{pack.sampleLoop}。過了之後進「{pack.workflow.stages[0]}」。
-      </p>
     </ModuleFrame>
   );
 }

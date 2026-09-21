@@ -1,20 +1,19 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
-import { IndustryPicker } from "./IndustryPicker";
 import { SideNav } from "./SideNav";
-import { listIndustryChoices } from "@/lib/industries";
-import { industryDayPath } from "@/lib/operator-day";
+import { navItemsForShop, type ShopProfile } from "@/lib/shop";
 import type { IndustryPack } from "@/lib/types";
 
 type OsShellProps = {
   industry: IndustryPack;
+  shop: ShopProfile;
   children: ReactNode;
 };
 
-export async function OsShell({ industry, children }: OsShellProps) {
-  const industries = listIndustryChoices();
-  const steps = industryDayPath(industry);
+export function OsShell({ industry, shop, children }: OsShellProps) {
+  const items = navItemsForShop(shop);
 
   return (
     <div className="flex min-h-screen text-cream">
@@ -22,7 +21,7 @@ export async function OsShell({ industry, children }: OsShellProps) {
         <div className="border-b border-[var(--line)] px-4 py-4">
           <BrandMark href="/workspace" compact />
         </div>
-        <SideNav steps={steps} />
+        <SideNav items={items} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="glass glass-bar sticky top-0 z-30">
@@ -30,11 +29,13 @@ export async function OsShell({ industry, children }: OsShellProps) {
             <h1 className="text-base font-medium">{industry.nameZh}</h1>
             <div className="flex items-center gap-3">
               <AppearanceBar />
-              <IndustryPicker currentId={industry.id} options={industries} variant="compact" />
+              <Link href="/?setup=1" className="glass-chip px-3 py-1.5 text-xs">
+                重設
+              </Link>
             </div>
           </div>
           <div className="border-t border-[var(--line)] md:hidden">
-            <SideNav variant="top" steps={steps} />
+            <SideNav variant="top" items={items} />
           </div>
         </header>
         <div className="flex-1 p-4 md:p-8">{children}</div>

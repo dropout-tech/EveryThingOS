@@ -41,19 +41,32 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
   return { href: "/workspace/crm", hint: "跟人跟到答應" };
 }
 
+function stageEnabled(href: string, pack: IndustryPack): boolean {
+  if (href.startsWith("/workspace/crm")) return pack.modules.crm;
+  if (href.startsWith("/workspace/reply")) return pack.modules.line;
+  if (href.startsWith("/workspace/funnel")) return pack.modules.funnel;
+  if (href.startsWith("/workspace/website")) return pack.modules.website;
+  if (href.startsWith("/workspace/erp/stock")) return pack.modules.erp.inventory;
+  return true;
+}
+
 export function industryDayPath(pack: IndustryPack): DayStep[] {
   const steps: DayStep[] = [];
   const seen = new Set<string>();
 
   for (const stage of pack.workflow.stages) {
     const mapped = classifyStage(stage, pack);
+    if (!stageEnabled(mapped.href, pack)) continue;
     if (seen.has(mapped.href)) continue;
     seen.add(mapped.href);
     steps.push({ href: mapped.href, label: stage, hint: mapped.hint });
   }
 
   if (!steps.length) {
-    steps.push({ href: "/workspace/crm", label: pack.workflow.stages[0] ?? "客人", hint: "跟人跟到答應" });
+    const fallback = pack.modules.crm
+      ? { href: "/workspace/crm", label: pack.workflow.stages[0] ?? "客人", hint: "跟人跟到答應" }
+      : { href: "/workspace/erp/finance", label: "收錢", hint: "收到錢才算完" };
+    steps.push(fallback);
   }
 
   return steps.slice(0, 5);
@@ -76,11 +89,12 @@ export function industryTodayJobs(
   const nextStage = stages[1] ?? waiting;
   const follow = path.find((step) => step.href !== "/workspace/crm");
 
+  const home = pack.modules.crm ? "/workspace/crm" : (path[0]?.href ?? "/workspace/erp/finance");
   const jobs: DayJob[] = [
     {
       title: `${money.person} 還停在「${waiting}」`,
       detail: `下一步是「${nextStage}」。`,
-      href: "/workspace/crm",
+      href: home,
       tone: "urgent",
     },
   ];

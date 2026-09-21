@@ -4,24 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 type ErpSubnavProps = {
+  showSales: boolean;
+  showPurchase: boolean;
   showStock: boolean;
+  showFinance: boolean;
 };
 
-export function ErpSubnav({ showStock }: ErpSubnavProps) {
+export function ErpSubnav({ showSales, showPurchase, showStock, showFinance }: ErpSubnavProps) {
   const path = usePathname();
   const items = [
-    { href: "/workspace/erp", label: "一眼看懂" },
-    { href: "/workspace/erp/sales", label: "銷售流水" },
-    { href: "/workspace/erp/purchase", label: "採購入庫" },
+    ...(showSales ? [{ href: "/workspace/erp/sales", label: "銷售流水" }] : []),
+    ...(showPurchase ? [{ href: "/workspace/erp/purchase", label: "進貨" }] : []),
     ...(showStock ? [{ href: "/workspace/erp/stock", label: "倉庫" }] : []),
-    { href: "/workspace/erp/finance", label: "帳款與稅" },
-    { href: "/workspace/erp/compare", label: "對照 A1／億看" },
+    ...(showFinance ? [{ href: "/workspace/erp/finance", label: "收錢" }] : []),
   ];
+
+  if (!items.length) return null;
 
   return (
     <nav className="flex flex-wrap gap-2">
       {items.map((item) => {
-        const active = path === item.href;
+        const active = path === item.href || (item.href.endsWith("/sales") && path === "/workspace/erp");
         return (
           <Link
             key={item.href}

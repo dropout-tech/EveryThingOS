@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
-import { PickIndustryScreen } from "@/components/PickIndustryScreen";
-import { listIndustryChoices } from "@/lib/industries";
+import { OnboardScreen } from "@/components/OnboardScreen";
 import { hasChosenIndustry } from "@/lib/workspace";
 
-export default async function HomePage() {
-  if (await hasChosenIndustry()) {
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const setup = (await searchParams).setup;
+  if ((await hasChosenIndustry()) && setup !== "1") {
     redirect("/workspace");
   }
-
-  return <PickIndustryScreen options={listIndustryChoices()} />;
+  return <OnboardScreen />;
 }

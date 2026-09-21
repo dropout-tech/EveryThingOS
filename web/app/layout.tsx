@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
 import { GlassPointer } from "@/components/GlassPointer";
-import { LiquidGlassFilter } from "@/components/LiquidGlassFilter";
 import { OceanColumn } from "@/components/OceanColumn";
 import { currentScene } from "@/lib/scene-server";
 import { currentTheme } from "@/lib/theme-server";
@@ -40,7 +39,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
-        <LiquidGlassFilter />
         <GlassPointer />
         <OceanColumn />
         <div className="page-shell">{children}</div>
