@@ -253,6 +253,11 @@ body {
   border-radius: 0;
 }
 
+.glass.glass-nav,
+.glass.glass-bar {
+  overflow: visible;
+}
+
 .glass-nav {
   border-right: 0;
 }

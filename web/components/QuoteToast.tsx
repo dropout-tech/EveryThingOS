@@ -1,27 +1,33 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nextQuote, quoteForDay, type Quote } from "@/lib/quotes";
 
 const DISMISS_KEY = "dropout:quote-dismissed";
 
 export function QuoteToast() {
+  const path = usePathname();
   const [quote, setQuote] = useState<Quote>(() => quoteForDay());
   const [open, setOpen] = useState(false);
+  const inWorkspace = path.startsWith("/workspace");
 
   useEffect(() => {
+    if (inWorkspace) return;
     if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
     const timer = window.setTimeout(() => setOpen(true), 1600);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [inWorkspace]);
 
   function dismiss() {
     sessionStorage.setItem(DISMISS_KEY, "1");
     setOpen(false);
   }
 
-  if (!open) {
+  const visible = open && !inWorkspace;
+
+  if (!visible) {
     return (
       <button
         type="button"
