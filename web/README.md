@@ -16,4 +16,5 @@ npm run dev
 | `/pricing` | 年費 |
 | `/consulting` | 免費導入步驟 |
 | `/saas` | 取代哪些雲端工具 |
-| `/workspace` | 套皮 OS（可切產業包） |
+| `/workspace` | 套皮 OS（可切產業包、黑白、海山湖） |
+| `/workspace/reply` | 社群回覆（OpenReply 示範，Meta 未接） |

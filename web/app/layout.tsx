@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
 import { QuoteToast } from "@/components/QuoteToast";
+import { currentScene } from "@/lib/scene-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
 
@@ -31,11 +32,12 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const theme = await currentTheme();
+  const [theme, scene] = await Promise.all([currentTheme(), currentScene()]);
 
   return (
-    <html lang="zh-TW" data-theme={theme} className={`${noto.variable} ${outfit.variable} h-full`}>
+    <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full grid-skin antialiased">
+        <div className="scene-layer" aria-hidden="true" />
         <div className="liquid-stage" aria-hidden="true" />
         <div className="page-shell">{children}</div>
         <QuoteToast />

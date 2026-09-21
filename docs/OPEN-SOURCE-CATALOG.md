@@ -108,7 +108,24 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 
 ---
 
-## 6. 要讓四支柱「感覺像一個工具」的底座
+## 6. 社群留言轉私訊（ManyChat 開源替代）
+
+| 專案 | 授權 | 能力 | 決定 |
+| --- | --- | --- | --- |
+| [OpenReply](https://github.com/diwenne/openreply) | MIT | Instagram／Facebook 留言命中關鍵字 → 自動私訊與公開回覆 | **建議採用（社群接單通道）** |
+| [Chatwoot](https://github.com/chatwoot/chatwoot) | MIT + 企業版功能 | 多通路人工收件匣（LINE／IG／FB） | **第二期建議**（人工客服，不跟 OpenReply 搶自動私訊） |
+| ManyChat / CommentGuard / 各家留言機器人 | 專有 | — | **不用** |
+
+原則：
+
+- **不要自研留言機器人。** Meta Graph、App Review、24 小時視窗是專業問題，用 OpenReply。
+- OpenReply 只負責「關鍵字 → 私訊」。客戶主檔仍在 ERPNext。
+- 沒有關鍵字的閒聊不要洗私訊。
+- 產品殼 `/workspace/reply` 是操作介面與示範配對。**未接 Meta webhook 時必須寫清楚**，不可假裝已經送到 Instagram。
+
+---
+
+## 7. 要讓四支柱「感覺像一個工具」的底座
 
 | 層 | 專案 | 授權 | 決定 |
 | --- | --- | --- | --- |
@@ -119,7 +136,7 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 | 流程膠水 | [Huginn](https://github.com/huginn/huginn) | MIT | 過於工程導向，暫緩 |
 | 信件投遞 | [Postal](https://github.com/postalserver/postal) | MIT | **建議採用**（自有 SMTP 時） |
 | 信箱整包 | [Mailcow](https://github.com/mailcow/mailcow-dockerized) | GPL-3.0 | 若也要員工信箱再考慮 |
-| 多通路客服 | [Chatwoot](https://github.com/chatwoot/chatwoot) | MIT + 企業版功能 | **第二期建議**（LINE／IG／FB） |
+| 多通路客服 | [Chatwoot](https://github.com/chatwoot/chatwoot) | MIT + 企業版功能 | **第二期建議**（LINE／IG／FB 人工收件匣；自動私訊走 OpenReply） |
 | 網站分析 | [Umami](https://github.com/umami-software/umami) | MIT | 候選 |
 | 產品分析 | [PostHog](https://github.com/PostHog/posthog) | MIT + EE | 暫緩，避免第二個分析真相 |
 | BI | [Metabase](https://github.com/metabase/metabase) | AGPL-3.0 | 第二期候選 |
@@ -131,7 +148,7 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 
 ---
 
-## 7. 台灣情境（不是第一期核心，但架構要留接口）
+## 8. 台灣情境（不是第一期核心，但架構要留接口）
 
 | 需求 | 開源／可行做法 | 時機 |
 | --- | --- | --- |
@@ -139,6 +156,7 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 | 統一編號、稅籍 | ERPNext 自訂欄位／地區模組 | 第一期主檔就要有欄位 |
 | 電子發票、加值稅 | 社群地區模組或獨立閘道，**不要自寫稅核引擎** | 第二期 |
 | LINE 官方帳號 | Chatwoot LINE channel；漏斗事件回寫 Mautic | 第二期（對台灣行銷幾乎必要） |
+| IG／FB 留言轉私訊 | OpenReply；事件回寫 ERPNext | 產品殼第一期就要有示範；live webhook 隨 App Review |
 | 綠界／藍新／TapPay | 支付適配器（這些金流本身不是開源） | 有電商結帳時 |
 | 個資法 | 同意紀錄、刪除權、存取日誌做在主檔與 Mautic | 第一期就要有事件與欄位，不要事後補 |
 
@@ -146,12 +164,13 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 
 ---
 
-## 8. 明確不納入第一期的東西
+## 9. 明確不納入第一期的東西
 
 - 自研 CRM／ERP 資料模型
 - 自研信件驗證器或反垃圾引擎
 - 自研短網址服務
 - 自研拖放漏斗畫布（ClickFunnels clone）
+- 自研留言轉私訊機器人（用 OpenReply）
 - 第二套 CRM（Twenty + ERPNext 並行）
 - n8n 當正式膠水（授權）
 - 把 Odoo Enterprise 當「以後再買」的隱性依賴
@@ -159,7 +178,7 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 
 ---
 
-## 9. 建議的最小開源組合（第一期）
+## 10. 建議的最小開源組合（第一期）
 
 ```
 Keycloak
@@ -168,10 +187,11 @@ Keycloak
     ├── Mautic                    ← 漏斗、計分、養成
     ├── Reacher                   ← 進線清庫
     ├── Shlink                    ← 品牌短網址與點擊
+    ├── OpenReply                 ← IG／FB 留言轉私訊
     ├── Postal                    ← 實際寄信
     └── Activepieces              ← 系統之間的同步與失敗重試
 ```
 
-這九個專案覆蓋四支柱。官網用 Frappe Builder 算在 ERPNext 生態內，不另找建站系統。Chatwoot（LINE／IG／FB）、產業包、金流是加乘，不是骨架。
+這十個專案覆蓋四支柱與社群接單。官網用 Frappe Builder 算在 ERPNext 生態內，不另找建站系統。Chatwoot（LINE／IG／FB 人工收件匣）、產業包、金流是加乘，不是骨架。
 
 儀表板與公司流程：**不要另選一套 BPM 產品。** Frappe Workspace + Workflow 就是對標 Odoo Studio 的開源能力；跨系統（Mautic ↔ ERPNext）才走 Activepieces。

@@ -71,7 +71,7 @@ EveryThingOS 是中小企業的作業系統：員工只登入一次，客戶只�
 - **核心系統紀錄**：ERPNext／Frappe（人、貨、帳、流程、工作區）
 - **成長引擎**：Mautic（魅力圈、序列、計分）
 - **通道衛生**：Reacher（清庫）+ Shlink（短網址／UTM）
-- **通道適配器**：官網（Frappe Builder）、Email（Postal）、之後 LINE／社群（Chatwoot 等）
+- **通道適配器**：官網（Frappe Builder）、Email（Postal）、社群留言轉私訊（OpenReply）、之後 LINE／收件匣（Chatwoot）
 - **身分與膠水**：Keycloak + Activepieces
 - **產品殼**：模組目錄、產業包開關、租戶工作區（極薄；第一期可用 Frappe Workspace 充當）
 
@@ -136,6 +136,8 @@ flowchart TB
 | ERP | 報價、訂單、庫存、進銷存、會計 | ERPNext | 要不要庫存／批次／BOM、稅表、科目 |
 | 魅力圈 | 官網／落地頁、磁鐵、表單、序列、計分 | Mautic + Frappe Builder | 活動畫布、計分、哪條通道進線 |
 | 通道衛生 | 清庫、短網址、UTM、點擊歸因 | Reacher + Shlink | 擋下規則、品牌網域、活動代碼 |
+
+**社群回覆不是第五支柱。** IG／FB 留言轉私訊用 [OpenReply](https://github.com/diwenne/openreply)（MIT）當通道適配器，取代 ManyChat。命中關鍵字才私訊；人仍只存在 ERPNext。沒有關鍵字的閒聊不要洗收件匣。
 
 預設範本閉環（可改、可跳過節點）：
 
@@ -214,7 +216,7 @@ flowchart LR
 - 多租戶計費、應用商店、經銷後台（租戶模型要留，收費以後再做）
 - 把某一產業的欄位寫進核心 Party
 
-LINE 與各社群原生收件匣：第一期先把**短網址 + UTM + 落地頁**做成所有通道的共同入口；Chatwoot 接 LINE／IG／FB 列為第一個產業無關的通道包，緊接四支柱之後，不阻塞核心。
+LINE 與各社群原生收件匣：第一期先把**短網址 + UTM + 落地頁**做成所有通道的共同入口。**留言轉私訊**用 OpenReply 掛在同一條事件契約上；Chatwoot 接 LINE／IG 收件匣列為緊接其後的通道包，不阻塞核心。
 
 ---
 
@@ -235,13 +237,17 @@ flowchart TB
   WS --> ERP[ERPNext / Frappe<br/>主檔 + 流程 + ERP/CRM]
   WS --> MA[Mautic<br/>魅力圈大腦]
   WS --> SL[Shlink]
+  WS --> OR[OpenReply<br/>留言轉私訊]
   Visitor --> Site[官網 Builder]
   Visitor --> SL
+  Visitor --> IG[IG／FB 留言]
+  IG --> OR
   SL --> LP[落地頁]
   Site --> LP
   LP --> RH[Reacher]
   RH --> MA
   MA --> AP[Activepieces]
+  OR --> AP
   AP --> ERP
   ERP --> AP
   AP --> MA
@@ -261,6 +267,7 @@ flowchart TB
 | 官網／頁面 | Frappe Builder | 官方網站與活動落地頁外觀 |
 | 清庫 | Reacher | 這封信能不能碰；不存業務資料 |
 | 連結情報 | Shlink | 短碼、點擊、UTM、QR；官網、社群、LINE 共用 |
+| 社群回覆 | OpenReply | 留言關鍵字、自動私訊、公開回覆；人仍寫回 ERPNext |
 | 投遞 | Postal | 把信送出去，處理退信 |
 | 膠水 | Activepieces | 對照、重試、死信 |
 | 產品殼 | 極薄 | 租戶清單、模組／產業包開關；第一期可用 Frappe 本身 |
@@ -297,6 +304,7 @@ ERPNext／Frappe 的自訂表單、Workflow、Workspace、會計都在 GPL／MIT
 | 行銷標籤、計分、畫布狀態、電子信同意 | Mautic | 僅 Mautic |
 | 清庫結果 | Reacher 計算；快取在 Mautic 與 ERPNext | 只有清庫工作流程 |
 | 短碼、目標 URL、點擊 | Shlink | 行銷經 UI／API |
+| 社群留言／自動私訊 | OpenReply 執行；事件寫回 ERPNext | 只有命中規則的 webhook |
 | 歸因（哪次活動帶來哪張訂單） | 事件表（第一期用 ERPNext 自訂 DocType） | 只許膠水寫入 |
 | 官網內容 | Frappe Builder | 行銷／管理員 |
 
@@ -311,6 +319,8 @@ ERPNext／Frappe 的自訂表單、Workflow、Workspace、會計都在 GPL／MIT
 ### 6.1 進線：任何通道 → 短網址或官網 → 清庫 → CRM
 
 官網、IG、FB、LINE、QR、廣告，對外都先給 Shlink 或官網路徑，UTM 契約相同。表單提交經 Reacher。invalid 不進 CRM；拋棄式可進 CRM 但永不進 Postal；risky 進 CRM 但序列降級。同意文案版本必存。
+
+IG／FB **留言轉私訊**走 OpenReply，不重寫 ManyChat。只有命中關鍵字的留言才私訊；人若轉正，進 ERPNext 客人主檔，不在 OpenReply 另建一份客戶。Meta App Review 與 webhook 是部署條件，產品殼不可假裝已經接通。
 
 ### 6.2 養成：計分 → 業務可見
 
@@ -338,7 +348,7 @@ UTM 契約：`utm_source`（website／line／ig／fb／email／qr／ads）、`ut
 對訪客：官網與短網址都是同一品牌。  
 對買家（未來）：開一個新站 = 新公司租戶，選產業包，匯入流程範本。
 
-員工面對的「一個工具」現在是 Next.js 產品殼（`web/`，DropOut 皮）。過帳、主檔、流程的權威仍是之後接上的 ERPNext site。殼先讓顧問與老闆用現場語言走完進銷存；Keycloak + Frappe Workspace 在第 1 期接進去時，殼改成讀同一份主檔，不要再做第二套帳。
+員工面對的「一個工具」現在是 Next.js 產品殼（`web/`，DropOut 皮）。風景背景（海／山／湖）是為了讓 Liquid Glass 有東西可折射，不是業務資料。過帳、主檔、流程的權威仍是之後接上的 ERPNext site。殼先讓顧問與老闆用現場語言走完進銷存與社群回覆；Keycloak + Frappe Workspace 在第 1 期接進去時，殼改成讀同一份主檔，不要再做第二套帳。
 
 ---
 
@@ -373,7 +383,7 @@ Postal、Reacher 獨立出口 IP。祕密不進 git。個資落地與刪除權�
 
 - ERPNext／Mautic：GPL-3，獨立程序 + API，不把原始碼揉進專有單體
 - Reacher：AGPL-3，獨立服務
-- Keycloak Apache-2、Shlink MIT、Activepieces CE MIT、Frappe Framework MIT：適合作我們維護的膠水
+- Keycloak Apache-2、Shlink MIT、OpenReply MIT、Activepieces CE MIT、Frappe Framework MIT：適合作我們維護的膠水
 - Builder／Frappe CRM 若改程式並提供網路服務，準備公開修改
 - **n8n 不用**（非正式 OSI 開源）
 - **Odoo Enterprise 不用**
@@ -404,7 +414,7 @@ Reacher 進表單；Shlink 成為官網／社群／QR 的共同短網址層；UT
 
 ### 第 5 期：通道包與產業包
 
-Chatwoot（LINE／IG／FB）、電子發票、金流、第一個產業包（依自用示範公司的真實產業選，而不是一次五包）。
+OpenReply（IG／FB 留言轉私訊）、Chatwoot（LINE／IG／FB 收件匣）、電子發票、金流、第一個產業包（依自用示範公司的真實產業選，而不是一次五包）。OpenReply 與 Chatwoot 不要搶同一則對話：關鍵字自動私訊歸 OpenReply，人工收件匣歸 Chatwoot。
 
 每一期驗收是「示範公司用設定、不改核心程式，就能跑完一筆它自己的生意」。本階段依指示不做自架檢查。
 

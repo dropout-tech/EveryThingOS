@@ -9,3 +9,8 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
+
+# OpenReply (MIT, https://github.com/diwenne/openreply) is the comment-to-DM
+# sibling. Do not add a fake image here. Start it only after Meta Page tokens
+# and App Review exist. The DropOut operator UX is /workspace/reply; live
+# Graph webhooks stay out of this default compose file.

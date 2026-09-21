@@ -8,6 +8,7 @@ const links = [
   { href: "/workspace/crm", label: "客人" },
   { href: "/workspace/erp", label: "生意" },
   { href: "/workspace/funnel", label: "魅力圈" },
+  { href: "/workspace/reply", label: "回覆" },
   { href: "/workspace/hygiene", label: "清庫" },
   { href: "/workspace/links", label: "短網址" },
   { href: "/workspace/website", label: "官網" },

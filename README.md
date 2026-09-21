@@ -1,6 +1,6 @@
 # DropOut OS（EveryThingOS）
 
-琢奧科技的中小企業作業系統。**CRM、ERP、魅力圈、清庫、短網址、官網**同一登入、同一主檔、同一套 DropOut 皮。
+琢奧科技的中小企業作業系統。**CRM、ERP、魅力圈、清庫、短網址、官網、社群回覆**同一登入、同一主檔、同一套 DropOut 皮。
 
 進銷存與財務對齊**鼎新 A1／億看 ECOUNT** 的範圍（報價到收款、採購、庫存、帳齡、傳票、營業稅、電子發票適配），畫面改成「下一步是什麼」，而不是先背程式名稱。
 
@@ -10,7 +10,7 @@
 
 ## 現在就可以看的畫面
 
-產品外殼在 `web/`（Next.js）。黑／白兩套，套蘋果 **Liquid Glass** 材質（毛玻璃、高光邊緣、背景光斑）。進站會跳出創業激勵句，右下角「今日一句」可再叫出。預覽上 Vercel（專案根目錄是 `web/`）。
+產品外殼在 `web/`（Next.js）。黑／白兩套，背後是大海／青山／湖泊風景，讓蘋果 **Liquid Glass** 有東西可折射。進站會跳出創業激勵句，右下角「今日一句」可再叫出。預覽上 Vercel（專案根目錄是 `web/`）。
 
 ```bash
 cd web && npm install && npm run dev
@@ -21,9 +21,10 @@ cd web && npm install && npm run dev
 - `/pricing` 一年十萬
 - `/consulting` 免費導入步驟
 - `/saas` 取代哪些雲端工具
-- `/workspace` 套皮作業系統（右上角切產業，CRM／ERP／漏斗／清庫／短網址跟著變）
+- `/workspace` 套皮作業系統（右上角切產業、黑白、海山湖；CRM／ERP／漏斗／回覆／清庫／短網址跟著變）
 - `/workspace/erp` 生意：銷售流水、採購、倉庫（服務業會藏）、帳款與稅
 - `/workspace/erp/compare` 與 `/saas`：和鼎新 A1、億看 ECOUNT 一項一項對
+- `/workspace/reply` 社群回覆：OpenReply 風格的留言轉私訊（示範配對，Meta 還沒接）
 
 工作區裡點「下一步」會在這個瀏覽器走動，用來證明比 A1／億看直觀。**正式過帳還沒接到 ERPNext**，畫面上有這句說明。
 
@@ -31,11 +32,12 @@ cd web && npm install && npm run dev
 
 | 項目 | 狀態 |
 | --- | --- |
-| 產品殼、100 產業包、A1 下一步操作、黑白、Liquid Glass、激勵句 | 可看 |
+| 產品殼、100 產業包、A1 下一步操作、黑白、海山湖風景、Liquid Glass、激勵句、OpenReply 示範回覆 | 可看 |
 | ERPNext 過帳、主檔權威 | 未接 |
 | Keycloak 登入 | 未接 |
 | Mautic／Postal 魅力圈寄信 | 未接 |
 | Reacher 清庫、Shlink 短網址 | 未接 |
+| OpenReply Meta webhook | 未接 |
 | 電子發票加值中心 | 適配尚未接 |
 | 公開預覽網址 | Vercel 專案 `dropout-os` 已建，GitHub 還沒授權 |
 
@@ -43,7 +45,7 @@ cd web && npm install && npm run dev
 
 ## 開源組裝與套皮
 
-架構仍是 ERPNext + Mautic + Reacher + Shlink + Keycloak + Activepieces。員工看不到原廠皮。
+架構仍是 ERPNext + Mautic + Reacher + Shlink + OpenReply + Keycloak + Activepieces。員工看不到原廠皮。
 
 - 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)

@@ -19,7 +19,7 @@ export default async function WorkspaceHome() {
       </div>
       <MoneyStrip books={books} />
       <TodayList books={books} />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         <section className="glass p-5">
           <div className="flex items-center justify-between">
             <h3>客人現在在哪</h3>
@@ -53,6 +53,17 @@ export default async function WorkspaceHome() {
               </li>
             ))}
           </ul>
+        </section>
+        <section className="glass p-5">
+          <div className="flex items-center justify-between">
+            <h3>社群留言</h3>
+            <Link href="/workspace/reply" className="text-sm text-teal">
+              回覆
+            </Link>
+          </div>
+          <p className="mt-3 text-sm text-cream-dim">
+            四則示範 IG 留言等關鍵字。命中才私訊，可轉進客人看板。底層是 OpenReply，Meta 還沒接。
+          </p>
         </section>
       </div>
     </div>

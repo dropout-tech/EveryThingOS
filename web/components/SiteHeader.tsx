@@ -1,7 +1,6 @@
 import Link from "next/link";
+import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
-import { ThemeToggle } from "./ThemeToggle";
-import { currentTheme } from "@/lib/theme-server";
 
 const links = [
   { href: "/industries", label: "一百產業" },
@@ -11,8 +10,6 @@ const links = [
 ];
 
 export async function SiteHeader() {
-  const theme = await currentTheme();
-
   return (
     <header className="glass glass-bar sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
@@ -25,7 +22,7 @@ export async function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <ThemeToggle current={theme} />
+          <AppearanceBar />
           <Link href="/workspace" className="glass-cta rounded-full px-4 py-2 text-sm font-medium">
             進入作業系統
           </Link>

@@ -26,7 +26,7 @@ export default function HomePage() {
             <span className="text-teal">但打開就知道下一步。</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-cream-dim">
-            進銷存、帳款、稅、電子發票對齊它們的等級。再加上 CRM、魅力圈、清庫。
+            進銷存、帳款、稅、電子發票對齊它們的等級。再加上 CRM、魅力圈、清庫、社群留言轉私訊。
             員工用現場的話做事，不用先背「銷貨單」。{count} 個產業包，{PRICE_LABEL}，顧問免費導入。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -41,7 +41,7 @@ export default function HomePage() {
         </section>
 
         <section className="px-5 py-14">
-          <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-4">
+          <div className="mx-auto grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {PILLARS.map((pillar) => (
               <article key={pillar.id} className="glass p-5">
                 <h2 className="text-lg font-medium">{pillar.name}</h2>
@@ -73,7 +73,7 @@ export default function HomePage() {
             <h2 className="mt-3 text-2xl">{PRICE_LABEL}／年</h2>
             <ul className="mt-4 space-y-2 text-cream-dim">
               <li>進銷存＋財務對齊鼎新 A1／億看，操作改成下一步</li>
-              <li>全模組：CRM、ERP、魅力圈、清庫、短網址、官網</li>
+              <li>全模組：CRM、ERP、魅力圈、清庫、短網址、官網、社群回覆</li>
               <li>{count} 個產業包，可依現場改 Dashboard 與流程</li>
               <li>免費顧問導入，不另收導入專案費</li>
               <li>全部套琢奧識別，員工看不到開源原廠皮</li>

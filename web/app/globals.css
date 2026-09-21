@@ -14,14 +14,21 @@ html[data-theme="black"] {
   --navy: #12141c;
   --line: rgba(255, 255, 255, 0.22);
   --grid: rgba(255, 255, 255, 0.05);
-  --glass-fill: rgba(255, 255, 255, 0.1);
-  --glass-fill-strong: rgba(255, 255, 255, 0.28);
+  --glass-fill: rgba(255, 255, 255, 0.12);
+  --glass-fill-strong: rgba(255, 255, 255, 0.3);
   --glass-stroke: rgba(255, 255, 255, 0.34);
   --glass-highlight: rgba(255, 255, 255, 0.62);
   --glass-shadow: rgba(0, 0, 0, 0.38);
   --orb-a: rgba(255, 255, 255, 0.2);
   --orb-b: rgba(200, 210, 230, 0.14);
   --glass-sheet: rgba(12, 14, 20, 0.78);
+  --scene-veil: linear-gradient(
+    180deg,
+    rgba(7, 8, 12, 0.52) 0%,
+    rgba(7, 8, 12, 0.28) 42%,
+    rgba(7, 8, 12, 0.62) 100%
+  );
+  --scene-image: url("/scenes/ocean.jpg");
 }
 
 html[data-theme="white"] {
@@ -37,14 +44,20 @@ html[data-theme="white"] {
   --navy: #e6e9f0;
   --line: rgba(255, 255, 255, 0.7);
   --grid: rgba(17, 19, 24, 0.05);
-  --glass-fill: rgba(255, 255, 255, 0.52);
-  --glass-fill-strong: rgba(255, 255, 255, 0.72);
+  --glass-fill: rgba(255, 255, 255, 0.4);
+  --glass-fill-strong: rgba(255, 255, 255, 0.62);
   --glass-stroke: rgba(255, 255, 255, 0.88);
   --glass-highlight: rgba(255, 255, 255, 0.95);
   --glass-shadow: rgba(30, 40, 60, 0.14);
   --orb-a: rgba(255, 255, 255, 0.9);
   --orb-b: rgba(170, 180, 200, 0.35);
   --glass-sheet: rgba(255, 255, 255, 0.84);
+  --scene-veil: linear-gradient(
+    180deg,
+    rgba(238, 241, 246, 0.36) 0%,
+    rgba(255, 255, 255, 0.18) 46%,
+    rgba(238, 241, 246, 0.42) 100%
+  );
 }
 
 @theme inline {
@@ -61,6 +74,18 @@ html[data-theme="white"] {
   --font-display: var(--font-outfit);
 }
 
+html[data-scene="ocean"] {
+  --scene-image: url("/scenes/ocean.jpg");
+}
+
+html[data-scene="mountain"] {
+  --scene-image: url("/scenes/mountain.jpg");
+}
+
+html[data-scene="lake"] {
+  --scene-image: url("/scenes/lake.jpg");
+}
+
 html,
 body {
   background: var(--ink);
@@ -75,6 +100,25 @@ body {
 ::selection {
   background: var(--teal);
   color: var(--ink);
+}
+
+.scene-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--ink);
+  background-image: var(--scene-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.scene-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scene-veil);
 }
 
 .liquid-stage {
@@ -143,8 +187,8 @@ body {
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 rgba(255, 255, 255, 0.08),
     0 18px 50px var(--glass-shadow);
-  backdrop-filter: blur(28px) saturate(165%);
-  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
 }
 
 .glass-nav {
@@ -239,6 +283,14 @@ button {
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  .scene-layer {
+    background-image: none;
+  }
+
+  .scene-layer::after {
+    background: var(--ink);
+  }
+
   .glass,
   .glass-pill,
   .glass-cta,

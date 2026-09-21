@@ -29,7 +29,11 @@ export default async function SettingsPage() {
         </div>
         <div className="glass p-4">
           <dt className="text-sm text-cream-dim">介面</dt>
-          <dd className="mt-1">黑／白 + 蘋果 Liquid Glass。右上角切換顏色，卡片與導覽用玻璃材質。</dd>
+          <dd className="mt-1">黑／白 + 海／山／湖風景。Liquid Glass 必須有東西可折射，右上角一起切。</dd>
+        </div>
+        <div className="glass p-4">
+          <dt className="text-sm text-cream-dim">社群回覆</dt>
+          <dd className="mt-1">OpenReply（MIT）做 IG／FB 留言轉私訊，取代 ManyChat。產品殼已有示範配對。</dd>
         </div>
         <div className="glass p-4">
           <dt className="text-sm text-cream-dim">對齊等級</dt>
@@ -38,7 +42,7 @@ export default async function SettingsPage() {
         <div className="glass p-4 md:col-span-2">
           <dt className="text-sm text-cream-dim">還沒接到現場的</dt>
           <dd className="mt-1 text-sm leading-7 text-cream-dim">
-            ERPNext 過帳、Keycloak 登入、Mautic 魅力圈、Reacher 清庫、Shlink 短網址、電子發票加值中心、公開預覽網址（Vercel 還沒接到 GitHub）。
+            ERPNext 過帳、Keycloak 登入、Mautic 魅力圈、Reacher 清庫、Shlink 短網址、OpenReply Meta webhook、電子發票加值中心、公開預覽網址（Vercel 還沒接到 GitHub）。
             現在這層是產品殼與示範帳簿，用來把操作與外觀定下來。
           </dd>
         </div>

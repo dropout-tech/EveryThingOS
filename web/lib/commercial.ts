@@ -35,6 +35,12 @@ export const PILLARS = [
     replaces: "NeverBounce、Bitly、UTM 試算表",
     detail: "進線先清庫，對外短網址與點擊歸因寫回同一個人。",
   },
+  {
+    id: "reply",
+    name: "社群回覆",
+    replaces: "ManyChat、IG 留言轉私訊工具",
+    detail: "留言命中關鍵字才私訊。底層 OpenReply（MIT），同一個人可轉進客人看板。",
+  },
 ] as const;
 
 export const SAAS_MATRIX = [
@@ -54,7 +60,7 @@ export const SAAS_MATRIX = [
   { category: "預約日曆", tools: ["Calendly", "Cal.com 雲端", "預約 LINE"], pillar: "CRM" },
   { category: "專案工時", tools: ["Monday.com", "Asana", "Jira"], pillar: "ERP" },
   { category: "雲端硬碟主檔", tools: ["Google 試算表", "Dropbox", "個人碟"], pillar: "平台核" },
-  { category: "社群私訊接單", tools: ["IG 私訊", "FB 粉絲團", "Manychat"], pillar: "通道衛生" },
+  { category: "社群私訊接單", tools: ["ManyChat", "IG 留言轉私訊", "CommentGuard"], pillar: "回覆（OpenReply）" },
   { category: "LINE 官方", tools: ["LINE OA 後台", "第三方聊天機器人"], pillar: "通道衛生" },
   { category: "分析", tools: ["GA4 當業務報表", "一堆廣告後台"], pillar: "魅力圈" },
 ] as const;
