@@ -144,7 +144,7 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
             window.setTimeout(() => inputRef.current?.focus(), 30);
           }}
         >
-          {current ? current.nameZh : "選你做哪一行"}
+          {current ? "換一行" : "選你做哪一行"}
         </button>
         {open ? (
           <div className="glass absolute right-0 z-[70] mt-2 w-[min(22rem,calc(100vw-2rem))] p-3">

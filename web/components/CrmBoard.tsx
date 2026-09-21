@@ -52,7 +52,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
   return (
     <div className="space-y-4">
       <ActionNote>{note}</ActionNote>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(14rem,1fr))] gap-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
             <h3 className="text-sm">{column.stage}</h3>
@@ -64,9 +64,7 @@ export function CrmBoard({ pack, initial }: CrmBoardProps) {
                   return (
                     <li key={lead.name} className="glass-chip p-3">
                       <p>{lead.name}</p>
-                      <p className="mt-1 text-xs text-cream-dim">
-                        {lead.channel} · 熱度 {lead.score}
-                      </p>
+                      <p className="mt-1 text-xs text-cream-dim">{lead.channel}</p>
                       <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-cream">
                         {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}
                       </button>

@@ -20,7 +20,6 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
     <ModuleFrame
       kicker="客人"
       title="往右，跟到答應"
-      hint="最後一格會變成一張單。"
     >
       <CrmBoard
         pack={{
