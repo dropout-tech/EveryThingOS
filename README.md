@@ -39,7 +39,7 @@ cd web && npm install && npm run dev
 | Reacher 清庫、Shlink 短網址 | 未接 |
 | OpenReply Meta webhook | 未接 |
 | 電子發票加值中心 | 適配尚未接 |
-| 公開預覽網址 | Vercel 專案 `dropout-os` 已建，GitHub 還沒授權 |
+| 公開預覽網址 | https://dropout-os.vercel.app （production 追 GitHub `main`） |
 
 下一動仍是把示範站接到可複製的 ERPNext site。
 
