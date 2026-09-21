@@ -90,3 +90,11 @@ export function matchRule(text: string, rules: ReplyRule[]): ReplyRule | undefin
   if (!haystack) return undefined;
   return rules.find((rule) => haystack.includes(rule.keyword.trim().toLowerCase()));
 }
+
+export function sanitizeImportedHandle(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) return null;
+  const trimmed = raw.trim().slice(0, 40);
+  if (!/^@?[A-Za-z0-9._]+$/.test(trimmed)) return null;
+  return trimmed.startsWith("@") ? trimmed : `@${trimmed}`;
+}

@@ -3,11 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionNote } from "./ActionNote";
-import { demoKey, peekDemoState, useDemoState, writeDemoState } from "@/lib/demo-state";
-import { matchRule, type ReplyComment, type ReplyRule } from "@/lib/reply";
+import { demoKey, useDemoState } from "@/lib/demo-state";
+import { matchRule, sanitizeImportedHandle, type ReplyComment, type ReplyRule } from "@/lib/reply";
 import type { IndustryPack } from "@/lib/types";
-
-type Lead = { name: string; stage: string; score: number; channel: string };
 
 type ReplyBoardProps = {
   pack: Pick<IndustryPack, "id" | "nameZh" | "workflow">;
@@ -56,19 +54,14 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
   }
 
   function onLead(comment: ReplyComment) {
-    const stages = pack.workflow.stages;
-    const lead: Lead = {
-      name: comment.handle.replace(/^@/, ""),
-      stage: stages[0],
-      score: 24,
-      channel: "IG 留言",
-    };
-    const existing = peekDemoState<Lead[]>(demoKey("leads", pack.id), []);
-    if (!existing.some((item) => item.name === lead.name)) {
-      writeDemoState(demoKey("leads", pack.id), [lead, ...existing]);
+    const handle = sanitizeImportedHandle(comment.handle);
+    if (!handle) {
+      setNote("這個帳號格式不能進客人看板。");
+      return;
     }
-    setNote(`${lead.name} 進了客人看板「${lead.stage}」。同一個人，不必再從 IG 手動複製。`);
-    window.setTimeout(() => router.push("/workspace/crm"), 700);
+    const stage = pack.workflow.stages[0];
+    setNote(`${handle} 進了客人看板「${stage}」。同一個人，不必再從 IG 手動複製。`);
+    router.push(`/workspace/crm?from=${encodeURIComponent(handle)}`);
   }
 
   function onAddRule() {

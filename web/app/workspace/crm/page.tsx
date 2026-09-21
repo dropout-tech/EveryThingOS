@@ -1,12 +1,20 @@
 import { CrmBoard } from "@/components/CrmBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { sanitizeImportedHandle } from "@/lib/reply";
 import { currentIndustry, demoRecords } from "@/lib/workspace";
 
 export const metadata = { title: "客人" };
 
-export default async function CrmPage() {
+export default async function CrmPage({ searchParams }: PageProps<"/workspace/crm">) {
   const pack = await currentIndustry();
   const { leads } = demoRecords(pack);
+  const from = sanitizeImportedHandle((await searchParams).from);
+  const initial = from
+    ? [
+        { name: from, stage: pack.workflow.stages[0], score: 24, channel: "IG 留言" },
+        ...leads.filter((lead) => lead.name !== from),
+      ]
+    : leads;
 
   return (
     <ModuleFrame
@@ -22,7 +30,7 @@ export default async function CrmPage() {
           modules: pack.modules,
           workflow: pack.workflow,
         }}
-        initial={leads}
+        initial={initial}
       />
     </ModuleFrame>
   );
