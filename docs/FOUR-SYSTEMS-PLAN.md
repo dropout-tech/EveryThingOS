@@ -14,7 +14,7 @@
 | --- | --- | --- | --- | --- |
 | D1 | 「Open Chat」指什麼？ | A. 對話收件匣：LINE 官方帳號、IG／FB 私訊、官網聊天，同一個畫面回<br/>B. LINE 社群（OpenChat）群組 | **A** | LINE 社群沒有官方 API，無法合法串接或讀取；只能人工經營，再用短網址把人帶進 A |
 | D2 | 對話用什麼引擎？ | A. Chatwoot 收人工對話 + OpenReply 只做留言關鍵字私訊<br/>B. 只用 Chatwoot<br/>C. 自己寫 | **A** | Chatwoot 有 LINE、IG、FB、官網小工具通道，但沒有「IG 留言命中關鍵字自動私訊」；OpenReply 補這塊。自己寫要處理 Meta 審核與視窗規則，不划算 |
-| D3 | 電子報用什麼引擎？ | A. Mautic + Postal（序列、計分、分群都有）<br/>B. Listmonk + Postal（只發電子報，很輕）<br/>C. 兩個都上 | **A** | 架構已定 Mautic 管行銷同意與分群；再加 Listmonk 就是第二份同意名單，退訂會不同步。若你判斷客人只要「每月一封」、不要自動序列，改選 B，程式介面不變 |
+| D3 | 電子報用什麼引擎？ | A. Mautic + Postal（序列、計分、分群都有）<br/>B. Listmonk + Postal（只發電子報，很輕）<br/>C. ERPNext 內建電子報與 Email Campaign + 外部寄信服務，需要時才加 Mautic | **C**（已依 [PLATFORM-INTEGRATION.md](PLATFORM-INTEGRATION.md) P3 修訂） | 名單與同意只在 ERPNext 一份；Mautic 是一家公司一套，客戶多時維運成本高；Cloudflare 寄信只允許交易信，自架 Postal 要養 IP 信譽 |
 | D4 | 客人名單畫面用誰？ | A. DropOut 產品殼自己的看板，資料存 ERPNext<br/>B. 上 Frappe CRM 當前台 | **A** | 產品殼已經有客人看板與現場語言；再上 Frappe CRM 等於員工要學兩套畫面 |
 | D5 | LINE 要不要拿來發「電子報」？ | A. 第一期不做 LINE 群發，只做一對一回覆<br/>B. 第一期就做 LINE 群發 | **A** | LINE 主動推播會吃方案訊息額度（回覆用 reply token 不算）；群發要先有分群與同意，等電子報分群跑通再加 |
 | D6 | 同一個人在不同通道，怎麼認成一個？ | A. 只有 email 或手機**驗證過一致**才自動合併，其餘由員工按「是同一個人」<br/>B. 姓名相同就合併 | **A** | LINE userId、IG 帳號 ID 都只在各自平台有效，姓名會撞；合併錯了比沒合併嚴重（會把別人的帳單寄給他） |
@@ -117,7 +117,7 @@ flowchart LR
 4. 只有姓名像、或未驗證 → 客人卡片顯示「可能是同一個人」，員工按一下才合併
 5. 合併可以撤銷（保留原 `party_id` 對照）
 
-### 2.3 同意（Consent）——行銷同意權威在 Mautic，交易通知同意在 ERPNext
+### 2.3 同意（Consent）——行銷與交易通知同意都在 ERPNext（加上 Mautic 的客戶，Mautic 只是同步副本）
 
 | 類型 | 例子 | 沒同意時 |
 | --- | --- | --- |
@@ -166,14 +166,14 @@ flowchart LR
 
 | 項目 | 規劃 |
 | --- | --- |
-| 引擎 | Mautic（分群、序列、同意、追蹤）+ Postal（實際寄送、退信） |
-| 名單來源 | 只從 ERPNext 客人同步進 Mautic，且必須有行銷同意；不讓員工匯入來路不明的 Excel 直接寄 |
-| 清庫 | 新 email 先過 Reacher；無效不寄、拋棄式不寄、有風險降頻 |
+| 引擎 | ERPNext 內建電子報（Email Group、Newsletter）與 Email Campaign（序列）；寄送走外部寄信服務。開信與點擊追蹤的程度要先實測，不足再為該客戶加 Mautic |
+| 名單來源 | 只用 ERPNext 客人，且必須有行銷同意；不讓員工匯入來路不明的 Excel 直接寄 |
+| 清庫 | 雙重確認訂閱（點確認信才算）＋退信自動停寄；Reacher 延後 |
 | 分群 | 由事件決定：`paid` → 老客人；`won` 前 → 新朋友；`unsubscribed` → 全部移除 |
 | 寫回 | `letter_opened`、`letter_clicked` 回到客人卡片；`unsubscribed` 關掉所有行銷通道 |
 | 寄件網域 | 每家公司自己的網域，SPF、DKIM、DMARC 檢查通過才允許寄；新網域依量逐步加量 |
 | 不做 | 自己寫編輯器、自己寫寄信、無同意名單群發 |
-| 失敗時 | Postal 硬退 → 該 email 停寄並回寫客人卡片；Mautic 掛了 → 排程信延後，畫面顯示「這封還沒寄出」，不顯示假的寄出數 |
+| 失敗時 | 寄信服務回報硬退 → 該 email 停寄並回寫客人卡片；寄信服務或 ERPNext 排程掛了 → 信延後，畫面顯示「這封還沒寄出」，不顯示假的寄出數 |
 
 ### 3.3 客人（CRM）
 
@@ -205,7 +205,9 @@ flowchart LR
 
 ---
 
-## 4. 系統之間的同步（膠水：Activepieces）
+## 4. 系統之間的同步（膠水：Cloudflare Workers + Queues + Workflows）
+
+依 [PLATFORM-INTEGRATION.md](PLATFORM-INTEGRATION.md) P2，固定流程用 Cloudflare Workflows 寫；Activepieces 延後到客戶要自己拉自動化時。
 
 所有跨系統動作只走這張表。新增一條要先加進這裡。
 
@@ -213,12 +215,12 @@ flowchart LR
 | --- | --- | --- | --- |
 | G1 | Chatwoot 新對話 | 找或建客人與身分，寫 `message_received` | Chatwoot conversation id |
 | G2 | OpenReply 命中留言 | 建潛在客人，寫 `lead_captured` | Meta comment id |
-| G3 | 官網表單 | Reacher 檢查 → 建潛在客人；有勾行銷同意才進 Mautic | 表單提交 id |
-| G4 | ERPNext 客人有行銷同意 | 同步到 Mautic 聯絡人 | `party_id` |
-| G5 | ERPNext `won` / `paid` | 更新 Mautic 分群與標籤 | 單號 + 事件 |
-| G6 | Mautic 退訂 | ERPNext 關掉所有行銷同意；Chatwoot 標記勿推播 | Mautic 聯絡人 id + 時間 |
-| G7 | Mautic 開信／點擊 | 寫回客人時間軸 | Mautic 事件 id |
-| G8 | Postal 硬退 | ERPNext 與 Mautic 標記 email 無效 | Postal message id |
+| G3 | 官網表單 | 建潛在客人；有勾行銷同意就寄確認信，點了才算訂閱 | 表單提交 id |
+| G4 | 確認信被點 | ERPNext 記行銷同意，加進「新朋友」 | 確認 token |
+| G5 | ERPNext `won` / `paid` | 更新電子報分群（Email Group） | 單號 + 事件 |
+| G6 | 任何通道退訂 | ERPNext 關掉所有行銷同意；Chatwoot 標記勿推播 | `party_id` + 時間 |
+| G7 | 開信／點擊 | 寫回客人時間軸 | 寄信服務事件 id |
+| G8 | 寄信服務硬退 | ERPNext 標記 email 無效並停寄 | 寄信服務 message id |
 | G9 | 金流 webhook | 建 ERPNext 收款（金額相符才自動） | 金流交易序號 |
 | G10 | ERPNext 開發票 | 呼叫加值中心開立，回寫發票號碼 | Sales Invoice name |
 
@@ -279,9 +281,9 @@ web/lib/sources/
 | --- | --- | --- | --- |
 | 7.1 示範迴圈 | 產品殼：`chat`、`letter` 模組改名與頁面；共用型別；林安安從對話走到老客人分群，全在示範資料 | 第 0 節確認 | 不接任何後端，一個瀏覽器裡走完第 1 節七步，每步都標示範 |
 | 7.2 資料來源層 | `web/lib/sources` 拆 demo／live；現有頁面改讀 `sources` | 7.1 | 換環境變數切 demo，畫面行為不變 |
-| 7.3 ERPNext 真的 | 一個 ERPNext site：客人、身分 DocType、事件 DocType、報價到收款；殼的客人與生意讀它 | 7.2、Keycloak | 在殼裡建報價，ERPNext 看得到同一張單；ERPNext 關掉時殼顯示讀不到而不是壞掉 |
+| 7.3 ERPNext 真的 | 一個 ERPNext site：客人、身分 DocType、事件 DocType、報價到收款；殼的客人與生意讀它；ERPNext 當登入中心 | 7.2、主機與 Cloudflare Tunnel | 在殼裡建報價，ERPNext 看得到同一張單；ERPNext 關掉時殼顯示讀不到而不是壞掉 |
 | 7.4 對話真的 | Chatwoot 接官網小工具與 LINE 官方帳號；G1；殼的對話頁讀 Chatwoot | 7.3、LINE 官方帳號與 channel secret | 用手機在 LINE 問一句，殼裡出現在客人卡片上 |
-| 7.5 電子報真的 | Mautic + Postal + Reacher；G3–G8；寄件網域 DNS | 7.3、公司網域 | 寄一封給「老客人」，點擊回到客人時間軸；退訂後 LINE 也不再推 |
+| 7.5 電子報真的 | ERPNext 電子報 + 外部寄信服務；G3–G8；寄件網域 DNS | 7.3、公司網域 | 寄一封給「老客人」，點擊回到客人時間軸；退訂後 LINE 也不再推 |
 | 7.6 社群與金流發票 | OpenReply（Meta App Review 通過後）、G2；金流 G9；電子發票 G10 | 7.4、Meta 審核、金流與加值中心合約 | IG 留言「價格」→ 私訊 → 客人卡片 → 報價 → 付款 → 發票號碼回到卡片 |
 
 7.1 與 7.2 只動產品殼，不需要任何外部帳號，可以先做。7.3 之後每一期都需要外部帳號或審核，列在第 8 節。

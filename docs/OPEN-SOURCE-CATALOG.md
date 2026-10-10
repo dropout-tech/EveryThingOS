@@ -125,6 +125,21 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 
 ---
 
+## 6.1 會議紀錄機器人
+
+| 專案 | 授權 | 能力 | 決定 |
+| --- | --- | --- | --- |
+| [Vexa](https://github.com/vexa-ai/vexa) | Apache-2.0 | 機器人加入 Google Meet／Teams／Zoom，即時逐字稿；轉文字可接任何 OpenAI 相容端點 | **建議採用**（轉文字接 Workers AI，不買 GPU） |
+| [Cloudflare RealtimeKit](https://developers.cloudflare.com/realtime/realtimekit/) | 託管服務 | 自家會議室，會後逐字稿與摘要內建 | **建議採用**（自家會議連結；非開源，是外部服務） |
+| [MeetingBot](https://github.com/meetingbot/meetingbot) | LGPL-3.0 | Meet／Teams／Zoom 錄音 | 候選（部署綁 AWS） |
+| [Meetily](https://github.com/Zackriya-Solutions/meeting-minutes) | MIT | 本機錄音與摘要，不進會議 | 候選（實體會議） |
+| [Attendee](https://github.com/attendee-labs/attendee) | Elastic License 2.0 | 會議機器人 API | **不用**：不允許代管給第三方 |
+| [OpenCC](https://github.com/BYVoid/OpenCC) | Apache-2.0 | 簡繁轉換 | **建議採用**（逐字稿轉台灣繁體） |
+
+整合方式見 [PLATFORM-INTEGRATION.md](PLATFORM-INTEGRATION.md) 第 2 節。
+
+---
+
 ## 7. 要讓四支柱「感覺像一個工具」的底座
 
 | 層 | 專案 | 授權 | 決定 |

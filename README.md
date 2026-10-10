@@ -49,6 +49,7 @@ cd web && npm install && npm run dev
 - 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)
 - 對話、電子報、客人、生意四系統規劃：[docs/FOUR-SYSTEMS-PLAN.md](docs/FOUR-SYSTEMS-PLAN.md)
+- 大整合（重複造輪子檢查、會議紀錄機器人、Cloudflare 部署）：[docs/PLATFORM-INTEGRATION.md](docs/PLATFORM-INTEGRATION.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）
