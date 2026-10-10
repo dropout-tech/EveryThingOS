@@ -137,6 +137,8 @@ flowchart TB
 | 魅力圈 | 官網／落地頁、磁鐵、表單、序列、計分 | Mautic + Frappe Builder | 活動畫布、計分、哪條通道進線 |
 | 通道衛生 | 清庫、短網址、UTM、點擊歸因 | Reacher + Shlink | 擋下規則、品牌網域、活動代碼 |
 
+員工面對的四個系統（對話、電子報、客人、生意）怎麼對到這四支柱、怎麼串成同一條資料迴圈，見 [FOUR-SYSTEMS-PLAN.md](FOUR-SYSTEMS-PLAN.md)。
+
 **社群回覆不是第五支柱。** IG／FB 留言轉私訊用 [OpenReply](https://github.com/diwenne/openreply)（MIT）當通道適配器，取代 ManyChat。命中關鍵字才私訊；人仍只存在 ERPNext。沒有關鍵字的閒聊不要洗收件匣。
 
 預設範本閉環（可改、可跳過節點）：
