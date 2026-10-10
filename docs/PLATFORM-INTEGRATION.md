@@ -19,7 +19,7 @@
 | P2 | 系統之間的同步用什麼？ | **Cloudflare Workers + Queues + Workflows** 寫固定的 G1–G10；Activepieces 延後到「客戶要自己拉自動化」時才上 | Activepieces 當第一期膠水 |
 | P3 | 電子報第一期用什麼？ | **ERPNext 內建電子報與 Email Campaign**，寄送走 Amazon SES 或同級的外部寄信服務；客戶需要計分、視覺化序列時才為該客戶加 Mautic | 每家公司一套 Mautic + Postal |
 | P4 | 員工登入用什麼？ | **ERPNext 當登入中心**（Frappe 可當 OAuth2／OpenID Connect 提供者），Cloudflare Access 只擋管理後台；Keycloak 延後 | 第一期就上 Keycloak |
-| P5 | 會議紀錄怎麼做？ | **兩條路**：自家會議室用 Cloudflare RealtimeKit（內建錄音、會後逐字稿與摘要）；客戶開的 Google Meet／Teams／Zoom 用 Vexa 機器人 | 新增 |
+| P5 | 會議紀錄怎麼做？ | **Vexa 機器人**：接員工行事曆，時間到自己進 Zoom／Google Meet／Teams；轉文字走 Workers AI。Cloudflare RealtimeKit 只在要自己發會議連結時選配 | 新增 |
 | P6 | 部署在哪？ | **Cloudflare 當前門與膠水，一台主機跑重系統**，兩邊用 Cloudflare Tunnel 連；不硬塞全部上 Cloudflare | 原本未定 |
 | P7 | 清庫第一期怎麼做？ | **雙重確認訂閱 + 退信自動停寄**；Reacher 延後 | 第一期就上 Reacher |
 
@@ -94,58 +94,76 @@ flowchart TB
 
 ---
 
-## 2. 會議紀錄機器人
+## 2. 會議紀錄機器人：自己進 Zoom／Google Meet
 
-### 2.1 選項
+目標：員工不用做任何事。行事曆上有會，時間到機器人自己進 Zoom、Google Meet 或 Teams，會後把摘要和待辦放回那個客人的卡片。
 
-| 專案 | 授權 | 會議平台 | 轉文字 | 適合 |
+### 2.1 選哪一套
+
+| 專案 | 授權 | 自己進會議 | 平台 | 決定 |
 | --- | --- | --- | --- | --- |
-| [Vexa](https://github.com/vexa-ai/vexa) | Apache-2.0 | Google Meet、Teams、Zoom（Jitsi 尚在驗證） | 可接任何 OpenAI 相容的轉文字端點；自帶的 faster-whisper 要 GPU，CPU 版較慢 | **建議**：機器人進客戶的會議 |
-| [Cloudflare RealtimeKit](https://developers.cloudflare.com/realtime/realtimekit/) | 託管服務（非開源） | 自家會議室 | 會後 Whisper Large v3 Turbo 逐字稿 + AI 摘要，內建 | **建議**：我們自己發會議連結時 |
-| [MeetingBot](https://github.com/meetingbot/meetingbot) | LGPL-3.0 | Meet、Teams、Zoom | 只錄音，轉文字另接 | 候選；部署綁 AWS Terraform |
-| [Attendee](https://github.com/attendee-labs/attendee) | Elastic License 2.0 | Meet、Teams、Zoom | 接外部服務 | **不用**：不允許代管給第三方，跟我們賣給其他公司衝突 |
-| [Meetily](https://github.com/Zackriya-Solutions/meeting-minutes) | MIT | 不進會議，本機錄 | 本機 Whisper | 候選：實體會議用筆電錄 |
+| [Vexa](https://github.com/vexa-ai/vexa) | Apache-2.0 | ✅ 接行事曆（ICS）後依排程自動加入 | Google Meet、Zoom、Teams 為正式支援；Jitsi 尚在驗證 | **採用** |
+| [MeetingBot](https://github.com/meetingbot/meetingbot) | LGPL-3.0 | 透過 API 派送 | Meet、Teams、Zoom | 候選：只錄音，部署綁 AWS Terraform |
+| [Attendee](https://github.com/attendee-labs/attendee) | Elastic License 2.0 | ✅ 有行事曆整合 | Meet、Teams、Zoom | **不用**：授權不允許代管給第三方，跟我們賣給其他公司衝突 |
+| [Meetily](https://github.com/Zackriya-Solutions/meeting-minutes) | MIT | ❌ 不進會議，在筆電本機錄 | — | 只給實體會議用 |
+| [Cloudflare RealtimeKit](https://developers.cloudflare.com/realtime/realtimekit/) | 託管服務 | ❌ 它是會議室本身，不是機器人 | 自家會議室 | 選配：要自己發會議連結時才用 |
+
+Vexa 的加入方式是開一個瀏覽器進會議，跟人用網頁加入一樣：
+
+- **Google Meet**：預設以訪客身分敲門，主持人按「允許」才進。可改成「登入模式」：機器人用一個公司專用的 Google 帳號登入，同公司的會議可以直接進，限定組織內的會議也進得去
+- **Zoom**：用 Zoom 網頁版加入，**不需要申請 Zoom App**；有等候室時要主持人放行
+- **Teams**：以訪客加入，依對方組織設定可能要放行
 
 ### 2.2 員工看到什麼
 
-1. 在客人卡片或「今天」按**記這場會**，貼上會議連結（或按**開一間會議室**，產生我們自己的會議連結）
-2. 機器人以「DropOut 會議紀錄」名稱加入，並在會議聊天室宣告正在記錄
-3. 會議結束後，客人卡片時間軸多一筆：摘要、決定事項、待辦（誰、什麼時候）
-4. 待辦變成 ERPNext 的 ToDo，指派給負責人，出現在他的「今天」
-5. 若摘要提到報價或數量，卡片上出現「要不要開報價」按鈕；**不自動開單**
+1. **第一次設定**：在個人設定貼上自己的行事曆 ICS 網址（Google 日曆「私人網址」或 Outlook 發佈的行事曆），選規則：
+   - 有外部客人的會都進（預設）
+   - 全部都進
+   - 只進標題有「#記錄」的會
+2. **之後什麼都不用做**：「今天」會列出等一下機器人會進的會，每一場旁邊有一個**這場不要記**
+3. 時間到，機器人以「DropOut 會議紀錄」名字加入，進場後在會議聊天室貼一句「本場由 DropOut 記錄，若不同意請告知，我會離開」
+4. 主持人沒放行：五分鐘後機器人放棄，「今天」顯示「這場沒進去：等候室沒人放行」
+5. 會議結束：用與會者的 email 對到客人，卡片時間軸多一筆**摘要、決定事項、待辦**
+6. 待辦變成 ERPNext 的 ToDo，指派給負責人，出現在他的「今天」
+7. 摘要提到報價或數量時，卡片上出現「要不要開報價」按鈕；**不自動開單**
+
+臨時會議（沒排在行事曆上）：在客人卡片按**派機器人進去**，貼上會議連結即可。
 
 ### 2.3 資料流
 
 ```mermaid
 flowchart LR
-  Card[客人卡片：記這場會] --> W[Worker：建立會議任務]
-  W -->|外部會議| V[Vexa 機器人]
-  W -->|自家會議室| RK[RealtimeKit]
+  Cal[員工行事曆 ICS] --> V[Vexa：排程自動加入]
+  Card[客人卡片：派機器人進去] --> V
+  V -->|進入| Z[Zoom／Google Meet／Teams]
   V -->|音訊| STT[Worker：轉文字轉接]
   STT --> WAI[Workers AI Whisper]
-  RK -->|meeting.transcript／meeting.summary webhook| Sum
-  WAI --> Sum[Worker：摘要＋待辦]
+  WAI --> V
+  V -->|會議結束 webhook| Sum[Worker：摘要＋待辦]
   Sum --> CC[OpenCC 轉繁體]
   CC --> R2[R2：逐字稿原檔]
-  CC --> EN[ERPNext：時間軸＋ToDo]
+  CC --> Match[與會者 email 對客人]
+  Match --> EN[ERPNext：時間軸＋ToDo]
 ```
 
-- 新事件：`meeting_recorded`（帶 `party_id`、會議時間、逐字稿 R2 位置）、`meeting_summarized`（帶摘要與待辦）
-- Vexa 的轉文字端點指向我們的 Worker；Worker 把 OpenAI 相容格式的請求轉成 Workers AI 呼叫。這是約百行的轉接層，不是自研轉文字
-- Whisper 輸出中文可能是簡體，存檔前一律用 OpenCC（Apache-2.0）轉成台灣繁體
-- RealtimeKit 的逐字稿與摘要只保留 7 天，收到 webhook 後要立刻搬到 R2
+- 對到客人的方式：與會者 email 對四系統規劃 2.2 節的通道身分表；對不到的外部 email 建「可能是新客人」，讓負責人確認，不自動建客人
+- 新事件：`meeting_recorded`（`party_id`、會議時間、平台、逐字稿 R2 位置）、`meeting_summarized`（摘要與待辦）
+- Vexa 的轉文字端點指向我們的 Worker，由 Worker 轉成 Workers AI 呼叫，不需要 GPU。這是約百行的轉接層，不是自研轉文字
+- Whisper 的中文輸出可能是簡體，存檔前一律用 OpenCC（Apache-2.0）轉成台灣繁體
+- Vexa 每場會議開一個瀏覽器容器；同時段要進幾場會，主機就要撐幾個容器
 
 ### 2.4 規則與風險
 
 | 項目 | 規則 |
 | --- | --- |
-| 告知與同意 | 機器人必須用明顯名稱加入並宣告；客人卡片記錄「已告知錄音」。客戶要求停止就立刻離開 |
-| 誰能派機器人 | 只有該客人的負責人與主管 |
-| 保存 | 逐字稿原檔與錄音依公司設定的天數自動刪除；摘要跟著客人主檔 |
-| Zoom | 機器人加入 Zoom 需要 Zoom App 憑證與審核 |
-| Google Meet | 機器人以訪客加入，需要主持人放行 |
+| 告知與同意 | 機器人名稱一定要看得出是記錄機器人，進場就宣告；客人卡片記「已告知錄音」。有人要求就立刻離開 |
+| 誰的行事曆 | 只有員工自己貼的 ICS；不掃整個公司的行事曆 |
+| 保存 | 逐字稿原檔與錄音依公司設定天數自動刪除；摘要跟著客人主檔 |
+| Google 登入模式 | 一個 Google 帳號同時只能撐一個機器人（Vexa 文件明講，多個容器共用同一組登入會有帳號風險）。同時段要進 N 場，就要 N 個專用帳號 |
+| Zoom 平台政策 | Zoom 從 2026 年 3 月起要求 Meeting SDK 應用程式加入外部會議時必須掛在某個使用者名下（OBF token）。Vexa 現在走的是網頁版，不是 SDK；若 Zoom 之後也收緊網頁版的自動加入，合規的替代是 Zoom 的 RTMS 或 SDK + OBF，兩者都需要 Zoom App 審核，而且授權的使用者必須人在會議裡。正式上線前要再確認一次 Zoom 的條款 |
+| 主持人不放行 | 機器人無法自己繞過等候室；這是平台設計，不是錯誤 |
 | 台語、口音 | Whisper 對台語效果差；畫面上標示「逐字稿僅供參考」，摘要讓負責人確認後才進時間軸 |
-| 摘要品質 | 繁體中文摘要要先用真實會議錄音挑模型，不在沒測過前承諾品質 |
+| 摘要品質 | 繁體中文摘要要先用真實會議錄音挑模型，沒測過之前不承諾品質 |
 
 ---
 
@@ -167,7 +185,7 @@ flowchart LR
 | 交易信 | ✅ | Email Service（需 Workers 付費方案） | **只能交易信**，不能寄電子報 |
 | 收信（客服信箱轉對話） | ✅ | Email Routing → Worker → Chatwoot | |
 | 會議逐字稿、摘要 | ✅ | Workers AI | |
-| 自家會議室 | ✅ | RealtimeKit | 非開源託管服務 |
+| 自家會議室（選配） | ✅ | RealtimeKit | 非開源託管服務；機器人進 Zoom／Meet 不需要它 |
 | ERPNext | ❌ | 主機 Docker | 需要 MariaDB、Redis、背景工作與排程常駐；Cloudflare 沒有 MariaDB，容器磁碟不保留 |
 | Chatwoot | ❌ | 主機 Docker | Rails + Sidekiq + Postgres + Redis + WebSocket 常駐；Cloudflare 沒有託管 Redis |
 | OpenReply | ⚠️ | 先放主機 | 是否能改跑在 Workers 要看程式結構，部署時評估 |
@@ -191,7 +209,6 @@ flowchart TB
     R2[(R2 檔案錄音備份)]
     Mail[Email Service 交易信]
     AI[Workers AI]
-    RK[RealtimeKit 會議室]
     Tunnel[Tunnel]
   end
   subgraph host [一台主機 Docker Compose]
@@ -209,7 +226,8 @@ flowchart TB
   Tunnel --> CW
   Tunnel --> VX
   VX --> AI
-  RK --> Q
+  VX -->|自己加入| Meet[Zoom／Google Meet／Teams]
+  VX -->|會議結束| Q
   ERP -->|備份| R2
   Q --> Mail
 ```
@@ -233,7 +251,7 @@ flowchart TB
 | LINE 官方帳號 Messaging API | 對話 | 對話真的 |
 | Meta 開發者 App 與 App Review | IG／FB 私訊與留言 | 社群 |
 | 外部寄信服務帳號與寄件網域 DNS | 電子報 | 電子報真的 |
-| Zoom App 憑證 | 機器人進 Zoom | 會議（只有 Zoom 需要） |
+| 機器人專用 Google Workspace 帳號（選配，同時段要進幾場就要幾個） | 機器人以登入身分進 Google Meet，同公司會議免等候 | 會議（只在用登入模式時） |
 | 電子發票加值中心合約 | 開立發票 | 發票 |
 | 金流商合約 | 收款 | 金流 |
 
@@ -248,7 +266,7 @@ flowchart TB
 | W5 | Webhook 與膠水 | Workers 驗簽、Queues、Workflows、D1 冪等；G1–G10 | W3 |
 | W6 | 客人 360 | 身分表、事件表、時間軸 API；Chatwoot 側欄嵌入客人卡片 | W4、W5 |
 | W7 | 電子報 | ERPNext 電子報 + 外部寄信；雙重確認訂閱；退信回寫 | W5 |
-| W8 | 會議紀錄 | Vexa 部署、Worker 轉文字轉接、RealtimeKit、OpenCC、摘要寫回 | W5、W6 |
+| W8 | 會議紀錄 | Vexa 部署與行事曆自動加入、Worker 轉文字轉接、OpenCC、與會者對客人、摘要與待辦寫回 | W5、W6 |
 | W9 | 開新公司 | 一個指令建 ERPNext 站 + Chatwoot 帳戶 + 預設流程 + 產業包 | W3、W4 |
 | W10 | 台灣在地 | 電子發票、金流、LINE 推播（同意後） | W5、合約 |
 
@@ -279,7 +297,7 @@ W1、W2 不需要任何外部帳號，可以先做。
 | 報價到收款、進貨、庫存、帳 | ERPNext | 第一期 |
 | 對話（LINE、IG、FB、官網） | Chatwoot + OpenReply | 第一期 |
 | 電子報 | ERPNext 內建 → 選配 Mautic | 第一期 |
-| 會議紀錄 | Vexa + RealtimeKit | 第一期尾 |
+| 會議紀錄（自己進 Zoom／Meet） | Vexa | 第一期尾 |
 | 官網、落地頁 | Frappe Builder | 第二期 |
 | 短網址 | Shlink | 第二期 |
 | 報表 | Frappe Insights | 第二期 |
