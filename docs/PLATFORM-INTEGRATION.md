@@ -22,8 +22,11 @@
 | P5 | 會議紀錄怎麼做？ | **Vexa 機器人**：接員工行事曆，時間到自己進 Zoom／Google Meet／Teams；轉文字走 Workers AI。Cloudflare RealtimeKit 只在要自己發會議連結時選配 | 新增 |
 | P6 | 部署在哪？ | **Cloudflare 當前門與膠水，一台主機跑重系統**，兩邊用 Cloudflare Tunnel 連；不硬塞全部上 Cloudflare | 原本未定 |
 | P7 | 清庫第一期怎麼做？ | **雙重確認訂閱 + 退信自動停寄**；Reacher 延後 | 第一期就上 Reacher |
+| P8 | IG／FB 留言轉私訊第一期用什麼？ | **Meta Business Suite 內建「留言轉私訊」**；客人回覆後的對話由 Chatwoot 接手。需要每篇貼文不同規則、公開回覆＋私訊、留言當下就建潛在客人時，才為該客戶加 OpenReply | OpenReply 第一期必裝 |
+| P9 | 主機怎麼管？ | **Coolify**（Apache-2.0）管 Docker 服務、TLS、資料庫備份到 R2；ERPNext 另用內建 S3 備份 | 手寫 Docker Compose |
+| P10 | 電子發票怎麼接？ | **[paid-tw/einvoice](https://github.com/paid-tw/einvoice)**（MIT）在 Worker 裡呼叫，一套介面接綠界、藍新、光貿等；換加值中心只換設定 | 自己寫每家加值中心的適配器 |
 
-這七題確認後，第一期要自己架的系統從 11 套降到 4 套（ERPNext、Chatwoot、OpenReply、Vexa），其餘用 Cloudflare 或延後。
+這十題確認後，第一期要自己架的系統從 11 套降到 3 套（ERPNext、Chatwoot、Vexa），其餘用 Cloudflare、外部服務或延後。
 
 ---
 
@@ -46,7 +49,7 @@
 | 登入 | Keycloak + ERPNext 各有帳號 | ERPNext 當唯一帳號來源（P4）；之後真的要接客戶自己的 Google Workspace／Microsoft 365 時，再評估 Keycloak 或 Cloudflare Access |
 | 行銷名單與同意 | Mautic 與 ERPNext 各一份 | 第一期只有 ERPNext 一份（P3），退訂不會不同步 |
 | 寄信 | Postal 與 Mautic 內建、之後還有交易信 | 交易信（出貨、發票、密碼）走 Cloudflare Email Service；電子報走外部寄信服務。不自架 Postal |
-| Meta 連線 | OpenReply 與 Chatwoot 都接同一個粉專 | 維持分工：留言歸 OpenReply、私訊歸 Chatwoot；部署時驗證兩個 App 同時訂閱同一粉專的訊息歸屬 |
+| Meta 連線 | OpenReply 與 Chatwoot 都接同一個粉專 | 第一期只有 Chatwoot 接 Meta，留言轉私訊用 Meta 內建（P8）；之後加 OpenReply 時，留言歸 OpenReply、私訊歸 Chatwoot，並驗證兩個 App 同時訂閱同一粉專的訊息歸屬 |
 | 錄音轉文字 | Vexa 自帶 Whisper 要 GPU | 改接 Workers AI（見第 2 節），不買 GPU |
 
 ### 1.3 有更好的工具嗎
@@ -66,7 +69,7 @@
 | --- | --- |
 | ERPNext | 台灣中小企業要的報價到收款、庫存、帳齡在社群版都有；換 Odoo 會撞到企業版的功能牆 |
 | Chatwoot | 有 LINE、IG、FB、官網小工具通道，同一套就能服務多家公司（多帳戶） |
-| OpenReply | IG／FB 留言關鍵字私訊沒有更成熟的開源替代 |
+| OpenReply（選配） | 需要比 Meta 內建更細的留言規則時，沒有更成熟的開源替代 |
 | Shlink | 仍是短網址最省事的選擇；但排到電子報跑通之後 |
 
 ### 1.5 更好的握法：殼只握三樣東西
@@ -188,7 +191,7 @@ flowchart LR
 | 自家會議室（選配） | ✅ | RealtimeKit | 非開源託管服務；機器人進 Zoom／Meet 不需要它 |
 | ERPNext | ❌ | 主機 Docker | 需要 MariaDB、Redis、背景工作與排程常駐；Cloudflare 沒有 MariaDB，容器磁碟不保留 |
 | Chatwoot | ❌ | 主機 Docker | Rails + Sidekiq + Postgres + Redis + WebSocket 常駐；Cloudflare 沒有託管 Redis |
-| OpenReply | ⚠️ | 先放主機 | 是否能改跑在 Workers 要看程式結構，部署時評估 |
+| OpenReply（選配） | ⚠️ | 先放主機 | 第一期用 Meta 內建，不部署；之後是否能改跑在 Workers 要看程式結構 |
 | Vexa | ❌ | 主機 Docker | 每場會議一個 Chromium 容器，由 Vexa 自己的 Docker／Kubernetes 調度；轉文字改走 Workers AI 就不需要 GPU |
 | 電子報群發 | ❌ | 外部寄信服務（如 Amazon SES） | Cloudflare Email Service 禁止行銷群發；自架 Postal 需要 25 埠與 IP 信譽，Cloudflare 做不到 |
 | Mautic（選配） | ❌ | 主機 Docker | PHP + MySQL + 排程常駐 |
@@ -214,7 +217,6 @@ flowchart TB
   subgraph host [一台主機 Docker Compose]
     ERP[ERPNext 多站]
     CW[Chatwoot 多帳戶]
-    OR[OpenReply]
     VX[Vexa]
   end
   Ext[LINE／Meta／金流／加值中心] --> Hooks
@@ -247,7 +249,7 @@ flowchart TB
 | 項目 | 用途 | 卡住哪一期 |
 | --- | --- | --- |
 | Cloudflare 帳號、Workers 付費方案、網域託管在 Cloudflare | 殼、膠水、交易信、AI | 全部 |
-| 一台主機（示範站粗估 8 vCPU／32 GB，正式規格待壓測） | ERPNext、Chatwoot、OpenReply、Vexa | 接 ERPNext 起 |
+| 一台主機（示範站粗估 8 vCPU／32 GB，正式規格待壓測） | ERPNext、Chatwoot、Vexa（由 Coolify 管理） | 接 ERPNext 起 |
 | LINE 官方帳號 Messaging API | 對話 | 對話真的 |
 | Meta 開發者 App 與 App Review | IG／FB 私訊與留言 | 社群 |
 | 外部寄信服務帳號與寄件網域 DNS | 電子報 | 電子報真的 |
@@ -261,14 +263,14 @@ flowchart TB
 | --- | --- | --- | --- |
 | W1 | 殼搬上 Cloudflare | OpenNext adapter、環境變數、Access 擋 `/admin` | Cloudflare 帳號 |
 | W2 | 資料來源層 | `web/lib/sources` demo／live 切換（見四系統規劃第 6 節） | 無 |
-| W3 | 主機與 Tunnel | Docker Compose：ERPNext、Chatwoot；Tunnel；每日備份到 R2；還原演練 | 主機 |
-| W4 | ERPNext 登入中心 | Frappe OAuth2／OIDC 提供者；殼、Chatwoot 用它登入 | W3 |
+| W3 | 主機與 Tunnel | Coolify 管理 ERPNext、Chatwoot、Vexa；Tunnel；資料庫與 ERPNext 檔案每日備份到 R2；還原演練 | 主機 |
+| W4 | ERPNext 登入中心 | Frappe OAuth2／OIDC 提供者給殼用；Chatwoot 由殼經 Platform API 取得一次性登入網址 | W3 |
 | W5 | Webhook 與膠水 | Workers 驗簽、Queues、Workflows、D1 冪等；G1–G10 | W3 |
 | W6 | 客人 360 | 身分表、事件表、時間軸 API；Chatwoot 側欄嵌入客人卡片 | W4、W5 |
 | W7 | 電子報 | ERPNext 電子報 + 外部寄信；雙重確認訂閱；退信回寫 | W5 |
 | W8 | 會議紀錄 | Vexa 部署與行事曆自動加入、Worker 轉文字轉接、OpenCC、與會者對客人、摘要與待辦寫回 | W5、W6 |
 | W9 | 開新公司 | 一個指令建 ERPNext 站 + Chatwoot 帳戶 + 預設流程 + 產業包 | W3、W4 |
-| W10 | 台灣在地 | 電子發票、金流、LINE 推播（同意後） | W5、合約 |
+| W10 | 台灣在地 | 電子發票（paid-tw/einvoice）、金流、LINE 推播（同意後） | W5、合約 |
 
 W1、W2 不需要任何外部帳號，可以先做。
 
@@ -287,6 +289,28 @@ W1、W2 不需要任何外部帳號，可以先做。
 
 ---
 
+## 6. 第二輪檢查：還有沒有更好的選擇
+
+逐項查證後的結論。「改」表示已寫進第 0 節；「維持」表示查過、沒有更好的。
+
+| 項目 | 原案 | 查到的事實 | 結論 |
+| --- | --- | --- | --- |
+| IG 留言轉私訊 | OpenReply | Meta Business Suite 內建免費「留言轉私訊」：最多 5 個關鍵字、比對區分大小寫、每則留言只回一則固定私訊、只能在電腦版設定。OpenReply（MIT）可做更細的規則 | **改**（P8）：先用 Meta 內建，少養一套服務 |
+| Chatwoot 單一登入 | 接登入中心 | 社群版不支援 SAML（企業版功能），也沒有通用 OIDC；但 Platform API 可以替某位員工產生一次性登入網址 | **改**（P4 補充）：殼已登入的員工按「回她」，殼在伺服端向 Chatwoot 要一次性登入網址再轉過去，員工不用再登入一次 |
+| ERPNext 電子報追蹤 | 內建電子報 | Email Campaign 走 Communication，可追蹤開信（需 `use_ssl` 與「Track email status」）；Newsletter 不追蹤；兩者都沒有點擊追蹤。整份 Email Campaign 被一人退訂就停掉的錯誤在 v15.103.0 修正 | **改**：序列與分群用 Email Campaign；開信、點擊、退信改由寄信服務的事件回報（例：Amazon SES 的事件通知）；ERPNext 版本至少 v15.103.0 |
+| 來源歸因 | 自訂事件 DocType | ERPNext 交易單據已有 `utm_source`、`utm_medium`、`utm_campaign`、`utm_content` 欄位（部署時確認版本） | **改**：歸因直接用 ERPNext 原生 UTM 欄位，事件表只記事件，不另存 UTM |
+| 電子發票 | 自寫加值中心適配器 | paid-tw/einvoice（MIT）提供統一介面，支援綠界、藍新、光貿等的開立、作廢、折讓；可在 edge runtime 執行 | **改**（P10） |
+| 主機維運 | Docker Compose | Coolify（Apache-2.0）有儀表板部署、資料庫排程備份到 S3 相容儲存（含 R2）；但不備份應用程式的磁碟區。Dokploy 有部分功能是專有授權 | **改**（P9）：用 Coolify；ERPNext 的檔案與資料庫另用 ERPNext 內建 S3 備份；每月還原演練 |
+| 殼上 Cloudflare | OpenNext | OpenNext 支援 Next.js 16，最低要求 16.3.8；Cloudflare 對**新**專案推薦 vinext（Vite 重新實作的 Next API）| **維持** OpenNext：我們是既有的標準 Next.js 專案。目前 16.3.5 落在 `next/og` 遠端執行漏洞範圍，已另開 PR 升到 16.3.8 |
+| AI 摘要呼叫 | 直接呼叫 Workers AI | Cloudflare AI Gateway 可記錄、快取、限流，並在模型之間切換 | **改**：所有 AI 呼叫經 AI Gateway，換模型不改程式 |
+| ERP 內核 | ERPNext | Odoo 社群版已有台灣綠界電子發票模組（`l10n_tw_edi_ecpay`）；但進階會計、Studio 仍在企業版 | **維持** ERPNext：電子發票用 P10 補上，比換內核便宜 |
+| ERPNext 版本 | 未定 | v15 支援到 2027 年底，v16 支援到 2029 年底 | **待定**：先確認 Frappe Builder、Insights 與 v16 相容，相容就直接上 v16，免得一年後就要大升級 |
+| 對話 | Chatwoot | LINE、IG、FB、官網小工具、Email 通道齊全，一套可服務多家公司 | **維持** |
+| 會議機器人 | Vexa | 見第 2 節 | **維持** |
+| 內部搜尋 | 未定 | 客人時間軸已彙整對話、單據、電子報、會議 | **不加**搜尋引擎：第一期全域搜尋只查 ERPNext 的客人與單據 |
+
+---
+
 ## 5. 「登入後做所有事」的範圍
 
 一次做完全部會讓第一期永遠做不完。依「沒有它，員工就得再開另一套工具」排序：
@@ -295,10 +319,10 @@ W1、W2 不需要任何外部帳號，可以先做。
 | --- | --- | --- |
 | 今天、客人卡片、搜尋 | DropOut 殼 | 第一期 |
 | 報價到收款、進貨、庫存、帳 | ERPNext | 第一期 |
-| 對話（LINE、IG、FB、官網） | Chatwoot + OpenReply | 第一期 |
+| 對話（LINE、IG、FB、官網） | Chatwoot；留言轉私訊用 Meta 內建，選配 OpenReply | 第一期 |
 | 電子報 | ERPNext 內建 → 選配 Mautic | 第一期 |
 | 會議紀錄（自己進 Zoom／Meet） | Vexa | 第一期尾 |
-| 官網、落地頁 | Frappe Builder | 第二期 |
+| 官網、落地頁 | Frappe Builder | 第一期（決策紀錄第 4 題：官網第一期就要在產品裡） |
 | 短網址 | Shlink | 第二期 |
 | 報表 | Frappe Insights | 第二期 |
 | 簽約 | DocuSeal 或 Documenso（皆 AGPL） | 有客戶要求時 |

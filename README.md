@@ -31,20 +31,20 @@ cd web && npm install && npm run dev
 
 | 項目 | 狀態 |
 | --- | --- |
-| 產品殼、現場／規模／功能 onboarding、今天一件事、A1 下一步、黑白、海面到海底、邊緣折射玻璃、OpenReply 示範回覆 | 可看 |
-| ERPNext 過帳、主檔權威 | 未接 |
-| Keycloak 登入 | 未接 |
-| Mautic／Postal 魅力圈寄信 | 未接 |
-| Reacher 清庫、Shlink 短網址 | 未接 |
-| OpenReply Meta webhook | 未接 |
+| 產品殼、現場／規模／功能 onboarding、今天一件事、A1 下一步、黑白、海面到海底、邊緣折射玻璃、社群回覆示範 | 可看 |
+| ERPNext 過帳、主檔權威、登入 | 未接 |
+| Chatwoot 對話（LINE、IG、FB、官網） | 未接 |
+| 電子報（ERPNext Email Campaign + 寄信服務） | 未接 |
+| Vexa 會議紀錄機器人 | 未接 |
+| 殼搬上 Cloudflare、系統間同步 | 未接 |
 | 電子發票加值中心 | 適配尚未接 |
 | 公開預覽網址 | https://dropout-os.vercel.app （production 追 GitHub `main`） |
 
-下一動仍是把示範站接到可複製的 ERPNext site。
+下一動：殼搬上 Cloudflare 並拆出示範／真實資料來源層，再接可複製的 ERPNext site。
 
 ## 開源組裝與套皮
 
-架構仍是 ERPNext + Mautic + Reacher + Shlink + OpenReply + Keycloak + Activepieces。員工看不到原廠皮。
+第二版架構：Cloudflare（殼、同步、檔案、交易信、AI）＋ 一台主機（ERPNext、Chatwoot、Vexa，Coolify 管理）。Mautic、OpenReply、Shlink、Keycloak 為選配。員工看不到原廠皮。
 
 - 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)
