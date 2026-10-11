@@ -2009,15 +2009,13 @@ html[data-theme="white"] .os-shell .glass-chip {
     background: var(--field-bg);
   }
 
-  .import-drop input[type="file"]::file-selector-button {
-    margin-right: 0.75rem;
-    min-height: var(--ui-control);
-    padding: 0 1rem;
-    border: 1px solid var(--field-border);
-    border-radius: var(--btn-radius);
-    background: var(--control-fill);
-    color: var(--cream);
+  .import-file + label {
     cursor: pointer;
+  }
+
+  .import-file:focus-visible + label {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
 
   .segmented .import-filter {
@@ -2035,6 +2033,25 @@ html[data-theme="white"] .os-shell .glass-chip {
     background: var(--accent);
     color: var(--on-accent);
     font-weight: 500;
+  }
+
+  @media (max-width: 639px) {
+    .import-steps > li {
+      flex: 0 0 auto;
+    }
+
+    .import-steps > li:has([aria-current="step"]) {
+      flex: 1 0 auto;
+    }
+
+    .import-step:not([aria-current="step"]) .import-step-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   @media (pointer: coarse) {

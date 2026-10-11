@@ -319,7 +319,7 @@ export function ImportWizard({ live, initialKind, demo }: Props) {
               <span className="import-step-no" aria-hidden>
                 {i < step ? "✓" : i + 1}
               </span>
-              {label}
+              <span className="import-step-label">{label}</span>
             </button>
           </li>
         ))}
@@ -368,13 +368,14 @@ export function ImportWizard({ live, initialKind, demo }: Props) {
             </button>
           </div>
           <Field label="從 Excel 複製（連表頭一起），貼在這裡" hint="在 Excel 選好範圍按 Ctrl+C（Mac 是 ⌘C），再到這裡按 Ctrl+V。">
-            <textarea className="field min-h-40 font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} placeholder={spec.template.map((r) => r.join("\t")).join("\n")} spellCheck={false} />
+            <textarea rows={8} className="field font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} placeholder={spec.template.map((r) => r.join("\t")).join("\n")} spellCheck={false} />
           </Field>
           <div className="import-drop">
-            <label htmlFor={fileId} className="field-label">
-              或上傳檔案
+            <p className="field-label">或上傳檔案</p>
+            <input id={fileId} type="file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,text/csv" onChange={fromFile} className="import-file sr-only" />
+            <label htmlFor={fileId} className={buttonClass({ variant: "secondary", size: "sm" })}>
+              選擇檔案
             </label>
-            <input id={fileId} type="file" accept=".csv,.tsv,.txt,.xlsx,.xlsm,text/csv" onChange={fromFile} className="block w-full text-sm" />
             <p className="field-hint">CSV（UTF-8 或 Big5 都可以）或 Excel（.xlsx，讀第一個工作表）。舊版 .xls 請先另存成 .xlsx 或 CSV。</p>
           </div>
           <div className="form-actions flex flex-wrap items-center gap-2">
@@ -456,7 +457,7 @@ export function ImportWizard({ live, initialKind, demo }: Props) {
               <span className="kpi-value">{summary.ready}</span>
             </li>
             <li className="kpi">
-              <span className="kpi-label">有提醒，仍會匯入</span>
+              <span className="kpi-label">其中有提醒</span>
               <span className="kpi-value">{summary.warnings}</span>
             </li>
             <li className="kpi">
@@ -498,20 +499,20 @@ export function ImportWizard({ live, initialKind, demo }: Props) {
                   <caption className="sr-only">每一列的檢查結果</caption>
                   <thead className="bg-ink-2">
                     <tr>
+                      <th scope="col">{spec.fields[0].label}</th>
                       <th scope="col" className="num" data-numeric="">
                         列
                       </th>
-                      <th scope="col">{spec.fields[0].label}</th>
                       <th scope="col">結果</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shown.slice(0, SHOWN).map((r) => (
                       <tr key={r.row}>
+                        <td data-primary="">{r.values[spec.fields[0].key] || <span className="text-cream-dim">（空白）</span>}</td>
                         <td data-label="列" className="num" data-numeric="">
                           {r.row}
                         </td>
-                        <td data-primary="">{r.values[spec.fields[0].key] || <span className="text-cream-dim">（空白）</span>}</td>
                         <td data-label="結果">
                           {r.issues.length ? (
                             <ul className="space-y-1">
