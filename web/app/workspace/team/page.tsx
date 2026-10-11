@@ -24,6 +24,7 @@ const DEMO: Team = {
     { name: "會計", note: "發票、收付款、帳務", roles: [], admin: false },
     { name: "客服", note: "對話、客人資料", roles: [], admin: false },
     { name: "行銷", note: "電子報、名單、官網", roles: [], admin: false },
+    { name: "人資", note: "員工資料、請假核准、打卡、薪資", roles: [], admin: false },
   ],
   security: { enable_two_factor_auth: 0, two_factor_for_everyone: 0, two_factor_method: "OTP App", enable_password_policy: 1, minimum_password_score: "3", session_expiry: "08:00", allow_consecutive_login_attempts: 5, deny_multiple_sessions: 0 },
 };

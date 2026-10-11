@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "creation": "2026-10-11 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "insured_salary",
+  "labor",
+  "health",
+  "pension"
+ ],
+ "fields": [
+  {
+   "fieldname": "insured_salary",
+   "fieldtype": "Currency",
+   "label": "投保薪資／月提繳工資",
+   "reqd": 1,
+   "in_list_view": 1,
+   "non_negative": 1
+  },
+  {
+   "fieldname": "labor",
+   "fieldtype": "Check",
+   "label": "勞保",
+   "in_list_view": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "health",
+   "fieldtype": "Check",
+   "label": "健保",
+   "in_list_view": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "pension",
+   "fieldtype": "Check",
+   "label": "勞退",
+   "in_list_view": 1,
+   "default": "0"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-11 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "DropOut HR TW",
+ "name": "Taiwan Insured Salary Grade",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

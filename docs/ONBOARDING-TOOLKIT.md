@@ -67,6 +67,7 @@ sequenceDiagram
 | `dropout_core` | Frappe 自訂 app：自訂欄位（統編等）、Identity／Consent／Event DocType、角色、工作流、工作區、台灣列印格式、信件範本 | `hooks.py` fixtures；`install-app`、`migrate` 時自動套用 |
 | 產業包 | `dropout_pack_make`、`dropout_pack_service`、`dropout_pack_edu`，各自獨立 app | 要開就裝、要關就移除，互不影響 |
 | `dropout_pay_tw` | 台灣金流 gateway（見 1.1） | Frappe Payments 擴充點 |
+| `dropout_hr_tw` | 人事薪資：台灣薪資元件、費率、假別（見 `HR.md`）；殼裡選了「人事」模組才裝，連同 Frappe HRMS | Frappe HRMS version-15 |
 | 開站指令 | `bench new-site` → `install-app erpnext payments webshop builder dropout_core dropout_pack_x` → 設定精靈；同時開 Chatwoot 帳號、Vexa 金鑰 | 全是官方指令；輸入取自殼的 ShopProfile（場景、規模、模組） |
 | 搬家範本 | Data Import 範本 + 欄位對照（鼎新 A1、ECOUNT、Excel 匯出） | Frappe Data Import（新增／更新）；大量用 `bench data-import` |
 | 導入引導 | Module Onboarding 步驟（fixtures）；未完成的步驟出現在殼的「今天」 | Frappe Module Onboarding |

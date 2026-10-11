@@ -3,7 +3,7 @@ import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
-import type { AuditRow, Catalog, DeadLetter, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
+import type { AuditRow, Catalog, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
 
 type RawBooks = {
   month_sales: number;
@@ -187,4 +187,33 @@ export async function liveAudit(): Promise<AuditRow[]> {
   const config = await liveConfig();
   const raw = await erpMethod<{ rows: AuditRow[] }>("dropout_core.team.audit", { limit: 40 }, config);
   return raw.rows.map((r) => ({ ...r, href: r.href ? deskUrl(r.href, config) : null }));
+}
+
+type RawHr = {
+  date: string;
+  me: HrToday["me"];
+  on_leave: { name: string; leave_type: string; from_date: string; to_date: string; half_day: boolean; href: string }[];
+  approvals: { name: string; employee: string; leave_type: string; from_date: string; to_date: string; days: number; reason: string; href: string }[];
+  payroll: (Omit<NonNullable<HrToday["payroll"]>, "netPay"> & { net_pay: number }) | null;
+  rates: HrToday["rates"];
+  can: HrToday["can"];
+  denied: string[];
+};
+
+export async function liveHr(): Promise<HrToday> {
+  const config = await liveConfig();
+  const raw = await erpMethod<RawHr>("dropout_hr_tw.shell.today", {}, config);
+  const link = (path?: string) => deskUrl(path, config);
+  return {
+    date: raw.date,
+    me: raw.me,
+    onLeave: raw.on_leave.map((r) => ({ name: r.name, leaveType: r.leave_type, fromDate: r.from_date, toDate: r.to_date, halfDay: r.half_day, href: link(r.href) })),
+    approvals: raw.approvals.map((r) => ({ name: r.name, employee: r.employee, leaveType: r.leave_type, fromDate: r.from_date, toDate: r.to_date, days: r.days, reason: r.reason, href: link(r.href) })),
+    payroll: raw.payroll
+      ? { month: raw.payroll.month, state: raw.payroll.state, employees: raw.payroll.employees, draft: raw.payroll.draft, submitted: raw.payroll.submitted, netPay: raw.payroll.net_pay, entries: raw.payroll.entries.map((e) => ({ ...e, href: link(e.href) })) }
+      : null,
+    rates: raw.rates ? { ...raw.rates, href: link(raw.rates.href) } : null,
+    can: raw.can,
+    denied: raw.denied,
+  };
 }

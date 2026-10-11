@@ -15,6 +15,8 @@ const FEATURE_ROLES: Record<FeatureId, string[]> = {
   chat: ["Sales User", "Support Team"],
   meetings: [],
   website: ["Website Manager", "Sales Manager"],
+  // Everyone clocks in; leave approvals and payroll on the page follow the HRMS roles.
+  hr: [],
 };
 
 export const ADMIN_ROLE = "System Manager";

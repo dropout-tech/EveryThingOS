@@ -30,10 +30,14 @@ def plan(profile):
 	scene = profile.get("scene", "other")
 	modules = normalize_modules(profile.get("modules"))
 	website = "website" in modules
+	hr = "hr" in modules
 	apps = list(BASE_APPS)
 	if website:
 		apps[1:1] = ["payments", "webshop"]
 		apps.append("dropout_pay_tw")
+	if hr:
+		apps.insert(apps.index("dropout_core"), "hrms")
+		apps.append("dropout_hr_tw")
 	apps.append(PACK_FOR_SCENE.get(scene, "dropout_pack_service"))
 	return {
 		"scene": scene,
@@ -42,6 +46,7 @@ def plan(profile):
 		"apps": apps,
 		"pack": PACK_FOR_SCENE.get(scene, "dropout_pack_service"),
 		"website": website,
+		"hr": hr,
 		"chat": "chat" in modules,
 		"letter": "letter" in modules,
 		"meetings": "meetings" in modules,

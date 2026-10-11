@@ -4,8 +4,8 @@ import type { IndustryPack } from "../types";
 import { demoRecords } from "../workspace";
 import { liveConfig } from "./config";
 import { SourceError } from "./erpnext";
-import { liveAudit, liveBooks, liveCatalog, liveDeadLetters, liveHygiene, liveLetter, liveMe, liveMeetingSummaries, livePeople, liveSetup, liveTeam, liveUpcomingMeetings, liveWebsite } from "./live";
-import type { AuditRow, Books, Catalog, DeadLetter, HygieneRow, LetterOverview, Me, Meetings, Person, SetupStatus, Sourced, SystemId, Team, WebsiteOverview } from "./types";
+import { liveAudit, liveBooks, liveCatalog, liveDeadLetters, liveHr, liveHygiene, liveLetter, liveMe, liveMeetingSummaries, livePeople, liveSetup, liveTeam, liveUpcomingMeetings, liveWebsite } from "./live";
+import type { AuditRow, Books, Catalog, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, Meetings, Person, SetupStatus, Sourced, SystemId, Team, WebsiteOverview } from "./types";
 
 export type { Sourced } from "./types";
 
@@ -150,6 +150,19 @@ export async function getAudit(): Promise<Sourced<AuditRow[]>> {
   try {
     return { origin: "live", system: "erpnext", data: await liveAudit() };
   } catch (error) {
+    return failed("erpnext", error);
+  }
+}
+
+/** 人事 today. Live with `data: null` means this company's ERPNext does not have the 人事 module (dropout_hr_tw) installed. */
+export async function getHr(): Promise<Sourced<HrToday | null>> {
+  if (!(await isLive("erpnext"))) return { origin: "demo", data: null };
+  const desk = (await liveConfig()).erpnext?.url;
+  try {
+    const hr = await liveHr();
+    return { origin: "live", system: "erpnext", data: hr, denied: hr.denied, deskUrl: desk };
+  } catch (error) {
+    if (error instanceof SourceError && error.kind === "upstream" && error.message.includes("dropout_hr_tw")) return { origin: "live", system: "erpnext", data: null, deskUrl: desk };
     return failed("erpnext", error);
   }
 }
