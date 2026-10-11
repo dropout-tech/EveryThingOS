@@ -1,13 +1,15 @@
 import type { NextRequest } from "next/server";
 import { readJson, refuse, reply, sameOrigin } from "@/lib/actions";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
+import { liveConfig, loginRequired, writeBlocked } from "@/lib/sources/config";
 import { liveMe } from "@/lib/sources/live";
 
 /** 這場不要記: tells the glue not to send the meeting bot to one meeting. */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return refuse("這個請求不是從 DropOut OS 送出的", 403);
-  const config = liveConfig();
+  const config = await liveConfig();
   if (!config.glue) return refuse("會議紀錄還沒接上", 409);
+  const blocked = writeBlocked(config);
+  if (blocked) return refuse(blocked, 423);
   if (loginRequired(config)) {
     try {
       await liveMe();

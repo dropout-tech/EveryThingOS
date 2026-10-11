@@ -11,7 +11,7 @@ export default async function WebsitePage() {
   const pack = await currentIndustry();
   const source = await getWebsite();
   if (source.origin === "error") return <SourceFailure source={source} next="/workspace/website" />;
-  const glue = liveConfig().glue;
+  const glue = (await liveConfig()).glue;
   const formAction = glue ? `${glue.url}/forms/${encodeURIComponent(glue.site)}` : null;
 
   if (source.origin === "demo" || !source.data) {

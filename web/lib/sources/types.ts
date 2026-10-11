@@ -52,6 +52,25 @@ export type Meetings = { summaries: MeetingSummary[]; upcoming: UpcomingMeeting[
 
 export type HygieneRow = { email: string; result: string; action: string; href?: string };
 
-export type Me = { user: string; fullName: string; company: string; roles: string[]; chatwootUserId?: string };
+export type Me = { user: string; fullName: string; company: string; roles: string[]; profile?: string; chatwootUserId?: string };
+
+export type TeamMember = { email: string; full_name: string; enabled: number; profile: string | null; admin: boolean; last_login: string | null; last_active: string | null; href?: string };
+
+export type JobProfile = { name: string; note: string; roles: string[]; admin: boolean };
+
+export type Security = {
+  enable_two_factor_auth: number;
+  two_factor_for_everyone: number;
+  two_factor_method: string | null;
+  enable_password_policy: number;
+  minimum_password_score: string | null;
+  session_expiry: string | null;
+  allow_consecutive_login_attempts: number | null;
+  deny_multiple_sessions: number;
+};
+
+export type Team = { users: TeamMember[]; profiles: JobProfile[]; me: string; security: Security; active: number };
+
+export type AuditRow = { at: string; who: string; what: string; detail: string; href?: string | null };
 
 export type { Books };

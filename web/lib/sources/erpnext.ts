@@ -32,7 +32,7 @@ export async function exchangeToken(erp: Erp, body: Record<string, string>) {
 async function authHeader(config: LiveConfig): Promise<string> {
   const erp = config.erpnext!;
   if (loginRequired(config)) {
-    let session = await readSession(config.sessionSecret);
+    let session = await readSession(config.sessionSecret, config.tenant?.site);
     if (!session) throw new SourceError("請先用 ERPNext 帳號登入", "login");
     if (session.expiresAt - 60_000 < Date.now()) session = await refresh(config, session);
     return `Bearer ${session.accessToken}`;
@@ -102,16 +102,16 @@ async function upstreamMessage(res: Response) {
 }
 
 /** Calls a whitelisted method as the logged-in ERPNext user (or the integration user when no login is set up). */
-export function erpMethod<T>(method: string, args: Record<string, unknown> = {}, config = liveConfig()): Promise<T> {
-  return call<T>(method, args, config, false);
+export async function erpMethod<T>(method: string, args: Record<string, unknown> = {}, config?: LiveConfig): Promise<T> {
+  return call<T>(method, args, config ?? (await liveConfig()), false);
 }
 
 /** Same as `erpMethod`, for methods that change data (`@frappe.whitelist(methods=["POST"])`). */
-export function erpPost<T>(method: string, args: Record<string, unknown> = {}, config = liveConfig()): Promise<T> {
-  return call<T>(method, args, config, true);
+export async function erpPost<T>(method: string, args: Record<string, unknown> = {}, config?: LiveConfig): Promise<T> {
+  return call<T>(method, args, config ?? (await liveConfig()), true);
 }
 
-export function deskUrl(path: string | undefined, config = liveConfig()) {
+export function deskUrl(path: string | undefined, config: LiveConfig) {
   if (!path || !config.erpnext) return undefined;
   return `${config.erpnext.url}${path}`;
 }

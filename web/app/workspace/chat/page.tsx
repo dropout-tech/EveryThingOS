@@ -15,7 +15,7 @@ const CHAT_NOTES: Record<string, string> = {
 export default async function ChatPage({ searchParams }: PageProps<"/workspace/chat">) {
   const pack = await currentIndustry();
   const { chat } = await searchParams;
-  const connected = isLive("chatwoot");
+  const connected = await isLive("chatwoot");
   const note = typeof chat === "string" ? CHAT_NOTES[chat] : null;
 
   return (

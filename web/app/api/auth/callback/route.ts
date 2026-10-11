@@ -13,7 +13,7 @@ function fail(request: NextRequest, reason: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const config = liveConfig();
+  const config = await liveConfig();
   if (!loginRequired(config)) return NextResponse.redirect(new URL("/workspace", request.url));
   const params = request.nextUrl.searchParams;
   const pending = await unseal<PendingLogin>(request.cookies.get(LOGIN_COOKIE)?.value, config.sessionSecret!);
@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
 
   const session: Session = {
     user: profile.email ?? profile.sub ?? "",
+    site: config.tenant?.site,
     name: profile.name,
     accessToken: token.access_token,
     refreshToken: token.refresh_token,

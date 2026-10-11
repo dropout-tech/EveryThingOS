@@ -3,7 +3,7 @@ import { SESSION_COOKIE, unseal, type Session } from "@/lib/session";
 import { liveConfig } from "@/lib/sources/config";
 
 export async function POST(request: NextRequest) {
-  const config = liveConfig();
+  const config = await liveConfig();
   const erp = config.erpnext;
   const session = config.sessionSecret ? await unseal<Session>(request.cookies.get(SESSION_COOKIE)?.value, config.sessionSecret) : null;
   if (erp && session) {

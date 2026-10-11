@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { liveConfig } from "./sources/config";
 import { DEFAULT_INDUSTRY_ID, getIndustry } from "./industries";
 import { practiceCast } from "./practice";
 import { SHOP_COOKIE, applyShop, parseShop, shopFromPack, type ShopProfile } from "./shop";
@@ -6,7 +7,10 @@ import type { IndustryPack } from "./types";
 
 export const INDUSTRY_COOKIE = "dropout_industry";
 
+/** A company's modules are chosen once at onboarding; each browser only remembers them in practice mode. */
 export async function currentShop(): Promise<ShopProfile | null> {
+  const fromAccount = (await liveConfig()).tenant?.profile;
+  if (fromAccount) return fromAccount;
   const jar = await cookies();
   const shop = parseShop(jar.get(SHOP_COOKIE)?.value);
   if (shop) return shop;

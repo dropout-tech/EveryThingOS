@@ -8,7 +8,7 @@ function back(request: NextRequest, reason: string) {
 
 /** Opens Chatwoot already logged in, through the Platform API single sign-on link for this staff member. */
 export async function GET(request: NextRequest) {
-  const chat = liveConfig().chatwoot;
+  const chat = (await liveConfig()).chatwoot;
   if (!chat) return back(request, "not-connected");
   if (!chat.platformToken) return NextResponse.redirect(`${chat.url}/app/login`);
   let chatwootUserId: string | undefined;

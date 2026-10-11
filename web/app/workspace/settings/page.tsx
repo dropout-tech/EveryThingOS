@@ -4,7 +4,8 @@ import { PRICE_LABEL } from "@/lib/commercial";
 import { SetupProgress } from "@/components/SetupProgress";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
-import { loginRequired } from "@/lib/sources/config";
+import { liveConfig, loginRequired } from "@/lib/sources/config";
+import { deskUrl } from "@/lib/sources/erpnext";
 import type { SystemId } from "@/lib/sources/types";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
@@ -39,7 +40,10 @@ const SYNC_NOTICE: Record<string, string> = {
 export default async function SettingsPage({ searchParams }: PageProps<"/workspace/settings">) {
   const shop = await currentShop();
   const pack = await currentIndustry();
-  const [setup, dead, me] = await Promise.all([getSetup(), getDeadLetters(), getMe()]);
+  const [setup, dead, me, config] = await Promise.all([getSetup(), getDeadLetters(), getMe(), liveConfig()]);
+  const live = Object.fromEntries(await Promise.all(SYSTEMS.map(async ([id]) => [id, await isLive(id)] as const))) as Record<SystemId, boolean>;
+  const account = config.tenant;
+  const exportUrl = deskUrl("/app/backups", config);
   const { sync } = await searchParams;
   const notice = typeof sync === "string" ? SYNC_NOTICE[sync] : null;
   const scene = sceneById(shop?.scene);
@@ -69,9 +73,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <ul className="mt-1 space-y-1 text-sm">
             {SYSTEMS.map(([id, label, demo]) => (
               <li key={id} className="flex gap-2">
-                <span aria-hidden>{isLive(id) ? "●" : "○"}</span>
+                <span aria-hidden>{live[id] ? "●" : "○"}</span>
                 <span>{label}</span>
-                <span className="text-cream-dim">{isLive(id) ? "已接上" : demo}</span>
+                <span className="text-cream-dim">{live[id] ? "已接上" : demo}</span>
               </li>
             ))}
           </ul>
@@ -84,17 +88,33 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             </p>
           </div>
         ) : null}
+        {account ? (
+          <div id="plan">
+            <p className="text-sm text-cream-dim">方案與續約</p>
+            <p className="mt-1">
+              {account.company} · 年約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
+            </p>
+            {account.lifecycle.message ? <p className="mt-1 text-sm text-cream-dim">{account.lifecycle.message}</p> : null}
+          </div>
+        ) : null}
         <p className="flex flex-wrap gap-4 text-sm text-cream-dim">
-          <Link href="/?setup=1" className="hover:text-cream">
-            重設現場與功能
-          </Link>
+          {account?.profile ? null : (
+            <Link href="/?setup=1" className="hover:text-cream">
+              重設現場與功能
+            </Link>
+          )}
+          {exportUrl ? (
+            <a href={exportUrl} className="hover:text-cream">
+              匯出全部資料（ERPNext 備份）
+            </a>
+          ) : null}
           <a href="/api/shop/profile" className="hover:text-cream">
             下載設定檔（給導入工具）
           </a>
           <Link href="/pricing" className="hover:text-cream">
             {PRICE_LABEL}
           </Link>
-          {loginRequired() ? (
+          {loginRequired(config) ? (
             <form action="/api/auth/logout" method="post">
               <button type="submit" className="hover:text-cream">
                 登出
@@ -106,7 +126,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
 
       {setup.origin === "live" && setup.data ? <SetupProgress setup={setup.data} /> : null}
 
-      {isLive("glue") ? (
+      {live.glue ? (
         <section id="sync" className="glass-well space-y-3 p-5">
           <h3 className="text-sm">系統同步</h3>
           {notice ? (

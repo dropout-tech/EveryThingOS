@@ -8,6 +8,8 @@ const MAX_AGE = 60 * 60 * 24 * 14;
 /** Holds the ERPNext OAuth tokens, so the cookie is encrypted, not only signed. */
 export type Session = {
   user: string;
+  /** ERPNext site the tokens belong to; a session never crosses companies. */
+  site?: string;
   name?: string;
   accessToken: string;
   refreshToken?: string;
@@ -65,8 +67,10 @@ export function cookieOptions(maxAge = MAX_AGE) {
   return { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge };
 }
 
-export async function readSession(secret: string | undefined): Promise<Session | null> {
+export async function readSession(secret: string | undefined, site?: string): Promise<Session | null> {
   if (!secret) return null;
   const jar = await cookies();
-  return unseal<Session>(jar.get(SESSION_COOKIE)?.value, secret);
+  const session = await unseal<Session>(jar.get(SESSION_COOKIE)?.value, secret);
+  if (session && site && session.site !== site) return null;
+  return session;
 }

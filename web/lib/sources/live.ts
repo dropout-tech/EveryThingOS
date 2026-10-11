@@ -3,7 +3,7 @@ import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
-import type { Catalog, DeadLetter, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, UpcomingMeeting, WebsiteOverview } from "./types";
+import type { AuditRow, Catalog, DeadLetter, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
 
 type RawBooks = {
   month_sales: number;
@@ -25,7 +25,7 @@ type RawBooks = {
 };
 
 export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, deadLetters?: DeadLetter[] | null): Promise<Books & { denied: string[] }> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const raw = await erpMethod<RawBooks>("dropout_core.shell.books", {}, config);
   const link = (path: string) => deskUrl(path, config);
   const stock = raw.stock.map((r) => ({ sku: r.sku, name: r.name, warehouse: r.warehouse, onHand: r.on_hand, safety: r.safety, href: link(r.href) }));
@@ -94,14 +94,14 @@ export function todayFromLive(books: Books, setup?: SetupStatus | null, deadLett
 }
 
 export async function livePeople(): Promise<Person[]> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const rows = await erpMethod<{ name: string; stage: string; channel: string; href: string }[]>("dropout_core.shell.people", {}, config);
   const channelLabel: Record<string, string> = { line: "LINE", ig: "IG", fb: "FB", web_chat: "官網對話", email: "Email", phone: "電話" };
   return rows.map((r) => ({ name: r.name, stage: r.stage, score: 0, channel: channelLabel[r.channel] ?? r.channel, href: deskUrl(r.href, config) }));
 }
 
 export async function liveLetter(): Promise<LetterOverview> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const raw = await erpMethod<Omit<LetterOverview, "last30Days"> & { last_30_days: LetterOverview["last30Days"] }>("dropout_core.shell.letter", {}, config);
   return {
     groups: raw.groups.map((g) => ({ ...g, href: deskUrl(g.href, config) })),
@@ -117,12 +117,12 @@ export function liveSetup() {
 }
 
 export async function liveMe(): Promise<Me> {
-  const raw = await erpMethod<{ user: string; full_name: string; company: string; roles: string[]; chatwoot_user_id?: string }>("dropout_core.shell.whoami");
-  return { user: raw.user, fullName: raw.full_name, company: raw.company, roles: raw.roles, chatwootUserId: raw.chatwoot_user_id || undefined };
+  const raw = await erpMethod<{ user: string; full_name: string; company: string; roles: string[]; profile?: string | null; chatwoot_user_id?: string }>("dropout_core.shell.whoami");
+  return { user: raw.user, fullName: raw.full_name, company: raw.company, roles: raw.roles, profile: raw.profile ?? undefined, chatwootUserId: raw.chatwoot_user_id || undefined };
 }
 
 export async function liveDeadLetters(): Promise<DeadLetter[]> {
-  const glue = liveConfig().glue;
+  const glue = (await liveConfig()).glue;
   if (!glue) return [];
   const res = await fetch(`${glue.url}/admin/tenants/${encodeURIComponent(glue.site)}/dead-letters`, {
     headers: { authorization: `Bearer ${glue.adminToken}` },
@@ -139,7 +139,7 @@ export function liveCatalog() {
 }
 
 export async function liveWebsite(): Promise<WebsiteOverview> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const raw = await erpMethod<Omit<WebsiteOverview, "formLeads" | "shopUrl"> & { form_leads: number; shop_path: string }>("dropout_core.shell.website", {}, config);
   const site = config.erpnext!.url;
   return {
@@ -153,13 +153,13 @@ export async function liveWebsite(): Promise<WebsiteOverview> {
 }
 
 export async function liveMeetingSummaries(): Promise<MeetingSummary[]> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const rows = await erpMethod<MeetingSummary[]>("dropout_core.shell.meetings", {}, config);
   return rows.map((r) => ({ ...r, href: deskUrl(r.href, config) }));
 }
 
 export async function liveUpcomingMeetings(hours = 72): Promise<{ bot: boolean; failed: number; meetings: UpcomingMeeting[] }> {
-  const glue = liveConfig().glue;
+  const glue = (await liveConfig()).glue;
   if (!glue) return { bot: false, failed: 0, meetings: [] };
   const res = await fetch(`${glue.url}/admin/tenants/${encodeURIComponent(glue.site)}/meetings?hours=${hours}`, {
     headers: { authorization: `Bearer ${glue.adminToken}` },
@@ -172,7 +172,19 @@ export async function liveUpcomingMeetings(hours = 72): Promise<{ bot: boolean; 
 }
 
 export async function liveHygiene(): Promise<{ rows: HygieneRow[]; denied: string[] }> {
-  const config = liveConfig();
+  const config = await liveConfig();
   const raw = await erpMethod<{ rows: (HygieneRow & { href?: string | null })[]; denied: string[] }>("dropout_core.shell.hygiene", {}, config);
   return { rows: raw.rows.map((r) => ({ ...r, href: deskUrl(r.href ?? undefined, config) })), denied: raw.denied };
+}
+
+export async function liveTeam(): Promise<Team> {
+  const config = await liveConfig();
+  const raw = await erpMethod<Team>("dropout_core.team.team", {}, config);
+  return { ...raw, users: raw.users.map((u) => ({ ...u, href: deskUrl(u.href, config) })) };
+}
+
+export async function liveAudit(): Promise<AuditRow[]> {
+  const config = await liveConfig();
+  const raw = await erpMethod<{ rows: AuditRow[] }>("dropout_core.team.audit", { limit: 40 }, config);
+  return raw.rows.map((r) => ({ ...r, href: r.href ? deskUrl(r.href, config) : null }));
 }

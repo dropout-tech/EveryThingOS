@@ -4,7 +4,7 @@ import { redirectUri, safeNext } from "@/lib/auth";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
 
 export async function GET(request: NextRequest) {
-  const config = liveConfig();
+  const config = await liveConfig();
   const next = safeNext(request.nextUrl.searchParams.get("next"));
   if (!loginRequired(config)) return NextResponse.redirect(new URL(next, request.url));
   const erp = config.erpnext!;
