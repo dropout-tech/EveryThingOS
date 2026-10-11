@@ -8,7 +8,9 @@ import unittest
 from contextlib import redirect_stdout
 from unittest import mock
 
-from dropout_onboard import bootstrap, checks, cli, convert, plan, provision
+from dropout_onboard import bootstrap, checks, cli, convert, fleet, plan, provision
+
+EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "examples")
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -267,3 +269,77 @@ class TestBootstrap(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class TestRegisterAccount(unittest.TestCase):
+	def test_registers_tenant_and_account_once(self):
+		a = TestProvision.args(TestProvision(), shell_url="https://acme.os.dropout.tw", glue_url="https://glue", glue_admin_token="T", erpnext_url="https://acme.erp", trial_days=14, renews_on=None)
+		p = provision.Provisioner(a, out=lambda *_: None)
+		p.state.update({"erpnext_key": "k", "erpnext_secret": "s", "shell_oauth_client_id": "cid", "shell_oauth_client_secret": "csec"})
+		calls = []
+		with mock.patch.object(provision, "_http", side_effect=lambda m, url, h, body=None: calls.append((m, url, h, body))), mock.patch.object(p, "execute"):
+			p._register_glue()
+			p._register_glue()
+		tenant, account, _t2, account2 = (c[3] for c in calls)
+		self.assertEqual(tenant["shell_oauth_client_secret"], "csec")
+		self.assertEqual(account["hosts"], ["acme.os.dropout.tw"])
+		self.assertEqual(account["company"], "示範教育")
+		self.assertIn("trial_ends", account)
+		self.assertNotIn("trial_ends", account2)
+		self.assertEqual(calls[1][1], "https://glue/admin/accounts/edu.local")
+
+
+class TestFleet(unittest.TestCase):
+	def _csv(self, text):
+		d = tempfile.mkdtemp()
+		path = os.path.join(d, "fleet.csv")
+		with open(path, "w", encoding="utf-8") as fh:
+			fh.write(text)
+		return path
+
+	def _args(self, path, **kw):
+		base = dict(csv=path, concurrency=2, shell_url_template="https://{slug}.os.dropout.tw", apply=False, state_dir=tempfile.mkdtemp(), bench_dir="/b", bench="bench",
+			erpnext_url=None, glue_url="https://glue", mail_from=None, chatwoot_url=None, vexa_url=None, backup_bucket=None, backup_endpoint=None,
+			glue_admin_token="SECRET-TOKEN", chatwoot_platform_token=None, vexa_admin_token=None)
+		base.update(kw)
+		return argparse.Namespace(**base)
+
+	def test_rejects_bad_rows_before_running(self):
+		path = self._csv(f"folder,site,admin_email\n{EXAMPLES}/make,a.local,\n{EXAMPLES}/nope,a.local,x@y.tw\n")
+		lines = []
+		run = mock.Mock()
+		self.assertEqual(fleet.bootstrap_many(self._args(path), out=lines.append, runner=run), 1)
+		run.assert_not_called()
+		text = "\n".join(lines)
+		self.assertIn("缺 admin_email", text)
+		self.assertIn("重複", text)
+		self.assertIn("沒有 bootstrap.json", text)
+
+	def test_runs_each_company_with_secrets_only_in_env(self):
+		path = self._csv(f"folder,site,admin_email,company\n{EXAMPLES}/make,make.local,boss@make.tw,琢奧精密製造\n{EXAMPLES}/edu,edu.local,boss@edu.tw,\n")
+		seen = []
+
+		def runner(argv, stdout, stderr, env, cwd):
+			seen.append((argv, env))
+			stdout.write("== 導入進度 7／10；還沒做：對話通道\n")
+			return mock.Mock(returncode=0 if "make.local" in argv else 1)
+
+		lines = []
+		code = fleet.bootstrap_many(self._args(path, apply=True), out=lines.append, runner=runner)
+		self.assertEqual(code, 1)
+		argv = dict((a[a.index("--site") + 1], a) for a, _ in seen)
+		self.assertIn("--apply", argv["make.local"])
+		self.assertEqual(argv["edu.local"][argv["edu.local"].index("--shell-url") + 1], "https://edu.os.dropout.tw")
+		for a, env in seen:
+			self.assertNotIn("SECRET-TOKEN", " ".join(a))
+			self.assertEqual(env["GLUE_ADMIN_TOKEN"], "SECRET-TOKEN")
+		self.assertTrue(any("✓ make.local：導入進度 7／10" in ln for ln in lines))
+		self.assertTrue(any("✗ edu.local" in ln for ln in lines))
+		self.assertIn("完成 1／2", lines[-1])
+
+	def test_cli_parses_fleet_commands(self):
+		p = cli.build_parser()
+		a = p.parse_args(["fleet", "renew", "acme.local", "--years", "2", "--glue-url", "https://g", "--glue-admin-token", "t"])
+		self.assertEqual((a.fleet_cmd, a.site, a.years), ("renew", "acme.local", 2))
+		a = p.parse_args(["fleet", "bootstrap", "f.csv", "--concurrency", "4"])
+		self.assertEqual(a.concurrency, 4)

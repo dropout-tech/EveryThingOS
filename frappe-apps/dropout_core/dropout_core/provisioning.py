@@ -213,3 +213,26 @@ def import_defaults(company=None):
 		"warehouse": warehouse,
 		"posting_date": frappe.utils.nowdate(),
 	}
+
+
+def configure_backups(bucket, endpoint_url, access_key_id, secret_access_key, frequency="Daily", notify_email=None):
+	"""Frappe's own scheduled S3 backup, pointed at Cloudflare R2 (or any S3).
+	Every company shares one bucket under its own folder, so a restore never mixes sites."""
+	doc = frappe.get_single("S3 Backup Settings")
+	doc.update(
+		{
+			"enabled": 1,
+			"bucket": bucket,
+			"endpoint_url": endpoint_url,
+			"access_key_id": access_key_id,
+			"secret_access_key": secret_access_key,
+			"frequency": frequency,
+			"backup_files": 1,
+			"backup_path": f"{frappe.local.site}/",
+			"notify_email": notify_email,
+			"send_email_for_successful_backup": 0,
+		}
+	)
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return {"bucket": bucket, "path": doc.backup_path, "frequency": frequency}

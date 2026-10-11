@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from dropout_onboard import checks, convert, plan as plan_mod
+from dropout_onboard import checks, convert, fleet, plan as plan_mod
 from dropout_onboard.bootstrap import Bootstrap
 from dropout_onboard.provision import Provisioner
 
@@ -146,6 +146,10 @@ def _provision_args(s, company_required=True):
 	s.add_argument("--vexa-url", default=os.environ.get("VEXA_URL"))
 	s.add_argument("--vexa-admin-token", default=os.environ.get("VEXA_ADMIN_TOKEN"))
 	s.add_argument("--calendar", dest="calendars", action="append", help="公司行事曆 ICS 網址，可多個")
+	s.add_argument("--trial-days", type=int, default=30, help="第一次登記時的試用天數")
+	s.add_argument("--renews-on", help="已簽年約時填到期日（YYYY-MM-DD），就不算試用")
+	s.add_argument("--backup-bucket", default=os.environ.get("BACKUP_BUCKET"), help="R2／S3 bucket；金鑰用環境變數 BACKUP_ACCESS_KEY_ID、BACKUP_SECRET_ACCESS_KEY")
+	s.add_argument("--backup-endpoint", default=os.environ.get("BACKUP_ENDPOINT"), help="例：https://<account>.r2.cloudflarestorage.com")
 	s.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
 	s.add_argument("--apply", action="store_true")
 
@@ -198,7 +202,52 @@ def build_parser():
 	s.add_argument("folder", help="有 bootstrap.json 的資料夾，例：examples/service")
 	_provision_args(s, company_required=False)
 	s.set_defaults(fn=cmd_bootstrap)
+
+	s = sub.add_parser("fleet", help="很多家公司：批次導入、列出、續約、暫停")
+	fs = s.add_subparsers(dest="fleet_cmd", required=True)
+	f = fs.add_parser("bootstrap", help="CSV 一列一家（folder,site,admin_email[,company,abbr,shell_url,renews_on,trial_days,calendar]），幾家同時跑")
+	f.add_argument("csv")
+	f.add_argument("--concurrency", type=int, default=2, help="同時開幾家（建站很吃 CPU，預設 2）")
+	f.add_argument("--shell-url-template", help="例：https://{slug}.os.dropout.tw（slug 是 site 的第一段）")
+	_shared_args(f)
+	f.add_argument("--apply", action="store_true")
+	f.set_defaults(fn=lambda a: fleet.bootstrap_many(a))
+	f = fs.add_parser("list", help="所有公司的狀態、到期日、帳號數")
+	_glue_args(f)
+	f.set_defaults(fn=lambda a: fleet.list_accounts(a))
+	f = fs.add_parser("renew", help="續約")
+	f.add_argument("site")
+	f.add_argument("--years", type=int, default=1)
+	f.add_argument("--reference", help="收款單號，記在紀錄裡")
+	_glue_args(f)
+	f.set_defaults(fn=lambda a: fleet.change(a))
+	for name, text in (("suspend", "暫停（只能看、能匯出）"), ("resume", "恢復"), ("cancel", "解約（資料保留、只能看）")):
+		f = fs.add_parser(name, help=text)
+		f.add_argument("site")
+		f.add_argument("--reason")
+		_glue_args(f)
+		f.set_defaults(fn=lambda a: fleet.change(a))
 	return p
+
+
+def _glue_args(s):
+	s.add_argument("--glue-url", default=os.environ.get("GLUE_URL"))
+	s.add_argument("--glue-admin-token", default=os.environ.get("GLUE_ADMIN_TOKEN"))
+
+
+def _shared_args(s):
+	s.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
+	s.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
+	s.add_argument("--erpnext-url")
+	s.add_argument("--mail-from")
+	s.add_argument("--chatwoot-url", default=os.environ.get("CHATWOOT_URL"))
+	s.add_argument("--chatwoot-platform-token", default=os.environ.get("CHATWOOT_PLATFORM_TOKEN"))
+	s.add_argument("--vexa-url", default=os.environ.get("VEXA_URL"))
+	s.add_argument("--vexa-admin-token", default=os.environ.get("VEXA_ADMIN_TOKEN"))
+	s.add_argument("--backup-bucket", default=os.environ.get("BACKUP_BUCKET"))
+	s.add_argument("--backup-endpoint", default=os.environ.get("BACKUP_ENDPOINT"))
+	s.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
+	_glue_args(s)
 
 
 def main_code(argv=None):

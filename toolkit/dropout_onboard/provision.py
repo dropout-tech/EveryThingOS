@@ -8,7 +8,9 @@ import re
 import secrets
 import shlex
 import subprocess
+import urllib.parse
 import urllib.request
+from datetime import date, timedelta
 
 from dropout_onboard.plan import plan
 
@@ -78,7 +80,9 @@ class Provisioner:
 		if a.shell_url:
 			steps.append(Step("殼登入", self._shell_login, f"ERPNext OAuth Client「DropOut OS」，轉回 {a.shell_url}/api/auth/callback"))
 		if a.glue_url:
-			steps.append(Step("登記到膠水", self._register_glue, f"PUT {a.glue_url}/admin/tenants/{a.site}；ERPNext Webhook 指向膠水"))
+			steps.append(Step("登記到膠水", self._register_glue, f"PUT {a.glue_url}/admin/tenants/{a.site} 與 /admin/accounts/{a.site}（{self._contract_text()}）；ERPNext Webhook 指向膠水"))
+		if getattr(a, "backup_bucket", None):
+			steps.append(Step("每日備份", self._backups, f"ERPNext S3 Backup Settings → {a.backup_bucket}/{a.site}/"))
 		if a.chatwoot_url and a.chatwoot_platform_token and p["chat"]:
 			steps.append(Step("對話帳號", self._chatwoot, f"Chatwoot 建帳戶「{company}」、管理員、Webhook"))
 		if a.vexa_url and a.vexa_admin_token and (p["meetings"] or a.calendars):
@@ -100,7 +104,9 @@ class Provisioner:
 		if not apply:
 			self.out("（預演。加 --apply 才會真的執行）")
 		else:
-			self.out("殼（DropOut OS）要設定的環境變數：")
+			if self.a.shell_url and self.a.glue_url:
+				self.out(f"共用殼：{self.a.shell_url} 已登記到這家公司，不用另外設環境變數。")
+			self.out("（只服務這家公司的殼才需要）環境變數：")
 			for key, value in self.shell_env().items():
 				self.out(f"  {key}={value}")
 		return self.state
@@ -125,11 +131,44 @@ class Provisioner:
 	def _shell_login(self):
 		client = self.execute("dropout_core.provisioning.create_oauth_client", redirect_uri=f"{self.a.shell_url.rstrip('/')}/api/auth/callback")
 		self.state["shell_oauth_client_id"] = client["client_id"]
+		self.state["shell_oauth_client_secret"] = client.get("client_secret")
 		self.save()
 		return {"client_id": client["client_id"]}
 
+	def _contract_text(self):
+		if getattr(self.a, "renews_on", None):
+			return f"年約到 {self.a.renews_on}"
+		return f"試用 {getattr(self.a, 'trial_days', 30)} 天"
+
+	def _account(self):
+		"""Contract and host for the shared shell. Dates are only set the first time, so a re-run never resets a trial."""
+		account = {
+			"company": self.a.company,
+			"contact_email": self.a.admin_email,
+			"profile": self.a.profile if isinstance(self.a.profile, dict) else None,
+		}
+		if self.a.shell_url:
+			account["hosts"] = [urllib.parse.urlparse(self.a.shell_url).hostname]
+		if not self.state.get("account_registered"):
+			if getattr(self.a, "renews_on", None):
+				account["renews_on"] = self.a.renews_on
+			else:
+				account["trial_ends"] = (date.today() + timedelta(days=int(getattr(self.a, "trial_days", 30)))).isoformat()
+		return account
+
+	def _backups(self):
+		return self.execute(
+			"dropout_core.provisioning.configure_backups",
+			bucket=self.a.backup_bucket,
+			endpoint_url=self.a.backup_endpoint,
+			access_key_id=os.environ["BACKUP_ACCESS_KEY_ID"],
+			secret_access_key=os.environ["BACKUP_SECRET_ACCESS_KEY"],
+			notify_email=self.a.admin_email,
+		)
+
 	def shell_env(self):
-		"""Worker vars and secrets for the DropOut OS shell of this company (`wrangler secret put`)."""
+		"""Worker vars and secrets for a shell that serves only this company (`wrangler secret put`).
+		The shared shell needs none of these: it finds the company by host name in the glue."""
 		env = {"ERPNEXT_URL": self.a.erpnext_url, "ERPNEXT_SITE": self.a.site}
 		if self.state.get("shell_oauth_client_id"):
 			env["ERPNEXT_OAUTH_CLIENT_ID"] = self.state["shell_oauth_client_id"]
@@ -154,10 +193,15 @@ class Provisioner:
 			"erpnext_webhook_secret": self.state["erpnext_webhook_secret"],
 			"unsubscribe_secret": self.state["unsubscribe_secret"],
 			"chatwoot_path_token": self.state["chatwoot_path_token"],
+			**({"shell_oauth_client_id": self.state["shell_oauth_client_id"], "shell_oauth_client_secret": self.state.get("shell_oauth_client_secret")} if self.state.get("shell_oauth_client_id") else {}),
 			**({"mail_from": self.a.mail_from} if self.a.mail_from else {}),
 			**{k: v for k, v in self.state.get("tenant_extra", {}).items()},
 		}
-		_http("PUT", f"{self.a.glue_url}/admin/tenants/{self.a.site}", {"authorization": f"Bearer {self.a.glue_admin_token}"}, tenant)
+		auth = {"authorization": f"Bearer {self.a.glue_admin_token}", "x-actor": "dropout-onboard"}
+		_http("PUT", f"{self.a.glue_url}/admin/tenants/{self.a.site}", auth, tenant)
+		_http("PUT", f"{self.a.glue_url}/admin/accounts/{self.a.site}", auth, self._account())
+		self.state["account_registered"] = True
+		self.save()
 		self.execute("dropout_core.install.configure_glue", url=self.a.glue_url, secret=self.state["erpnext_webhook_secret"])
 
 	def _chatwoot(self):
