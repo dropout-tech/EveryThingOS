@@ -304,7 +304,7 @@ W1、W2 不需要任何外部帳號，可以先做。
 | 殼上 Cloudflare | OpenNext | OpenNext 支援 Next.js 16，最低要求 16.3.8；Cloudflare 對**新**專案推薦 vinext（Vite 重新實作的 Next API）| **維持** OpenNext：我們是既有的標準 Next.js 專案。目前 16.3.5 落在 `next/og` 遠端執行漏洞範圍，已另開 PR 升到 16.3.8 |
 | AI 摘要呼叫 | 直接呼叫 Workers AI | Cloudflare AI Gateway 可記錄、快取、限流，並在模型之間切換 | **改**：所有 AI 呼叫經 AI Gateway，換模型不改程式 |
 | ERP 內核 | ERPNext | Odoo 社群版已有台灣綠界電子發票模組（`l10n_tw_edi_ecpay`）；但進階會計、Studio 仍在企業版 | **維持** ERPNext：電子發票用 P10 補上，比換內核便宜 |
-| ERPNext 版本 | 未定 | v15 支援到 2027 年底，v16 支援到 2029 年底 | **待定**：先確認 Frappe Builder、Insights 與 v16 相容，相容就直接上 v16，免得一年後就要大升級 |
+| ERPNext 版本 | 未定 | v15 支援到 2027 年底，v16 支援到 2029 年底；周邊 app 穩定分支多半仍對 v15 | **定 v15**（依 ARCHITECTURE 0.4 相容性最高原則）；周邊 app 都支援 v16 後整體升級 |
 | 對話 | Chatwoot | LINE、IG、FB、官網小工具、Email 通道齊全，一套可服務多家公司 | **維持** |
 | 會議機器人 | Vexa | 見第 2 節 | **維持** |
 | 內部搜尋 | 未定 | 客人時間軸已彙整對話、單據、電子報、會議 | **不加**搜尋引擎：第一期全域搜尋只查 ERPNext 的客人與單據 |
