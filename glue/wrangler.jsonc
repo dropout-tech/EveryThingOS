@@ -22,4 +22,5 @@
     "SUMMARY_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
   }
   // Secrets (wrangler secret put): TENANT_KEY (base64, 32 bytes), ADMIN_TOKEN, SHELL_TOKEN (the shell's narrower key), optional TURNSTILE_SECRET, AI_GATEWAY, RESEND_API_KEY (renewal reminders to customers). Vars: PLATFORM_MAIL_FROM, PLATFORM_NOTIFY (verified ops address for copies).
+  // Renewal billing (docs/BILLING.md): secrets BILLING_ECPAY_MERCHANT_ID, BILLING_ECPAY_HASH_KEY, BILLING_ECPAY_HASH_IV, optional BILLING_EINVOICE_MERCHANT_ID/HASH_KEY/HASH_IV. Vars: GLUE_PUBLIC_URL, BILLING_ECPAY_ENV and BILLING_EINVOICE_ENV ("production" for live; anything else is staging).
 }
