@@ -161,7 +161,7 @@ export default async function StatusPage() {
           <Incidents list={data.incidents} empty="近 14 天沒有事故。" />
         </section>
 
-        <section className="space-y-2 px-1 text-sm text-cream-dim">
+        <section className="site-sheet space-y-2 p-6 text-sm text-cream-dim sm:p-8">
           <p>「連不上」的定義：連續兩次檢查（10 分鐘內）都沒有回應。只影響部分公司時顯示「部分受影響」。</p>
           <p>
             遇到問題請寫信到{" "}

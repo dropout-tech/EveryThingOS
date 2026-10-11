@@ -21,14 +21,14 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
     <>
       <OnboardScreen />
       <div className="site-scope mx-auto max-w-6xl space-y-14 px-5 pb-10">
-        <p className="text-center text-sm text-cream-dim">
+        <p className="scene-type text-center text-sm">
           第一次來？往下看 {COMMERCIAL.product} 是什麼、多少錢。
         </p>
         <SiteHero demoHref="#top" as="h2" />
         <ModuleGrid />
         <TrustStrip />
         <p className="text-center">
-          <Link href="/pricing" className="underline underline-offset-4 hover:text-cream">
+          <Link href="/pricing" className="glass-pill px-5 py-2.5">
             看完整介紹、跟鼎新／億看的對照與常見問題
           </Link>
         </p>

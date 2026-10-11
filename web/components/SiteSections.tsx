@@ -7,9 +7,9 @@ const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: 
 
 export function SectionTitle({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
   return (
-    <div className="max-w-2xl">
+    <div className="site-sheet inline-block max-w-2xl !rounded-3xl px-5 py-4 sm:px-6">
       <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">{kicker}</p>
-      <h2 className="scene-type mt-2 text-2xl font-medium sm:text-3xl">{title}</h2>
+      <h2 className="mt-2 text-2xl font-medium sm:text-3xl">{title}</h2>
       {children ? <p className="mt-3 text-cream-dim">{children}</p> : null}
     </div>
   );
@@ -125,7 +125,7 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
         ))}
       </ul>
       {full ? null : (
-        <Link href="/saas" className="inline-block text-sm underline underline-offset-4 hover:text-cream">
+        <Link href="/saas" className="scene-type inline-block text-sm underline underline-offset-4 hover:text-cream">
           看完整對照（{ERP_PARITY.length} 項）與可以停掉的訂閱
         </Link>
       )}
@@ -157,7 +157,7 @@ export function OnboardingSteps() {
 export function TrustStrip() {
   return (
     <section aria-labelledby="trust" className="space-y-4">
-      <h2 id="trust" className="scene-type text-lg font-medium">
+      <h2 id="trust" className="site-sheet inline-block !rounded-2xl px-4 py-2 text-lg font-medium">
         簽約前可以先看的文件
       </h2>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -170,7 +170,7 @@ export function TrustStrip() {
           </li>
         ))}
       </ul>
-      <p className="text-xs text-cream-dim">條款與政策目前是草稿版本，簽約前會由律師審閱定稿。目前沒有 ISO 27001、SOC 2 等第三方認證，細節寫在資安說明。</p>
+      <p className="scene-type text-xs">條款與政策目前是草稿版本，簽約前會由律師審閱定稿。目前沒有 ISO 27001、SOC 2 等第三方認證，細節寫在資安說明。</p>
     </section>
   );
 }
@@ -194,7 +194,7 @@ export function FaqList() {
           </details>
         ))}
       </div>
-      <p className="text-sm text-cream-dim">
+      <p className="scene-type text-sm">
         沒看到你的問題？寫信到{" "}
         <a href={`mailto:${COMMERCIAL.email}`} className="underline underline-offset-4 hover:text-cream">
           {COMMERCIAL.email}
