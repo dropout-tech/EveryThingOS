@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
 
@@ -30,6 +31,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
   const [logs, setLogs] = useState(data.me.logs);
   const [approvals, setApprovals] = useState(data.approvals);
   const [note, setNote] = useState<string | null>(null);
+  const [confirm, confirmDialog] = useConfirm();
   const denied = new Set(data.denied ?? []);
   const shownLogs = live ? data.me.logs : logs;
   const shownApprovals = live ? data.approvals : approvals;
@@ -59,10 +61,11 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
     <div className="space-y-5">
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
+      {confirmDialog}
 
       <section className="glass glass-hero space-y-3 p-5 md:p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-lg">{data.me.name}</h3>
+          <h2 className="text-lg font-medium">{data.me.name}</h2>
           <p className="text-xs text-cream-dim">{data.date}</p>
         </div>
         {live && !data.me.employee ? (
@@ -79,7 +82,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
                   type="button"
                   disabled={action.busy}
                   onClick={() => clock(type)}
-                  className={`${type === next ? "glass-cta" : "glass-pill"} rounded-full px-5 py-2 text-sm disabled:opacity-50`}
+                  className={`btn ${type === next ? "btn-primary" : "btn-secondary"} px-6`}
                 >
                   {action.busy ? "處理中…" : `${LOG_LABEL[type]}打卡`}
                 </button>
@@ -91,7 +94,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
 
       {denied.has("on_leave") ? null : (
         <section className="space-y-2">
-          <h3 className="text-sm">今天誰請假</h3>
+          <h2 className="text-sm font-medium">今天誰請假</h2>
           {data.onLeave.length ? (
             <ul className="grid gap-2 md:grid-cols-2">
               {data.onLeave.map((r) => (
@@ -122,7 +125,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
 
       {denied.has("approvals") ? null : (
         <section className="space-y-2">
-          <h3 className="text-sm">等你核准的假單</h3>
+          <h2 className="text-sm font-medium">等你核准的假單</h2>
           {shownApprovals.length ? (
             <ul className="space-y-2">
               {shownApprovals.map((a) => (
@@ -137,10 +140,13 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
                     {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
                   </div>
                   <span className="flex items-center gap-2">
-                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="glass-cta rounded-full px-4 py-1.5 text-xs disabled:opacity-50">
+                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-primary btn-sm">
                       核准
                     </button>
-                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "reject")} className="glass-pill px-4 py-1.5 text-xs disabled:opacity-50">
+                    <button type="button" disabled={action.busy} onClick={async () => {
+                        if (await confirm({ title: `退回 ${a.employee} 的假單？`, body: `${a.leaveType} ${days(a.fromDate, a.toDate)}，共 ${a.days} 天。退回後要請對方重新申請。`, confirmLabel: "退回", danger: true }))
+                          decide(a.name, a.employee, "reject");
+                      }} className="btn btn-secondary btn-sm">
                       退回
                     </button>
                     {a.href ? (
@@ -161,7 +167,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
       {data.payroll ? (
         <section className="glass-well space-y-2 p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-sm">{data.payroll.month} 薪資</h3>
+            <h2 className="text-sm font-medium">{data.payroll.month} 薪資</h2>
             <p className="text-xs text-cream-dim">在職 {data.payroll.employees} 人</p>
           </div>
           <p className="text-lg">{PAYROLL_STATE[data.payroll.state]}</p>
@@ -175,14 +181,14 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
           {data.payroll.entries.length ? (
             <p className="flex flex-wrap gap-3 text-xs">
               {data.payroll.entries.map((e) => (
-                <DeskLink key={e.name} href={e.href} className="text-teal">
+                <DeskLink key={e.name} href={e.href} className="underline underline-offset-2">
                   {e.name}
                 </DeskLink>
               ))}
             </p>
           ) : null}
           {data.rates && (!data.rates.verified || !data.rates.current) ? (
-            <p className="text-sm text-orange" role="status">
+            <p className="text-sm text-warn" role="status">
               {data.rates.current ? `${data.rates.year} 年的勞健保與扣繳費率還沒核對` : `費率還是 ${data.rates.year} 年的`}，發薪前請對照勞保局、健保署、財政部的公告。
               {data.rates.href ? (
                 <DeskLink href={data.rates.href} className="ml-2 underline">

@@ -12,8 +12,8 @@ export default async function StockPage() {
 
   if (!pack.modules.erp.inventory) {
     return (
-      <div className="rounded-2xl border border-gold/40 p-6">
-        <h3 className="text-xl">這家公司沒有倉庫要管</h3>
+      <div className="glass p-6">
+        <h2 className="text-xl font-medium">這家公司沒有倉庫要管</h2>
         <p className="mt-2 text-cream-dim">
           履行是「{pack.fulfillment}」。A1／億看仍會把進銷存選單全部攤開；DropOut 依產業包把盤點藏起來，避免教育／顧問業去學品號。
         </p>

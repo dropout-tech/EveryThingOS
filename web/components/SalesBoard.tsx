@@ -5,6 +5,8 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
+import { buttonClass } from "./ui/Button";
+import { Field } from "./ui/Field";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import {
   advanceSalesDoc,
@@ -30,6 +32,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     if (live) return;
@@ -64,9 +67,10 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
       pack,
     });
     if (!quote) {
-      setNote("請填客戶名稱，金額須為 1 到 一千萬的數字。");
+      setFormError(party.trim() ? "金額要是 1 到一千萬之間的數字。" : "請填客戶名稱。");
       return;
     }
+    setFormError(null);
     setDocs((current) => [quote, ...current]);
     setParty("");
     setAmount("");
@@ -80,52 +84,38 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           {catalog ? <LiveQuoteForm catalog={catalog} action={action} /> : null}
           <p className="text-xs text-cream-dim">
             報價、轉訂單、出貨、開發票、收款都直接寫進 ERPNext，照你的角色權限。要改細節時{" "}
-            <DeskLink href={`${deskUrl}/app/quotation/new`} className="text-teal underline">
+            <DeskLink href={`${deskUrl}/app/quotation/new`} className="underline underline-offset-2">
               在 ERPNext 開單
             </DeskLink>
             。
           </p>
         </div>
       ) : (
-      <form
-        onSubmit={onCreate}
-        className="glass flex flex-wrap items-end gap-2 p-4"
-      >
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">誰在問</span>
-          <input
-            value={party}
-            onChange={(event) => setParty(event.target.value)}
-            maxLength={40}
-            placeholder="客戶名稱"
-            className="mt-1 w-44 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream"
-          />
-        </label>
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">未稅金額</span>
-          <input
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            inputMode="numeric"
-            placeholder="28600"
-            className="mt-1 w-32 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream"
-          />
-        </label>
-        <button type="submit" className="glass-cta rounded-full px-4 py-2 text-sm">
+      <form onSubmit={onCreate} noValidate className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-end">
+        <Field label="誰在問" className="sm:w-48" error={formError && !party.trim() ? formError : null}>
+          <input value={party} onChange={(event) => setParty(event.target.value)} maxLength={40} placeholder="客戶名稱" autoComplete="off" className="field" />
+        </Field>
+        <Field label="未稅金額" className="sm:w-36" error={formError && party.trim() ? formError : null}>
+          <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="28600" className="field" />
+        </Field>
+        <button type="submit" className={buttonClass({ variant: "primary" })}>
           開一張報價
         </button>
-        <p className="text-xs text-cream-dim">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
+        <p className="text-xs text-cream-dim sm:basis-full">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
       </form>
       )}
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
-          <section key={column.id} className="glass-well p-3">
-            <h3 className="text-sm">
+          <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>
+            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+              <span>
               {column.plain}
-              <span className="ml-1 text-xs text-cream-dim">{column.formal}</span>
-            </h3>
+              <span className="ml-1 text-xs font-normal text-cream-dim">{column.formal}</span>
+              </span>
+              <span className="text-xs text-cream-dim">{column.docs.length}</span>
+            </h2>
             <ul className="mt-3 space-y-2">
               {column.docs.length ? (
                 column.docs.map((doc) => (
@@ -135,17 +125,17 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     <p className="text-sm text-cream-dim">
                       {doc.item} × {doc.qty}
                     </p>
-                    <p className="mt-1 text-teal">{formatTwd(doc.amount + doc.tax)}</p>
+                    <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}</p>
                     {doc.invoiceNo ? (
                       <p className="mt-1 text-xs text-cream-dim">發票 {doc.invoiceNo}</p>
                     ) : null}
                     {doc.overdueDays ? (
-                      <p className="mt-1 text-xs text-orange">已逾期 {doc.overdueDays} 天</p>
+                      <p className="mt-1 text-xs text-warn">已逾期 {doc.overdueDays} 天</p>
                     ) : null}
                     {live ? (
                       <>
                         {doc.next !== "完成" ? <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} /> : null}
-                        <DeskLink href={doc.href} className="mt-1 block text-center text-xs text-cream-dim hover:text-cream">
+                        <DeskLink href={doc.href} className={buttonClass({ variant: "ghost", size: "sm", block: true, className: "mt-1" })}>
                           打開
                         </DeskLink>
                       </>
@@ -154,7 +144,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                         type="button"
                         disabled={doc.next === "完成"}
                         onClick={() => onAdvance(doc)}
-                        className="glass-pill mt-2 w-full py-1.5 text-xs disabled:opacity-40"
+                        className={buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" })}
                       >
                         {doc.next}
                       </button>

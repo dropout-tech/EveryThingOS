@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { ReportBoard } from "@/components/ReportBoard";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
@@ -30,6 +31,15 @@ export default async function ReportsPage({ searchParams }: PageProps<"/workspac
 
   return (
     <ModuleFrame {...frame}>
+      {source.origin === "live" && source.data.revenue?.every((r) => !r.amount) ? (
+        <EmptyState
+          compact
+          title="這段期間還沒有開過發票，所以營收是 0"
+          detail="報表從送出的銷售發票算起。開帳時匯入的期初帳不算營收；開出第一張發票後這裡就會有數字。"
+          action={{ href: "/workspace/erp/sales", label: "到生意開單" }}
+          help="module-reports"
+        />
+      ) : null}
       <ReportBoard report={source.data} demo={source.origin === "demo"} />
       <SourceNote source={source} demoText="示範資料。接上 ERPNext 後換成你們的營收、帳齡、客人與庫存。" />
     </ModuleFrame>

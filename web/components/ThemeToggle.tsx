@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import type { UiTheme } from "@/lib/theme";
 
-const options: { id: UiTheme; label: string }[] = [
-  { id: "black", label: "黑" },
-  { id: "white", label: "白" },
+const options: { id: UiTheme; label: string; name: string }[] = [
+  { id: "black", label: "黑", name: "深色" },
+  { id: "white", label: "白", name: "淺色" },
 ];
 
 export function ThemeToggle({ current }: { current: UiTheme }) {
@@ -14,7 +14,7 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
   const [pending, start] = useTransition();
 
   return (
-    <div className="flex rounded-full bg-white/10 p-0.5 text-xs" role="group" aria-label="介面顏色">
+    <div className="theme-toggle flex rounded-full border border-[var(--line)] bg-white/10 p-0.5 text-xs" role="group" aria-label="介面顏色">
       {options.map((option) => {
         const active = current === option.id;
         return (
@@ -23,7 +23,9 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
             type="button"
             disabled={pending}
             aria-pressed={active}
-            className={`rounded-full px-2.5 py-1 ${active ? "bg-teal text-ink" : "text-cream-dim hover:text-cream"}`}
+            aria-label={option.name}
+            title={option.name}
+            className={`min-h-8 min-w-9 rounded-full px-2.5 ${active ? "bg-teal font-medium text-ink" : "text-cream-dim hover:text-cream"}`}
             onClick={() => {
               if (active) return;
               start(async () => {

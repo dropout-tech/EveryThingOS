@@ -3,7 +3,7 @@ import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
-import type { AuditRow, Catalog, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
+import type { AuditRow, Catalog, Checklist, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
 
 type RawBooks = {
   month_sales: number;
@@ -116,6 +116,10 @@ export function liveSetup() {
   return erpMethod<SetupStatus>("dropout_core.api.setup_status");
 }
 
+export function liveChecklist() {
+  return erpMethod<Checklist>("dropout_core.api.setup_checklist");
+}
+
 export async function liveMe(): Promise<Me> {
   const raw = await erpMethod<{ user: string; full_name: string; company: string; roles: string[]; profile?: string | null; chatwoot_user_id?: string }>("dropout_core.shell.whoami");
   return { user: raw.user, fullName: raw.full_name, company: raw.company, roles: raw.roles, profile: raw.profile ?? undefined, chatwootUserId: raw.chatwoot_user_id || undefined };
@@ -216,4 +220,16 @@ export async function liveHr(): Promise<HrToday> {
     can: raw.can,
     denied: raw.denied,
   };
+}
+
+export type BackupStatus = {
+  checked_at: string;
+  local: { taken_at: string; bytes: number; files: number; encrypted: boolean } | null;
+  offsite: { enabled: boolean; taken_at?: string | null; bytes?: number; sets?: number; error?: string };
+  encrypted: boolean;
+};
+
+/** System Manager only (`dropout_core.backups.status`). */
+export function liveBackup() {
+  return erpMethod<BackupStatus>("dropout_core.backups.status");
 }

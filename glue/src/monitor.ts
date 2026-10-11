@@ -18,7 +18,8 @@ export const KEEP_DAYS = 400;
 const DAY = 86_400_000;
 const MAX_ALERT_LINES = 30;
 
-export const TARGET_LABEL: Record<Target, string> = { erpnext: "ERPNext", shell: "殼" };
+export const TARGET_LABEL: Record<Target, string> = { erpnext: "ERPNext", shell: "殼", backup: "備份" };
+const served = (i: Incident) => i.target !== "backup";
 
 export type Probe = { ok: boolean; status: number | null; ms: number; error: string | null };
 
@@ -91,15 +92,20 @@ export function alertText(changes: Change[]) {
 }
 
 /** Slack, Discord and Google Chat each want their own field name; anything else gets every common one. */
-export function webhookBody(url: string, text: string, changes: Change[]) {
+export function webhookBody(url: string, text: string, events: unknown[]) {
   const host = new URL(url).hostname;
   if (host === "hooks.slack.com" || host === "chat.googleapis.com") return { text };
   if (/(^|\.)discord(app)?\.com$/.test(host)) return { content: text };
-  return { text, content: text, message: text, events: changes };
+  return { text, content: text, message: text, events };
 }
 
 export async function sendAlert(env: Env, fetcher: typeof fetch, changes: Change[]) {
   const { subject, text } = alertText(changes);
+  return deliver(env, fetcher, subject, text, changes);
+}
+
+/** Ops webhook and/or the verified ops mailbox; logs `alert.not_sent` when neither is set up or both fail. */
+export async function deliver(env: Env, fetcher: typeof fetch, subject: string, text: string, events: unknown[]) {
   const sent: string[] = [];
   const hook = env.ALERT_WEBHOOK_URL;
   if (hook && !/^https:\/\//.test(hook)) log("warn", "alert.webhook_not_https");
@@ -108,7 +114,7 @@ export async function sendAlert(env: Env, fetcher: typeof fetch, changes: Change
       const res = await fetcher(hook, {
         method: "POST",
         headers: { "content-type": "application/json", ...(env.ALERT_WEBHOOK_TOKEN ? { authorization: `Bearer ${env.ALERT_WEBHOOK_TOKEN}` } : {}) },
-        body: JSON.stringify(webhookBody(hook, text, changes)),
+        body: JSON.stringify(webhookBody(hook, text, events)),
         signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
       });
       if (res.ok) sent.push("webhook");
@@ -238,7 +244,8 @@ export async function publicStatus(ms: MonitorStore, now = new Date(), site?: st
   const fresh = all.filter((c) => Date.parse(c.checked_at) >= now.getTime() - FRESH_MS);
   const since = new Date(now.getTime() - 14 * DAY).toISOString();
   const monthAgo = taiwanDate(new Date(now.getTime() - 30 * DAY));
-  const [incidents, availability] = await Promise.all([ms.listIncidents(since), ms.availability(monthAgo)]);
+  const [listed, availability] = await Promise.all([ms.listIncidents(since), ms.availability(monthAgo)]);
+  const incidents = listed.filter(served);
   const latest = fresh.reduce<string | null>((m, c) => (!m || c.checked_at > m ? c.checked_at : m), null);
   const components = {
     // Checks exist but none are recent: the cron has stopped.
@@ -260,7 +267,7 @@ export async function publicStatus(ms: MonitorStore, now = new Date(), site?: st
     body.site = {
       components: { erpnext: level(mine.filter((c) => c.target === "erpnext")), shell: level(mine.filter((c) => c.target === "shell")) },
       availability_30d: { erpnext: percent(siteAvailability, "erpnext"), shell: percent(siteAvailability, "shell") },
-      incidents: siteIncidents.slice(0, 20).map((i) => ({ target: i.target, started_at: i.started_at, resolved_at: i.resolved_at })),
+      incidents: siteIncidents.filter(served).slice(0, 20).map((i) => ({ target: i.target, started_at: i.started_at, resolved_at: i.resolved_at })),
     };
   }
   return body;

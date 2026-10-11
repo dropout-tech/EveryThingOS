@@ -56,8 +56,36 @@ dropout-onboard backup verify demo-make.local --backup ~/r2/20261011_020000-demo
 - 比對正式站與暫存站的單據筆數和資料檢查（`dropout_core.checks.summary`），然後刪掉暫存站；中途失敗也會刪。
 - 沒通過的情況：備份超過 24 小時、還原失敗、有單據還原後變 0 筆或整種不見。備份之後新增或刪除的筆數只列為提醒。
 - 報告寫在 `<state_dir>/restore-drills/<site>-<時間>.json`（權限 600），記下備份時間、還原花幾分鐘、每種單據筆數；資料庫密碼不會寫進報告。
+- `--from-r2`：用 R2 裡這站最新的一份（`<site>/<時間>/`），下載到 `<state_dir>/r2-downloads/`（權限 700），做完刪掉（`--keep-download` 保留）。預演只列 bucket，不下載。
+- 加密備份（System Settings → Encrypt Backups，檔名有 `-enc`）：金鑰依序用 `--encryption-key`／`BACKUP_ENCRYPTION_KEY`、備份裡的 `site_config_backup`、正式站的 `site_config.json`；都沒有就不還原。
+
+R2 只用環境變數給金鑰：`BACKUP_ACCESS_KEY_ID`、`BACKUP_SECRET_ACCESS_KEY`；bucket 與端點用 `--backup-bucket`／`BACKUP_BUCKET`、`--backup-endpoint`／`BACKUP_ENDPOINT`。讀寫 bucket 用 bench 自己的 `<bench>/env/bin/python`（ERPNext 的 S3 備份已經裝了 boto3），這個工具本身仍然沒有依賴；別的 Python 用 `--s3-python`／`S3_PYTHON`。錯誤訊息與報告會把金鑰遮成 `***`。
 
 目標與每月演練排程見 [docs/RELIABILITY.md](../docs/RELIABILITY.md)。
+
+## 整台主機重建：`fleet restore-all`
+
+```bash
+dropout-onboard fleet restore-all --from-r2 --glue-url https://glue.dropout.tw              # 預演：每家用哪一份
+DB_ROOT_PASSWORD=... dropout-onboard fleet restore-all --from-r2 --glue-url https://glue.dropout.tw --mariadb-user-host-login-scope='%' --apply
+dropout-onboard fleet restore-all --from-r2 --site a.erp.dropout.tw --site b.erp.dropout.tw --apply   # 只做幾家
+```
+
+- 站台清單：`--site`；不然是膠水裡沒刪除的公司（付費的先、解約的最後）；沒有膠水就用 bucket 的資料夾（略過 `purged/`、`d1/`）。已經在這台的略過。
+- 每家：下載 → `bench new-site` → 帶回舊的 `site_config`（資料庫帳密以外的都帶，特別是 `encryption_key`）→ `bench restore` 含附件與金鑰 → `bench migrate`。失敗就刪掉做一半的站，接著做下一家。
+- 進度在 `<state_dir>/restore-all/<時間>.log` 與 `state.json`（權限 600），每家做完估計剩下的時間，超過 RTO 8 小時會提醒分到另一台。
+
+## 解約後刪除：`fleet purge`
+
+```bash
+dropout-onboard fleet purge demo-make.local --glue-url https://glue.dropout.tw              # 預演
+DB_ROOT_PASSWORD=... dropout-onboard fleet purge demo-make.local --glue-url https://glue.dropout.tw --apply   # 要打站台名稱確認
+dropout-onboard fleet purge-sweep --glue-url https://glue.dropout.tw --apply                # 刪掉 30 天前的最後備份，要打 delete 確認
+```
+
+- 只有膠水說「解約滿 90 天」的公司可以刪；膠水也會再擋一次。
+- 依序：最後備份到 R2 `purged/<site>/<時間>/`（核對大小）→ `bench drop-site`（不留 `archived/sites`）→ 刪 R2 `<site>/` → 膠水標記已刪除。每一步都記進那家的歷史；中途失敗就停，再跑一次從停的地方接著做。
+- `--yes` 不再問名稱（配 `--apply`）。紀錄寫在 `<state_dir>/purges/`。
 
 ## 流程
 

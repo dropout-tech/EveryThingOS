@@ -49,7 +49,7 @@ export default async function ApiSettingsPage() {
       {source.origin === "denied" ? (
         <p className="glass p-5 text-sm text-cream-dim">{source.message}。請公司裡職務是「老闆」的人來設定。</p>
       ) : source.origin === "error" ? (
-        <p className="glass p-5 text-sm text-orange">暫時讀不到設定：{source.message}</p>
+        <p className="glass p-5 text-sm text-warn">暫時讀不到設定：{source.message}</p>
       ) : (
         <ApiBoard data={source.origin === "live" ? source.data : DEMO} live={source.origin === "live"} />
       )}

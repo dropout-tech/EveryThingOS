@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Badge } from "./ui/Badge";
+import { buttonClass } from "./ui/Button";
 import type { Sourced } from "@/lib/sources/types";
 
 const SYSTEM_LABEL = { erpnext: "ERPNext", glue: "系統同步", chatwoot: "Chatwoot" } as const;
@@ -37,7 +39,13 @@ const DENIED_LABEL: Record<string, string> = {
 
 /** Says where the numbers on this page come from. Demo data is always labelled. */
 export function SourceNote({ source, demoText = "示範資料。導入後換成你們的客人與帳。" }: { source: Sourced<unknown>; demoText?: string }) {
-  if (source.origin === "demo") return <p className="text-xs text-cream-dim">{demoText}</p>;
+  if (source.origin === "demo")
+    return (
+      <p className="flex flex-wrap items-center gap-2 text-xs text-cream-dim">
+        <Badge tone={demoText.startsWith("練習") ? "practice" : "demo"} />
+        {demoText.replace(/^(示範資料|示範|練習)。/, "")}
+      </p>
+    );
   if (source.origin === "error") return null;
   const denied = source.denied?.map((key) => DENIED_LABEL[key] ?? key) ?? [];
   return (
@@ -46,7 +54,7 @@ export function SourceNote({ source, demoText = "示範資料。導入後換成�
       {source.deskUrl ? (
         <>
           {" · "}
-          <a href={source.deskUrl + "/app"} className="hover:text-cream" target="_blank" rel="noreferrer">
+          <a href={source.deskUrl + "/app"} className="underline hover:text-cream" target="_blank" rel="noreferrer">
             打開後台
           </a>
         </>
@@ -64,7 +72,7 @@ export function SourceFailure({ source, next = "/workspace" }: { source: Extract
       <h2 className="text-2xl font-medium">{source.kind === "login" ? "要先登入" : "現在拿不到資料"}</h2>
       <p className="text-sm text-cream-dim">{source.message}</p>
       {source.kind === "login" ? (
-        <a href={`/api/auth/login?next=${encodeURIComponent(next)}`} className="glass-cta inline-flex rounded-full px-5 py-2.5 text-sm">
+        <a href={`/api/auth/login?next=${encodeURIComponent(next)}`} className={buttonClass({ variant: "primary" })}>
           用 ERPNext 帳號登入
         </a>
       ) : (

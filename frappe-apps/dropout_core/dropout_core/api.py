@@ -476,3 +476,13 @@ def setup_status():
 	from dropout_core.onboarding import steps
 
 	return steps()
+
+
+@frappe.whitelist()
+def setup_checklist():
+	"""開站清單 for 今天. Counts read past document permissions, so only the owner (System Manager) may ask."""
+	from dropout_core.onboarding import checklist
+	from dropout_core.team import _require_admin
+
+	_require_admin()
+	return checklist()

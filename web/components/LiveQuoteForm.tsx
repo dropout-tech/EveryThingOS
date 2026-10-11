@@ -7,7 +7,7 @@ import type { useLiveAction } from "./LiveAction";
 
 type Line = { item_code: string; qty: string; rate: string };
 
-const field = "mt-1 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream";
+const field = "field";
 
 /** 開一張報價 straight into ERPNext: pick who, pick what, the price list fills the rest. */
 export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: ReturnType<typeof useLiveAction> }) {
@@ -39,8 +39,8 @@ export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: R
   return (
     <form onSubmit={submit} className="space-y-2">
       <label className="block text-sm">
-        <span className="block text-xs text-cream-dim">給誰</span>
-        <select required value={party} onChange={(e) => setParty(e.target.value)} className={`${field} w-64`}>
+        <span className="field-label">給誰</span>
+        <select required value={party} onChange={(e) => setParty(e.target.value)} className={`${field} sm:w-64`}>
           <option value="">選客人</option>
           {catalog.parties.map((p) => (
             <option key={`${p.party_type}::${p.party}`} value={`${p.party_type}::${p.party}`}>
@@ -52,9 +52,9 @@ export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: R
       </label>
       {lines.map((line, i) => (
         <div key={i} className="flex flex-wrap items-end gap-2">
-          <label className="text-sm">
-            <span className="block text-xs text-cream-dim">賣什麼</span>
-            <select required={i === 0} value={line.item_code} onChange={(e) => update(i, { item_code: e.target.value })} className={`${field} w-56`}>
+          <label className="w-full text-sm sm:w-auto">
+            <span className="field-label">賣什麼</span>
+            <select required={i === 0} value={line.item_code} onChange={(e) => update(i, { item_code: e.target.value })} className={`${field} sm:w-56`}>
               <option value="">選商品</option>
               {catalog.items.map((item) => (
                 <option key={item.item_code} value={item.item_code}>
@@ -64,21 +64,21 @@ export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: R
               ))}
             </select>
           </label>
-          <label className="text-sm">
-            <span className="block text-xs text-cream-dim">數量</span>
-            <input value={line.qty} onChange={(e) => update(i, { qty: e.target.value })} inputMode="decimal" className={`${field} w-20`} />
+          <label className="w-full text-sm sm:w-auto">
+            <span className="field-label">數量</span>
+            <input value={line.qty} onChange={(e) => update(i, { qty: e.target.value })} inputMode="decimal" className={`${field} sm:w-20`} />
           </label>
-          <label className="text-sm">
-            <span className="block text-xs text-cream-dim">單價（空白用價目表）</span>
-            <input value={line.rate} onChange={(e) => update(i, { rate: e.target.value })} inputMode="decimal" placeholder={price(line.item_code)?.toString() ?? ""} className={`${field} w-28`} />
+          <label className="w-full text-sm sm:w-auto">
+            <span className="field-label">單價（空白用價目表）</span>
+            <input value={line.rate} onChange={(e) => update(i, { rate: e.target.value })} inputMode="decimal" placeholder={price(line.item_code)?.toString() ?? ""} className={`${field} sm:w-28`} />
           </label>
         </div>
       ))}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={() => setLines((c) => [...c, { item_code: "", qty: "1", rate: "" }])} className="glass-pill px-3 py-1.5 text-xs">
+        <button type="button" onClick={() => setLines((c) => [...c, { item_code: "", qty: "1", rate: "" }])} className="btn btn-secondary btn-sm">
           再加一項
         </button>
-        <button type="submit" disabled={action.busy} className="glass-cta rounded-full px-4 py-2 text-sm disabled:opacity-50">
+        <button type="submit" disabled={action.busy} className="btn btn-primary">
           {action.busy ? "開單中…" : "開一張報價"}
         </button>
         <span className="text-xs text-cream-dim">未稅約 {formatTwd(total)}；稅依 ERPNext 的稅別範本計算。</span>

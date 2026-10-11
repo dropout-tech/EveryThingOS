@@ -281,5 +281,15 @@ def usage():
 		"db_mb": round(float(db_bytes) / 1048576, 1),
 		"files_mb": round(float(files_bytes or 0) / 1048576, 1),
 		"setup_complete": cint(frappe.is_setup_complete()),
+		"backup": _backup(),
 		"at": str(now_datetime()),
 	}
+
+
+def _backup():
+	from dropout_core import backups
+
+	try:
+		return backups.read(refresh=True)
+	except Exception as e:
+		return {"error": str(e)[:300]}

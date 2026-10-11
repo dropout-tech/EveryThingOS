@@ -1,6 +1,10 @@
 import "server-only";
 import { headers } from "next/headers";
-import type { Lifecycle, Stage } from "./sources/config";
+import type { HealthLevel } from "./platform-ui";
+import type { Lifecycle } from "./sources/config";
+
+export { HEALTH_LABEL, ntd, STAGE_LABEL } from "./platform-ui";
+export type { HealthLevel } from "./platform-ui";
 
 /**
  * The DropOut staff console. It is served only where GLUE_ADMIN_TOKEN and
@@ -89,19 +93,26 @@ export type PlatformAccount = {
   tax_id?: string | null;
   billing_address?: string | null;
   hosts: string[];
-  usage?: Record<string, number | string> | null;
+  usage?: (Record<string, unknown> & { backup?: SiteBackup }) | null;
   usage_at?: string | null;
   created_at: string;
   lifecycle: Lifecycle;
+  cancelled_at?: string | null;
+  purged_at?: string | null;
+  purge?: { due_on: string | null; due: boolean; purged_at: string | null };
+  /** The glue's daily check: no off-site backup in 26 hours, or the upload failed. */
+  backup_problem?: string | null;
+};
+
+export type SiteBackup = {
+  error?: string;
+  local?: { taken_at: string; bytes: number } | null;
+  offsite?: { enabled: boolean; taken_at?: string | null; bytes?: number; error?: string };
 };
 
 export type AccountEvent = { id: number; at: string; actor: string; action: string; detail: string | null };
 
-export type HealthLevel = "high" | "watch" | "ok" | "gone";
-
 export type Health = { score: number; level: HealthLevel; reasons: string[] };
-
-export const HEALTH_LABEL: Record<HealthLevel, string> = { high: "高風險", watch: "注意", ok: "健康", gone: "已解約" };
 
 export type GatewayStatus = { ecpay: "production" | "staging" | null; einvoice: "production" | "staging" | null };
 
@@ -131,18 +142,6 @@ export type BillingSummary = {
   gateway: GatewayStatus;
   price: { net: number; tax: number; amount: number };
   accounts: Record<string, { health: Health; open: { id: string; amount: number; created_at: string } | null; einvoice_failed: boolean }>;
-};
-
-export const ntd = (n: number) => `NT$${n.toLocaleString("en-US")}`;
-
-export const STAGE_LABEL: Record<Stage, string> = {
-  trial: "試用",
-  active: "使用中",
-  due_soon: "快到期",
-  past_due: "已到期（寬限中）",
-  read_only: "只能看",
-  suspended: "暫停",
-  cancelled: "已解約",
 };
 
 /**

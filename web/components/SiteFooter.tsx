@@ -1,37 +1,64 @@
 import Link from "next/link";
 import { BrandMark } from "./BrandMark";
-import { COMMERCIAL, PRICE_LABEL } from "@/lib/commercial";
+import { COMMERCIAL, PRICE_LABEL, SITE_NAV } from "@/lib/commercial";
 import { LEGAL_LINKS } from "@/lib/legal";
+
+const SUPPORT = [
+  { href: "/help", label: "說明中心" },
+  { href: "/status", label: "系統狀態" },
+] as const;
 
 export function SiteFooter() {
   return (
-    <footer className="glass glass-bar mt-8 px-5 py-10 text-sm text-cream-dim">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <footer className="glass glass-bar site-scope site-noprint mt-8 px-5 py-10 text-sm text-cream-dim">
+      <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <BrandMark href="/" />
-          <p className="mt-3">
-            {COMMERCIAL.legalName} · {PRICE_LABEL} · 免費顧問導入
-          </p>
+          <p className="mt-3">{COMMERCIAL.legalName}</p>
+          <p className="mt-1">{PRICE_LABEL}（未稅）· 免費顧問導入</p>
         </div>
-        <div className="flex gap-5">
-          <Link href="/industries" className="hover:text-cream">
-            產業包
-          </Link>
-          <Link href="/pricing" className="hover:text-cream">
-            定價
-          </Link>
-          <a href={`mailto:${COMMERCIAL.email}`} className="hover:text-cream">
-            {COMMERCIAL.email}
-          </a>
-        </div>
+        <nav aria-label="產品">
+          <p className="text-xs tracking-[0.18em] text-cream">產品</p>
+          <ul className="mt-3 space-y-2">
+            {SITE_NAV.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-cream">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <nav aria-label="支援">
+          <p className="text-xs tracking-[0.18em] text-cream">支援</p>
+          <ul className="mt-3 space-y-2">
+            {SUPPORT.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-cream">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <a href={`mailto:${COMMERCIAL.email}`} className="hover:text-cream">
+                {COMMERCIAL.email}
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <nav aria-label="條款與政策">
+          <p className="text-xs tracking-[0.18em] text-cream">條款與政策</p>
+          <ul className="mt-3 space-y-2">
+            {LEGAL_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} className="hover:text-cream">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <nav className="mx-auto mt-6 flex max-w-6xl flex-wrap gap-x-5 gap-y-2 text-xs">
-        {LEGAL_LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className="hover:text-cream">
-            {link.label}
-          </Link>
-        ))}
-      </nav>
     </footer>
   );
 }
