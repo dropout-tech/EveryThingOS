@@ -166,6 +166,17 @@ class TestSetup(FrappeTestCase):
 		self.assertEqual(data["event_type"], "paid")
 		self.assertEqual(data["idempotency_key"], "glue-test:1")
 
+	def test_pack_waits_for_setup_wizard(self):
+		from unittest import mock
+
+		from dropout_core import packs
+
+		with mock.patch("frappe.is_setup_complete", return_value=False):
+			self.assertIn("deferred", packs.install_from_app("dropout_pack_make"))
+		self.assertIn("dropout_pack_make", packs.installed_packs())
+		packs.after_setup_wizard({})
+		self.assertTrue(frappe.db.exists("Sales Stage", "詢價"))
+
 	def test_import_check_and_status(self):
 		bad = make_customer("檢查用公司")
 		frappe.db.set_value("Customer", bad, "tax_id", "11111111")
@@ -174,6 +185,39 @@ class TestSetup(FrappeTestCase):
 		status = api.setup_status()
 		self.assertEqual(status["total"], len(status["steps"]))
 		self.assertTrue(next(s for s in status["steps"] if s["id"] == "company")["done"])
+
+
+class TestMeetingsAndImport(FrappeTestCase):
+	def test_record_meeting_finds_party_from_attendees(self):
+		customer = make_customer("會議客人", email="meet@example.com")
+		first = api.record_meeting("abc-defg-hij", "google_meet", "確認打樣數量 200 件", attendees=["someone@else.com", "Meet@Example.com"])
+		again = api.record_meeting("abc-defg-hij", "google_meet", "確認打樣數量 200 件", attendees=["meet@example.com"])
+		self.assertTrue(first["created"])
+		self.assertFalse(again["created"])
+		self.assertEqual(frappe.db.get_value("DropOut Event", first["event"], "party"), customer)
+		comments = frappe.get_all("Comment", filters={"reference_doctype": "Customer", "reference_name": customer, "content": ["like", "%打樣數量%"]})
+		self.assertEqual(len(comments), 1)
+
+	def test_opening_stock_is_submitted_once(self):
+		import os
+		import tempfile
+
+		from dropout_core.provisioning import opening_stock
+
+		code = f"DO-STOCK-{frappe.generate_hash(length=6)}"
+		frappe.get_doc({"doctype": "Item", "item_code": code, "item_name": code, "item_group": leaf("Item Group"), "stock_uom": "Nos", "is_stock_item": 1}).insert()
+		co = company()
+		warehouse = frappe.get_all("Warehouse", filters={"company": co, "is_group": 0}, pluck="name", limit=1)[0]
+		header = "company,purpose,posting_date,set_posting_time,items.item_code,items.warehouse,items.qty,items.valuation_rate\n"
+		with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False, encoding="utf-8-sig") as fh:
+			fh.write(header + f"{co},Opening Stock,{nowdate()},1,{code},{warehouse},37,5\n")
+		try:
+			first = opening_stock(fh.name)
+			self.assertEqual(first["status"], "submitted")
+			self.assertEqual(opening_stock(fh.name)["status"], "already_done")
+			self.assertEqual(frappe.db.get_value("Bin", {"item_code": code, "warehouse": warehouse}, "actual_qty"), 37)
+		finally:
+			os.unlink(fh.name)
 
 
 class TestWebsite(FrappeTestCase):

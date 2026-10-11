@@ -9,8 +9,8 @@ ERPNext v15 的 DropOut OS 核心 app。不改 ERPNext 原始碼，只加：
 - `DropOut Import Check` 報表與 `setup_status` 導入進度
 - 電子報分群「新朋友」「老客人」（ERPNext 內建 Email Group）
 
+安裝方式見 [`frappe-apps/README.md`](../README.md)。裝好之後接上膠水：
+
 ```bash
-bench get-app https://github.com/dropout-tech/EveryThingOS --subdir? # 見 deploy/erpnext/apps.json
-bench --site <site> install-app dropout_core
 bench --site <site> execute dropout_core.install.configure_glue --kwargs '{"url":"https://glue.example.com","secret":"..."}'
 ```

@@ -9,6 +9,7 @@ required_apps = ["erpnext"]
 
 after_install = "dropout_core.install.after_install"
 after_migrate = "dropout_core.install.after_migrate"
+setup_wizard_complete = "dropout_core.packs.after_setup_wizard"
 
 doc_events = {
 	"Customer": {"validate": "dropout_core.events.validate_customer_tax_id"},

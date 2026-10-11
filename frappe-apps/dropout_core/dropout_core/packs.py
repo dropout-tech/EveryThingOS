@@ -25,10 +25,23 @@ def load(app):
 
 
 def install_from_app(app):
-	pack = load(app)
-	applied = apply(pack)
+	"""Packs extend the trees and defaults the setup wizard creates (All Item
+	Groups, the company, its price lists), so before setup they wait for
+	`after_setup_wizard`. Installing a pack before or after setup both work."""
+	if not frappe.is_setup_complete():
+		return {"deferred": "setup wizard not complete"}
+	applied = apply(load(app))
 	frappe.db.commit()
 	return applied
+
+
+def installed_packs():
+	return [app for app in frappe.get_installed_apps() if os.path.exists(frappe.get_app_path(app, "pack.json"))]
+
+
+def after_setup_wizard(args=None):
+	for app in installed_packs():
+		apply(load(app))
 
 
 def apply(pack):
@@ -59,7 +72,7 @@ def _domains(domains):
 	missing = [d for d in wanted if d not in current]
 	if missing:
 		settings.set_active_domains(sorted(current | set(missing)))
-	return missing
+	return {"added": missing, "not_in_this_erpnext": [d for d in domains if d not in available]}
 
 
 @handler("item_groups")

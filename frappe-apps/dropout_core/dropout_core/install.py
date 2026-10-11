@@ -56,6 +56,17 @@ CUSTOM_FIELDS = {
 			"no_copy": 1,
 		},
 	],
+	"Stock Reconciliation": [
+		{
+			"fieldname": "dropout_import_key",
+			"fieldtype": "Data",
+			"label": "導入批次",
+			"insert_after": "purpose",
+			"read_only": 1,
+			"no_copy": 1,
+			"search_index": 1,
+		},
+	],
 }
 
 
