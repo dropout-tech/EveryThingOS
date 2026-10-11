@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
-import { GlassPointer } from "@/components/GlassPointer";
-import { OceanColumn } from "@/components/OceanColumn";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { StyleBackdrop } from "@/components/styles/StyleBackdrop";
 import { COMMERCIAL } from "@/lib/commercial";
 import { currentScene } from "@/lib/scene-server";
 import { currentStyle } from "@/lib/style-server";
@@ -51,12 +50,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="zh-TW" data-theme={theme} data-scene={scene} data-style={style} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
-        {style === "fluid" ? (
-          <>
-            <GlassPointer />
-            <OceanColumn />
-          </>
-        ) : null}
+        <StyleBackdrop style={style} />
         <div className="page-shell">{children}</div>
         <ServiceWorker />
       </body>
