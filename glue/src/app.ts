@@ -1,3 +1,4 @@
+import { addYears, lifecycle, mergeAccount, normalizeHost, taiwanDate, validAccount, type Account } from "./accounts";
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
@@ -13,6 +14,8 @@ export type Env = {
   AI?: Ai;
   TENANT_KEY: string;
   ADMIN_TOKEN: string;
+  /** Held by the shell: tenant lookup and per-company read/replay, never tenant secrets. */
+  SHELL_TOKEN?: string;
   SUMMARY_MODEL?: string;
   AI_GATEWAY?: string;
   TURNSTILE_SECRET?: string;
@@ -67,9 +70,25 @@ async function formBody(req: Request): Promise<Record<string, string>> {
   return out;
 }
 
-function bearer(req: Request, env: Env) {
+function caller(req: Request, env: Env): "admin" | "shell" | null {
   const given = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-  return Boolean(env.ADMIN_TOKEN) && safeEqual(given, env.ADMIN_TOKEN);
+  if (!given) return null;
+  if (env.ADMIN_TOKEN && safeEqual(given, env.ADMIN_TOKEN)) return "admin";
+  if (env.SHELL_TOKEN && safeEqual(given, env.SHELL_TOKEN)) return "shell";
+  return null;
+}
+
+/** Admin routes the shell token may also use: one company's own sync and meeting views. */
+function shellMayUse(parts: string[], method: string) {
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "dead-letters" && !parts[4] && method === "GET") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && !parts[4] && method === "GET") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
+  if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
+  return false;
+}
+
+export function accountView(a: Account, now = new Date()) {
+  return { ...a, lifecycle: lifecycle(a, now) };
 }
 
 async function turnstileOk(env: Env, token: string | undefined, ip: string | null, fetcher: typeof fetch) {
@@ -271,9 +290,73 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     return json({ ok: true });
   }
 
+  // Shell directory: which company a host name belongs to, and how the shell reaches it.
+  if (parts[0] === "shell" && parts[1] === "tenant" && req.method === "GET") {
+    if (!caller(req, env)) return text("forbidden", 403);
+    const host = normalizeHost(url.searchParams.get("host") ?? "");
+    const site = host ? await store.siteForHost(host) : null;
+    const [t, a] = site ? await Promise.all([store.getTenant(site), store.getAccount(site)]) : [null, null];
+    if (!t || !a) return text("not found", 404);
+    return json({
+      site: t.site,
+      company: a.company,
+      profile: a.profile ?? null,
+      lifecycle: lifecycle(a),
+      erpnext: { url: t.erpnext_url, site: t.site, oauth: t.shell_oauth_client_id ? { client_id: t.shell_oauth_client_id, client_secret: t.shell_oauth_client_secret ?? null } : null },
+      chatwoot: t.chatwoot_url ? { url: t.chatwoot_url, account_id: t.chatwoot_account_id ?? null } : null,
+    });
+  }
+
   // Admin (also put Cloudflare Access in front of /admin).
   if (parts[0] === "admin") {
-    if (!bearer(req, env)) return text("forbidden", 403);
+    const who = caller(req, env);
+    if (!who || (who === "shell" && !shellMayUse(parts, req.method))) return text("forbidden", 403);
+    const actor = (req.headers.get("x-actor") ?? who).slice(0, 120);
+    if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
+      const now = new Date();
+      return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });
+    }
+    if (parts[1] === "accounts" && parts[2] && !parts[3] && req.method === "GET") {
+      const a = await store.getAccount(parts[2]);
+      if (!a) return text("not found", 404);
+      return json({ account: accountView(a), events: await store.listAccountEvents(a.site), dead_letters: (await store.listDeadLetters(a.site)).length });
+    }
+    if (parts[1] === "accounts" && parts[2] && !parts[3] && req.method === "PUT") {
+      const patch = (await req.json()) as Partial<Account>;
+      const current = await store.getAccount(parts[2]);
+      const next = mergeAccount(parts[2], current, patch);
+      const problem = validAccount(next);
+      if (problem) return text(problem, 400);
+      for (const h of next.hosts) {
+        const owner = await store.siteForHost(h);
+        if (owner && owner !== next.site) return text(`${h} 已經是 ${owner} 的網址`, 409);
+      }
+      await store.putAccount(next);
+      await store.addAccountEvent(next.site, actor, current ? "更新" : "建立", JSON.stringify(patch).slice(0, 1000));
+      return json({ ok: true, account: accountView(next) });
+    }
+    if (parts[1] === "accounts" && parts[2] && parts[3] === "renew" && req.method === "POST") {
+      const a = await store.getAccount(parts[2]);
+      if (!a) return text("not found", 404);
+      const body = (await req.json().catch(() => ({}))) as { years?: number; until?: string; reference?: string };
+      const today = taiwanDate();
+      const from = a.renews_on && a.renews_on > today ? a.renews_on : today;
+      const until = body.until && /^\d{4}-\d{2}-\d{2}$/.test(body.until) ? body.until : addYears(from, Math.min(Math.max(Number(body.years ?? 1), 1), 5));
+      const next = mergeAccount(a.site, a, { renews_on: until, state: "active", state_reason: null });
+      await store.putAccount(next);
+      await store.addAccountEvent(a.site, actor, "續約", `${a.renews_on ?? "（試用）"} → ${until}${body.reference ? `；${body.reference}` : ""}`);
+      return json({ ok: true, account: accountView(next) });
+    }
+    if (parts[1] === "accounts" && parts[2] && parts[3] === "state" && req.method === "POST") {
+      const a = await store.getAccount(parts[2]);
+      if (!a) return text("not found", 404);
+      const body = (await req.json()) as { state?: Account["state"]; reason?: string };
+      if (!body.state || !["active", "suspended", "cancelled"].includes(body.state)) return text("state 只能是 active、suspended、cancelled", 400);
+      const next = mergeAccount(a.site, a, { state: body.state, state_reason: body.reason ?? null });
+      await store.putAccount(next);
+      await store.addAccountEvent(a.site, actor, { active: "恢復", suspended: "暫停", cancelled: "解約" }[body.state], body.reason ?? "");
+      return json({ ok: true, account: accountView(next) });
+    }
     if (parts[1] === "tenants" && parts[2] && req.method === "PUT") {
       const t = (await req.json()) as Tenant;
       if (t.site !== parts[2] || !t.erpnext_url || !t.erpnext_key || !t.erpnext_secret || !t.erpnext_webhook_secret || !t.unsubscribe_secret) return text("missing fields", 400);
@@ -318,7 +401,13 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       return json({ ok: true, key: body.key, skipped: body.skip !== false });
     }
     if (parts[1] === "dead-letters" && parts[3] === "replay" && req.method === "POST") {
-      const row = await store.takeDeadLetter(Number(parts[2]));
+      const id = Number(parts[2]);
+      const site = url.searchParams.get("site");
+      if (who === "shell") {
+        // The shell must say which company it is acting for, and the row must belong to it.
+        if (!site || !(await store.listDeadLetters(site)).some((d) => d.id === id)) return text("not found", 404);
+      }
+      const row = await store.takeDeadLetter(id);
       if (!row) return text("not found", 404);
       await env.JOBS.send(JSON.parse(row.body) as Job);
       return json({ ok: true, replayed: row.id });
@@ -374,15 +463,21 @@ async function upcoming(t: Tenant, fetcher: typeof fetch, from: Date, to: Date) 
   return { events: events.sort((a, b) => a.start.getTime() - b.start.getTime()), failed };
 }
 
+async function inChunks<T>(items: T[], size: number, fn: (item: T) => Promise<void>) {
+  for (let i = 0; i < items.length; i += size) await Promise.all(items.slice(i, i + size).map(fn));
+}
+
 /** Every 5 minutes: send the bot to meetings starting in the next 10 minutes. */
 export async function scheduleMeetings(env: Env, app: App = defaultApp, now = new Date()) {
   const store = app.store(env);
   const from = new Date(now.getTime() - 2 * 60000);
   const to = new Date(now.getTime() + 10 * 60000);
   let queued = 0;
-  for (const site of await store.listSites()) {
+  await inChunks(await store.listSites(), 10, async (site) => {
     const t = await store.getTenant(site);
-    if (!t?.vexa || !t.calendars?.length) continue;
+    if (!t?.vexa || !t.calendars?.length) return;
+    const account = await store.getAccount(site);
+    if (account && !lifecycle(account, now).bots) return;
     for (const ics of t.calendars) {
       let body: string;
       try {
@@ -406,6 +501,36 @@ export async function scheduleMeetings(env: Env, app: App = defaultApp, now = ne
         if (queuedNow) queued++;
       }
     }
-  }
+  });
   return queued;
+}
+
+export const SEEN_DAYS = 180;
+
+/** Once a day: refresh each company's usage for the platform console and forget old dedupe keys. */
+export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
+  const store = app.store(env);
+  const pruned = await store.pruneSeen(new Date(now.getTime() - SEEN_DAYS * 86_400_000).toISOString());
+  let refreshed = 0;
+  let failed = 0;
+  await inChunks(await store.listAccounts(), 5, async (a) => {
+    const t = await store.getTenant(a.site);
+    if (!t || a.state === "cancelled") return;
+    try {
+      const usage = await new ERPNext(t, app.fetcher).method<Record<string, unknown>>("dropout_core.team.usage");
+      await store.putAccount({ ...a, usage, usage_at: now.toISOString() });
+      refreshed++;
+    } catch (e) {
+      failed++;
+      await store.putAccount({ ...a, usage: { ...(a.usage ?? {}), error: (e as Error).message.slice(0, 200) }, usage_at: now.toISOString() });
+    }
+  });
+  return { pruned, refreshed, failed };
+}
+
+/** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */
+export async function scheduled(env: Env, app: App = defaultApp, now = new Date()) {
+  const queued = await scheduleMeetings(env, app, now);
+  const isDailySlot = now.getUTCHours() === 18 && now.getUTCMinutes() < 5;
+  return { queued, daily: isDailySlot ? await daily(env, app, now) : null };
 }

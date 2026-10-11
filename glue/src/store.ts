@@ -1,3 +1,4 @@
+import type { Account } from "./accounts";
 import { seal, unseal } from "./crypto";
 
 export type GatewayKeys = { merchant_id: string; hash_key: string; hash_iv: string };
@@ -23,9 +24,14 @@ export type Tenant = {
   einvoice?: GatewayKeys & { provider: "ecpay"; sandbox?: boolean };
   vexa?: { url: string; api_key: string; bot_name?: string; webhook_token: string; language?: string };
   calendars?: string[];
+  /** The shell's ERPNext OAuth client for this company (created by provisioning). */
+  shell_oauth_client_id?: string;
+  shell_oauth_client_secret?: string;
 };
 
 export type Meeting = { site: string; platform: string; meeting_id: string; title: string; attendees: string[]; started_at: string };
+
+export type AccountEvent = { id: number; site: string; at: string; actor: string; action: string; detail: string | null };
 
 export type DeadLetter = { id: number; site: string; kind: string; body: string; error: string; created_at: string };
 
@@ -42,6 +48,21 @@ export interface Store {
   takeDeadLetter(id: number): Promise<DeadLetter | null>;
   saveMeeting(m: Meeting): Promise<void>;
   getMeeting(site: string, platform: string, meetingId: string): Promise<Meeting | null>;
+  getAccount(site: string): Promise<Account | null>;
+  /** Replaces the account and its host names. */
+  putAccount(a: Account): Promise<void>;
+  listAccounts(): Promise<Account[]>;
+  siteForHost(host: string): Promise<string | null>;
+  addAccountEvent(site: string, actor: string, action: string, detail?: string): Promise<void>;
+  listAccountEvents(site: string): Promise<AccountEvent[]>;
+  /** Forget dedupe keys older than the cutoff; per-meeting skip choices are kept. */
+  pruneSeen(before: string): Promise<number>;
+}
+
+type AccountRow = Omit<Account, "profile" | "usage" | "hosts"> & { profile: string | null; usage: string | null };
+
+function fromRow(row: AccountRow, hosts: string[]): Account {
+  return { ...row, profile: row.profile ? JSON.parse(row.profile) : null, usage: row.usage ? JSON.parse(row.usage) : null, hosts };
 }
 
 export class D1Store implements Store {
@@ -109,6 +130,58 @@ export class D1Store implements Store {
       .first<Omit<Meeting, "attendees"> & { attendees: string }>();
     return row ? { ...row, attendees: JSON.parse(row.attendees) as string[] } : null;
   }
+
+  async getAccount(site: string) {
+    const row = await this.db.prepare("SELECT * FROM accounts WHERE site = ?").bind(site).first<AccountRow>();
+    if (!row) return null;
+    const { results } = await this.db.prepare("SELECT host FROM hosts WHERE site = ? ORDER BY host").bind(site).all<{ host: string }>();
+    return fromRow(row, results.map((r) => r.host));
+  }
+
+  async putAccount(a: Account) {
+    await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO accounts (site, company, plan, state, state_reason, trial_ends, renews_on, contact_email, profile, usage, usage_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(site) DO UPDATE SET company = excluded.company, plan = excluded.plan, state = excluded.state, state_reason = excluded.state_reason,
+             trial_ends = excluded.trial_ends, renews_on = excluded.renews_on, contact_email = excluded.contact_email, profile = excluded.profile,
+             usage = excluded.usage, usage_at = excluded.usage_at, updated_at = excluded.updated_at`,
+        )
+        .bind(a.site, a.company, a.plan, a.state, a.state_reason ?? null, a.trial_ends ?? null, a.renews_on ?? null, a.contact_email ?? null,
+          a.profile == null ? null : JSON.stringify(a.profile), a.usage == null ? null : JSON.stringify(a.usage), a.usage_at ?? null, a.created_at, a.updated_at),
+      this.db.prepare("DELETE FROM hosts WHERE site = ?").bind(a.site),
+      ...a.hosts.map((h) => this.db.prepare("INSERT INTO hosts (host, site) VALUES (?, ?)").bind(h, a.site)),
+    ]);
+  }
+
+  async listAccounts() {
+    const { results } = await this.db.prepare("SELECT * FROM accounts ORDER BY company").all<AccountRow>();
+    const { results: hosts } = await this.db.prepare("SELECT host, site FROM hosts ORDER BY host").all<{ host: string; site: string }>();
+    return results.map((r) => fromRow(r, hosts.filter((h) => h.site === r.site).map((h) => h.host)));
+  }
+
+  async siteForHost(host: string) {
+    const row = await this.db.prepare("SELECT site FROM hosts WHERE host = ?").bind(host).first<{ site: string }>();
+    return row?.site ?? null;
+  }
+
+  async addAccountEvent(site: string, actor: string, action: string, detail?: string) {
+    await this.db
+      .prepare("INSERT INTO account_events (site, at, actor, action, detail) VALUES (?, ?, ?, ?, ?)")
+      .bind(site, new Date().toISOString(), actor, action, detail ?? null)
+      .run();
+  }
+
+  async listAccountEvents(site: string) {
+    const { results } = await this.db.prepare("SELECT * FROM account_events WHERE site = ? ORDER BY id DESC LIMIT 200").bind(site).all<AccountEvent>();
+    return results;
+  }
+
+  async pruneSeen(before: string) {
+    const res = await this.db.prepare("DELETE FROM seen WHERE created_at < ? AND key NOT LIKE 'skip:%'").bind(before.replace("T", " ").slice(0, 19)).run();
+    return res.meta.changes ?? 0;
+  }
 }
 
 export class MemoryStore implements Store {
@@ -116,6 +189,9 @@ export class MemoryStore implements Store {
   seen = new Set<string>();
   dead: DeadLetter[] = [];
   meetings = new Map<string, Meeting>();
+  accounts = new Map<string, Account>();
+  events: AccountEvent[] = [];
+  seenAt = new Map<string, string>();
 
   async getTenant(site: string) {
     return this.tenants.get(site) ?? null;
@@ -129,6 +205,7 @@ export class MemoryStore implements Store {
   async claim(key: string) {
     if (this.seen.has(key)) return false;
     this.seen.add(key);
+    this.seenAt.set(key, new Date().toISOString());
     return true;
   }
   async release(key: string) {
@@ -152,5 +229,35 @@ export class MemoryStore implements Store {
   }
   async getMeeting(site: string, platform: string, meetingId: string) {
     return this.meetings.get(`${site}|${platform}|${meetingId}`) ?? null;
+  }
+  async getAccount(site: string) {
+    const a = this.accounts.get(site);
+    return a ? structuredClone(a) : null;
+  }
+  async putAccount(a: Account) {
+    this.accounts.set(a.site, structuredClone(a));
+  }
+  async listAccounts() {
+    return [...this.accounts.values()].sort((a, b) => a.company.localeCompare(b.company)).map((a) => structuredClone(a));
+  }
+  async siteForHost(host: string) {
+    return [...this.accounts.values()].find((a) => a.hosts.includes(host))?.site ?? null;
+  }
+  async addAccountEvent(site: string, actor: string, action: string, detail?: string) {
+    this.events.push({ id: this.events.length + 1, site, at: new Date().toISOString(), actor, action, detail: detail ?? null });
+  }
+  async listAccountEvents(site: string) {
+    return this.events.filter((e) => e.site === site).reverse();
+  }
+  async pruneSeen(before: string) {
+    let n = 0;
+    for (const [key, at] of this.seenAt) {
+      if (at < before && !key.startsWith("skip:")) {
+        this.seen.delete(key);
+        this.seenAt.delete(key);
+        n++;
+      }
+    }
+    return n;
   }
 }

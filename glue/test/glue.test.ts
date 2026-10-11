@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { aesCbcEncrypt, hmacSha256, seal, toBase64, toHex, unseal } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt, inclusiveLines } from "../src/einvoice";
-import { consume, handle, MAX_ATTEMPTS, scheduleMeetings, type App, type Env } from "../src/app";
+import { addYears, lifecycle, taiwanDate } from "../src/accounts";
+import { consume, daily, handle, MAX_ATTEMPTS, scheduleMeetings, scheduled, type App, type Env } from "../src/app";
 import { runJob, type Deps, type Job } from "../src/jobs";
 import { unsubscribeSignature, verifySvix } from "../src/mail";
 import { eventsInWindow, findMeetingLink, zonedToUtc } from "../src/meetings";
@@ -57,6 +58,7 @@ function harness(routes: Record<string, (body: any) => unknown> = {}) {
     AI: { run: async () => ({ response: "重點：試產延到下週" }) },
     TENANT_KEY: toBase64(new Uint8Array(32)),
     ADMIN_TOKEN: "admin",
+    SHELL_TOKEN: "shell",
   } as unknown as Env;
   const app: App = { store: () => store, fetcher };
   const deps: Deps = { store, fetcher, email: env.EMAIL, ai: env.AI, summaryModel: "m" };
@@ -318,3 +320,95 @@ describe("meetings", () => {
     }
   });
 });
+
+const req = (method: string, path: string, token: string, body?: unknown) =>
+  new Request(`https://glue.example${path}`, {
+    method,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}`, "x-actor": "ops@dropout.tw" },
+  });
+
+describe("accounts", () => {
+  const now = new Date("2026-10-11T04:00:00Z");
+
+  it("walks trial → due soon → past due → read only, and manual states win", () => {
+    expect(lifecycle({ state: "active", trial_ends: "2026-10-20" }, now)).toMatchObject({ stage: "trial", writable: true });
+    expect(lifecycle({ state: "active", renews_on: "2027-10-10" }, now)).toMatchObject({ stage: "active", message: "" });
+    expect(lifecycle({ state: "active", renews_on: "2026-11-30" }, now)).toMatchObject({ stage: "due_soon", writable: true });
+    expect(lifecycle({ state: "active", renews_on: "2026-10-11" }, now).stage).toBe("due_soon");
+    expect(lifecycle({ state: "active", renews_on: "2026-10-01" }, now)).toMatchObject({ stage: "past_due", writable: true, bots: true });
+    expect(lifecycle({ state: "active", renews_on: "2026-09-01" }, now)).toMatchObject({ stage: "read_only", writable: false, bots: false });
+    expect(lifecycle({ state: "suspended", state_reason: "帳款未付", renews_on: "2027-10-10" }, now)).toMatchObject({ stage: "suspended", writable: false });
+    expect(lifecycle({ state: "cancelled" }, now).bots).toBe(false);
+    expect(addYears("2028-02-29", 1)).toBe("2029-03-01");
+    expect(taiwanDate(new Date("2026-10-11T17:00:00Z"))).toBe("2026-10-12");
+  });
+
+  it("registers a company, maps its host, renews and suspends with a history", async () => {
+    const h = harness();
+    let res = await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["https://Make.OS.dropout.tw/"], trial_ends: "2026-11-10", profile: { scene: "make", size: "small", modules: ["sales"] } }), h.env, h.app);
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as any).account).toMatchObject({ hosts: ["make.os.dropout.tw"], lifecycle: { stage: "trial" } });
+
+    res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", hosts: ["make.os.dropout.tw"] }), h.env, h.app);
+    expect(res.status).toBe(409);
+
+    res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", { years: 1, reference: "ACC-SINV-0001" }), h.env, h.app);
+    const renewed = ((await res.json()) as any).account;
+    expect(renewed.renews_on).toBe(addYears(taiwanDate(), 1));
+    expect(renewed.lifecycle.stage).toBe("active");
+
+    res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "帳款未付" }), h.env, h.app);
+    expect(((await res.json()) as any).account.lifecycle).toMatchObject({ stage: "suspended", writable: false });
+
+    const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
+    expect(detail.events.map((e: any) => e.action)).toEqual(["暫停", "續約", "建立"]);
+    expect(detail.events[0].actor).toBe("ops@dropout.tw");
+  });
+
+  it("the shell token resolves hosts and reads one company, but cannot touch accounts or secrets", async () => {
+    const h = harness();
+    store_oauth(h);
+    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["make.os.dropout.tw"], renews_on: "2027-10-10" }), h.env, h.app);
+
+    const dir = await handle(req("GET", "/shell/tenant?host=make.os.dropout.tw", "shell"), h.env, h.app);
+    const body = (await dir.json()) as any;
+    expect(body).toMatchObject({ site: tenant.site, company: "琢奧精密製造", erpnext: { url: "https://erp.example", oauth: { client_id: "cid" } }, chatwoot: { account_id: 3 }, lifecycle: { stage: "active" } });
+    for (const secret of ["erpnext_secret", "erpnext_key", "hook-secret", "unsub-secret", "path-token", '"cw"', "vk"]) expect(JSON.stringify(body)).not.toContain(secret);
+    expect((await handle(req("GET", "/shell/tenant?host=nobody.example", "shell"), h.env, h.app)).status).toBe(404);
+    expect((await handle(req("GET", "/shell/tenant?host=make.os.dropout.tw", "wrong"), h.env, h.app)).status).toBe(403);
+
+    expect((await handle(req("GET", "/admin/accounts", "shell"), h.env, h.app)).status).toBe(403);
+    expect((await handle(req("PUT", `/admin/tenants/${tenant.site}`, "shell", tenant), h.env, h.app)).status).toBe(403);
+    expect((await handle(req("GET", `/admin/tenants/${tenant.site}/dead-letters`, "shell"), h.env, h.app)).status).toBe(200);
+
+    await h.store.addDeadLetter(tenant.site, "form", JSON.stringify({ kind: "form", site: tenant.site }), "boom");
+    await h.store.addDeadLetter("other.site", "form", JSON.stringify({ kind: "form", site: "other.site" }), "boom");
+    expect((await handle(req("POST", `/admin/dead-letters/2/replay?site=${tenant.site}`, "shell"), h.env, h.app)).status).toBe(404);
+    expect((await handle(req("POST", "/admin/dead-letters/1/replay", "shell"), h.env, h.app)).status).toBe(404);
+    expect((await handle(req("POST", `/admin/dead-letters/1/replay?site=${tenant.site}`, "shell"), h.env, h.app)).status).toBe(200);
+  });
+
+  it("stops meeting bots for read-only companies; daily refreshes usage and forgets old keys", async () => {
+    const ics = ["BEGIN:VCALENDAR", "BEGIN:VEVENT", "UID:z", "SUMMARY:週會", "DTSTART:20261012T020000Z", "LOCATION:https://meet.google.com/abc-defg-hij", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const h = harness({ "basic.ics": () => new Response(ics), "dropout_core.team.usage": () => ({ message: { users: 7, db_mb: 120 } }) });
+    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", renews_on: "2026-09-01" }), h.env, h.app);
+    expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(0);
+    await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", {}), h.env, h.app);
+    expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(1);
+
+    await h.store.claim("erp:old");
+    h.store.seenAt.set("erp:old", "2026-01-01T00:00:00.000Z");
+    await h.store.claim("skip:meeting:keep");
+    h.store.seenAt.set("skip:meeting:keep", "2026-01-01T00:00:00.000Z");
+    const out = await daily(h.env, h.app, new Date("2026-10-12T18:01:00Z"));
+    expect(out).toMatchObject({ pruned: 1, refreshed: 1, failed: 0 });
+    expect(await h.store.isClaimed("skip:meeting:keep")).toBe(true);
+    expect((await h.store.getAccount(tenant.site))!.usage).toMatchObject({ users: 7 });
+    expect((await scheduled(h.env, h.app, new Date("2026-10-12T10:00:00Z"))).daily).toBeNull();
+  });
+});
+
+function store_oauth(h: ReturnType<typeof harness>) {
+  h.store.tenants.set(tenant.site, { ...tenant, shell_oauth_client_id: "cid", shell_oauth_client_secret: "csecret" });
+}

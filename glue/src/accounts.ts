@@ -1,0 +1,108 @@
+/** A customer company's contract with DropOut OS. Dates are YYYY-MM-DD in Taiwan time. */
+export type Account = {
+  site: string;
+  company: string;
+  plan: string;
+  state: "active" | "suspended" | "cancelled";
+  state_reason?: string | null;
+  trial_ends?: string | null;
+  renews_on?: string | null;
+  contact_email?: string | null;
+  /** ShopProfile chosen at onboarding, so every staff member sees the same modules. */
+  profile?: unknown;
+  usage?: Record<string, unknown> | null;
+  usage_at?: string | null;
+  hosts: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type Stage = "trial" | "active" | "due_soon" | "past_due" | "read_only" | "suspended" | "cancelled";
+
+export type Lifecycle = {
+  stage: Stage;
+  /** Days until the trial or contract ends; negative once it has passed. */
+  days: number | null;
+  ends: string | null;
+  /** The shell may create or change documents. Reading and exporting always stay open. */
+  writable: boolean;
+  /** Meeting bots and other paid outbound work keep running. */
+  bots: boolean;
+  message: string;
+};
+
+export const NOTICE_DAYS = 60;
+export const GRACE_DAYS = 14;
+const DAY = 86_400_000;
+
+const endOfDay = (date: string) => new Date(`${date}T23:59:59+08:00`).getTime();
+
+export function taiwanDate(at = new Date()) {
+  return new Date(at.getTime() + 8 * 3_600_000).toISOString().slice(0, 10);
+}
+
+export function addYears(date: string, years: number) {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCFullYear(d.getUTCFullYear() + years);
+  return d.toISOString().slice(0, 10);
+}
+
+export function addDays(date: string, days: number) {
+  return new Date(new Date(`${date}T12:00:00Z`).getTime() + days * DAY).toISOString().slice(0, 10);
+}
+
+export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_ends" | "renews_on">, now = new Date()): Lifecycle {
+  if (a.state === "cancelled") {
+    return { stage: "cancelled", days: null, ends: a.renews_on ?? null, writable: false, bots: false, message: "已解約。資料保留，可以看和匯出；要回來請聯絡我們。" };
+  }
+  if (a.state === "suspended") {
+    return { stage: "suspended", days: null, ends: a.renews_on ?? null, writable: false, bots: false, message: `帳號暫停${a.state_reason ? `：${a.state_reason}` : ""}。資料都在，可以看和匯出。` };
+  }
+  const paid = Boolean(a.renews_on);
+  const ends = a.renews_on ?? a.trial_ends ?? null;
+  if (!ends) return { stage: "active", days: null, ends: null, writable: true, bots: true, message: "" };
+  const days = Math.floor((endOfDay(ends) - now.getTime()) / DAY);
+  if (days >= 0) {
+    if (!paid) return { stage: "trial", days, ends, writable: true, bots: true, message: `試用還有 ${days + 1} 天（到 ${ends}）。` };
+    if (days < NOTICE_DAYS) return { stage: "due_soon", days, ends, writable: true, bots: true, message: `年約 ${ends} 到期，還有 ${days + 1} 天。續約後不會中斷。` };
+    return { stage: "active", days, ends, writable: true, bots: true, message: "" };
+  }
+  const late = -days;
+  if (late <= GRACE_DAYS) {
+    const left = GRACE_DAYS - late + 1;
+    return { stage: "past_due", days, ends, writable: true, bots: true, message: `${paid ? "年約" : "試用"}已在 ${ends} 到期。${left} 天後改成只能看；續約後馬上恢復。` };
+  }
+  return { stage: "read_only", days, ends, writable: false, bots: false, message: `${paid ? "年約" : "試用"}已在 ${ends} 到期。資料都在，可以看和匯出，不能新增或修改；續約後馬上恢復。` };
+}
+
+/** New account or partial update from the admin API. Unknown keys are ignored. */
+export function mergeAccount(site: string, current: Account | null, patch: Partial<Account>, now = new Date()): Account {
+  const stamp = now.toISOString();
+  const base: Account = current ?? {
+    site,
+    company: patch.company ?? site,
+    plan: "annual",
+    state: "active",
+    hosts: [],
+    created_at: stamp,
+    updated_at: stamp,
+  };
+  const next: Account = { ...base, updated_at: stamp };
+  for (const key of ["company", "plan", "state", "state_reason", "trial_ends", "renews_on", "contact_email", "profile", "hosts"] as const) {
+    if (patch[key] !== undefined) (next as Record<string, unknown>)[key] = patch[key];
+  }
+  next.hosts = [...new Set((next.hosts ?? []).map((h) => normalizeHost(h)).filter(Boolean))];
+  return next;
+}
+
+export function normalizeHost(host: string) {
+  return host.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/:\d+$/, "");
+}
+
+export function validAccount(a: Account): string | null {
+  if (!a.company) return "company 不能空白";
+  if (!["active", "suspended", "cancelled"].includes(a.state)) return "state 只能是 active、suspended、cancelled";
+  for (const d of [a.trial_ends, a.renews_on]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) return "日期要寫成 YYYY-MM-DD";
+  if (a.hosts.some((h) => !/^[a-z0-9.-]+$/.test(h))) return "網址只能有英數、點和連字號";
+  return null;
+}
