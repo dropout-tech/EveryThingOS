@@ -44,6 +44,7 @@ export const EVENT_LABEL: Record<string, string> = {
   "delivery.submitted": "出貨完成",
   "invoice.submitted": "開了發票",
   "payment.received": "收到錢",
+  "automation.fired": "自動化做了一件事",
   ping: "測試",
 };
 
