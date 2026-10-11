@@ -4,8 +4,8 @@ import type { IndustryPack } from "../types";
 import { demoRecords } from "../workspace";
 import { liveConfig } from "./config";
 import { SourceError } from "./erpnext";
-import { liveAudit, liveBooks, liveCatalog, liveDeadLetters, liveHr, liveHygiene, liveLetter, liveMe, liveMeetingSummaries, livePeople, liveSetup, liveTeam, liveUpcomingMeetings, liveWebsite } from "./live";
-import type { AuditRow, Books, Catalog, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, Meetings, Person, SetupStatus, Sourced, SystemId, Team, WebsiteOverview } from "./types";
+import { liveAudit, liveBooks, liveCatalog, liveChecklist, liveDeadLetters, liveHr, liveHygiene, liveLetter, liveMe, liveMeetingSummaries, livePeople, liveSetup, liveTeam, liveUpcomingMeetings, liveWebsite } from "./live";
+import type { AuditRow, Books, Catalog, Checklist, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, Meetings, Person, SetupStatus, Sourced, SystemId, Team, WebsiteOverview } from "./types";
 
 export type { Sourced } from "./types";
 
@@ -23,6 +23,16 @@ export async function getSetup(): Promise<Sourced<SetupStatus | null>> {
   if (!(await isLive("erpnext"))) return { origin: "demo", data: null };
   try {
     return { origin: "live", system: "erpnext", data: await liveSetup() };
+  } catch (error) {
+    return failed("erpnext", error);
+  }
+}
+
+/** 開站清單. Only the owner may read it; anyone else gets `denied`, which pages treat as "don't show". */
+export async function getChecklist(): Promise<Sourced<Checklist | null>> {
+  if (!(await isLive("erpnext"))) return { origin: "demo", data: null };
+  try {
+    return { origin: "live", system: "erpnext", data: await liveChecklist(), deskUrl: (await liveConfig()).erpnext?.url };
   } catch (error) {
     return failed("erpnext", error);
   }

@@ -3,7 +3,7 @@ import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
-import type { AuditRow, Catalog, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
+import type { AuditRow, Catalog, Checklist, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, Team, UpcomingMeeting, WebsiteOverview } from "./types";
 
 type RawBooks = {
   month_sales: number;
@@ -114,6 +114,10 @@ export async function liveLetter(): Promise<LetterOverview> {
 
 export function liveSetup() {
   return erpMethod<SetupStatus>("dropout_core.api.setup_status");
+}
+
+export function liveChecklist() {
+  return erpMethod<Checklist>("dropout_core.api.setup_checklist");
 }
 
 export async function liveMe(): Promise<Me> {

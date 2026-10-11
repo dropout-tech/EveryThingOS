@@ -3,7 +3,10 @@ import { ADMIN_ROLE } from "@/lib/access";
 import { openInvoice } from "@/lib/billing";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { PRICE_LABEL } from "@/lib/commercial";
+import { RoleGuide } from "@/components/RoleGuide";
+import { SetupChecklist } from "@/components/SetupChecklist";
 import { SetupProgress } from "@/components/SetupProgress";
+import { workspaceGuide } from "@/lib/guide-server";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -43,7 +46,7 @@ const SYNC_NOTICE: Record<string, string> = {
 export default async function SettingsPage({ searchParams }: PageProps<"/workspace/settings">) {
   const shop = await currentShop();
   const pack = await currentIndustry();
-  const [setup, dead, me, config] = await Promise.all([getSetup(), getDeadLetters(), getMe(), liveConfig()]);
+  const [setup, dead, me, config, guide] = await Promise.all([getSetup(), getDeadLetters(), getMe(), liveConfig(), workspaceGuide(pack)]);
   const live = Object.fromEntries(await Promise.all(SYSTEMS.map(async ([id]) => [id, await isLive(id)] as const))) as Record<SystemId, boolean>;
   const account = config.tenant;
   const invoice = account && me.origin === "live" && me.data?.roles.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
@@ -128,6 +131,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <Link href="/workspace/settings/api" className="hover:text-cream">
             對外 API 與 Webhook
           </Link>
+          <Link href="/workspace/practice" className="hover:text-cream">
+            練習第一筆生意
+          </Link>
+          <Link href="/help" className="hover:text-cream">
+            說明中心
+          </Link>
           <Link href="/pricing" className="hover:text-cream">
             {PRICE_LABEL}
           </Link>
@@ -140,6 +149,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           ) : null}
         </p>
       </div>
+
+      <section className="space-y-3" aria-label="導入教學">
+        <RoleGuide allowed={guide.allowed} variant="settings" />
+        {guide.checklist ? <SetupChecklist items={guide.checklist} practice={guide.practice} variant="settings" /> : null}
+      </section>
 
       {setup.origin === "live" && setup.data ? <SetupProgress setup={setup.data} /> : null}
 
