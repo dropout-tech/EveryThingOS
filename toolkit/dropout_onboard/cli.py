@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 from dropout_onboard import checks, convert, plan as plan_mod
+from dropout_onboard.bootstrap import Bootstrap
 from dropout_onboard.provision import Provisioner
 
 
@@ -122,6 +123,33 @@ def cmd_provision(a):
 	Provisioner(a).run(apply=a.apply)
 
 
+def cmd_bootstrap(a):
+	return Bootstrap(a).run(apply=a.apply)
+
+
+def _provision_args(s, company_required=True):
+	s.add_argument("--site", required=True)
+	s.add_argument("--company", required=company_required)
+	s.add_argument("--abbr")
+	s.add_argument("--admin-email", required=True)
+	s.add_argument("--admin-password", default=os.environ.get("ADMIN_PASSWORD", ""))
+	s.add_argument("--db-root-password", default=os.environ.get("DB_ROOT_PASSWORD", ""))
+	s.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
+	s.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
+	s.add_argument("--erpnext-url", help="膠水呼叫 ERPNext 用的網址（通常是 Tunnel 網址）")
+	s.add_argument("--shell-url", default=os.environ.get("SHELL_URL"), help="這家公司的 DropOut OS 網址，用來設定 ERPNext 登入")
+	s.add_argument("--glue-url", default=os.environ.get("GLUE_URL"))
+	s.add_argument("--glue-admin-token", default=os.environ.get("GLUE_ADMIN_TOKEN"))
+	s.add_argument("--mail-from")
+	s.add_argument("--chatwoot-url", default=os.environ.get("CHATWOOT_URL"))
+	s.add_argument("--chatwoot-platform-token", default=os.environ.get("CHATWOOT_PLATFORM_TOKEN"))
+	s.add_argument("--vexa-url", default=os.environ.get("VEXA_URL"))
+	s.add_argument("--vexa-admin-token", default=os.environ.get("VEXA_ADMIN_TOKEN"))
+	s.add_argument("--calendar", dest="calendars", action="append", help="公司行事曆 ICS 網址，可多個")
+	s.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
+	s.add_argument("--apply", action="store_true")
+
+
 def build_parser():
 	p = argparse.ArgumentParser(prog="dropout-onboard", description="DropOut OS 導入工具：開站、搬家、檢查")
 	sub = p.add_subparsers(dest="cmd", required=True)
@@ -163,27 +191,13 @@ def build_parser():
 
 	s = sub.add_parser("provision", help="開一家新公司（預設只預演）")
 	s.add_argument("profile")
-	s.add_argument("--site", required=True)
-	s.add_argument("--company", required=True)
-	s.add_argument("--abbr")
-	s.add_argument("--admin-email", required=True)
-	s.add_argument("--admin-password", default=os.environ.get("ADMIN_PASSWORD", ""))
-	s.add_argument("--db-root-password", default=os.environ.get("DB_ROOT_PASSWORD", ""))
-	s.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
-	s.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
-	s.add_argument("--erpnext-url", help="膠水呼叫 ERPNext 用的網址（通常是 Tunnel 網址）")
-	s.add_argument("--shell-url", default=os.environ.get("SHELL_URL"), help="這家公司的 DropOut OS 網址，用來設定 ERPNext 登入")
-	s.add_argument("--glue-url", default=os.environ.get("GLUE_URL"))
-	s.add_argument("--glue-admin-token", default=os.environ.get("GLUE_ADMIN_TOKEN"))
-	s.add_argument("--mail-from")
-	s.add_argument("--chatwoot-url", default=os.environ.get("CHATWOOT_URL"))
-	s.add_argument("--chatwoot-platform-token", default=os.environ.get("CHATWOOT_PLATFORM_TOKEN"))
-	s.add_argument("--vexa-url", default=os.environ.get("VEXA_URL"))
-	s.add_argument("--vexa-admin-token", default=os.environ.get("VEXA_ADMIN_TOKEN"))
-	s.add_argument("--calendar", dest="calendars", action="append", help="公司行事曆 ICS 網址，可多個")
-	s.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
-	s.add_argument("--apply", action="store_true")
+	_provision_args(s)
 	s.set_defaults(fn=cmd_provision)
+
+	s = sub.add_parser("bootstrap", help="一個指令導入一家公司：開站＋照順序匯入資料夾裡的檔案（預設只預演）")
+	s.add_argument("folder", help="有 bootstrap.json 的資料夾，例：examples/service")
+	_provision_args(s, company_required=False)
+	s.set_defaults(fn=cmd_bootstrap)
 	return p
 
 

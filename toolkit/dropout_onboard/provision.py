@@ -81,7 +81,7 @@ class Provisioner:
 			steps.append(Step("登記到膠水", self._register_glue, f"PUT {a.glue_url}/admin/tenants/{a.site}；ERPNext Webhook 指向膠水"))
 		if a.chatwoot_url and a.chatwoot_platform_token and p["chat"]:
 			steps.append(Step("對話帳號", self._chatwoot, f"Chatwoot 建帳戶「{company}」、管理員、Webhook"))
-		if a.vexa_url and a.vexa_admin_token:
+		if a.vexa_url and a.vexa_admin_token and (p["meetings"] or a.calendars):
 			steps.append(Step("會議機器人", self._vexa, "Vexa 建使用者與 API key、設定 Webhook"))
 		return steps
 

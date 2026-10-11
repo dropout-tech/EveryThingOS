@@ -44,6 +44,7 @@ def plan(profile):
 		"website": website,
 		"chat": "chat" in modules,
 		"letter": "letter" in modules,
+		"meetings": "meetings" in modules,
 		"import_order": IMPORT_ORDER,
 	}
 

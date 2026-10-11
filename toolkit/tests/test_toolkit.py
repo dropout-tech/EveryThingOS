@@ -8,7 +8,7 @@ import unittest
 from contextlib import redirect_stdout
 from unittest import mock
 
-from dropout_onboard import checks, cli, convert, plan, provision
+from dropout_onboard import bootstrap, checks, cli, convert, plan, provision
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -167,7 +167,7 @@ class TestProvision(unittest.TestCase):
 		labels = [
 			s.label
 			for s in provision.Provisioner(
-				self.args(shell_url="https://os", glue_url="https://g", chatwoot_url="https://c", chatwoot_platform_token="t", vexa_url="https://v", vexa_admin_token="t")
+				self.args(profile={"scene": "edu", "modules": ["chat", "meetings"]}, shell_url="https://os", glue_url="https://g", chatwoot_url="https://c", chatwoot_platform_token="t", vexa_url="https://v", vexa_admin_token="t")
 			).steps()
 		]
 		self.assertEqual(labels[-4:], ["殼登入", "登記到膠水", "對話帳號", "會議機器人"])
@@ -195,6 +195,74 @@ class TestProvision(unittest.TestCase):
 		self.assertEqual(saved["results"]["同步帳號"], {"user": "glue@x"})
 		self.assertEqual(oct(os.stat(os.path.join(a.state_dir, "edu.local.json")).st_mode & 0o777), "0o600")
 		self.assertEqual(set(saved["done"]), {"建站", "裝 app", "設定精靈", "同步帳號"})
+
+
+class TestBootstrap(unittest.TestCase):
+	def args(self, folder, **kw):
+		base = TestProvision.args(TestProvision(), profile=None, company=None, site="demo.local")
+		base.folder = folder
+		for k, v in kw.items():
+			setattr(base, k, v)
+		return base
+
+	def test_demo_companies_pass_their_checks(self):
+		for name in ("make", "service", "edu"):
+			lines = []
+			code = bootstrap.Bootstrap(self.args(os.path.join(HERE, "examples", name)), out=lines.append).run(apply=False)
+			self.assertEqual(code, 0, "\n".join(lines))
+			self.assertFalse([ln for ln in lines if "錯誤" in ln], name)
+
+	def test_apply_imports_in_order_once(self):
+		folder = os.path.join(HERE, "examples", "make")
+		a = self.args(folder)
+		b = bootstrap.Bootstrap(a, out=lambda *_: None)
+		b.prov.state["done"] = {"建站": True, "裝 app": True, "設定精靈": True, "同步帳號": True}
+		calls = []
+
+		def execute(method, **kw):
+			calls.append(method if method != "dropout_core.provisioning.data_import" else f"{method}:{kw['doctype']}")
+			if method.endswith("import_defaults"):
+				return {"company": "琢奧精密製造", "warehouse": "Stores - ZAM", "customer_group": "Commercial", "supplier_group": "Services", "territory": "Taiwan", "item_group": "Products", "stock_uom": "Nos", "posting_date": "2026-10-11"}
+			if method.endswith("data_import"):
+				return {"data_import": "DI-1", "status": "Success", "imported": 3, "failed": []}
+			if method.endswith("opening_stock"):
+				with open(kw["file_path"], encoding="utf-8") as fh:
+					self.assertIn("Stores - ZAM", fh.read())
+				return {"status": "submitted", "documents": ["MAT-RECO-1"]}
+			if method.endswith("setup_status"):
+				return {"steps": [], "done": 10, "total": 10}
+			return {}
+
+		with mock.patch.object(b.prov, "execute", side_effect=execute):
+			self.assertEqual(b.run(apply=True), 0)
+		self.assertEqual(
+			[c.rsplit(".", 1)[-1] for c in calls],
+			["import_defaults", "data_import:Customer", "data_import:Supplier", "data_import:Item", "opening_stock", "make_opening_invoices", "make_opening_invoices", "setup_status"],
+		)
+		calls.clear()
+		again = bootstrap.Bootstrap(a, out=lambda *_: None)
+		with mock.patch.object(again.prov, "execute", side_effect=execute):
+			self.assertEqual(again.run(apply=True), 0)
+		self.assertEqual([c.rsplit(".", 1)[-1] for c in calls], ["import_defaults", "setup_status"])
+
+	def test_stops_at_the_first_file_with_errors(self):
+		tmp = tempfile.mkdtemp()
+		write(os.path.join(tmp, "bootstrap.json"), json.dumps({"company": "甲", "profile": {"scene": "service"}, "files": {"customers": "c.csv", "items": "i.csv"}}))
+		write(os.path.join(tmp, "c.csv"), "客人名稱,統一編號\n甲,11111111\n")
+		write(os.path.join(tmp, "i.csv"), "料號,品名,售價\nA,甲,1\n")
+		lines = []
+		b = bootstrap.Bootstrap(self.args(tmp), out=lines.append)
+		b.prov.state["done"] = {"建站": True, "裝 app": True, "設定精靈": True, "同步帳號": True}
+		with mock.patch.object(b.prov, "execute", return_value={"company": "甲"}) as execute:
+			self.assertEqual(b.run(apply=True), 1)
+		self.assertEqual([c.args[0] for c in execute.call_args_list], ["dropout_core.provisioning.import_defaults"])
+		self.assertTrue(any("統編檢查碼錯誤" in ln for ln in lines))
+
+	def test_missing_file_is_reported_before_anything_runs(self):
+		tmp = tempfile.mkdtemp()
+		write(os.path.join(tmp, "bootstrap.json"), json.dumps({"company": "甲", "profile": {}, "files": {"customers": "nope.csv"}}))
+		with self.assertRaises(SystemExit):
+			bootstrap.load(tmp)
 
 
 if __name__ == "__main__":

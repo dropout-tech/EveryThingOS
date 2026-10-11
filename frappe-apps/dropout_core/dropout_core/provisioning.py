@@ -187,3 +187,29 @@ def make_opening_invoices(company, rows, invoice_type="Sales"):
 		tool.append("invoices", {"party_type": "Customer" if invoice_type == "Sales" else "Supplier", **row})
 	tool.save()
 	return tool.make_invoices()
+
+
+def _leaf(doctype, preferred=None):
+	if preferred and frappe.db.exists(doctype, {"name": preferred, "is_group": 0}):
+		return preferred
+	return frappe.db.get_value(doctype, {"is_group": 0}, "name", order_by="lft asc")
+
+
+def import_defaults(company=None):
+	"""The `{placeholders}` the toolkit's mappings fill in, read from this site's own settings."""
+	company = company or frappe.defaults.get_global_default("company")
+	abbr = frappe.get_cached_value("Company", company, "abbr") if company else None
+	warehouse = frappe.db.get_single_value("Stock Settings", "default_warehouse")
+	if not warehouse or frappe.get_cached_value("Warehouse", warehouse, "company") != company:
+		warehouse = frappe.db.get_value("Warehouse", {"company": company, "is_group": 0, "warehouse_name": "Stores"}) or frappe.db.get_value("Warehouse", {"company": company, "is_group": 0})
+	return {
+		"company": company,
+		"abbr": abbr,
+		"customer_group": _leaf("Customer Group", frappe.db.get_single_value("Selling Settings", "customer_group") or "Commercial"),
+		"territory": _leaf("Territory", frappe.db.get_single_value("Selling Settings", "territory") or "Taiwan"),
+		"supplier_group": _leaf("Supplier Group", frappe.db.get_single_value("Buying Settings", "supplier_group")),
+		"item_group": _leaf("Item Group", frappe.db.get_single_value("Stock Settings", "item_group") or "Products"),
+		"stock_uom": frappe.db.get_single_value("Stock Settings", "stock_uom") or "Nos",
+		"warehouse": warehouse,
+		"posting_date": frappe.utils.nowdate(),
+	}

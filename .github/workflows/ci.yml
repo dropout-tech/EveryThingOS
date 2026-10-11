@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  glue:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: glue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: glue/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  toolkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - working-directory: toolkit
+        run: python -m unittest discover -s tests -v
+
+  erpnext:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=2s --health-retries=20
+      redis-cache:
+        image: redis:7-alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:7-alpine
+        ports:
+          - 11000:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: MariaDB client and character set
+        run: |
+          sudo apt-get update && sudo apt-get install -y mariadb-client
+          mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'; SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
+      - name: Bench with ERPNext, Payments, Webshop (version-15)
+        run: |
+          pip install frappe-bench
+          bench init --frappe-branch version-15 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          cd ~/frappe-bench
+          bench get-app --branch version-15 --skip-assets erpnext
+          bench get-app --branch version-15 --skip-assets payments
+          bench get-app --branch version-15 --skip-assets webshop
+          for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu; do
+            cp -r "$GITHUB_WORKSPACE/frappe-apps/$app" apps/
+            ./env/bin/pip install -e "apps/$app"
+            echo "$app" >> sites/apps.txt
+          done
+          bench set-config -g redis_cache redis://127.0.0.1:13000
+          bench set-config -g redis_queue redis://127.0.0.1:11000
+          bench set-config -g redis_socketio redis://127.0.0.1:11000
+      - name: Site
+        working-directory: /home/runner/frappe-bench
+        env:
+          CI: "Yes"
+        run: |
+          bench new-site --db-host 127.0.0.1 --db-root-password root --admin-password admin --mariadb-user-host-login-scope='%' --install-app erpnext test.local
+          for app in payments webshop dropout_core dropout_pay_tw dropout_pack_make; do bench --site test.local install-app "$app"; done
+          bench --site test.local execute dropout_core.provisioning.complete_setup --kwargs '{"company_name": "示範製造", "company_abbr": "DM"}'
+          bench --site test.local set-config allow_tests true
+      - name: Tests
+        working-directory: /home/runner/frappe-bench
+        run: |
+          bench --site test.local run-tests --app dropout_core
+          bench --site test.local run-tests --app dropout_pay_tw

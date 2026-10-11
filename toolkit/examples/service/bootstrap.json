@@ -1,0 +1,8 @@
+{
+ "company": "琢奧管理顧問",
+ "abbr": "ZAC",
+ "profile": {"scene": "service", "size": "small", "modules": ["crm", "sales", "finance", "letter", "chat", "meetings", "website"]},
+ "source": "excel",
+ "files": {"customers": "customers.csv", "suppliers": "suppliers.csv", "items": "items.csv"},
+ "opening_receivables": "opening_receivables.csv"
+}
