@@ -100,6 +100,16 @@ CUSTOM_FIELDS = {
 			"allow_on_submit": 1,
 			"no_copy": 1,
 		},
+		{
+			"fieldname": "dropout_discount_percent",
+			"fieldtype": "Percent",
+			"label": "總折扣（%）",
+			"insert_after": "discount_amount",
+			"read_only": 1,
+			"no_copy": 1,
+			"print_hide": 1,
+			"description": "品項折扣加整張折扣，對照價目表的總價。大折扣核准用。",
+		},
 	],
 	"Payment Request": [
 		{
@@ -120,18 +130,6 @@ CUSTOM_FIELDS = {
 			"insert_after": "username",
 			"read_only": 1,
 			"no_copy": 1,
-		},
-	],
-	"Quotation": [
-		{
-			"fieldname": "dropout_discount_percent",
-			"fieldtype": "Percent",
-			"label": "總折扣（%）",
-			"insert_after": "discount_amount",
-			"read_only": 1,
-			"no_copy": 1,
-			"print_hide": 1,
-			"description": "品項折扣加整張折扣，對照價目表的總價。大折扣核准用。",
 		},
 	],
 	"Stock Reconciliation": [

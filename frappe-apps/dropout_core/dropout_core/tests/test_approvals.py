@@ -1,3 +1,4 @@
+import base64
 import unittest
 
 import frappe
@@ -10,6 +11,8 @@ from dropout_core.tests.test_dropout_flow import company, leaf, make_customer, m
 from dropout_core.tests.test_reports import make_user
 
 HAS_HRMS = "hrms" in frappe.get_installed_apps()
+# A real 1×1 PNG: Frappe opens image attachments on save, so made-up bytes fail.
+RECEIPT_PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4//8/AAX+Av4N70a4AAAAAElFTkSuQmCC")
 
 
 def make_supplier(name="核准測試供應商"):
@@ -20,14 +23,19 @@ def make_supplier(name="核准測試供應商"):
 
 
 def make_po(rate, qty=1):
+	"""As whoever is logged in; the supplier and item are master data only managers may create."""
+	user = frappe.session.user
+	frappe.set_user("Administrator")
+	supplier, item, co = make_supplier(), make_item(), company()
+	frappe.set_user(user)
 	return frappe.get_doc(
 		{
 			"doctype": "Purchase Order",
-			"supplier": make_supplier(),
-			"company": company(),
+			"supplier": supplier,
+			"company": co,
 			"transaction_date": nowdate(),
 			"schedule_date": add_days(nowdate(), 7),
-			"items": [{"item_code": make_item(), "qty": qty, "rate": rate, "schedule_date": add_days(nowdate(), 7)}],
+			"items": [{"item_code": item, "qty": qty, "rate": rate, "schedule_date": add_days(nowdate(), 7)}],
 		}
 	).insert()
 
@@ -155,8 +163,9 @@ class TestWorkflowRules(FrappeTestCase):
 		self.assertEqual(frappe.db.get_value("Purchase Order", po.name, "docstatus"), 1)
 
 	def test_unknown_doctype_is_refused(self):
+		customer = make_customer()
 		frappe.set_user(self.boss)
-		self.assertFalse(approvals.decide("Customer", make_customer(), "核准")["ok"])
+		self.assertFalse(approvals.decide("Customer", customer, "核准")["ok"])
 		with self.assertRaises(frappe.ValidationError):
 			approvals.decide("Purchase Order", "no-such-po", approvals.OK)
 
@@ -260,9 +269,9 @@ class TestExpenseClaims(FrappeTestCase):
 	def test_receipt_follows_document_access(self):
 		frappe.set_user(self.staff)
 		name = approvals.new_expense(180, nowdate(), "郵資")["created"]["name"]
-		f = frappe.get_doc({"doctype": "File", "file_name": "receipt.jpg", "attached_to_doctype": "Expense Claim", "attached_to_name": name, "is_private": 1, "content": b"\xff\xd8\xff\xe0test"}).insert()
+		f = frappe.get_doc({"doctype": "File", "file_name": "receipt.png", "attached_to_doctype": "Expense Claim", "attached_to_name": name, "is_private": 1, "content": RECEIPT_PNG}).insert()
 		approvals.receipt(f.name)
-		self.assertEqual(frappe.response.filecontent, b"\xff\xd8\xff\xe0test")
+		self.assertEqual(frappe.response.filecontent, RECEIPT_PNG)
 		frappe.set_user(make_user("approvals-other@example.com", "Sales User"))
 		with self.assertRaises(frappe.PermissionError):
 			approvals.receipt(f.name)
