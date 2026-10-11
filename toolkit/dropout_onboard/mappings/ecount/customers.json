@@ -1,0 +1,65 @@
+{
+ "doctype": "Customer",
+ "note": "表頭依實際匯出檔確認；不同版本若表頭不同，把新表頭加進 from 陣列即可，不用改程式。",
+ "fields": {
+  "customer_name": {
+   "from": [
+    "客戶/廠商名稱",
+    "公司名稱"
+   ],
+   "required": true
+  },
+  "customer_type": {
+   "from": [],
+   "map": {
+    "公司": "Company",
+    "法人": "Company",
+    "個人": "Individual",
+    "自然人": "Individual"
+   },
+   "default": "Company"
+  },
+  "customer_group": {
+   "from": [
+    "客戶類別",
+    "群組",
+    "客群"
+   ],
+   "default": "{customer_group}"
+  },
+  "territory": {
+   "from": [
+    "地區",
+    "區域"
+   ],
+   "default": "{territory}"
+  },
+  "tax_id": {
+   "from": [
+    "營業登記號碼",
+    "統一編號"
+   ],
+   "transform": "tax_id"
+  },
+  "email_id": {
+   "from": [
+    "Email",
+    "電子郵件"
+   ],
+   "transform": "email"
+  },
+  "mobile_no": {
+   "from": [
+    "手機",
+    "電話"
+   ],
+   "transform": "phone"
+  },
+  "customer_details": {
+   "from": [
+    "客戶/廠商代碼",
+    "代碼"
+   ]
+  }
+ }
+}

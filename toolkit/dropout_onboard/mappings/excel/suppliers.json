@@ -1,0 +1,40 @@
+{
+ "doctype": "Supplier",
+ "note": "表頭依實際匯出檔確認；不同版本若表頭不同，把新表頭加進 from 陣列即可，不用改程式。",
+ "fields": {
+  "supplier_name": {
+   "from": [
+    "供應商名稱",
+    "廠商名稱",
+    "名稱"
+   ],
+   "required": true
+  },
+  "supplier_type": {
+   "default": "Company"
+  },
+  "supplier_group": {
+   "from": [
+    "廠商類別",
+    "群組"
+   ],
+   "default": "{supplier_group}"
+  },
+  "country": {
+   "default": "Taiwan"
+  },
+  "tax_id": {
+   "from": [
+    "統一編號",
+    "統編"
+   ],
+   "transform": "tax_id"
+  },
+  "supplier_details": {
+   "from": [
+    "舊代號",
+    "代號"
+   ]
+  }
+ }
+}

@@ -1,0 +1,62 @@
+{
+ "doctype": "Item",
+ "note": "表頭依實際匯出檔確認；不同版本若表頭不同，把新表頭加進 from 陣列即可，不用改程式。",
+ "fields": {
+  "item_code": {
+   "from": [
+    "品號"
+   ],
+   "required": true
+  },
+  "item_name": {
+   "from": [
+    "品名"
+   ],
+   "required": true
+  },
+  "item_group": {
+   "from": [
+    "品號類別",
+    "分類"
+   ],
+   "default": "{item_group}"
+  },
+  "stock_uom": {
+   "from": [
+    "庫存單位",
+    "單位"
+   ],
+   "map": {
+    "個": "Nos",
+    "PCS": "Nos",
+    "pcs": "Nos",
+    "EA": "Nos",
+    "ea": "Nos",
+    "支": "Nos",
+    "件": "Nos"
+   },
+   "default": "{stock_uom}"
+  },
+  "is_stock_item": {
+   "from": [
+    "庫存品",
+    "是否庫存"
+   ],
+   "transform": "check",
+   "default": "1"
+  },
+  "standard_rate": {
+   "from": [
+    "標準售價",
+    "售價定價一",
+    "售價"
+   ],
+   "transform": "number"
+  },
+  "description": {
+   "from": [
+    "規格"
+   ]
+  }
+ }
+}

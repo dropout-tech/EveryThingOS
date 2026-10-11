@@ -1,0 +1,48 @@
+{
+ "doctype": "Stock Reconciliation",
+ "note": "表頭依實際匯出檔確認；不同版本若表頭不同，把新表頭加進 from 陣列即可，不用改程式。 匯入時加 --submit-after-import。",
+ "parent": {
+  "company": {
+   "default": "{company}"
+  },
+  "purpose": {
+   "default": "Opening Stock"
+  },
+  "posting_date": {
+   "default": "{posting_date}"
+  },
+  "set_posting_time": {
+   "default": "1"
+  }
+ },
+ "child_table": "items",
+ "fields": {
+  "item_code": {
+   "from": [
+    "料號",
+    "品號"
+   ],
+   "required": true
+  },
+  "warehouse": {
+   "from": [
+    "倉庫"
+   ],
+   "default": "{warehouse}"
+  },
+  "qty": {
+   "from": [
+    "數量"
+   ],
+   "transform": "number",
+   "required": true
+  },
+  "valuation_rate": {
+   "from": [
+    "單位成本",
+    "成本"
+   ],
+   "transform": "number"
+  }
+ }
+}

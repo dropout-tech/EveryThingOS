@@ -1,0 +1,1 @@
+{ "scene": "service", "size": "small", "modules": ["crm", "sales", "finance", "reply", "funnel", "website"] }
