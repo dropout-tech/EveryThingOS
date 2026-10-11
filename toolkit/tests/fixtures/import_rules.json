@@ -1,0 +1,159 @@
+{
+ "note": "Shared by toolkit/tests/test_toolkit.py and web/scripts/importer.test.mjs so the CLI and the web wizard agree. Expected values come from dropout_onboard.taiwan.",
+ "tax_id": [
+  {
+   "value": "12345675",
+   "valid": true
+  },
+  {
+   "value": "04595257",
+   "valid": true
+  },
+  {
+   "value": "22099131",
+   "valid": true
+  },
+  {
+   "value": "10007919",
+   "valid": true
+  },
+  {
+   "value": "10047514",
+   "valid": true
+  },
+  {
+   "value": "10372193",
+   "valid": true
+  },
+  {
+   "value": "10324679",
+   "valid": true
+  },
+  {
+   "value": "10364274",
+   "valid": true
+  },
+  {
+   "value": "11111111",
+   "valid": false
+  },
+  {
+   "value": "12345670",
+   "valid": true
+  },
+  {
+   "value": "10324670",
+   "valid": true
+  },
+  {
+   "value": "10047515",
+   "valid": false
+  },
+  {
+   "value": "1234567",
+   "valid": false
+  },
+  {
+   "value": "123456789",
+   "valid": false
+  },
+  {
+   "value": "1234567a",
+   "valid": false
+  },
+  {
+   "value": "",
+   "valid": false
+  }
+ ],
+ "phone": [
+  {
+   "value": "0912-345-678",
+   "e164": "+886912345678"
+  },
+  {
+   "value": "0912345678",
+   "e164": "+886912345678"
+  },
+  {
+   "value": "(02) 2345-6789",
+   "e164": "+886223456789"
+  },
+  {
+   "value": "02-2345-6789",
+   "e164": "+886223456789"
+  },
+  {
+   "value": "+886 912 345 678",
+   "e164": "+886912345678"
+  },
+  {
+   "value": "886912345678",
+   "e164": "+886912345678"
+  },
+  {
+   "value": "+1 415 555 0100",
+   "e164": "+14155550100"
+  },
+  {
+   "value": "912345678",
+   "e164": null
+  },
+  {
+   "value": "12345",
+   "e164": null
+  },
+  {
+   "value": "",
+   "e164": null
+  },
+  {
+   "value": "abc",
+   "e164": null
+  }
+ ],
+ "email": [
+  {
+   "value": "Boss@Example.COM",
+   "normalized": "boss@example.com"
+  },
+  {
+   "value": " a@b.co ",
+   "normalized": "a@b.co"
+  },
+  {
+   "value": "bad",
+   "normalized": null
+  },
+  {
+   "value": "a@b",
+   "normalized": null
+  },
+  {
+   "value": "a b@c.d",
+   "normalized": null
+  },
+  {
+   "value": "",
+   "normalized": null
+  }
+ ],
+ "number": [
+  {
+   "value": "NT$1,200 元",
+   "clean": "1200"
+  },
+  {
+   "value": "2.5",
+   "clean": "2.5"
+  },
+  {
+   "value": "1 000",
+   "clean": "1000"
+  },
+  {
+   "value": "$30",
+   "clean": "30"
+  }
+ ]
+}
