@@ -68,6 +68,47 @@ html[data-style="fluid"][data-theme="white"] ::selection {
   color: #ffffff;
 }
 
+/* ---------- Scene: the ocean column photo, surface at the top of the page, seabed at the bottom ---------- */
+
+html[data-style="fluid"] .scene-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: #031018;
+  background-image: var(--scene-image);
+  background-position: center var(--ocean-y);
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+}
+
+html[data-style="fluid"] .scene-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scene-veil);
+}
+
+html[data-style="fluid"] body:has(.os-shell) .scene-layer::after {
+  background: var(--os-veil);
+}
+
+/* Refraction film: the specular highlight that follows the pointer across a Lens. */
+html[data-style="fluid"] .lens-film::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(520px circle at var(--glass-px) var(--glass-py), rgb(255 255 255 / 0.46), transparent 44%),
+    linear-gradient(155deg, rgb(255 255 255 / 0.34) 0%, rgb(255 255 255 / 0.05) 34%, transparent 58%);
+  mix-blend-mode: screen;
+}
+
+html[data-style="fluid"][data-theme="white"] .lens-film::after {
+  mix-blend-mode: overlay;
+}
+
 /* ---------- Ocean field: drifting colour, surface light, deep water ---------- */
 
 html[data-style="fluid"] .fluid-field {
@@ -767,6 +808,15 @@ html[data-style="fluid"][data-fluid-paused] .skeleton {
 @media (prefers-reduced-transparency: reduce) {
   html[data-style="fluid"] .fluid-field {
     display: none;
+  }
+
+  html[data-style="fluid"] .scene-layer {
+    background-image: none;
+  }
+
+  html[data-style="fluid"] .scene-layer::after,
+  html[data-style="fluid"] body:has(.os-shell) .scene-layer::after {
+    background: var(--ink);
   }
 
   html[data-style="fluid"] .glass::before,

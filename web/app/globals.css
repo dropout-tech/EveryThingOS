@@ -194,12 +194,6 @@ html[data-theme="white"] {
   --font-display: var(--font-heading);
 }
 
-html[data-scene="ocean"],
-html[data-scene="mountain"],
-html[data-scene="lake"] {
-  --scene-image: url("/scenes/ocean-column.jpg");
-}
-
 html,
 body {
   background: var(--ink);
@@ -215,25 +209,6 @@ body {
 ::selection {
   background: var(--teal);
   color: var(--ink);
-}
-
-.scene-layer {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background-color: #031018;
-  background-image: var(--scene-image);
-  background-position: center var(--ocean-y);
-  background-size: 100% auto;
-  background-repeat: no-repeat;
-}
-
-.scene-layer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--scene-veil);
 }
 
 .liquid-glass-defs {
@@ -274,38 +249,9 @@ body {
   -webkit-backdrop-filter: blur(2px) saturate(145%) brightness(1.1);
 }
 
-.lens-film::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    radial-gradient(
-      520px circle at var(--glass-px) var(--glass-py),
-      rgba(255, 255, 255, 0.46),
-      transparent 44%
-    ),
-    linear-gradient(
-      155deg,
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(255, 255, 255, 0.05) 34%,
-      transparent 58%
-    );
-  mix-blend-mode: screen;
-  opacity: 0.9;
-}
-
 .lens-body {
   position: relative;
   z-index: 2;
-}
-
-html[data-theme="white"] .lens-film {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-html[data-theme="white"] .lens-film::after {
-  mix-blend-mode: overlay;
 }
 
 .display {
@@ -537,27 +483,13 @@ html[data-theme="white"] .glass.glass-bar::before {
   outline: none;
 }
 
-body:has(.os-shell) .scene-layer::after {
-  background: var(--os-veil);
-}
-
 .os-shell {
   --glass-fill: var(--os-glass-fill);
   --glass-blur: 6px;
   --cream-dim: var(--os-cream-dim);
 }
 
-.os-shell .lens-film {
-  background: var(--os-glass-fill);
-}
-
-html[data-theme] .os-shell .glass.glass-nav::before,
-html[data-theme] .os-shell .glass.glass-bar::before {
-  background: var(--surface-scrim);
-}
-
-.os-shell .glass::after,
-.os-shell .lens-film::after {
+.os-shell .glass::after {
   opacity: 0.45;
 }
 
@@ -1690,7 +1622,6 @@ html[data-theme="white"] .os-shell .glass-chip {
     height: 4.5rem;
     margin-bottom: 0.75rem;
     border-radius: var(--ui-radius-md);
-    background: linear-gradient(135deg, #0b3a52, #1d7a8c 55%, #bfe9f0);
   }
 
   .style-card[data-style-option="minimal"] .style-card-swatch {
@@ -1759,14 +1690,6 @@ html[data-theme="white"] .os-shell .glass-chip {
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .scene-layer {
-    background-image: none;
-  }
-
-  .scene-layer::after {
-    background: var(--ink);
-  }
-
   .glass::before,
   .glass,
   .lens-film,
