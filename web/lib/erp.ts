@@ -142,7 +142,7 @@ export type SalesDoc = {
   next: string;
   overdueDays?: number;
   invoiceNo?: string;
-  /** YYYY-MM-DD the document was made (YYYY-MM-DD); empty when the source does not say. */
+  /** Day the document was made (YYYY-MM-DD); empty when the source does not say. */
   date?: string;
   /** Quote valid till, order delivery date, or invoice due date (YYYY-MM-DD); empty when the source does not say. */
   due?: string;
