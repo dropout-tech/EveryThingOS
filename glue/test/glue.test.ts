@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { aesCbcEncrypt, hmacSha256, seal, toBase64, toHex, unseal } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt, inclusiveLines } from "../src/einvoice";
-import { addYears, lifecycle, taiwanDate } from "../src/accounts";
+import { addYears, lifecycle, reminderFor, taiwanDate } from "../src/accounts";
 import { consume, daily, handle, MAX_ATTEMPTS, scheduleMeetings, scheduled, type App, type Env } from "../src/app";
 import { runJob, type Deps, type Job } from "../src/jobs";
 import { unsubscribeSignature, verifySvix } from "../src/mail";
@@ -407,6 +407,39 @@ describe("accounts", () => {
     expect(await h.store.isClaimed("skip:meeting:keep")).toBe(true);
     expect((await h.store.getAccount(tenant.site))!.usage).toMatchObject({ users: 7 });
     expect((await scheduled(h.env, h.app, new Date("2026-10-12T10:00:00Z"))).daily).toBeNull();
+  });
+
+  it("reminds on set days before and after the end date", () => {
+    const a = { site: "s", company: "安安", plan: "annual", state: "active" as const, hosts: [], created_at: "", updated_at: "" };
+    const at = (d: string) => new Date(`${d}T18:01:00Z`);
+    expect(reminderFor({ ...a, trial_ends: "2026-10-20" }, at("2026-10-12"))).toMatchObject({ key: "remind:s:trial:2026-10-20:7", subject: "DropOut OS 試用還有 7 天（安安）" });
+    expect(reminderFor({ ...a, trial_ends: "2026-10-21" }, at("2026-10-12"))).toBeNull();
+    expect(reminderFor({ ...a, renews_on: "2026-11-12" }, at("2026-10-12"))!.key).toBe("remind:s:due_soon:2026-11-12:30");
+    expect(reminderFor({ ...a, renews_on: "2026-10-12" }, at("2026-10-12"))!.subject).toContain("寬限期");
+    expect(reminderFor({ ...a, renews_on: "2026-09-28" }, at("2026-10-12"))!.subject).toContain("只能看");
+    expect(reminderFor({ ...a, state: "suspended", renews_on: "2026-10-20" }, at("2026-10-12"))).toBeNull();
+  });
+
+  it("daily pushes the contract status to ERPNext and mails each reminder once; state changes push right away", async () => {
+    const h = harness({ "api.resend.com": () => ({ id: "r1" }) });
+    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "DropOut OS <billing@dropout.tw>", PLATFORM_NOTIFY: "ops@dropout.tw" });
+    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
+    const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
+    expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
+
+    const now = new Date("2026-10-12T18:01:00Z");
+    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
+    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
+    const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));
+    expect(mail).toHaveLength(1);
+    expect(mail[0].body).toMatchObject({ to: ["boss@make.tw"], subject: "DropOut OS 試用還有 7 天（琢奧精密製造）", reply_to: "ops@dropout.tw" });
+    expect(h.emails.at(-1)).toMatchObject({ to: "ops@dropout.tw" });
+    const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
+    expect(detail.events[0]).toMatchObject({ action: "提醒", actor: "排程" });
+
+    const res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "測試" }), h.env, h.app);
+    expect(((await res.json()) as any).erpnext).toBe(true);
+    expect(pushes().at(-1)!.body).toMatchObject({ stage: "suspended", locked: 1 });
   });
 });
 

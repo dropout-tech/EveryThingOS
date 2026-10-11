@@ -1,8 +1,8 @@
-import { addYears, lifecycle, mergeAccount, normalizeHost, taiwanDate, validAccount, type Account } from "./accounts";
+import { addYears, lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
-import { parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
+import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import { D1Store, type Store, type Tenant } from "./store";
@@ -19,6 +19,11 @@ export type Env = {
   SUMMARY_MODEL?: string;
   AI_GATEWAY?: string;
   TURNSTILE_SECRET?: string;
+  /** Renewal reminders to each company's contact. Cloudflare's EMAIL binding only reaches verified addresses, so customers go through Resend. */
+  RESEND_API_KEY?: string;
+  PLATFORM_MAIL_FROM?: string;
+  /** Verified DropOut address that gets a copy of every reminder through the EMAIL binding. */
+  PLATFORM_NOTIFY?: string;
 };
 
 export const MAX_ATTEMPTS = 4;
@@ -89,6 +94,43 @@ function shellMayUse(parts: string[], method: string) {
 
 export function accountView(a: Account, now = new Date()) {
   return { ...a, lifecycle: lifecycle(a, now) };
+}
+
+/** Tell the company's ERPNext whether to accept business writes, so Desk follows the contract too. */
+async function pushStatus(store: Store, fetcher: typeof fetch, a: Account, now = new Date()) {
+  const t = await store.getTenant(a.site);
+  if (!t) return false;
+  const l = lifecycle(a, now);
+  try {
+    await new ERPNext(t, fetcher).method("dropout_core.account.set_status", { stage: l.stage, locked: l.writable ? 0 : 1, message: l.message, ends: l.ends });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function sendReminder(env: Env, store: Store, fetcher: typeof fetch, a: Account, now: Date) {
+  const r = reminderFor(a, now);
+  if (!r || !(await store.claim(r.key))) return false;
+  const sentTo: string[] = [];
+  if (env.RESEND_API_KEY && env.PLATFORM_MAIL_FROM && a.contact_email) {
+    const res = await fetcher("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+      body: JSON.stringify({ from: env.PLATFORM_MAIL_FROM, to: [a.contact_email], subject: r.subject, text: r.text, ...(env.PLATFORM_NOTIFY ? { reply_to: env.PLATFORM_NOTIFY } : {}) }),
+    }).catch(() => null);
+    if (res?.ok) sentTo.push(a.contact_email);
+  }
+  if (env.EMAIL && env.PLATFORM_NOTIFY && env.PLATFORM_MAIL_FROM) {
+    try {
+      await env.EMAIL.send({ from: env.PLATFORM_MAIL_FROM, to: env.PLATFORM_NOTIFY, subject: `[營運] ${r.subject}`, text: `${r.text}\n\n聯絡人：${a.contact_email ?? "（沒有）"}`, html: `<pre>${escapeHtml(r.text)}</pre>` });
+      sentTo.push(env.PLATFORM_NOTIFY);
+    } catch {
+      /* the event below still shows it in the console */
+    }
+  }
+  await store.addAccountEvent(a.site, "排程", "提醒", `${r.subject}；${sentTo.length ? `寄給 ${sentTo.join("、")}` : "沒有設定寄信，只記在這裡"}`);
+  return true;
 }
 
 async function turnstileOk(env: Env, token: string | undefined, ip: string | null, fetcher: typeof fetch) {
@@ -333,7 +375,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       }
       await store.putAccount(next);
       await store.addAccountEvent(next.site, actor, current ? "更新" : "建立", JSON.stringify(patch).slice(0, 1000));
-      return json({ ok: true, account: accountView(next) });
+      return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
     }
     if (parts[1] === "accounts" && parts[2] && parts[3] === "renew" && req.method === "POST") {
       const a = await store.getAccount(parts[2]);
@@ -345,7 +387,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       const next = mergeAccount(a.site, a, { renews_on: until, state: "active", state_reason: null });
       await store.putAccount(next);
       await store.addAccountEvent(a.site, actor, "續約", `${a.renews_on ?? "（試用）"} → ${until}${body.reference ? `；${body.reference}` : ""}`);
-      return json({ ok: true, account: accountView(next) });
+      return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
     }
     if (parts[1] === "accounts" && parts[2] && parts[3] === "state" && req.method === "POST") {
       const a = await store.getAccount(parts[2]);
@@ -355,7 +397,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       const next = mergeAccount(a.site, a, { state: body.state, state_reason: body.reason ?? null });
       await store.putAccount(next);
       await store.addAccountEvent(a.site, actor, { active: "恢復", suspended: "暫停", cancelled: "解約" }[body.state], body.reason ?? "");
-      return json({ ok: true, account: accountView(next) });
+      return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
     }
     if (parts[1] === "tenants" && parts[2] && req.method === "PUT") {
       const t = (await req.json()) as Tenant;
@@ -507,13 +549,21 @@ export async function scheduleMeetings(env: Env, app: App = defaultApp, now = ne
 
 export const SEEN_DAYS = 180;
 
-/** Once a day: refresh each company's usage for the platform console and forget old dedupe keys. */
+/**
+ * Once a day: push each company's contract status to its ERPNext (stages move
+ * with the calendar), send renewal reminders, refresh usage for the platform
+ * console, and forget old dedupe keys.
+ */
 export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
   const store = app.store(env);
   const pruned = await store.pruneSeen(new Date(now.getTime() - SEEN_DAYS * 86_400_000).toISOString());
   let refreshed = 0;
   let failed = 0;
+  let reminded = 0;
+  let pushed = 0;
   await inChunks(await store.listAccounts(), 5, async (a) => {
+    if (await sendReminder(env, store, app.fetcher, a, now)) reminded++;
+    if (await pushStatus(store, app.fetcher, a, now)) pushed++;
     const t = await store.getTenant(a.site);
     if (!t || a.state === "cancelled") return;
     try {
@@ -525,7 +575,7 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
       await store.putAccount({ ...a, usage: { ...(a.usage ?? {}), error: (e as Error).message.slice(0, 200) }, usage_at: now.toISOString() });
     }
   });
-  return { pruned, refreshed, failed };
+  return { pruned, refreshed, failed, reminded, pushed };
 }
 
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */

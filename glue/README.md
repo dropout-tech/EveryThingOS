@@ -16,9 +16,11 @@
 | `GET /shell/tenant?host=` | 殼依網址查公司：ERPNext 網址與 OAuth client、Chatwoot 帳戶、合約狀態（不回 ERPNext 金鑰） | `SHELL_TOKEN` |
 | `/admin/accounts`、`/admin/accounts/:site`（`PUT`、`/renew`、`/state`） | 公司合約：試用、續約、暫停、解約、網址；每次變更記進歷史（`x-actor`） | `ADMIN_TOKEN` |
 | `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access；`SHELL_TOKEN` 只能看自己那家的死信與會議、關掉某場會議的機器人、重送自己那家的死信 |
-| 排程每天 02:00（台灣） | 收各家用量（`dropout_core.team.usage`）、清 180 天前的去重紀錄 | |
+| 排程每天 02:00（台灣） | 把合約狀態推給各家 ERPNext（`dropout_core.account.set_status`，只能看時 ERPNext 後台也擋寫入）、寄續約提醒、收各家用量（`dropout_core.team.usage`）、清 180 天前的去重紀錄 | |
 
 失敗規則：5xx／網路錯誤依 30、60、120 秒重試；4xx 或第 4 次仍失敗 → 寫進死信（D1）並在 ERPNext 標示（例：電子發票「失敗」）。Worker 本身崩潰的訊息由 Queues 內建死信佇列接住。
+
+續約提醒：試用到期前 7、3、1、0 天；年約到期前 59、30、14、7、1、0 天；到期後第 1、7、14 天；改成只能看那天。每則只寄一次，續約後到期日變了就重新算。寄給公司的聯絡人（Resend），副本經 Cloudflare EMAIL 寄到 `PLATFORM_NOTIFY`；沒設寄信也會記在營運後台的公司歷史。
 
 每家公司的金鑰（ERPNext API key、金流 HashKey…）用 `TENANT_KEY`（AES-256-GCM）加密後才存進 D1。
 
@@ -41,6 +43,7 @@ npm run db:migrate
 npx wrangler secret put TENANT_KEY         # openssl rand -base64 32
 npx wrangler secret put ADMIN_TOKEN
 npx wrangler secret put SHELL_TOKEN        # 給多公司模式的殼
+npx wrangler secret put RESEND_API_KEY     # 選用：續約提醒寄給客戶；另設 vars PLATFORM_MAIL_FROM、PLATFORM_NOTIFY
 npm run deploy
 ```
 

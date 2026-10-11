@@ -76,6 +76,33 @@ export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_end
   return { stage: "read_only", days, ends, writable: false, bots: false, message: `${paid ? "年約" : "試用"}已在 ${ends} 到期。資料都在，可以看和匯出，不能新增或修改；續約後馬上恢復。` };
 }
 
+const REMIND_AT: Partial<Record<Stage, number[]>> = {
+  trial: [7, 3, 1, 0],
+  due_soon: [59, 30, 14, 7, 1, 0],
+  past_due: [-1, -7, -GRACE_DAYS],
+  read_only: [-(GRACE_DAYS + 1)],
+};
+
+/**
+ * The reminder due today, if any. `key` names the stage, end date and day, so
+ * each reminder goes out once and a renewal (new end date) starts a fresh set.
+ */
+export function reminderFor(a: Account, now = new Date()): { key: string; subject: string; text: string } | null {
+  const l = lifecycle(a, now);
+  if (l.days === null || !REMIND_AT[l.stage]?.includes(l.days)) return null;
+  const subject = {
+    trial: `DropOut OS 試用${l.days === 0 ? "今天到期" : `還有 ${l.days} 天`}`,
+    due_soon: `DropOut OS 年約${l.days === 0 ? "今天到期" : `還有 ${l.days} 天到期`}`,
+    past_due: "DropOut OS 已到期，寬限期內仍可正常使用",
+    read_only: "DropOut OS 已改成只能看",
+  }[l.stage as "trial" | "due_soon" | "past_due" | "read_only"];
+  return {
+    key: `remind:${a.site}:${l.stage}:${l.ends}:${l.days}`,
+    subject: `${subject}（${a.company}）`,
+    text: `${a.company} 您好，\n\n${l.message}\n\n要續約或有任何問題，直接回覆這封信即可。\n\nDropOut OS`,
+  };
+}
+
 /** New account or partial update from the admin API. Unknown keys are ignored. */
 export function mergeAccount(site: string, current: Account | null, patch: Partial<Account>, now = new Date()): Account {
   const stamp = now.toISOString();
