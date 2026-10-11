@@ -1,0 +1,16 @@
+app_name = "dropout_hr_tw"
+app_title = "DropOut HR TW"
+app_publisher = "DropOut Tech"
+app_description = "Taiwan payroll and leave setup for Frappe HRMS"
+app_email = "info@dropout.tw"
+app_license = "mit"
+
+required_apps = ["erpnext", "hrms", "dropout_core"]
+
+after_install = "dropout_hr_tw.install.after_install"
+after_migrate = "dropout_hr_tw.install.after_migrate"
+setup_wizard_complete = "dropout_hr_tw.install.after_setup_wizard"
+
+doc_events = {
+	"Salary Slip": {"before_validate": "dropout_hr_tw.payroll.fill_slip"},
+}
