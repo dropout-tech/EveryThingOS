@@ -378,6 +378,7 @@ html[data-style="minimal"] .btn-danger:not(:disabled):hover {
 
 html[data-style="minimal"] .theme-toggle {
   border-color: var(--mn-border-strong);
+  border-radius: var(--ui-radius-sm);
   background: var(--mn-surface-2);
 }
 
@@ -682,7 +683,8 @@ html[data-style="minimal"] .skeleton {
 /* ---------- Print: paper colours, nothing fixed on top of content ---------- */
 
 @media print {
-  html[data-style="minimal"] {
+  html[data-style="minimal"],
+  html[data-style="minimal"][data-theme] {
     --mn-bg: #ffffff;
     --mn-surface: #ffffff;
     --mn-surface-2: #ffffff;
@@ -691,6 +693,7 @@ html[data-style="minimal"] .skeleton {
     --mn-text: #000000;
     --mn-text-dim: #404040;
     --mn-accent: #0a5a53;
+    --mn-focus: #0a5a53;
     --ok: #0b5a31;
     --warn: #6b3600;
     --danger: #8f1c13;
