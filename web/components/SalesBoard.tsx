@@ -5,6 +5,7 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
+import { ShareDrawer } from "./portal/ShareDrawer";
 import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
@@ -20,6 +21,7 @@ import {
   makeQuote,
   type SalesDoc,
 } from "@/lib/erp";
+import { shareableDoctype } from "@/lib/portal";
 import type { Catalog } from "@/lib/sources/types";
 import type { IndustryPack } from "@/lib/types";
 
@@ -43,6 +45,8 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
   const [query, setQuery] = useState("");
   const [openNo, setOpenNo] = useState<string | null>(null);
   const opened = docs.find((doc) => doc.no === openNo) ?? null;
+  const [shareNo, setShareNo] = useState<string | null>(null);
+  const sharing = docs.find((doc) => doc.no === shareNo) ?? null;
 
   useEffect(() => {
     if (live) return;
@@ -216,6 +220,11 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                         {doc.next}
                       </button>
                     )}
+                    {shareableDoctype(doc) ? (
+                      <button type="button" aria-haspopup="dialog" onClick={() => setShareNo(doc.no)} className={buttonClass({ variant: "ghost", size: "sm", block: true, className: "mt-1" })}>
+                        傳給客人
+                      </button>
+                    ) : null}
                   </li>
                 ))
               ) : (
@@ -225,6 +234,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           </section>
         ))}
       </div>
+      <ShareDrawer doc={sharing} onClose={() => setShareNo(null)} live={live} packId={pack.id} />
       <Drawer
         open={Boolean(opened)}
         title={opened?.party ?? ""}

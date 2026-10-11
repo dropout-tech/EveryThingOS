@@ -2277,6 +2277,171 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 }
 
+/* 客戶入口 (/q/…): the page a customer opens from a shared link. */
+@layer components {
+  .portal-demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--warn);
+    border-radius: var(--card-radius);
+    background: var(--surface-scrim);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+  }
+
+  .portal-logo {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: var(--ui-radius-md);
+    object-fit: contain;
+    background: var(--surface-card);
+  }
+
+  .portal-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-fill);
+    color: var(--on-primary);
+    font-family: var(--font-heading);
+    font-size: var(--ui-text-lg);
+    font-weight: 600;
+  }
+
+  .portal-meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1rem;
+    font-size: var(--ui-text-sm);
+  }
+
+  .portal-meta dt {
+    color: var(--cream-dim);
+  }
+
+  .portal-meta dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .portal-lines {
+    margin-inline: -1.25rem;
+    border-block: 1px solid var(--line);
+  }
+
+  @media (min-width: 768px) {
+    .portal-lines {
+      margin-inline: -1.75rem;
+    }
+
+    .portal-lines .table-stack :is(th, td):first-child {
+      padding-inline-start: 1.75rem;
+    }
+
+    .portal-lines .table-stack :is(th, td):last-child {
+      padding-inline-end: 1.75rem;
+    }
+  }
+
+  .portal-totals {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 1.5rem;
+    margin-inline-start: auto;
+    max-width: 22rem;
+    font-size: var(--ui-text-sm);
+    text-align: right;
+  }
+
+  .portal-totals dt {
+    color: var(--cream-dim);
+  }
+
+  .portal-totals .portal-grand {
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--line);
+    color: var(--cream);
+    font-size: var(--ui-text-lg);
+    font-weight: 600;
+  }
+
+  .portal-check {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ui-radius-pill);
+    background: var(--ok);
+    color: var(--ink);
+    font-size: var(--ui-text-lg);
+    font-weight: 700;
+  }
+
+  .portal-signature img {
+    width: 100%;
+    max-width: 20rem;
+    aspect-ratio: 5 / 2;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+  }
+
+  /* The saved signature is dark ink on transparent; flip it so it reads on the dark theme. */
+  html[data-theme="black"] .portal-signature img {
+    filter: invert(1);
+  }
+
+  @media print {
+    html[data-theme="black"] .portal-signature img {
+      filter: none;
+    }
+  }
+
+  .signature-pad {
+    position: relative;
+    margin-top: 0.35rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+    color: var(--cream);
+  }
+
+  .signature-pad:focus-within,
+  .signature-pad:hover {
+    border-style: solid;
+  }
+
+  .signature-pad canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 5 / 2;
+    max-height: 14rem;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .signature-pad[data-disabled] canvas {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .signature-pad-hint {
+    position: absolute;
+    inset: auto 1rem 0.75rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.25rem;
+    color: var(--cream-dim);
+    font-size: var(--ui-text-xs);
+    pointer-events: none;
+  }
+}
+
 @media print {
   .scene-layer,
   .site-noprint,
