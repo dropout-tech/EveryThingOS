@@ -186,6 +186,7 @@ export const HINTS = {
   team: { title: "職務決定看得到什麼", body: "換職務立刻生效；停用的人馬上登出。公司至少要留一位老闆。" },
   letter: { title: "只寄給說好的人", body: "勾同意、又點了確認信的人才會進名單。退訂一次，所有行銷通道一起關。" },
   hr: { title: "上下班各按一次", body: "打卡、核准假單在這裡。員工資料、排班、薪資結構在 ERPNext 人事後台。" },
+  approvals: { title: "小額的一次簽完", body: "五千元以下的報帳、一天以內的假單可以一次核准。退回一定要寫原因，對方才知道要改什麼。自己送的單要別人簽。" },
 } as const;
 
 export type HintId = keyof typeof HINTS;
