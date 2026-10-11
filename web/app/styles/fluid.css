@@ -1,1 +1,1161 @@
 /* [data-style="fluid"] — every rule in this file must be scoped under html[data-style="fluid"]. */
+/* The one exception is the StylePicker preview at the end, which must render under any active style. */
+
+/* ---------- Palette ---------- */
+
+html[data-style="fluid"] {
+  --fluid-depth: 0;
+  --fluid-aqua: 94 228 245;
+  --fluid-cobalt: 88 132 255;
+  --fluid-violet: 167 139 250;
+  --fluid-sea: 52 211 175;
+  --fluid-pearl: 251 194 235;
+  --fluid-caustic: 205 246 255;
+  --fluid-snow: 220 240 255;
+  --fluid-ripple: 28 132 196;
+  --fluid-glow: 94 228 245;
+  --fluid-edge-a: 125 235 255;
+  --fluid-edge-b: 186 160 255;
+  --fluid-edge-c: 255 205 240;
+  --fluid-edge-d: 120 240 200;
+  --fluid-edge-alpha: 0.6;
+  --fluid-blob-alpha: 1;
+  --fluid-caustic-alpha: 0.09;
+  --fluid-ray-alpha: 1;
+  --fluid-indicator: linear-gradient(180deg, #7ee8fa 0%, #b9a6ff 100%);
+  --fluid-primary: linear-gradient(135deg, #ffffff 0%, #e2f6ff 48%, #ece6ff 100%);
+  --fluid-primary-hover: linear-gradient(135deg, #ffffff 0%, #f0fbff 45%, #f5f1ff 100%);
+  --fluid-primary-shadow: 0 10px 28px -10px rgb(var(--fluid-glow) / 0.55), 0 0 0 1px rgb(255 255 255 / 0.55);
+  --fluid-primary-shadow-hover: 0 14px 36px -10px rgb(var(--fluid-glow) / 0.7), 0 0 0 1px rgb(255 255 255 / 0.8);
+  --type-shadow: 0 0 2px rgb(2 12 24 / 0.85), 0 0 6px rgb(2 12 24 / 0.75), 0 0 16px rgb(2 12 24 / 0.6), 0 0 36px rgb(2 12 24 / 0.45);
+  --cream-dim: rgba(247, 248, 252, 0.8);
+  scrollbar-color: rgb(var(--fluid-aqua) / 0.4) transparent;
+}
+
+html[data-style="fluid"][data-theme="white"] {
+  --fluid-aqua: 125 211 252;
+  --fluid-cobalt: 147 180 255;
+  --fluid-violet: 196 181 253;
+  --fluid-sea: 134 239 210;
+  --fluid-pearl: 251 207 232;
+  --fluid-caustic: 255 255 255;
+  --fluid-snow: 30 72 112;
+  --fluid-ripple: 125 211 252;
+  --fluid-glow: 37 99 235;
+  --fluid-edge-a: 2 132 199;
+  --fluid-edge-b: 124 58 237;
+  --fluid-edge-c: 219 39 119;
+  --fluid-edge-d: 13 148 136;
+  --fluid-edge-alpha: 0.42;
+  --fluid-blob-alpha: 1.8;
+  --fluid-caustic-alpha: 0.2;
+  --fluid-indicator: linear-gradient(180deg, #0369a1 0%, #6d28d9 100%);
+  --fluid-primary: linear-gradient(135deg, #0b1a2b 0%, #12305a 55%, #2a1d5c 100%);
+  --fluid-primary-hover: linear-gradient(135deg, #10253d 0%, #183d70 55%, #35266f 100%);
+  --fluid-primary-shadow: 0 10px 28px -12px rgb(var(--fluid-glow) / 0.55), 0 0 0 1px rgb(255 255 255 / 0.18);
+  --fluid-primary-shadow-hover: 0 14px 36px -12px rgb(var(--fluid-glow) / 0.7), 0 0 0 1px rgb(255 255 255 / 0.28);
+  --type-shadow: 0 0 2px rgb(255 255 255 / 0.9), 0 0 6px rgb(255 255 255 / 0.85), 0 0 16px rgb(255 255 255 / 0.7), 0 0 36px rgb(255 255 255 / 0.5);
+  --cream-dim: rgba(17, 19, 24, 0.76);
+}
+
+html[data-style="fluid"] ::selection {
+  background: #7ee8fa;
+  color: #07080c;
+}
+
+html[data-style="fluid"][data-theme="white"] ::selection {
+  background: #0b4f6c;
+  color: #ffffff;
+}
+
+/* ---------- Scene: the ocean column photo, surface at the top of the page, seabed at the bottom ---------- */
+
+html[data-style="fluid"] .scene-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: #031018;
+  background-image: var(--scene-image);
+  background-position: center var(--ocean-y);
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+}
+
+html[data-style="fluid"] .scene-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scene-veil);
+}
+
+html[data-style="fluid"] body:has(.os-shell) .scene-layer::after {
+  background: var(--os-veil);
+}
+
+/* Refraction film: the specular highlight that follows the pointer across a Lens. */
+html[data-style="fluid"] .lens-film::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(520px circle at var(--glass-px) var(--glass-py), rgb(255 255 255 / 0.46), transparent 44%),
+    linear-gradient(155deg, rgb(255 255 255 / 0.34) 0%, rgb(255 255 255 / 0.05) 34%, transparent 58%);
+  mix-blend-mode: screen;
+}
+
+html[data-style="fluid"][data-theme="white"] .lens-film::after {
+  mix-blend-mode: overlay;
+}
+
+/* ---------- Ocean field: drifting colour, surface light, deep water ---------- */
+
+html[data-style="fluid"] .fluid-field {
+  --fluid-caustic-k: 1;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+html[data-style="fluid"] body:has(.os-shell) .fluid-field {
+  --fluid-caustic-k: 0.3;
+  --fluid-blob-k: 0.45;
+  --fluid-ray-k: 0.4;
+}
+
+html[data-style="fluid"] .fluid-field > * {
+  position: absolute;
+  will-change: transform;
+}
+
+/* Two layers, two pools of colour each: organic motion without stacking many full-screen layers. */
+html[data-style="fluid"] .fluid-blob {
+  --k: calc(var(--fluid-blob-alpha) * var(--fluid-blob-k, 1));
+  width: 96vmax;
+  height: 96vmax;
+  animation: fluid-drift-a 72s ease-in-out infinite alternate;
+}
+
+html[data-style="fluid"] .fluid-blob-a {
+  top: -42vmax;
+  left: -30vmax;
+  background:
+    radial-gradient(34% 26% at 42% 46%, rgb(var(--fluid-aqua) / calc(0.26 * var(--k))), rgb(var(--fluid-aqua) / calc(0.1 * var(--k))) 45%, transparent 72%),
+    radial-gradient(22% 18% at 74% 72%, rgb(var(--fluid-pearl) / calc(0.14 * var(--k))), transparent 70%);
+}
+
+html[data-style="fluid"] .fluid-blob-b {
+  right: -40vmax;
+  bottom: -46vmax;
+  background:
+    radial-gradient(32% 26% at 52% 40%, rgb(var(--fluid-violet) / calc(0.22 * var(--k))), rgb(var(--fluid-violet) / calc(0.08 * var(--k))) 45%, transparent 72%),
+    radial-gradient(30% 22% at 30% 66%, rgb(var(--fluid-cobalt) / calc(0.22 * var(--k))), transparent 70%);
+  animation-name: fluid-drift-b;
+  animation-duration: 88s;
+}
+
+@keyframes fluid-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(12vw, 10vh, 0) rotate(38deg) scale(1.1);
+  }
+  100% {
+    transform: translate3d(22vw, 4vh, 0) rotate(80deg) scale(0.95);
+  }
+}
+
+@keyframes fluid-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(-14vw, -12vh, 0) rotate(-34deg) scale(0.93);
+  }
+  100% {
+    transform: translate3d(-24vw, -2vh, 0) rotate(-72deg) scale(1.08);
+  }
+}
+
+/* Near the surface: light shafts and caustics, fading out as you scroll toward the seabed. */
+html[data-style="fluid"] .fluid-rays {
+  inset: -20% -20% 25%;
+  transform-origin: 45% 0;
+  background: conic-gradient(
+    from 155deg at 45% -10%,
+    transparent 0deg,
+    rgb(255 255 255 / calc(0.07 * var(--fluid-ray-alpha))) 4deg,
+    transparent 7deg 13deg,
+    rgb(255 255 255 / calc(0.05 * var(--fluid-ray-alpha))) 15deg,
+    transparent 19deg 24deg,
+    rgb(255 255 255 / calc(0.09 * var(--fluid-ray-alpha))) 26deg,
+    transparent 28deg 35deg,
+    rgb(255 255 255 / calc(0.045 * var(--fluid-ray-alpha))) 38deg,
+    transparent 43deg 47deg,
+    rgb(255 255 255 / calc(0.07 * var(--fluid-ray-alpha))) 49deg,
+    transparent 52deg
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 90%);
+  mask-image: linear-gradient(180deg, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 90%);
+  opacity: calc((1 - var(--fluid-depth) * 1.6) * var(--fluid-ray-k, 1));
+  transition: opacity 500ms linear;
+  animation: fluid-sway 26s ease-in-out infinite alternate;
+}
+
+html[data-style="fluid"][data-theme="white"] .fluid-rays {
+  --fluid-ray-alpha: 6;
+}
+
+@keyframes fluid-sway {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+
+html[data-style="fluid"] .fluid-caustics {
+  inset: -480px 0 0 -480px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480'%3E%3Cfilter id='c' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.012' numOctaves='1' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.86 0 0 0 0 0.97 0 0 0 0 1 -11 0 0 0 1.05'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  background-size: 480px 480px;
+  opacity: calc(var(--fluid-caustic-alpha) * var(--fluid-caustic-k) * (1 - var(--fluid-depth) * 1.5));
+  transition: opacity 500ms linear;
+  animation: fluid-caustic 64s linear infinite;
+}
+
+@keyframes fluid-caustic {
+  to {
+    transform: translate3d(480px, 480px, 0);
+  }
+}
+
+/* Toward the seabed: a slow bioluminescent glow and drifting marine snow. */
+html[data-style="fluid"] .fluid-glow {
+  inset: auto -10% -25% -10%;
+  height: 80vh;
+  background:
+    radial-gradient(48% 58% at 28% 100%, rgb(var(--fluid-sea) / calc(0.22 * var(--fluid-blob-alpha))), transparent 72%),
+    radial-gradient(42% 52% at 76% 100%, rgb(var(--fluid-violet) / calc(0.24 * var(--fluid-blob-alpha))), transparent 72%);
+  transform-origin: 50% 100%;
+  opacity: var(--fluid-depth);
+  transition: opacity 500ms linear;
+  animation: fluid-breathe 16s ease-in-out infinite alternate;
+}
+
+@keyframes fluid-breathe {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+html[data-style="fluid"] .fluid-snow {
+  inset: 0 0 -260px;
+  background-image:
+    radial-gradient(1.6px 1.6px at 24px 36px, rgb(var(--fluid-snow) / 0.55), transparent),
+    radial-gradient(1.2px 1.2px at 118px 92px, rgb(var(--fluid-snow) / 0.4), transparent),
+    radial-gradient(2px 2px at 196px 160px, rgb(var(--fluid-snow) / 0.35), transparent),
+    radial-gradient(1.2px 1.2px at 64px 210px, rgb(var(--fluid-snow) / 0.45), transparent),
+    radial-gradient(1.6px 1.6px at 160px 18px, rgb(var(--fluid-snow) / 0.3), transparent),
+    radial-gradient(1px 1px at 236px 128px, rgb(var(--fluid-snow) / 0.5), transparent);
+  background-size: 260px 260px;
+  opacity: calc(var(--fluid-depth) * 1.4 - 0.3);
+  transition: opacity 500ms linear;
+  animation: fluid-snow 70s linear infinite;
+}
+
+@keyframes fluid-snow {
+  to {
+    transform: translate3d(0, -260px, 0);
+  }
+}
+
+/* ---------- Glass: specular film below, iridescent edge above ---------- */
+
+html[data-style="fluid"] .glass {
+  box-shadow:
+    0 18px 50px var(--glass-shadow),
+    0 34px 80px -46px rgb(var(--fluid-glow) / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.42),
+    inset 0 -1px 0 rgb(255 255 255 / 0.06);
+}
+
+html[data-style="fluid"] .glass::before {
+  background:
+    radial-gradient(520px circle at var(--glass-px) var(--glass-py), rgb(255 255 255 / 0.2), transparent 46%),
+    linear-gradient(155deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.03) 34%, transparent 58%),
+    linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.07) 0%, transparent 42%, rgb(var(--fluid-violet) / 0.08) 100%),
+    var(--glass-fill);
+}
+
+html[data-style="fluid"] :is(.glass, .lens)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from 210deg at var(--glass-px, 28%) var(--glass-py, 14%),
+    rgb(var(--fluid-edge-a) / 0.95),
+    rgb(var(--fluid-edge-b) / 0.75),
+    rgb(var(--fluid-edge-c) / 0.7),
+    rgb(var(--fluid-edge-d) / 0.85),
+    rgb(var(--fluid-edge-a) / 0.95)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  mix-blend-mode: normal;
+  opacity: var(--fluid-edge-alpha);
+  transition: opacity 280ms ease-out;
+}
+
+html[data-style="fluid"] .glass-lift:hover::after,
+html[data-style="fluid"] .lens:hover::after {
+  opacity: calc(var(--fluid-edge-alpha) + 0.3);
+}
+
+html[data-style="fluid"] .glass-hero {
+  box-shadow:
+    0 28px 80px var(--glass-shadow),
+    0 50px 120px -60px rgb(var(--fluid-glow) / 0.6),
+    inset 0 1px 0 rgb(255 255 255 / 0.55);
+}
+
+/* Bars and rails keep one iridescent hairline on their inner edge instead of a full ring. */
+html[data-style="fluid"] .glass.glass-bar::after,
+html[data-style="fluid"] .glass.glass-nav::after {
+  padding: 0;
+  -webkit-mask: none;
+  mask: none;
+  opacity: calc(var(--fluid-edge-alpha) + 0.1);
+}
+
+html[data-style="fluid"] .glass.glass-bar::after {
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(var(--fluid-edge-a) / 0.9) 22%,
+    rgb(var(--fluid-edge-b) / 0.8) 50%,
+    rgb(var(--fluid-edge-c) / 0.7) 72%,
+    transparent 100%
+  );
+}
+
+html[data-style="fluid"] .glass.glass-nav::after {
+  inset: 0 0 0 auto;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgb(var(--fluid-edge-a) / 0.85) 0%,
+    rgb(var(--fluid-edge-b) / 0.6) 45%,
+    rgb(var(--fluid-edge-d) / 0.5) 80%,
+    transparent 100%
+  );
+}
+
+/*
+ * Frosting. Only the unprefixed property is written: the CSS pipeline adds the -webkit- copy for Safari, and
+ * drops the unprefixed one when both are declared, which leaves Chrome with no blur at all.
+ */
+html[data-style="fluid"] .glass::before {
+  backdrop-filter: blur(var(--glass-blur)) saturate(145%) brightness(1.08);
+}
+
+html[data-style="fluid"] :is(.glass-chip, .glass-pill) {
+  backdrop-filter: blur(3px) saturate(150%);
+}
+
+html[data-style="fluid"] .btn-secondary {
+  backdrop-filter: blur(4px) saturate(150%);
+}
+
+html[data-style="fluid"] .toast {
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+html[data-style="fluid"] .tabbar {
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+html[data-style="fluid"] .site-sheet {
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+@media (pointer: coarse) {
+  html[data-style="fluid"] .os-shell .glass::before,
+  html[data-style="fluid"] .os-shell :is(.glass-chip, .glass-pill, .btn-secondary) {
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Readability: the sea surface is the brightest part of the scene, so lens and site bars carry a real scrim. */
+html[data-style="fluid"] .lens-film {
+  background:
+    linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.08) 0%, transparent 45%, rgb(var(--fluid-violet) / 0.1) 100%),
+    linear-gradient(170deg, rgb(10 22 38 / 0.72), rgb(6 12 24 / 0.8));
+  backdrop-filter: blur(6px) saturate(140%);
+}
+
+html[data-style="fluid"][data-theme="white"] .lens-film {
+  background:
+    linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.16) 0%, transparent 45%, rgb(var(--fluid-violet) / 0.16) 100%),
+    linear-gradient(170deg, rgb(255 255 255 / 0.62), rgb(248 250 253 / 0.74));
+}
+
+html[data-style="fluid"] .lens-film::after {
+  opacity: 0.3;
+}
+
+html[data-style="fluid"] .glass.glass-bar::before,
+html[data-style="fluid"] .glass.glass-nav::before {
+  background: rgb(6 12 22 / 0.58);
+  backdrop-filter: blur(14px) saturate(150%);
+}
+
+html[data-style="fluid"][data-theme="white"] .glass.glass-bar::before,
+html[data-style="fluid"][data-theme="white"] .glass.glass-nav::before {
+  background: rgb(250 252 255 / 0.7);
+}
+
+/* Public pages: thicker glass, a veil over the bright surface, and a soft local scrim behind loose text. */
+html[data-style="fluid"] {
+  --glass-fill: rgb(8 16 28 / 0.5);
+  --scene-veil: linear-gradient(180deg, rgb(3 13 28 / 0.64) 0%, rgb(3 13 28 / 0.62) 45%, rgb(3 12 26 / 0.48) 100%);
+}
+
+html[data-style="fluid"][data-theme="white"] {
+  --glass-fill: rgb(255 255 255 / 0.62);
+  --scene-veil: linear-gradient(180deg, rgb(255 255 255 / 0.44) 0%, rgb(248 251 255 / 0.48) 45%, rgb(238 243 250 / 0.6) 100%);
+}
+
+/* Status chips sit on open water; a pearl base under the tone tint keeps them legible over the dark seabed. */
+html[data-style="fluid"][data-theme="white"] .site-chip {
+  background: rgb(255 255 255 / 0.8);
+}
+
+html[data-style="fluid"][data-theme="white"] .site-chip[data-tone="ok"] {
+  background: linear-gradient(rgb(30 160 105 / 0.12), rgb(30 160 105 / 0.12)), rgb(255 255 255 / 0.82);
+}
+
+html[data-style="fluid"][data-theme="white"] .site-chip[data-tone="warn"] {
+  background: linear-gradient(rgb(220 160 20 / 0.16), rgb(220 160 20 / 0.16)), rgb(255 255 255 / 0.82);
+}
+
+html[data-style="fluid"][data-theme="white"] .site-chip[data-tone="bad"] {
+  background: linear-gradient(rgb(220 50 50 / 0.12), rgb(220 50 50 / 0.12)), rgb(255 255 255 / 0.82);
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .page-shell {
+  --cream-dim: rgb(247 248 252 / 0.88);
+}
+
+html[data-style="fluid"][data-theme="white"] body:not(:has(.os-shell)) .page-shell {
+  --cream-dim: rgb(17 19 24 / 0.8);
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+  background-color: rgb(8 16 28 / 0.56);
+  border-color: rgb(var(--fluid-edge-a) / 0.2);
+}
+
+html[data-style="fluid"][data-theme="white"] body:not(:has(.os-shell)) .glass-well {
+  background-color: rgb(255 255 255 / 0.64);
+  border-color: rgb(255 255 255 / 0.8);
+}
+
+@media (pointer: fine) {
+  html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+    backdrop-filter: blur(6px) saturate(140%);
+  }
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .page-shell,
+html[data-style="fluid"] .os-shell main {
+  text-shadow: var(--type-shadow);
+}
+
+html[data-style="fluid"] .page-shell :is(.btn, .glass-cta, .glass-pill, .badge, .site-chip, .segmented, .field, input, select, textarea, button) {
+  text-shadow: none;
+}
+
+html[data-style="fluid"] .os-shell .glass::before {
+  background:
+    radial-gradient(520px circle at var(--glass-px) var(--glass-py), rgb(255 255 255 / 0.1), transparent 46%),
+    linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.05) 0%, transparent 42%, rgb(var(--fluid-violet) / 0.06) 100%),
+    var(--glass-fill);
+}
+
+html[data-style="fluid"] .os-shell .glass.glass-nav::before,
+html[data-style="fluid"] .os-shell .glass.glass-bar::before {
+  background: var(--surface-scrim);
+}
+
+html[data-style="fluid"] .glass-well {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+  background-image: linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.05), transparent 50%, rgb(var(--fluid-violet) / 0.05));
+}
+
+html[data-style="fluid"] .glass-chip {
+  border-color: rgb(var(--fluid-edge-a) / 0.32);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.32),
+    0 8px 24px -14px rgb(var(--fluid-glow) / 0.5);
+}
+
+html[data-style="fluid"] .glass-pill {
+  border-color: rgb(var(--fluid-edge-a) / 0.4);
+  background-color: rgb(10 18 30 / 0.55);
+}
+
+html[data-style="fluid"][data-theme="white"] .glass-pill {
+  background-color: rgb(255 255 255 / 0.62);
+}
+
+html[data-style="fluid"] .glass-pill::after {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.14), transparent 50%);
+}
+
+html[data-style="fluid"] .site-sheet {
+  background-image: linear-gradient(160deg, rgb(255 255 255 / 0.06), transparent 40%, rgb(var(--fluid-violet) / 0.06));
+  border-color: rgb(var(--fluid-edge-a) / 0.22);
+}
+
+/* ---------- Type ---------- */
+
+html[data-style="fluid"] :is(h1, h2, h3, .page-title) {
+  font-family: var(--font-display), var(--font-sans), "Noto Sans TC", sans-serif;
+}
+
+html[data-style="fluid"] .kicker::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.6em;
+  vertical-align: -0.02em;
+  border-radius: 50% 0 50% 50%;
+  transform: rotate(-45deg);
+  background: radial-gradient(circle at 35% 65%, #ffffff 0 18%, rgb(var(--fluid-edge-a)) 52%, rgb(var(--fluid-edge-b)) 100%);
+  box-shadow: 0 0 10px rgb(var(--fluid-glow) / 0.5);
+}
+
+/* ---------- Style hooks and content primitives (same layer as the base, so Tailwind utilities still win) ---------- */
+
+html[data-style="fluid"] {
+  --surface-card: rgb(8 18 32 / 0.6);
+  --surface-card-border: rgb(var(--fluid-edge-a) / 0.16);
+  --surface-raised: #0a1523;
+  --surface-hover: rgb(var(--fluid-aqua) / 0.08);
+  --card-shadow: 0 24px 48px -30px rgb(var(--fluid-glow) / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --nav-indicator: #7ee8fa;
+  --avatar-fill: rgb(14 30 48 / 0.9);
+  --overlay: rgb(2 10 20 / 0.58);
+  --fluid-sheen: linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.07) 0%, transparent 38%, transparent 62%, rgb(var(--fluid-violet) / 0.08) 100%);
+  --fluid-card-edge: linear-gradient(
+    135deg,
+    rgb(var(--fluid-edge-a) / 0.55) 0%,
+    rgb(var(--fluid-edge-b) / 0.18) 30%,
+    rgb(255 255 255 / 0.04) 52%,
+    rgb(var(--fluid-edge-c) / 0.2) 78%,
+    rgb(var(--fluid-edge-d) / 0.45) 100%
+  );
+  --fluid-aurora:
+    radial-gradient(70% 90% at 0% 0%, rgb(var(--fluid-aqua) / 0.16), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgb(var(--fluid-violet) / 0.16), transparent 62%),
+    radial-gradient(40% 60% at 78% 0%, rgb(var(--fluid-pearl) / 0.07), transparent 70%);
+}
+
+html[data-style="fluid"][data-theme="white"] {
+  --surface-card: rgb(255 255 255 / 0.66);
+  --surface-card-border: rgb(var(--fluid-edge-a) / 0.16);
+  --surface-raised: #f8fbff;
+  --surface-hover: rgb(var(--fluid-edge-a) / 0.07);
+  --card-shadow: 0 22px 44px -30px rgb(var(--fluid-glow) / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --nav-indicator: #0369a1;
+  --avatar-fill: rgb(255 255 255 / 0.92);
+  --overlay: rgb(16 32 56 / 0.34);
+  --fluid-sheen: linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.16) 0%, transparent 38%, transparent 62%, rgb(var(--fluid-violet) / 0.14) 100%);
+  --fluid-aurora:
+    radial-gradient(70% 90% at 0% 0%, rgb(var(--fluid-aqua) / 0.3), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgb(var(--fluid-violet) / 0.26), transparent 62%),
+    radial-gradient(40% 60% at 78% 0%, rgb(var(--fluid-pearl) / 0.22), transparent 70%);
+}
+
+@layer components {
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action) {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--fluid-sheen);
+  }
+
+  /* Iridescent hairline: a gradient ring masked to the border box, static so a page of cards costs nothing per frame. */
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action)::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 2;
+    padding: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--fluid-card-edge);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    opacity: 0.9;
+    transition: opacity var(--motion-base) ease-out;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover::after {
+    opacity: 1;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive) {
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) ease-out,
+      border-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 28px 56px -28px rgb(var(--fluid-glow) / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+
+  html[data-style="fluid"] .kpi-value {
+    letter-spacing: -0.01em;
+  }
+
+  html[data-style="fluid"] .kpi-label {
+    letter-spacing: 0.02em;
+  }
+
+  /* 今天: the one next action reads as the hero — deeper glass, aurora light, a slow current behind the words. */
+  html[data-style="fluid"] .next-action {
+    overflow: hidden;
+    background-color: rgb(6 16 30 / 0.7);
+    background-image: var(--fluid-aurora);
+    box-shadow:
+      0 40px 90px -50px rgb(var(--fluid-glow) / 0.75),
+      inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+
+  html[data-style="fluid"][data-theme="white"] .next-action {
+    background-color: rgb(255 255 255 / 0.74);
+    box-shadow:
+      0 36px 80px -50px rgb(var(--fluid-glow) / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.95);
+  }
+
+  html[data-style="fluid"] .next-action::before {
+    content: "";
+    position: absolute;
+    inset: -60% -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(30% 40% at 30% 55%, rgb(var(--fluid-aqua) / 0.14), transparent 70%),
+      radial-gradient(26% 36% at 70% 45%, rgb(var(--fluid-violet) / 0.12), transparent 70%);
+    animation: fluid-current 38s ease-in-out infinite alternate;
+  }
+
+  html[data-style="fluid"] .next-action::after {
+    background: conic-gradient(
+      from 210deg at 20% 0%,
+      rgb(var(--fluid-edge-a) / 0.9),
+      rgb(var(--fluid-edge-b) / 0.6),
+      rgb(var(--fluid-edge-c) / 0.55),
+      rgb(var(--fluid-edge-d) / 0.75),
+      rgb(var(--fluid-edge-a) / 0.9)
+    );
+    opacity: var(--fluid-edge-alpha);
+  }
+
+  html[data-style="fluid"] .next-action-title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  @keyframes fluid-current {
+    from {
+      transform: translate3d(-6%, 0, 0) rotate(-4deg);
+    }
+    to {
+      transform: translate3d(6%, 4%, 0) rotate(5deg);
+    }
+  }
+
+  html[data-style="fluid"] a.queue-item {
+    transition: background-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] a.queue-item:hover {
+    background: linear-gradient(90deg, rgb(var(--fluid-aqua) / 0.1), transparent 70%);
+  }
+
+  /* Avatars wear a thin iridescent ring, like light caught on the rim of a droplet. */
+  html[data-style="fluid"] .avatar {
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(var(--avatar-fill), var(--avatar-fill)) padding-box,
+      conic-gradient(
+          from 200deg,
+          rgb(var(--fluid-edge-a)),
+          rgb(var(--fluid-edge-b)),
+          rgb(var(--fluid-edge-c)),
+          rgb(var(--fluid-edge-d)),
+          rgb(var(--fluid-edge-a))
+        )
+        border-box;
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+  }
+
+  html[data-style="fluid"] .progress {
+    background: rgb(var(--fluid-aqua) / 0.12);
+    box-shadow: inset 0 0 0 1px rgb(var(--fluid-edge-a) / 0.14);
+  }
+
+  html[data-style="fluid"] .progress > span {
+    background: linear-gradient(90deg, #5ee4f5, #8fb4ff 55%, #c4b0ff);
+    box-shadow: 0 0 12px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"][data-theme="white"] .progress > span {
+    background: linear-gradient(90deg, #0369a1, #3b4fd8 55%, #6d28d9);
+  }
+
+  html[data-style="fluid"] :is(.section-title, .cmdk-group-title, .nav-group-title) {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+  }
+
+  html[data-style="fluid"] .section-title {
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  html[data-style="fluid"] .page-title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  html[data-style="fluid"] .breadcrumbs a:hover {
+    text-decoration-color: rgb(var(--fluid-edge-a));
+  }
+
+  /* Palette, drawer and dialog: the deep-water surface with aurora light, an iridescent rim. */
+  html[data-style="fluid"] :is(.cmdk, .drawer) {
+    border-color: rgb(var(--fluid-edge-a) / 0.3);
+    background-image: var(--fluid-aurora);
+    box-shadow:
+      var(--ui-shadow-3),
+      0 40px 120px -50px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"] :is(.cmdk, .drawer)::backdrop {
+    background: var(--overlay);
+    backdrop-filter: blur(6px) saturate(130%);
+  }
+
+  html[data-style="fluid"] .cmdk-input {
+    border-bottom-color: rgb(var(--fluid-edge-a) / 0.22);
+  }
+
+  html[data-style="fluid"] .cmdk-item[aria-selected="true"] {
+    background: linear-gradient(90deg, rgb(var(--fluid-aqua) / 0.16), rgb(var(--fluid-violet) / 0.08) 70%, transparent);
+  }
+
+  html[data-style="fluid"] .drawer-head {
+    border-bottom-color: rgb(var(--fluid-edge-a) / 0.22);
+  }
+
+  html[data-style="fluid"] .cmdk-trigger {
+    transition:
+      border-color var(--motion-fast) ease-out,
+      box-shadow var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] .cmdk-trigger:hover {
+    border-color: rgb(var(--fluid-edge-a) / 0.55);
+    box-shadow: 0 8px 22px -12px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"] .kbd {
+    border-color: rgb(var(--fluid-edge-a) / 0.3);
+  }
+
+  html[data-style="fluid"] .style-card[aria-checked="true"] {
+    border-color: rgb(var(--fluid-edge-a) / 0.8);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--fluid-edge-a) / 0.8),
+      0 18px 40px -24px rgb(var(--fluid-glow) / 0.7);
+  }
+}
+
+@media (pointer: fine) {
+  html[data-style="fluid"]:not([data-fluid-lite]) :is(.card, .kpi, .queue, .next-action) {
+    backdrop-filter: blur(10px) saturate(140%);
+  }
+}
+
+/* ---------- Actions ---------- */
+
+html[data-style="fluid"] .btn-primary,
+html[data-style="fluid"] .segmented a[aria-current="page"] {
+  background: var(--fluid-primary);
+  color: var(--on-primary);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.55),
+    var(--fluid-primary-shadow);
+}
+
+html[data-style="fluid"] .btn-primary {
+  overflow: hidden;
+  transition:
+    box-shadow 220ms ease-out,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease-out;
+}
+
+html[data-style="fluid"] .btn-primary:not(:disabled):hover {
+  background: var(--fluid-primary-hover);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    var(--fluid-primary-shadow-hover);
+  transform: translateY(-1px);
+}
+
+html[data-style="fluid"] .btn-primary:not(:disabled):active {
+  transform: translateY(0) scale(0.985);
+}
+
+html[data-style="fluid"] .glass-cta {
+  border-color: rgb(255 255 255 / 0.6);
+  background: var(--fluid-primary);
+  color: var(--on-primary);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    var(--fluid-primary-shadow);
+  transition: box-shadow 220ms ease-out;
+}
+
+html[data-style="fluid"][data-theme="white"] .glass-cta {
+  border-color: rgb(255 255 255 / 0.18);
+}
+
+html[data-style="fluid"] .glass-cta:hover {
+  background: var(--fluid-primary-hover);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    var(--fluid-primary-shadow-hover);
+}
+
+html[data-style="fluid"] .glass-cta::after {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.22), transparent 50%);
+}
+
+html[data-style="fluid"][data-theme="white"] .glass-cta::after {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 50%);
+}
+
+html[data-style="fluid"] .btn-secondary:not(:disabled):hover,
+html[data-style="fluid"] .glass-pill:hover {
+  border-color: rgb(var(--fluid-edge-a) / 0.55);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    0 8px 22px -12px rgb(var(--fluid-glow) / 0.55);
+}
+
+html[data-style="fluid"] .segmented a {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Ripple: FluidMotion sets the origin and flips data-fluid-ripple between a and b on pointerdown. */
+html[data-style="fluid"] :is(.btn-primary, .glass-cta, .segmented a)[data-fluid-ripple]::before {
+  content: "";
+  position: absolute;
+  top: var(--ripple-y, 50%);
+  left: var(--ripple-x, 50%);
+  z-index: 1;
+  width: var(--ripple-size, 12rem);
+  height: var(--ripple-size, 12rem);
+  margin: calc(var(--ripple-size, 12rem) / -2) 0 0 calc(var(--ripple-size, 12rem) / -2);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgb(var(--fluid-ripple) / 0.26) 0 20%,
+    rgb(var(--fluid-ripple) / 0.06) 30% 44%,
+    rgb(var(--fluid-ripple) / 0.45) 52%,
+    transparent 62%
+  );
+  transform: scale(0);
+  opacity: 0;
+}
+
+html[data-style="fluid"] :is(.btn-primary, .glass-cta, .segmented a)[data-fluid-ripple="a"]::before {
+  animation: fluid-ripple-a 720ms cubic-bezier(0.3, 0.6, 0.35, 1);
+}
+
+html[data-style="fluid"] :is(.btn-primary, .glass-cta, .segmented a)[data-fluid-ripple="b"]::before {
+  animation: fluid-ripple-b 720ms cubic-bezier(0.3, 0.6, 0.35, 1);
+}
+
+@keyframes fluid-ripple-a {
+  0% {
+    transform: scale(0.04);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(0.62);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes fluid-ripple-b {
+  0% {
+    transform: scale(0.04);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(0.62);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- Navigation ---------- */
+
+html[data-style="fluid"] .nav-link {
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+html[data-style="fluid"] .nav-link[aria-current="page"] {
+  background:
+    var(--fluid-indicator) left center / 3px 64% no-repeat,
+    linear-gradient(90deg, rgb(var(--fluid-aqua) / 0.12), transparent 75%),
+    var(--glass-3);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3);
+}
+
+html[data-style="fluid"] .tabbar {
+  border-top-color: transparent;
+  background:
+    linear-gradient(
+        90deg,
+        transparent,
+        rgb(var(--fluid-edge-a) / 0.8) 25%,
+        rgb(var(--fluid-edge-b) / 0.7) 55%,
+        rgb(var(--fluid-edge-c) / 0.6) 78%,
+        transparent
+      )
+      top / 100% 1px no-repeat,
+    var(--surface-scrim);
+}
+
+html[data-style="fluid"] .tabbar-item[aria-current="page"] .tabbar-dot {
+  background: linear-gradient(90deg, rgb(var(--fluid-edge-a)), rgb(var(--fluid-edge-b)));
+  box-shadow: 0 0 10px rgb(var(--fluid-glow) / 0.55);
+}
+
+html[data-style="fluid"] .segmented {
+  border-color: rgb(var(--fluid-edge-a) / 0.28);
+}
+
+/* ---------- Fields, overlays, feedback ---------- */
+
+html[data-style="fluid"] :is(.field, .site-field) {
+  transition:
+    border-color 160ms ease-out,
+    box-shadow 160ms ease-out;
+}
+
+html[data-style="fluid"] :is(.field, .site-field):focus-visible {
+  border-color: rgb(var(--fluid-edge-a) / 0.85);
+  box-shadow: 0 0 0 4px rgb(var(--fluid-aqua) / 0.2);
+}
+
+html[data-style="fluid"] .dialog {
+  border-color: rgb(var(--fluid-edge-a) / 0.32);
+  background:
+    radial-gradient(120% 70% at 0% 0%, rgb(var(--fluid-aqua) / 0.08), transparent 60%),
+    radial-gradient(100% 70% at 100% 100%, rgb(var(--fluid-violet) / 0.08), transparent 60%),
+    var(--ink);
+  box-shadow:
+    var(--ui-shadow-3),
+    0 40px 120px -50px rgb(var(--fluid-glow) / 0.55);
+}
+
+html[data-style="fluid"] .dialog::backdrop {
+  background: rgb(3 10 20 / 0.55);
+  backdrop-filter: blur(6px) saturate(130%);
+}
+
+html[data-style="fluid"] .toast {
+  border-color: rgb(var(--fluid-edge-a) / 0.3);
+  box-shadow:
+    var(--ui-shadow-2),
+    0 20px 60px -30px rgb(var(--fluid-glow) / 0.6);
+}
+
+html[data-style="fluid"] .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--glass-1) 0%,
+    rgb(var(--fluid-aqua) / 0.14) 35%,
+    rgb(var(--fluid-violet) / 0.14) 55%,
+    var(--glass-1) 100%
+  );
+  background-size: 200% 100%;
+}
+
+html[data-style="fluid"] .brand-glyph {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 0 0 0.5px rgb(var(--fluid-edge-a) / 0.6),
+    0 6px 18px -8px rgb(var(--fluid-glow) / 0.7);
+}
+
+/* ---------- Low-cost path: phones, coarse pointers, few cores — a still field, no marine snow ---------- */
+
+html[data-style="fluid"][data-fluid-lite] .fluid-snow {
+  display: none;
+}
+
+html[data-style="fluid"][data-fluid-lite] .fluid-field > *,
+html[data-style="fluid"][data-fluid-lite] .next-action::before {
+  animation: none;
+  will-change: auto;
+}
+
+@media (pointer: coarse), (max-width: 767px) {
+  html[data-style="fluid"] .fluid-snow {
+    display: none;
+  }
+
+  html[data-style="fluid"] .fluid-field > *,
+  html[data-style="fluid"] .next-action::before {
+    animation: none;
+    will-change: auto;
+  }
+}
+
+html[data-style="fluid"][data-fluid-paused] .fluid-field > *,
+html[data-style="fluid"][data-fluid-paused] .next-action::before,
+html[data-style="fluid"][data-fluid-paused] .skeleton {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-style="fluid"] .fluid-field > *,
+  html[data-style="fluid"] .next-action::before,
+  html[data-style="fluid"] [data-fluid-ripple]::before {
+    animation: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+
+  html[data-style="fluid"] [data-fluid-ripple]::before {
+    content: none;
+  }
+
+  html[data-style="fluid"] .btn-primary:not(:disabled):hover,
+  html[data-style="fluid"] .btn-primary:not(:disabled):active,
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html[data-style="fluid"] .fluid-field {
+    display: none;
+  }
+
+  html[data-style="fluid"] .scene-layer {
+    background-image: none;
+  }
+
+  html[data-style="fluid"] .scene-layer::after,
+  html[data-style="fluid"] body:has(.os-shell) .scene-layer::after {
+    background: var(--ink);
+  }
+
+  html[data-style="fluid"] .glass::before,
+  html[data-style="fluid"] :is(.lens-film, .glass-chip, .glass-pill, .glass-well, .btn-secondary, .toast, .tabbar, .site-sheet),
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action) {
+    backdrop-filter: none;
+  }
+
+  html[data-style="fluid"] .glass.glass-bar::before,
+  html[data-style="fluid"] .glass.glass-nav::before,
+  html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+    backdrop-filter: none;
+  }
+}
+
+@media print {
+  html[data-style="fluid"] .fluid-field,
+  html[data-style="fluid"] :is(.glass, .lens)::after,
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action)::after,
+  html[data-style="fluid"] .next-action::before,
+  html[data-style="fluid"] .kicker::before {
+    display: none !important;
+  }
+}
+
+/* ---------- StylePicker preview (unscoped on purpose) ---------- */
+
+.style-card[data-style-option="fluid"] .style-card-swatch {
+  display: block;
+  height: 4.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 70% 42%, rgb(255 255 255 / 0.95) 0 3.5%, rgb(255 255 255 / 0.35) 5%, transparent 7%),
+    radial-gradient(
+      circle at 70% 46%,
+      transparent 0 11%,
+      rgb(255 255 255 / 0.55) 12.5%,
+      transparent 14.5% 19%,
+      rgb(255 255 255 / 0.28) 20.5%,
+      transparent 22.5%
+    ),
+    radial-gradient(60% 90% at 18% 0%, rgb(126 232 250 / 0.7), transparent 70%),
+    radial-gradient(55% 80% at 88% 100%, rgb(185 166 255 / 0.65), transparent 70%),
+    radial-gradient(40% 60% at 40% 90%, rgb(251 194 235 / 0.35), transparent 70%),
+    linear-gradient(180deg, #a3e4f2 0%, #2a86b0 34%, #0d3a62 70%, #050c1c 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.65),
+    inset 0 0 0 1px rgb(255 255 255 / 0.22),
+    0 10px 24px -14px rgb(56 160 220 / 0.7);
+}
