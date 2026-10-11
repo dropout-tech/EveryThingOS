@@ -47,7 +47,7 @@ export function RoleGuide({ allowed, variant = "today" }: { allowed: string[]; v
   const three = guide.three.filter((item) => !item.href.startsWith("/workspace") || allowed.some((href) => item.href === href || (href !== "/workspace" && item.href.startsWith(`${href}/`))));
 
   return (
-    <section className="glass glass-hero space-y-4 p-6 md:p-8" aria-labelledby="firstday-title">
+    <section className="glass-well space-y-4 p-6 md:p-8" aria-labelledby="firstday-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="display text-[11px] tracking-[0.2em] text-cream-dim uppercase">第一天 · {role}</p>
@@ -73,7 +73,7 @@ export function RoleGuide({ allowed, variant = "today" }: { allowed: string[]; v
                 type="button"
                 aria-pressed={r === role}
                 onClick={() => picked.set(r)}
-                className={`glass-chip px-3 py-1 text-xs ${r === role ? "glass-cta" : "text-cream-dim"}`}
+                className={`glass-chip px-3 py-1 text-xs ${r === role ? "font-medium ring-2 ring-cream" : "text-cream-dim"}`}
               >
                 {r}
               </button>

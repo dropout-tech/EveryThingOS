@@ -34,10 +34,10 @@ export function Hint({ id, help, className = "" }: { id: HintId; help?: string; 
           dismissed.off();
           setMoved("open");
         }}
-        className={`inline-flex items-center gap-1 text-xs text-cream-dim hover:text-cream ${className}`}
+        className={`glass-well inline-flex items-center gap-1.5 rounded-full py-1 pr-3 pl-1 text-xs hover:text-cream ${className}`}
         aria-label={`再看一次提示：${title}`}
       >
-        <span aria-hidden className="glass-chip inline-flex size-5 items-center justify-center rounded-full text-[11px]">
+        <span aria-hidden className="inline-flex size-5 items-center justify-center rounded-full border border-current text-[11px]">
           ?
         </span>
         提示
@@ -62,7 +62,7 @@ export function Hint({ id, help, className = "" }: { id: HintId; help?: string; 
       role="note"
       aria-labelledby={titleId}
       onKeyDown={onKeyDown}
-      className={`glass-chip relative flex max-w-xl items-start gap-3 p-4 text-sm motion-safe:transition motion-safe:duration-300 starting:translate-y-1 starting:opacity-0 ${className}`}
+      className={`glass-well relative flex max-w-xl items-start gap-3 p-4 text-sm motion-safe:transition motion-safe:duration-300 starting:translate-y-1 starting:opacity-0 ${className}`}
     >
       <span aria-hidden className="glass-cta mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs">
         ?

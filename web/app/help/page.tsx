@@ -17,19 +17,21 @@ export default async function HelpPage({ searchParams }: PageProps<"/help">) {
     <>
       <SiteHeader />
       <main className="mx-auto max-w-4xl px-5 py-14">
-        <p className="text-sm text-teal">說明中心</p>
-        <h1 className="display mt-2 text-4xl font-medium">有問題，先找這裡</h1>
-        <p className="mt-3 max-w-2xl text-cream-dim">
-          從第一天登入、匯入客人和商品，到每個畫面怎麼用、誰看得到什麼、續約和把資料帶走。不用登入就能看。
-        </p>
+        <header className="glass-well p-6 md:p-8">
+          <p className="text-sm text-teal">說明中心</p>
+          <h1 className="display mt-2 text-4xl font-medium">有問題，先找這裡</h1>
+          <p className="mt-3 max-w-2xl text-cream-dim">
+            從第一天登入、匯入客人和商品，到每個畫面怎麼用、誰看得到什麼、續約和把資料帶走。不用登入就能看。
+          </p>
+        </header>
         <div className="mt-6 flex flex-wrap gap-2 text-sm">
-          <Link href="/help/start" className="glass-pill rounded-full px-3 py-1.5">
+          <Link href="/help/start" className="glass-well rounded-full px-3 py-1.5">
             第一個小時
           </Link>
-          <Link href="/help/import-data" className="glass-pill rounded-full px-3 py-1.5">
+          <Link href="/help/import-data" className="glass-well rounded-full px-3 py-1.5">
             匯入資料
           </Link>
-          <Link href="/workspace/practice" className="glass-pill rounded-full px-3 py-1.5">
+          <Link href="/workspace/practice" className="glass-well rounded-full px-3 py-1.5">
             練習第一筆生意
           </Link>
         </div>

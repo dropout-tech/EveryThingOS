@@ -76,7 +76,7 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
 
   return (
     <div className="space-y-5">
-      <p className="glass-chip inline-flex items-center gap-2 px-3 py-1.5 text-xs" role="note">
+      <p className="glass-well inline-flex items-center gap-2 px-3 py-1.5 text-xs" role="note">
         <span className="rounded-full bg-orange px-2 py-0.5 text-ink">練習</span>
         {live ? "只存在這個瀏覽器分頁，不會寫進 ERPNext。真的要開單，到「生意」。" : "用練習帳本，關掉分頁就清掉，不會動到任何真的資料。"}
       </p>
@@ -88,10 +88,10 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
             <li
               key={s.title}
               aria-current={state === "now" ? "step" : undefined}
-              className={`rounded-2xl px-3 py-2 text-sm ${state === "now" ? "glass-cta" : state === "done" ? "glass-chip" : "glass-well text-cream-dim"}`}
+              className={`rounded-2xl px-3 py-2 text-sm ${state === "now" ? "glass-well font-medium ring-2 ring-cream" : state === "done" ? "glass-well" : "glass-well text-cream-dim"}`}
             >
               <span className="display block text-[11px]">
-                0{index + 1}
+                {state === "done" ? "✓" : `0${index + 1}`}
                 <span className="sr-only">{state === "done" ? "，已完成" : state === "now" ? "，現在這步" : ""}</span>
               </span>
               <span className="block">{s.title}</span>
@@ -104,7 +104,7 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
         {said}
       </p>
 
-      <section className="glass glass-hero space-y-4 p-6 md:p-8" aria-labelledby="practice-step">
+      <section className="glass-well space-y-4 p-6 md:p-8" aria-labelledby="practice-step">
         {current < STEPS.length ? (
           <>
             <p className="display text-[11px] tracking-[0.2em] text-cream-dim uppercase">

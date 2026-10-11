@@ -64,7 +64,7 @@ export function HelpSearch({ initial = "" }: { initial?: string }) {
 function ArticleCard({ slug, title, summary, category }: { slug: string; title: string; summary: string; category?: string }) {
   return (
     <li>
-      <Link href={`/help/${slug}`} className="glass glass-lift block h-full rounded-2xl px-5 py-4">
+      <Link href={`/help/${slug}`} className="glass-well glass-lift block h-full rounded-2xl px-5 py-4">
         {category ? <span className="text-xs text-teal">{category}</span> : null}
         <span className="block font-medium text-cream">{title}</span>
         <span className="mt-1 block text-sm text-cream-dim">{summary}</span>
