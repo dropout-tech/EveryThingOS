@@ -1,17 +1,21 @@
+import { SetupProgress } from "@/components/SetupProgress";
+import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { TodayList } from "@/components/TodayBoard";
-import { buildBooks } from "@/lib/erp";
+import { getBooks, getSetup } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
 
 export const metadata = { title: "今天" };
 
 export default async function WorkspaceHome() {
   const pack = await currentIndustry();
-  const books = buildBooks(pack);
+  const [books, setup] = await Promise.all([getBooks(pack), getSetup()]);
+  if (books.origin === "error") return <SourceFailure source={books} />;
 
   return (
     <div className="space-y-6">
-      <TodayList books={books} />
-      <p className="text-xs text-cream-dim">練習。導入後換成你們的客人與帳。</p>
+      <TodayList books={books.data} />
+      {setup.origin === "live" && setup.data && setup.data.done < setup.data.total ? <SetupProgress setup={setup.data} /> : null}
+      <SourceNote source={books} demoText="練習。導入後換成你們的客人與帳。" />
     </div>
   );
 }

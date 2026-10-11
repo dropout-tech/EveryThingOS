@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ActionNote } from "./ActionNote";
-import { demoKey, peekDemoState, useDemoState, writeDemoState } from "@/lib/demo-state";
+import { DeskLink } from "./DeskLink";
+import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import {
   advanceSalesDoc,
   formatTwd,
@@ -15,15 +16,18 @@ import type { IndustryPack } from "@/lib/types";
 type SalesBoardProps = {
   pack: Pick<IndustryPack, "id" | "itemType" | "fulfillment" | "modules">;
   initial: SalesDoc[];
+  deskUrl?: string;
 };
 
-export function SalesBoard({ pack, initial }: SalesBoardProps) {
-  const [docs, setDocs] = useDemoState(demoKey("sales", pack.id), initial);
+export function SalesBoard({ pack, initial, deskUrl }: SalesBoardProps) {
+  const live = Boolean(deskUrl);
+  const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live);
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
+    if (live) return;
     const inbox = peekDemoState<SalesDoc[]>(demoKey("inbox", pack.id), []);
     if (!inbox.length) return;
     const stored = peekDemoState<SalesDoc[]>(demoKey("sales", pack.id), initial);
@@ -35,7 +39,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
     }
     setDocs([...incoming, ...stored]);
     writeDemoState(demoKey("inbox", pack.id), [] as SalesDoc[]);
-  }, [pack.id, initial, setDocs]);
+  }, [live, pack.id, initial, setDocs]);
   const columns = useMemo(() => groupSales(docs), [docs]);
 
   function onAdvance(doc: SalesDoc) {
@@ -66,6 +70,14 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
 
   return (
     <div className="space-y-4">
+      {live ? (
+        <div className="glass flex flex-wrap items-center gap-3 p-4">
+          <DeskLink href={`${deskUrl}/app/quotation/new`} className="glass-cta rounded-full px-4 py-2 text-sm">
+            開一張報價
+          </DeskLink>
+          <p className="text-xs text-cream-dim">在 ERPNext 開單；送出後會出現在這裡，也會記在客人的時間軸。</p>
+        </div>
+      ) : (
       <form
         onSubmit={onCreate}
         className="glass flex flex-wrap items-end gap-2 p-4"
@@ -95,6 +107,7 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
         </button>
         <p className="text-xs text-cream-dim">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
       </form>
+      )}
       <ActionNote>{note}</ActionNote>
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
@@ -119,14 +132,20 @@ export function SalesBoard({ pack, initial }: SalesBoardProps) {
                     {doc.overdueDays ? (
                       <p className="mt-1 text-xs text-orange">已逾期 {doc.overdueDays} 天</p>
                     ) : null}
-                    <button
-                      type="button"
-                      disabled={doc.next === "完成"}
-                      onClick={() => onAdvance(doc)}
-                      className="glass-pill mt-2 w-full py-1.5 text-xs disabled:opacity-40"
-                    >
-                      {doc.next}
-                    </button>
+                    {live ? (
+                      <DeskLink href={doc.href} className="glass-pill mt-2 block w-full py-1.5 text-center text-xs">
+                        {doc.next === "完成" ? "打開" : doc.next}
+                      </DeskLink>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={doc.next === "完成"}
+                        onClick={() => onAdvance(doc)}
+                        className="glass-pill mt-2 w-full py-1.5 text-xs disabled:opacity-40"
+                      >
+                        {doc.next}
+                      </button>
+                    )}
                   </li>
                 ))
               ) : (

@@ -18,7 +18,7 @@ type StageTarget = { href: string; hint: string };
 function classifyStage(stage: string, pack: IndustryPack): StageTarget {
   const t = stage;
   if (/留言|私訊|回覆|貼文|社群|IG/.test(t)) {
-    return { href: "/workspace/reply", hint: "留言轉成對話" };
+    return { href: "/workspace/chat", hint: "留言轉成對話" };
   }
   if (/請款|結帳|收款|發票|對帳|訂金|尾款|帳單|押金|報關|沖帳|續約|續報/.test(t)) {
     return { href: "/workspace/erp/finance", hint: "收到錢才算完" };
@@ -36,15 +36,15 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
     return { href: "/workspace/erp/sales", hint: "做成一筆生意" };
   }
   if (/活動|企劃|落地|磁鐵|籌備/.test(t) && pack.modules.funnel) {
-    return { href: "/workspace/funnel", hint: "把人帶來" };
+    return { href: "/workspace/letter", hint: "寄電子報把人帶回來" };
   }
   return { href: "/workspace/crm", hint: "跟人跟到答應" };
 }
 
 function stageEnabled(href: string, pack: IndustryPack): boolean {
   if (href.startsWith("/workspace/crm")) return pack.modules.crm;
-  if (href.startsWith("/workspace/reply")) return pack.modules.line;
-  if (href.startsWith("/workspace/funnel")) return pack.modules.funnel;
+  if (href.startsWith("/workspace/chat")) return pack.modules.line;
+  if (href.startsWith("/workspace/letter")) return pack.modules.funnel;
   if (href.startsWith("/workspace/website")) return pack.modules.website;
   if (href.startsWith("/workspace/erp/stock")) return pack.modules.erp.inventory;
   return true;

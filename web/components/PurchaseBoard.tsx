@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
-import { demoKey, useDemoState } from "@/lib/demo-state";
+import { DeskLink } from "./DeskLink";
+import { demoKey, useBoardState } from "@/lib/demo-state";
 import { advancePurchase, formatTwd, type PurchaseDoc } from "@/lib/erp";
 
 type PurchaseBoardProps = {
@@ -10,10 +11,11 @@ type PurchaseBoardProps = {
   inventory: boolean;
   fulfillment: string;
   initial: PurchaseDoc[];
+  live?: boolean;
 };
 
-export function PurchaseBoard({ packId, inventory, fulfillment, initial }: PurchaseBoardProps) {
-  const [rows, setRows] = useDemoState(demoKey("purchases", packId), initial);
+export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = false }: PurchaseBoardProps) {
+  const [rows, setRows] = useBoardState(demoKey("purchases", packId), initial, live);
   const [note, setNote] = useState<string | null>(null);
 
   function onAdvance(row: PurchaseDoc) {
@@ -44,6 +46,13 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial }: Purch
             </tr>
           </thead>
           <tbody>
+            {live && !rows.length ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-center text-cream-dim">
+                  沒有待到貨或待付款的單
+                </td>
+              </tr>
+            ) : null}
             {rows.map((row) => (
               <tr key={row.no} className="border-t border-[var(--line)]">
                 <td className="px-4 py-3">{row.no}</td>
@@ -52,7 +61,9 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial }: Purch
                 <td className="px-4 py-3">{formatTwd(row.amount)}</td>
                 <td className="px-4 py-3 text-cream-dim">{row.status}</td>
                 <td className="px-4 py-3">
-                  {row.next === "完成" ? (
+                  {live ? (
+                    <DeskLink href={row.href}>{row.next}</DeskLink>
+                  ) : row.next === "完成" ? (
                     <span className="text-cream-dim">完成</span>
                   ) : (
                     <button type="button" onClick={() => onAdvance(row)} className="text-teal">

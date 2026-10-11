@@ -9,8 +9,8 @@ export type FeatureId =
   | "stock"
   | "purchase"
   | "finance"
-  | "funnel"
-  | "reply"
+  | "letter"
+  | "chat"
   | "website";
 
 export type ShopSize = "solo" | "small" | "mid" | "large";
@@ -41,8 +41,8 @@ export const FEATURES: { id: FeatureId; label: string; hint: string }[] = [
   { id: "stock", label: "管倉庫", hint: "貨夠不夠" },
   { id: "purchase", label: "跟廠商進貨", hint: "請購到付款" },
   { id: "finance", label: "收錢對帳", hint: "誰欠我們" },
-  { id: "funnel", label: "把人帶來", hint: "活動、信件" },
-  { id: "reply", label: "社群留言", hint: "留言轉對話" },
+  { id: "letter", label: "電子報", hint: "名單、寄信、退訂" },
+  { id: "chat", label: "對話", hint: "LINE、IG、FB、官網" },
   { id: "website", label: "官網", hint: "客人看得到的頁" },
 ];
 
@@ -54,6 +54,9 @@ export const SIZES: { id: ShopSize; label: string; hint: string }[] = [
 ];
 
 const FEATURE_IDS = new Set(FEATURES.map((item) => item.id));
+
+/** Feature ids saved in cookies before the rename; the onboarding toolkit maps them the same way. */
+export const LEGACY_FEATURES: Record<string, FeatureId> = { reply: "chat", funnel: "letter" };
 
 export function sceneById(id: string | undefined) {
   return SCENES.find((item) => item.id === id) ?? SCENES[SCENES.length - 1];
@@ -77,7 +80,7 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
       return ["crm", "sales", "stock", "finance"];
     case "edu":
     case "care":
-      return ["crm", "finance", "reply"];
+      return ["crm", "finance", "chat"];
     case "make":
     case "farm":
     case "move":
@@ -95,7 +98,7 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
 export function recommendModules(sceneId: string, size: ShopSize, picked: FeatureId[]): FeatureId[] {
   const set = new Set(picked.length ? picked : defaultsForScene(sceneId));
   if (set.has("sales") || set.has("stock") || set.has("purchase")) set.add("finance");
-  if (set.has("funnel") || set.has("reply") || set.has("website")) set.add("crm");
+  if (set.has("letter") || set.has("chat") || set.has("website")) set.add("crm");
   if ((sceneId === "retail" || sceneId === "make" || sceneId === "food") && size !== "solo") {
     set.add("stock");
   }
@@ -115,7 +118,7 @@ export function parseShop(raw: string | undefined | null): ShopProfile | null {
     const scene = sceneById(typeof value.scene === "string" ? value.scene : "").id;
     const size = SIZES.some((item) => item.id === value.size) ? (value.size as ShopSize) : "small";
     const modules = Array.isArray(value.modules)
-      ? value.modules.filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId))
+      ? [...new Set(value.modules.map((id) => LEGACY_FEATURES[id as string] ?? id))].filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId))
       : defaultsForScene(scene);
     return { scene, size, modules: modules.length ? modules : defaultsForScene(scene) };
   } catch {
@@ -129,8 +132,8 @@ export function shopFromPack(pack: IndustryPack): ShopProfile {
   if (pack.modules.crm) modules.push("crm");
   modules.push("sales", "finance");
   if (pack.modules.erp.inventory) modules.push("stock", "purchase");
-  if (pack.modules.funnel) modules.push("funnel");
-  if (pack.modules.line) modules.push("reply");
+  if (pack.modules.funnel) modules.push("letter");
+  if (pack.modules.line) modules.push("chat");
   if (pack.modules.website) modules.push("website");
   return { scene, size: "small", modules: recommendModules(scene, "small", modules) };
 }
@@ -148,10 +151,10 @@ export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
     sampleLoop: scene.stages.join(" → "),
     modules: {
       crm: mods.has("crm"),
-      funnel: mods.has("funnel"),
+      funnel: mods.has("letter"),
       hygiene: false,
       website: mods.has("website"),
-      line: mods.has("reply"),
+      line: mods.has("chat"),
       erp: {
         inventory: mods.has("stock"),
         manufacturing: shop.scene === "make" && shop.size !== "solo",
@@ -175,10 +178,10 @@ export function moduleHref(id: FeatureId): string {
       return "/workspace/erp/purchase";
     case "finance":
       return "/workspace/erp/finance";
-    case "funnel":
-      return "/workspace/funnel";
-    case "reply":
-      return "/workspace/reply";
+    case "letter":
+      return "/workspace/letter";
+    case "chat":
+      return "/workspace/chat";
     case "website":
       return "/workspace/website";
   }
@@ -191,8 +194,8 @@ export function navItemsForShop(shop: ShopProfile): { href: string; label: strin
     stock: "倉庫",
     purchase: "進貨",
     finance: "收錢",
-    funnel: "把人帶來",
-    reply: "回覆",
+    letter: "電子報",
+    chat: "對話",
     website: "官網",
   };
   const items = [{ href: "/workspace", label: "今天" }];

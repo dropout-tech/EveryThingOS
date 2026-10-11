@@ -66,3 +66,11 @@ export function useDemoState<T>(key: string, initial: T) {
 
   return [value, save] as const;
 }
+
+const noop = () => {};
+
+/** Live boards show what the source system returned; changes happen there, not in this tab. */
+export function useBoardState<T>(key: string, initial: T, live: boolean) {
+  const [value, save] = useDemoState(key, initial);
+  return live ? ([initial, noop as typeof save] as const) : ([value, save] as const);
+}

@@ -1,12 +1,14 @@
+import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { StockBoard } from "@/components/StockBoard";
-import { buildBooks } from "@/lib/erp";
+import { getBooks } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
 
 export const metadata = { title: "倉庫" };
 
 export default async function StockPage() {
   const pack = await currentIndustry();
-  const books = buildBooks(pack);
+  const books = await getBooks(pack);
+  if (books.origin === "error") return <SourceFailure source={books} next="/workspace/erp/stock" />;
 
   if (!pack.modules.erp.inventory) {
     return (
@@ -20,12 +22,16 @@ export default async function StockPage() {
   }
 
   return (
-    <StockBoard
-      packId={pack.id}
-      inventoryValue={books.inventoryValue}
-      batchOn={pack.modules.erp.batch}
-      stock={books.stock}
-      purchases={books.purchases}
-    />
+    <div className="space-y-4">
+      <StockBoard
+        packId={pack.id}
+        inventoryValue={books.data.inventoryValue}
+        batchOn={pack.modules.erp.batch}
+        stock={books.data.stock}
+        purchases={books.data.purchases}
+        deskUrl={books.origin === "live" ? books.deskUrl : undefined}
+      />
+      <SourceNote source={books} />
+    </div>
   );
 }

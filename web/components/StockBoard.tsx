@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
+import { DeskLink } from "./DeskLink";
 import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
 import { formatTwd, makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
 
@@ -12,9 +13,10 @@ type StockBoardProps = {
   batchOn: boolean;
   stock: StockRow[];
   purchases: PurchaseDoc[];
+  deskUrl?: string;
 };
 
-export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases }: StockBoardProps) {
+export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, deskUrl }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
 
@@ -54,7 +56,7 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases }
             {stock.map((row) => {
               const low = row.onHand < row.safety;
               return (
-                <tr key={row.sku} className="border-t border-[var(--line)]">
+                <tr key={`${row.sku}-${row.warehouse}`} className="border-t border-[var(--line)]">
                   <td className="px-4 py-3">{row.sku}</td>
                   <td className="px-4 py-3">{row.name}</td>
                   <td className="px-4 py-3">{row.warehouse}</td>
@@ -62,7 +64,15 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases }
                   <td className="px-4 py-3">{row.safety}</td>
                   {batchOn ? <td className="px-4 py-3">{row.batch ?? "—"}</td> : null}
                   <td className="px-4 py-3">
-                    {low ? (
+                    {deskUrl ? (
+                      low ? (
+                        <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`}>請購</DeskLink>
+                      ) : (
+                        <DeskLink href={row.href} className="text-cream-dim hover:text-cream">
+                          打開
+                        </DeskLink>
+                      )
+                    ) : low ? (
                       <button type="button" onClick={() => requestBuy(row)} className="text-teal">
                         請購
                       </button>

@@ -143,6 +143,7 @@ export type SalesDoc = {
   next: string;
   overdueDays?: number;
   invoiceNo?: string;
+  href?: string;
 };
 
 export type PurchaseDoc = {
@@ -152,6 +153,7 @@ export type PurchaseDoc = {
   amount: number;
   status: string;
   next: string;
+  href?: string;
 };
 
 export type AgingRow = {
@@ -160,6 +162,7 @@ export type AgingRow = {
   d30: number;
   d60: number;
   d90: number;
+  href?: string;
 };
 
 const PURCHASE_CHAIN: { status: string; next: string }[] = [
@@ -175,6 +178,7 @@ export type StockRow = {
   onHand: number;
   safety: number;
   batch?: string;
+  href?: string;
 };
 
 export type LedgerLine = {
@@ -184,6 +188,7 @@ export type LedgerLine = {
   debit: string;
   credit: string;
   amount: number;
+  href?: string;
 };
 
 export type Books = {
@@ -202,7 +207,7 @@ export type Books = {
   arAging: AgingRow[];
   journals: LedgerLine[];
   pnl: { label: string; amount: number }[];
-  einvoices: { no: string; status: string; amount: number; related: string }[];
+  einvoices: { no: string; status: string; amount: number; related: string; error?: string; href?: string }[];
 };
 
 const VENDORS = ["中盤供應", "原廠台灣", "物流夥伴", "包材行"];

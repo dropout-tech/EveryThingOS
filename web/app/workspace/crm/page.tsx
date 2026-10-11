@@ -1,14 +1,19 @@
 import { CrmBoard } from "@/components/CrmBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { sanitizeImportedHandle } from "@/lib/reply";
-import { currentIndustry, demoRecords } from "@/lib/workspace";
+import { getPeople } from "@/lib/sources";
+import { currentIndustry } from "@/lib/workspace";
 
 export const metadata = { title: "客人" };
 
 export default async function CrmPage({ searchParams }: PageProps<"/workspace/crm">) {
   const pack = await currentIndustry();
-  const { leads } = demoRecords(pack);
-  const from = sanitizeImportedHandle((await searchParams).from);
+  const people = await getPeople(pack);
+  if (people.origin === "error") return <SourceFailure source={people} next="/workspace/crm" />;
+  const leads = people.data;
+  const live = people.origin === "live";
+  const from = live ? null : sanitizeImportedHandle((await searchParams).from);
   const initial = from
     ? [
         { name: from, stage: pack.workflow.stages[0], score: 24, channel: "IG 留言" },
@@ -30,7 +35,9 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
           workflow: pack.workflow,
         }}
         initial={initial}
+        live={live}
       />
+      <SourceNote source={people} />
     </ModuleFrame>
   );
 }
