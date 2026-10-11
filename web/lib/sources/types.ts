@@ -30,6 +30,28 @@ export type LetterOverview = {
   denied?: string[];
 };
 
+export type Catalog = {
+  items: { item_code: string; item_name: string; uom: string; rate: number | null }[];
+  parties: { party_type: "Customer" | "Lead"; party: string; label: string }[];
+};
+
+export type WebsiteOverview = {
+  items: { code: string; name: string; route: string | null; href?: string }[];
+  published: number;
+  orders: { no: string; party: string; amount: number; status: string; date: string; href?: string }[];
+  formLeads: number;
+  shopUrl?: string;
+  denied?: string[];
+};
+
+export type MeetingSummary = { title: string; summary: string; at: string | null; attendees: string[]; party?: string; href?: string };
+
+export type UpcomingMeeting = { key: string; title: string; start: string; platform: "google_meet" | "zoom" | "teams"; url: string; attendees: string[]; skipped: boolean; sent: boolean };
+
+export type Meetings = { summaries: MeetingSummary[]; upcoming: UpcomingMeeting[] | null; bot: boolean; failedCalendars: number; denied?: string[] };
+
+export type HygieneRow = { email: string; result: string; action: string; href?: string };
+
 export type Me = { user: string; fullName: string; company: string; roles: string[]; chatwootUserId?: string };
 
 export type { Books };

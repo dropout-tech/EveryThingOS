@@ -24,6 +24,12 @@ const DENIED_LABEL: Record<string, string> = {
   consent: "同意紀錄",
   newsletters: "電子報",
   last_30_days: "開信與退訂",
+  items: "官網商品",
+  published: "上架數",
+  orders: "網路訂單",
+  form_leads: "表單名單",
+  bounced: "退信",
+  pending: "等確認信",
 };
 
 /** Says where the numbers on this page come from. Demo data is always labelled. */

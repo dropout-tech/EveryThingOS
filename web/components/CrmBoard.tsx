@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { LiveLeadForm } from "./LiveLeadForm";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
 import type { IndustryPack } from "@/lib/types";
@@ -74,6 +75,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
 
   return (
     <div className="space-y-4">
+      {live ? <LiveLeadForm /> : null}
       <ActionNote>{note}</ActionNote>
       {live && !leads.length ? <p className="text-sm text-cream-dim">還沒有客人。對話、官網表單或匯入後會出現在這裡。</p> : null}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -90,9 +92,14 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                       <p>{lead.name}</p>
                       <p className="mt-1 text-xs text-cream-dim">{lead.channel}</p>
                       {live ? (
-                        <DeskLink href={lead.href} className="mt-2 inline-block text-xs text-cream">
-                          打開
-                        </DeskLink>
+                        <span className="mt-2 flex gap-3 text-xs">
+                          <DeskLink href={lead.href} className="text-cream">
+                            打開
+                          </DeskLink>
+                          <a href="/workspace/erp/sales" className="text-teal">
+                            開報價
+                          </a>
+                        </span>
                       ) : (
                         <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-cream">
                           {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}

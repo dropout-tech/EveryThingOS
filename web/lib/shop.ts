@@ -11,6 +11,7 @@ export type FeatureId =
   | "finance"
   | "letter"
   | "chat"
+  | "meetings"
   | "website";
 
 export type ShopSize = "solo" | "small" | "mid" | "large";
@@ -43,6 +44,7 @@ export const FEATURES: { id: FeatureId; label: string; hint: string }[] = [
   { id: "finance", label: "收錢對帳", hint: "誰欠我們" },
   { id: "letter", label: "電子報", hint: "名單、寄信、退訂" },
   { id: "chat", label: "對話", hint: "LINE、IG、FB、官網" },
+  { id: "meetings", label: "會議紀錄", hint: "機器人自己進 Zoom／Meet" },
   { id: "website", label: "官網", hint: "客人看得到的頁" },
 ];
 
@@ -79,6 +81,7 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
     case "food":
       return ["crm", "sales", "stock", "finance"];
     case "edu":
+      return ["crm", "finance", "chat", "meetings"];
     case "care":
       return ["crm", "finance", "chat"];
     case "make":
@@ -86,8 +89,9 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
     case "move":
       return ["sales", "stock", "purchase", "finance"];
     case "build":
-    case "service":
       return ["crm", "sales", "finance"];
+    case "service":
+      return ["crm", "sales", "finance", "meetings"];
     case "stay":
       return ["crm", "sales", "finance", "website"];
     default:
@@ -182,6 +186,8 @@ export function moduleHref(id: FeatureId): string {
       return "/workspace/letter";
     case "chat":
       return "/workspace/chat";
+    case "meetings":
+      return "/workspace/meetings";
     case "website":
       return "/workspace/website";
   }
@@ -196,6 +202,7 @@ export function navItemsForShop(shop: ShopProfile): { href: string; label: strin
     finance: "收錢",
     letter: "電子報",
     chat: "對話",
+    meetings: "會議",
     website: "官網",
   };
   const items = [{ href: "/workspace", label: "今天" }];

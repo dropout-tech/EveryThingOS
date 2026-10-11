@@ -144,6 +144,7 @@ export type SalesDoc = {
   overdueDays?: number;
   invoiceNo?: string;
   href?: string;
+  doctype?: string;
 };
 
 export type PurchaseDoc = {
@@ -154,6 +155,7 @@ export type PurchaseDoc = {
   status: string;
   next: string;
   href?: string;
+  doctype?: string;
 };
 
 export type AgingRow = {

@@ -3,7 +3,7 @@ import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
-import type { DeadLetter, LetterOverview, Me, Person, SetupStatus } from "./types";
+import type { Catalog, DeadLetter, HygieneRow, LetterOverview, Me, MeetingSummary, Person, SetupStatus, UpcomingMeeting, WebsiteOverview } from "./types";
 
 type RawBooks = {
   month_sales: number;
@@ -14,8 +14,8 @@ type RawBooks = {
   inventory_value: number;
   overdue_ar: number;
   vat_payable: number;
-  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string }[];
-  purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string }[];
+  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string }[];
+  purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string; doctype: string }[];
   stock: { sku: string; name: string; warehouse: string; on_hand: number; safety: number; href: string }[];
   ar_aging: { party: string; current: number; d30: number; d60: number; d90: number; href: string }[];
   journals: { no: string; date: string; memo: string; debit: string; credit: string; amount: number; href: string }[];
@@ -51,6 +51,7 @@ export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, 
       overdueDays: d.overdue_days ?? undefined,
       invoiceNo: d.invoice_no ?? undefined,
       href: link(d.href),
+      doctype: d.doctype,
     })),
     purchases: raw.purchases.map((p) => ({ ...p, item: p.item || pack.itemType, href: link(p.href) })),
     stock,
@@ -131,4 +132,47 @@ export async function liveDeadLetters(): Promise<DeadLetter[]> {
   if (!res.ok) throw new Error(`膠水回應 ${res.status}`);
   const body = (await res.json()) as { dead_letters: DeadLetter[] };
   return body.dead_letters;
+}
+
+export function liveCatalog() {
+  return erpMethod<Catalog>("dropout_core.shell.catalog");
+}
+
+export async function liveWebsite(): Promise<WebsiteOverview> {
+  const config = liveConfig();
+  const raw = await erpMethod<Omit<WebsiteOverview, "formLeads" | "shopUrl"> & { form_leads: number; shop_path: string }>("dropout_core.shell.website", {}, config);
+  const site = config.erpnext!.url;
+  return {
+    items: raw.items.map((i) => ({ ...i, route: i.route ? `${site}${i.route}` : null, href: deskUrl(i.href, config) })),
+    published: raw.published,
+    orders: raw.orders.map((o) => ({ ...o, href: deskUrl(o.href, config) })),
+    formLeads: raw.form_leads,
+    shopUrl: `${site}${raw.shop_path}`,
+    denied: raw.denied,
+  };
+}
+
+export async function liveMeetingSummaries(): Promise<MeetingSummary[]> {
+  const config = liveConfig();
+  const rows = await erpMethod<MeetingSummary[]>("dropout_core.shell.meetings", {}, config);
+  return rows.map((r) => ({ ...r, href: deskUrl(r.href, config) }));
+}
+
+export async function liveUpcomingMeetings(hours = 72): Promise<{ bot: boolean; failed: number; meetings: UpcomingMeeting[] }> {
+  const glue = liveConfig().glue;
+  if (!glue) return { bot: false, failed: 0, meetings: [] };
+  const res = await fetch(`${glue.url}/admin/tenants/${encodeURIComponent(glue.site)}/meetings?hours=${hours}`, {
+    headers: { authorization: `Bearer ${glue.adminToken}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`會議紀錄系統回應 ${res.status}`);
+  const body = (await res.json()) as { bot: boolean; failed_calendars: number; meetings: UpcomingMeeting[] };
+  return { bot: body.bot, failed: body.failed_calendars, meetings: body.meetings };
+}
+
+export async function liveHygiene(): Promise<{ rows: HygieneRow[]; denied: string[] }> {
+  const config = liveConfig();
+  const raw = await erpMethod<{ rows: (HygieneRow & { href?: string | null })[]; denied: string[] }>("dropout_core.shell.hygiene", {}, config);
+  return { rows: raw.rows.map((r) => ({ ...r, href: deskUrl(r.href ?? undefined, config) })), denied: raw.denied };
 }

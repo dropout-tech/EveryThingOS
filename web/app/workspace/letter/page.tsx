@@ -1,3 +1,4 @@
+import { LetterComposer, SendDraftButton } from "@/components/LiveLetter";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { getLetter } from "@/lib/sources";
@@ -58,25 +59,33 @@ export default async function LetterPage() {
         </div>
       </div>
 
+      {desk ? (
+        <section className="space-y-2">
+          <h3 className="text-sm">寫一封</h3>
+          <LetterComposer groups={data.groups} />
+        </section>
+      ) : null}
+
       <section className="space-y-2">
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm">最近的信</h3>
           {desk ? (
             <a href={`${desk}/app/newsletter/new`} className="text-sm text-cream-dim hover:text-cream" target="_blank" rel="noreferrer">
-              寫一封
+              用 ERPNext 排版
             </a>
           ) : null}
         </div>
         <ul className="space-y-2">
           {data.newsletters.length ? (
             data.newsletters.map((letter) => (
-              <li key={letter.name}>
-                <a href={letter.href} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 p-3">
-                  <span>{letter.subject}</span>
-                  <span className="text-xs text-cream-dim">
-                    {letter.sent ? `寄給 ${letter.recipients} 人 · ${letter.views} 人開信` : letter.scheduled ? `排定 ${letter.scheduled}` : "草稿"}
-                  </span>
+              <li key={letter.name} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 p-3">
+                <a href={letter.href} target={desk ? "_blank" : undefined} rel="noreferrer">
+                  {letter.subject}
                 </a>
+                <span className="flex items-baseline gap-3 text-xs text-cream-dim">
+                  {letter.sent ? `寄給 ${letter.recipients} 人 · ${letter.views} 人開信` : letter.scheduled ? `排定 ${letter.scheduled}` : "草稿"}
+                  {desk && !letter.sent && !letter.scheduled ? <SendDraftButton name={letter.name} subject={letter.subject} /> : null}
+                </span>
               </li>
             ))
           ) : (

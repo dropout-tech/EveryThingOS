@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { advancePurchase, formatTwd, type PurchaseDoc } from "@/lib/erp";
 
@@ -17,6 +18,7 @@ type PurchaseBoardProps = {
 export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = false }: PurchaseBoardProps) {
   const [rows, setRows] = useBoardState(demoKey("purchases", packId), initial, live);
   const [note, setNote] = useState<string | null>(null);
+  const action = useLiveAction();
 
   function onAdvance(row: PurchaseDoc) {
     if (row.next === "完成") return;
@@ -33,6 +35,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
           : `這一行沒有倉庫。交給客人的方式是「${fulfillment}」，這裡只記經常費用與外包。`}
       </p>
       <ActionNote>{note}</ActionNote>
+      <ActionOutcomeNote outcome={action.outcome} />
       <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead className="bg-ink-2 text-cream-dim">
@@ -62,7 +65,12 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
                 <td className="px-4 py-3 text-cream-dim">{row.status}</td>
                 <td className="px-4 py-3">
                   {live ? (
-                    <DeskLink href={row.href}>{row.next}</DeskLink>
+                    <span className="flex items-center gap-3">
+                      <AdvanceButton doctype={row.doctype} name={row.no} label={row.next} run={action.run} busy={action.busy} className="text-teal disabled:opacity-40" />
+                      <DeskLink href={row.href} className="text-xs text-cream-dim hover:text-cream">
+                        打開
+                      </DeskLink>
+                    </span>
                   ) : row.next === "完成" ? (
                     <span className="text-cream-dim">完成</span>
                   ) : (

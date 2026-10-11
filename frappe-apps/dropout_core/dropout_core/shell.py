@@ -55,7 +55,7 @@ def _sales(company, today, denied):
 		order_by="modified desc",
 		limit=LIMIT,
 	):
-		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "href": _desk("Quotation", q.name)})
+		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "doctype": "Quotation", "href": _desk("Quotation", q.name)})
 	for so in _readable(
 		"Sales Order",
 		denied,
@@ -65,7 +65,7 @@ def _sales(company, today, denied):
 		limit=LIMIT,
 	):
 		step = "fulfill" if flt(so.per_delivered) >= 100 else "order"
-		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "href": _desk("Sales Order", so.name)})
+		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "href": _desk("Sales Order", so.name)})
 	for si in _readable(
 		"Sales Invoice",
 		denied,
@@ -86,6 +86,7 @@ def _sales(company, today, denied):
 				"step": "paid" if paid else "invoice",
 				"overdue_days": overdue if overdue > 0 else None,
 				"invoice_no": si.dropout_einvoice_number,
+				"doctype": "Sales Invoice",
 				"href": _desk("Sales Invoice", si.name),
 			}
 		)
@@ -103,7 +104,7 @@ def _purchases(company, denied):
 		limit=LIMIT,
 	):
 		label = {"To Receive and Bill": "已下單待到貨", "To Receive": "已下單待到貨", "To Bill": "已到貨待請款"}[po.status]
-		rows.append({"no": po.name, "vendor": po.supplier_name, "item": "", "amount": po.grand_total, "status": label, "next": "到貨入庫" if "Receive" in po.status else "登錄進項發票", "href": _desk("Purchase Order", po.name)})
+		rows.append({"no": po.name, "vendor": po.supplier_name, "item": "", "amount": po.grand_total, "status": label, "next": "到貨入庫" if "Receive" in po.status else "登錄進項發票", "doctype": "Purchase Order", "href": _desk("Purchase Order", po.name)})
 	for pi in _readable(
 		"Purchase Invoice",
 		denied,
@@ -112,7 +113,7 @@ def _purchases(company, denied):
 		order_by="due_date asc",
 		limit=LIMIT,
 	):
-		rows.append({"no": pi.name, "vendor": pi.supplier_name, "item": "", "amount": pi.outstanding_amount, "status": "待付款", "next": "付款", "href": _desk("Purchase Invoice", pi.name)})
+		rows.append({"no": pi.name, "vendor": pi.supplier_name, "item": "", "amount": pi.outstanding_amount, "status": "待付款", "next": "付款", "doctype": "Purchase Invoice", "href": _desk("Purchase Invoice", pi.name)})
 	return rows
 
 

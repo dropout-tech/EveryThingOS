@@ -11,7 +11,7 @@ export default async function LinksPage() {
     <ModuleFrame
       kicker="短網址"
       title={`${pack.nameZh} 對外怎麼連`}
-      hint="官網、IG、LINE、名片 QR 用同一套短網址。信件裡的連結另外算點擊，不會算兩次。"
+      hint="官網、IG、LINE、名片 QR 用同一套短網址。信件裡的連結另外算點擊，不會算兩次。短網址（Shlink）是選配，開了才會有真的資料；下面是練習。"
     >
       <DataTable
         columns={["短碼", "連到哪", "點了幾次", "從哪來"]}

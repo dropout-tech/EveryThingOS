@@ -25,6 +25,7 @@ const KIND_LABEL: Record<string, string> = {
   payment: "金流通知",
   meeting_start: "派會議機器人",
   meeting_done: "會議摘要",
+  calendar: "讀行事曆",
 };
 
 const SYNC_NOTICE: Record<string, string> = {

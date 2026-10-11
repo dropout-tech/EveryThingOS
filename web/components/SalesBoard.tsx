@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
+import { LiveQuoteForm } from "./LiveQuoteForm";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import {
   advanceSalesDoc,
@@ -11,16 +13,19 @@ import {
   makeQuote,
   type SalesDoc,
 } from "@/lib/erp";
+import type { Catalog } from "@/lib/sources/types";
 import type { IndustryPack } from "@/lib/types";
 
 type SalesBoardProps = {
   pack: Pick<IndustryPack, "id" | "itemType" | "fulfillment" | "modules">;
   initial: SalesDoc[];
   deskUrl?: string;
+  catalog?: Catalog | null;
 };
 
-export function SalesBoard({ pack, initial, deskUrl }: SalesBoardProps) {
+export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps) {
   const live = Boolean(deskUrl);
+  const action = useLiveAction();
   const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live);
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
@@ -71,11 +76,15 @@ export function SalesBoard({ pack, initial, deskUrl }: SalesBoardProps) {
   return (
     <div className="space-y-4">
       {live ? (
-        <div className="glass flex flex-wrap items-center gap-3 p-4">
-          <DeskLink href={`${deskUrl}/app/quotation/new`} className="glass-cta rounded-full px-4 py-2 text-sm">
-            開一張報價
-          </DeskLink>
-          <p className="text-xs text-cream-dim">在 ERPNext 開單；送出後會出現在這裡，也會記在客人的時間軸。</p>
+        <div className="glass space-y-2 p-4">
+          {catalog ? <LiveQuoteForm catalog={catalog} action={action} /> : null}
+          <p className="text-xs text-cream-dim">
+            報價、轉訂單、出貨、開發票、收款都直接寫進 ERPNext，照你的角色權限。要改細節時{" "}
+            <DeskLink href={`${deskUrl}/app/quotation/new`} className="text-teal underline">
+              在 ERPNext 開單
+            </DeskLink>
+            。
+          </p>
         </div>
       ) : (
       <form
@@ -109,6 +118,7 @@ export function SalesBoard({ pack, initial, deskUrl }: SalesBoardProps) {
       </form>
       )}
       <ActionNote>{note}</ActionNote>
+      <ActionOutcomeNote outcome={action.outcome} />
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
           <section key={column.id} className="glass-well p-3">
@@ -133,9 +143,12 @@ export function SalesBoard({ pack, initial, deskUrl }: SalesBoardProps) {
                       <p className="mt-1 text-xs text-orange">已逾期 {doc.overdueDays} 天</p>
                     ) : null}
                     {live ? (
-                      <DeskLink href={doc.href} className="glass-pill mt-2 block w-full py-1.5 text-center text-xs">
-                        {doc.next === "完成" ? "打開" : doc.next}
-                      </DeskLink>
+                      <>
+                        {doc.next !== "完成" ? <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} /> : null}
+                        <DeskLink href={doc.href} className="mt-1 block text-center text-xs text-cream-dim hover:text-cream">
+                          打開
+                        </DeskLink>
+                      </>
                     ) : (
                       <button
                         type="button"
