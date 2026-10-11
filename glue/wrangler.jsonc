@@ -18,6 +18,8 @@
   "triggers": { "crons": ["*/5 * * * *"] },
   "ai": { "binding": "AI" },
   "send_email": [{ "name": "EMAIL" }],
+  // Public API /v1: 120 requests per minute per API key (and per IP for failed logins).
+  "ratelimits": [{ "name": "API_LIMIT", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }],
   "vars": {
     "SUMMARY_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
   }
