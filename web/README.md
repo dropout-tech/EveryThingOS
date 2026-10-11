@@ -18,6 +18,7 @@ npm run dev
 | `/pricing` | 年費 |
 | `/consulting` | 免費導入步驟 |
 | `/saas` | 取代哪些雲端工具 |
+| `/status` | 服務狀態：畫面、系統同步、ERPNext 整體是否正常、近 30 天可用率、近 14 天事故；不顯示任何公司名稱或網址。多公司模式在公司自己的網址打開時，多一塊「這個網址的公司」 |
 | `/login` | 用 ERPNext 帳號登入（只有開了登入才會用到） |
 | `/workspace` | 今天這一件；接上 ERPNext 時顯示導入進度 |
 | `/workspace/erp/{sales,purchase,stock,finance}` | 生意：同一張單往下走 |
@@ -35,6 +36,7 @@ npm run dev
 
 | API | 用途 |
 | --- | --- |
+| `GET /api/health` | 殼活著就回 `ok: true`；設了 `GLUE_URL` 時一併回報膠水 `/health` 連不連得到（膠水的監看與外部監看都打這裡） |
 | `GET /api/auth/login` → `GET /api/auth/callback` | ERPNext OAuth2（Authorization Code + PKCE S256） |
 | `POST /api/auth/logout` | 撤銷 token、清 session |
 | `GET /api/chat/open` | 以登入者對應的 Chatwoot 使用者單一登入，沒有對應就說明原因 |
@@ -61,7 +63,7 @@ npm run dev
 | `ERPNEXT_OAUTH_CLIENT_ID`、`ERPNEXT_OAUTH_CLIENT_SECRET` | ERPNext | 登入模式 |
 | `SESSION_SECRET` | 殼 | 32 字元以上；封裝 session cookie（AES-GCM） |
 | `SHELL_URL` | 殼 | 對外網址，用來組 OAuth 回呼 |
-| `GLUE_URL`、`GLUE_ADMIN_TOKEN`、`GLUE_SITE` | 膠水 | 導入進度、同步失敗清單與重送 |
+| `GLUE_URL`、`GLUE_ADMIN_TOKEN`、`GLUE_SITE` | 膠水 | 導入進度、同步失敗清單與重送；`/status` 只要 `GLUE_URL`（沒設就是示範資料） |
 | `CHATWOOT_URL`、`CHATWOOT_PLATFORM_TOKEN`、`CHATWOOT_ACCOUNT_ID` | Chatwoot | 對話單一登入 |
 
 三種模式：
