@@ -409,13 +409,47 @@ html[data-style="fluid"] .glass.glass-nav::after {
   );
 }
 
+/*
+ * Frosting. Only the unprefixed property is written: the CSS pipeline adds the -webkit- copy for Safari, and
+ * drops the unprefixed one when both are declared, which leaves Chrome with no blur at all.
+ */
+html[data-style="fluid"] .glass::before {
+  backdrop-filter: blur(var(--glass-blur)) saturate(145%) brightness(1.08);
+}
+
+html[data-style="fluid"] :is(.glass-chip, .glass-pill) {
+  backdrop-filter: blur(3px) saturate(150%);
+}
+
+html[data-style="fluid"] .btn-secondary {
+  backdrop-filter: blur(4px) saturate(150%);
+}
+
+html[data-style="fluid"] .toast {
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+html[data-style="fluid"] .tabbar {
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+html[data-style="fluid"] .site-sheet {
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+@media (pointer: coarse) {
+  html[data-style="fluid"] .os-shell .glass::before,
+  html[data-style="fluid"] .os-shell :is(.glass-chip, .glass-pill, .btn-secondary) {
+    backdrop-filter: blur(4px);
+  }
+}
+
 /* Readability: the sea surface is the brightest part of the scene, so lens and site bars carry a real scrim. */
 html[data-style="fluid"] .lens-film {
   background:
     linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.08) 0%, transparent 45%, rgb(var(--fluid-violet) / 0.1) 100%),
     linear-gradient(170deg, rgb(10 22 38 / 0.6), rgb(6 12 24 / 0.72));
   backdrop-filter: blur(6px) saturate(150%) brightness(1.04);
-  -webkit-backdrop-filter: blur(6px) saturate(150%) brightness(1.04);
 }
 
 html[data-style="fluid"][data-theme="white"] .lens-film {
@@ -432,7 +466,6 @@ html[data-style="fluid"] .glass.glass-bar::before,
 html[data-style="fluid"] .glass.glass-nav::before {
   background: rgb(6 12 22 / 0.58);
   backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
 }
 
 html[data-style="fluid"][data-theme="white"] .glass.glass-bar::before,
@@ -441,7 +474,42 @@ html[data-style="fluid"][data-theme="white"] .glass.glass-nav::before {
 }
 
 html[data-style="fluid"] body:has(.os-shell) .fluid-caustics {
-  opacity: 0.45;
+  opacity: 0.3;
+}
+
+/* Public pages: thicker glass, a veil over the bright surface, and a soft local scrim behind loose text. */
+html[data-style="fluid"] {
+  --glass-fill: rgb(8 16 28 / 0.5);
+  --scene-veil: linear-gradient(180deg, rgb(4 12 22 / 0.36) 0%, rgb(4 12 22 / 0.3) 45%, rgb(4 12 22 / 0.28) 100%);
+}
+
+html[data-style="fluid"][data-theme="white"] {
+  --glass-fill: rgb(255 255 255 / 0.62);
+  --scene-veil: linear-gradient(180deg, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.12) 45%, rgb(238 241 246 / 0.22) 100%);
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+  background-color: rgb(8 16 28 / 0.56);
+  border-color: rgb(var(--fluid-edge-a) / 0.2);
+}
+
+html[data-style="fluid"][data-theme="white"] body:not(:has(.os-shell)) .glass-well {
+  background-color: rgb(255 255 255 / 0.64);
+  border-color: rgb(255 255 255 / 0.8);
+}
+
+@media (pointer: fine) {
+  html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+    backdrop-filter: blur(6px) saturate(140%);
+  }
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .page-shell {
+  text-shadow: var(--type-shadow);
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .page-shell :is(.btn, .glass-cta, .glass-pill, .badge, .site-chip, .segmented, input, select, textarea, button) {
+  text-shadow: none;
 }
 
 html[data-style="fluid"] .os-shell .glass::before {
@@ -690,7 +758,6 @@ html[data-style="fluid"] .dialog {
 html[data-style="fluid"] .dialog::backdrop {
   background: rgb(3 10 20 / 0.55);
   backdrop-filter: blur(6px) saturate(130%);
-  -webkit-backdrop-filter: blur(6px) saturate(130%);
 }
 
 html[data-style="fluid"] .toast {
@@ -769,6 +836,17 @@ html[data-style="fluid"][data-fluid-paused] .skeleton {
 @media (prefers-reduced-transparency: reduce) {
   html[data-style="fluid"] .fluid-field {
     display: none;
+  }
+
+  html[data-style="fluid"] .glass::before,
+  html[data-style="fluid"] :is(.lens-film, .glass-chip, .glass-pill, .glass-well, .btn-secondary, .toast, .tabbar, .site-sheet) {
+    backdrop-filter: none;
+  }
+
+  html[data-style="fluid"] .glass.glass-bar::before,
+  html[data-style="fluid"] .glass.glass-nav::before,
+  html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
+    backdrop-filter: none;
   }
 }
 
