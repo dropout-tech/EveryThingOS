@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ADMIN_ROLE } from "@/lib/access";
 import { openInvoice } from "@/lib/billing";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { Badge } from "@/components/ui/Badge";
+import { buttonClass } from "@/components/ui/Button";
 import { PRICE_LABEL } from "@/lib/commercial";
 import { RoleGuide } from "@/components/RoleGuide";
 import { SetupChecklist } from "@/components/SetupChecklist";
@@ -94,10 +96,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <p className="text-sm text-cream-dim">連線</p>
           <ul className="mt-1 space-y-1 text-sm">
             {SYSTEMS.map(([id, label, demo]) => (
-              <li key={id} className="flex gap-2">
-                <span aria-hidden>{live[id] ? "●" : "○"}</span>
+              <li key={id} className="flex flex-wrap items-center gap-2">
                 <span>{label}</span>
-                <span className="text-cream-dim">{live[id] ? "已接上" : demo}</span>
+                {live[id] ? <Badge tone="ok">已接上</Badge> : <Badge>{demo}</Badge>}
               </li>
             ))}
           </ul>
@@ -122,47 +123,47 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                 <span>
                   續約帳單 {invoice.id}：NT${invoice.amount.toLocaleString("en-US")}（含 5% 營業稅）
                 </span>
-                <a href={invoice.pay_url} className="glass-cta rounded-full px-4 py-1.5 text-sm">
+                <a href={invoice.pay_url} className={buttonClass({ variant: "primary", size: "sm" })}>
                   線上付款
                 </a>
               </p>
             ) : null}
           </div>
         ) : null}
-        <p className="flex flex-wrap gap-4 text-sm text-cream-dim">
+        <div className="flex flex-wrap gap-2 border-t border-[var(--line)] pt-5">
           {account?.profile ? null : (
-            <Link href="/?setup=1" className="hover:text-cream">
+            <Link href="/?setup=1" className={buttonClass({ variant: "secondary", size: "sm" })}>
               重設現場與功能
             </Link>
           )}
           {exportUrl ? (
-            <a href="#export" className="hover:text-cream">
+            <a href="#export" className={buttonClass({ variant: "secondary", size: "sm" })}>
               下載全部資料
             </a>
           ) : null}
-          <a href="/api/shop/profile" className="hover:text-cream">
+          <a href="/api/shop/profile" className={buttonClass({ variant: "secondary", size: "sm" })}>
             下載設定檔（給導入工具）
           </a>
-          <Link href="/workspace/settings/api" className="hover:text-cream">
+          <Link href="/workspace/settings/api" className={buttonClass({ variant: "secondary", size: "sm" })}>
             對外 API 與 Webhook
           </Link>
-          <Link href="/workspace/practice" className="hover:text-cream">
+          <Link href="/workspace/practice" className={buttonClass({ variant: "ghost", size: "sm" })}>
             練習第一筆生意
           </Link>
-          <Link href="/help" className="hover:text-cream">
+          <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>
             說明中心
           </Link>
-          <Link href="/pricing" className="hover:text-cream">
+          <Link href="/pricing" className={buttonClass({ variant: "ghost", size: "sm" })}>
             {PRICE_LABEL}
           </Link>
           {loginRequired(config) ? (
             <form action="/api/auth/logout" method="post">
-              <button type="submit" className="hover:text-cream">
+              <button type="submit" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 登出
               </button>
             </form>
           ) : null}
-        </p>
+        </div>
       </div>
 
       {exportUrl ? (
@@ -194,14 +195,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
 
       {live.glue ? (
         <section id="sync" className="glass-well space-y-3 p-5">
-          <h3 className="text-sm">系統同步</h3>
+          <h2 className="text-sm font-medium">系統同步</h2>
           {notice ? (
-            <p className="glass-chip px-3 py-2 text-sm" role="status">
+            <p className="toast" role="status">
               {notice}
             </p>
           ) : null}
           {dead.origin === "error" ? (
-            <p className="text-sm text-orange">{dead.message}</p>
+            <p className="text-sm text-warn">{dead.message}</p>
           ) : dead.data.length ? (
             <ul className="space-y-2">
               {dead.data.map((letter) => (
@@ -212,7 +213,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                   </span>
                   <form action="/api/sync/replay" method="post">
                     <input type="hidden" name="id" value={letter.id} />
-                    <button type="submit" className="text-teal">
+                    <button type="submit" className="btn btn-secondary btn-sm">
                       重送
                     </button>
                   </form>

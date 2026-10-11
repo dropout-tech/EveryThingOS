@@ -17,6 +17,7 @@ export default async function WorkspaceHome() {
 
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">今天</h1>
       <RoleGuide allowed={guide.allowed} />
       <Hint id="today" help="module-today" />
       <TodayList books={books.data} />

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 export function OceanColumn() {
   useEffect(() => {
     const root = document.documentElement;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
 
     function write() {

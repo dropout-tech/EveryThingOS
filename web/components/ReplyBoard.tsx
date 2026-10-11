@@ -96,7 +96,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
       </p>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
         <section className="glass p-4">
-          <h3 className="text-lg">等回的留言</h3>
+          <h2 className="text-lg font-medium">等回的留言</h2>
           {waiting.length ? (
             <ul className="mt-3 space-y-3">
               {waiting.map((comment) => {
@@ -114,13 +114,13 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
                       {rule ? `對到「${rule.keyword}」→ 私訊：${rule.dm}` : "沒對到關鍵字"}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <button type="button" className="glass-cta rounded-full px-3 py-1.5 text-xs" onClick={() => onSend(comment)}>
+                      <button type="button" className="btn btn-primary btn-sm" onClick={() => onSend(comment)}>
                         送出私訊
                       </button>
-                      <button type="button" className="glass-pill px-3 py-1.5 text-xs" onClick={() => onSkip(comment)}>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSkip(comment)}>
                         略過
                       </button>
-                      <button type="button" className="glass-pill px-3 py-1.5 text-xs" onClick={() => onLead(comment)}>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => onLead(comment)}>
                         轉進客人看板
                       </button>
                     </div>
@@ -136,11 +136,11 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
           ) : null}
         </section>
         <aside className="glass space-y-3 p-4">
-          <h3 className="text-lg">關鍵字 → 私訊</h3>
+          <h2 className="text-lg font-medium">關鍵字 → 私訊</h2>
           <ul className="space-y-2">
             {rules.map((rule) => (
               <li key={rule.id} className="glass-chip p-3 text-sm">
-                <p className="text-teal">{rule.keyword}</p>
+                <p className="font-medium">{rule.keyword}</p>
                 <p className="mt-1 text-cream-dim">{rule.dm}</p>
                 <p className="mt-1 text-xs text-cream-dim">公開回覆：{rule.publicReply}</p>
               </li>
@@ -154,37 +154,37 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
             }}
           >
             <p className="text-sm">加一組關鍵字</p>
-            <label className="block text-xs text-cream-dim">
+            <label className="block text-xs font-medium">
               關鍵字
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-[var(--line)] bg-transparent px-3 py-2 text-sm text-cream"
+                className="field mt-1"
                 maxLength={32}
                 autoComplete="off"
               />
             </label>
-            <label className="block text-xs text-cream-dim">
+            <label className="block text-xs font-medium">
               私訊
               <textarea
                 value={dm}
                 onChange={(event) => setDm(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-[var(--line)] bg-transparent px-3 py-2 text-sm text-cream"
+                className="field mt-1"
                 rows={3}
                 maxLength={280}
               />
             </label>
-            <label className="block text-xs text-cream-dim">
+            <label className="block text-xs font-medium">
               公開回覆
               <input
                 value={publicReply}
                 onChange={(event) => setPublicReply(event.target.value)}
-                className="mt-1 w-full rounded-xl border border-[var(--line)] bg-transparent px-3 py-2 text-sm text-cream"
+                className="field mt-1"
                 maxLength={80}
                 autoComplete="off"
               />
             </label>
-            <button type="submit" className="glass-cta rounded-full px-4 py-2 text-sm">
+            <button type="submit" className="btn btn-primary">
               存起來
             </button>
             {preview ? (

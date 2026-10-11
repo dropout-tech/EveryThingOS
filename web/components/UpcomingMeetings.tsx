@@ -30,7 +30,7 @@ export function UpcomingMeetings({ meetings }: { meetings: UpcomingMeeting[] }) 
               <button
                 type="button"
                 disabled={action.busy}
-                className="glass-pill px-3 py-1.5 text-xs disabled:opacity-40"
+                className="btn btn-secondary btn-sm"
                 onClick={() => action.run("/api/meetings/skip", { key: m.key, skip: !m.skipped }, (r) => (r.skipped ? `「${m.title}」不會記。` : `「${m.title}」會記。`))}
               >
                 {m.skipped ? "改回要記" : "這場不要記"}

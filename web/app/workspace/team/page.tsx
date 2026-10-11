@@ -65,8 +65,8 @@ export default async function TeamPage() {
       ) : null}
       <TeamBoard team={team.data ?? DEMO} live={live} />
       <section className="glass-well space-y-2 p-5">
-        <h3 className="text-sm">最近紀錄</h3>
-        {audit.origin === "error" ? <p className="text-sm text-orange">{audit.message}</p> : null}
+        <h2 className="text-sm font-medium">最近紀錄</h2>
+        {audit.origin === "error" ? <p className="text-sm text-warn">{audit.message}</p> : null}
         {rows.length ? (
           <ul className="space-y-1 text-sm">
             {rows.map((r, i) => (
@@ -75,7 +75,7 @@ export default async function TeamPage() {
                 <span>{r.who}</span>
                 <span>{r.what}</span>
                 {r.href ? (
-                  <a href={r.href} target="_blank" rel="noreferrer" className="text-teal">
+                  <a href={r.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                     {r.detail}
                   </a>
                 ) : (

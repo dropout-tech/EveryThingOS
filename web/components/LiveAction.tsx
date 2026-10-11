@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Toast } from "./ActionNote";
+import { buttonClass } from "./ui/Button";
 
 export type ActionOutcome = { ok: boolean; message: string; href?: string };
 
@@ -58,19 +60,20 @@ export function useLiveAction() {
 }
 
 export function ActionOutcomeNote({ outcome }: { outcome: ActionOutcome | null }) {
-  if (!outcome) return null;
+  const [closed, setClosed] = useState<ActionOutcome | null>(null);
+  if (!outcome || closed === outcome) return null;
   return (
-    <p className={`glass-chip px-4 py-2 text-sm ${outcome.ok ? "" : "text-orange"}`} role={outcome.ok ? "status" : "alert"}>
+    <Toast tone={outcome.ok ? "ok" : "error"} onClose={() => setClosed(outcome)}>
       {outcome.message}
       {outcome.href ? (
         <>
           {" "}
-          <a href={outcome.href} target={outcome.href.startsWith("/") ? undefined : "_blank"} rel="noreferrer" className="text-teal underline">
+          <a href={outcome.href} target={outcome.href.startsWith("/") ? undefined : "_blank"} rel="noreferrer" className="font-medium underline">
             {outcome.href.startsWith("/login") ? "重新登入" : "打開"}
           </a>
         </>
       ) : null}
-    </p>
+    </Toast>
   );
 }
 
@@ -81,7 +84,7 @@ export function AdvanceButton({
   label,
   run,
   busy,
-  className = "glass-pill mt-2 w-full py-1.5 text-xs disabled:opacity-40",
+  className = buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" }),
 }: {
   doctype?: string;
   name: string;
@@ -90,15 +93,22 @@ export function AdvanceButton({
   busy: boolean;
   className?: string;
 }) {
+  const [mine, setMine] = useState(false);
   if (!doctype) return null;
   return (
     <button
       type="button"
       disabled={busy}
+      aria-busy={(busy && mine) || undefined}
       className={className}
-      onClick={() => run("/api/erp/advance", { doctype, name }, (r) => `${name}：${label}，已開 ${doctypeLabel(r.created!.doctype)} ${r.created!.name}。`)}
+      onClick={async () => {
+        setMine(true);
+        await run("/api/erp/advance", { doctype, name }, (r) => `${name}：${label}，已開 ${doctypeLabel(r.created!.doctype)} ${r.created!.name}。`);
+        setMine(false);
+      }}
     >
-      {busy ? "處理中…" : label}
+      {busy && mine ? <span className="spinner" aria-hidden="true" /> : null}
+      {busy && mine ? "處理中…" : label}
     </button>
   );
 }

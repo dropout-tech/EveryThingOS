@@ -6,6 +6,7 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
+import { buttonClass } from "./ui/Button";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
 import type { IndustryPack } from "@/lib/types";
@@ -91,7 +92,10 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
-            <h3 className="text-sm">{live ? stageLabel(column.stage) : column.stage}</h3>
+            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+              <span>{live ? stageLabel(column.stage) : column.stage}</span>
+              <span className="text-xs font-normal text-cream-dim">{column.cards.length}</span>
+            </h2>
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
                 column.cards.map((lead) => {
@@ -102,16 +106,16 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                       <p>{lead.name}</p>
                       <p className="mt-1 text-xs text-cream-dim">{lead.channel}</p>
                       {live ? (
-                        <span className="mt-2 flex gap-3 text-xs">
-                          <DeskLink href={lead.href} className="text-cream">
+                        <span className="mt-2 flex gap-2">
+                          <DeskLink href={lead.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
                             打開
                           </DeskLink>
-                          <a href="/workspace/erp/sales" className="text-teal">
+                          <a href="/workspace/erp/sales" className={buttonClass({ variant: "secondary", size: "sm" })}>
                             開報價
                           </a>
                         </span>
                       ) : (
-                        <button type="button" onClick={() => onNext(lead)} className="mt-2 text-xs text-cream">
+                        <button type="button" onClick={() => onNext(lead)} className={buttonClass({ variant: last ? "primary" : "secondary", size: "sm", block: true, className: "mt-2" })}>
                           {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}
                         </button>
                       )}

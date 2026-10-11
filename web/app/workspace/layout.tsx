@@ -39,7 +39,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   }
   const life = config.tenant?.lifecycle;
   const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
-  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due", payUrl: invoice?.pay_url } : null;
+  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due", readOnly: !life.writable, payUrl: invoice?.pay_url } : null;
 
   return (
     <OsShell
