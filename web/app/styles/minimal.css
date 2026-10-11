@@ -594,6 +594,10 @@ html[data-style="minimal"] .site-table tbody tr:hover {
   html[data-style="minimal"] .table-stack td {
     padding: 0.6rem 0.875rem;
   }
+
+  html[data-style="minimal"] .table-stack :is(th, td):is([data-numeric], .num) {
+    text-align: right;
+  }
 }
 
 html[data-style="minimal"] .site-table thead th {
