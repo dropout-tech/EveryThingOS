@@ -1,15 +1,33 @@
 "use client";
 
 import { useId, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { Badge, type BadgeTone } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { Field } from "../ui/Field";
 import { Money } from "../ui/Money";
 import { SignaturePad, type SignaturePadHandle } from "./SignaturePad";
 import { cleanName, DEMO_TRACK_PREFIX, NAME_MAX, NAME_MIN, readDemoTrack, timeText, writeDemoTrack } from "@/lib/portal";
 
+const ACCEPTED_EVENT = "dropout:portal-accepted";
+let acceptedHere: string | null = null;
+
 function subscribeStorage(onChange: () => void) {
   window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
+  window.addEventListener(ACCEPTED_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(ACCEPTED_EVENT, onChange);
+  };
+}
+
+/** The status chip at the top flips to 已接受 as soon as the form below goes through, without a reload. */
+export function DocStatusBadge({ linkId, demo, label, tone }: { linkId: string; demo: boolean; label: string; tone: BadgeTone }) {
+  const done = useSyncExternalStore(
+    subscribeStorage,
+    () => acceptedHere === linkId || (demo && Boolean(readDemoTrack(linkId).acceptedAt)),
+    () => false,
+  );
+  return done ? <Badge tone="ok">已接受</Badge> : <Badge tone={tone}>{label}</Badge>;
 }
 
 /** A demo quote accepted earlier in this browser stays accepted when the page is opened again. */
@@ -60,6 +78,8 @@ export function PortalAccept({ token, docname, total, customer, demo, linkId }: 
       }
       if (demo) writeDemoTrack(linkId, (t) => ({ ...t, acceptedAt: out.accepted!.at, acceptedName: out.accepted!.name }));
       setFresh({ ...out.accepted, signature });
+      acceptedHere = linkId;
+      window.dispatchEvent(new Event(ACCEPTED_EVENT));
       requestAnimationFrame(() => document.getElementById("receipt")?.focus());
     } catch {
       setErrors({ form: "連不上網路，請確認後再按一次。" });

@@ -3,7 +3,7 @@ import { Badge, type BadgeTone } from "../ui/Badge";
 import { buttonClass } from "../ui/Button";
 import { Money } from "../ui/Money";
 import { DemoGate } from "./DemoGate";
-import { AcceptedReceipt, PortalAccept } from "./PortalAccept";
+import { AcceptedReceipt, DocStatusBadge, PortalAccept } from "./PortalAccept";
 import { PortalPay } from "./PortalPay";
 import { PrintButtonClient } from "./PrintButtonClient";
 import { formatNumber } from "@/lib/format";
@@ -102,7 +102,11 @@ export function PortalDocument({ doc, token, demo, linkId, pdfHref }: { doc: Por
               給 {doc.customer} 的{kind}
             </h1>
           </div>
-          <Badge tone={status.tone}>{status.label}</Badge>
+          {doc.status === "open" && doc.kind === "quote" ? (
+            <DocStatusBadge linkId={linkId} demo={demo} label={status.label} tone={status.tone} />
+          ) : (
+            <Badge tone={status.tone}>{status.label}</Badge>
+          )}
         </div>
         <Meta doc={doc} />
 

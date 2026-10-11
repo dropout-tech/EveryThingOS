@@ -10,6 +10,7 @@ import {
   type PortalBank,
   type PortalDoc,
   type PortalDoctype,
+  type PortalKind,
   type PortalLink,
   type PortalStatus,
 } from "./portal";
@@ -339,8 +340,12 @@ function fromRawDoc(d: RawDoc): PortalDoc {
 
 const DEMO_COMPANY = { name: "示範公司", taxId: "00000000", phone: "02-0000-0000", email: "demo@example.com", website: null, logo: null };
 const DEMO_CONTACT = { name: "示範業務", email: "demo@example.com", phone: "0900-000-000" };
-const DEMO_BANK: PortalBank = { bank: "示範銀行（代碼 000）", holder: "示範公司", account: "0000-000-000000", branch: "示範分行" };
-const DEMO_TERMS = "這是示範報價。\n1. 報價有效期間內接受，依本報價內容供貨或提供服務。\n2. 付款：訂單成立後 30 天內匯款。\n3. 以上金額含營業稅 5%。";
+const DEMO_BANK: PortalBank = { bank: "示範銀行（代碼 000）", holder: "示範公司", account: "0000-000-000000", branch: "0000" };
+const DEMO_TERMS: Record<PortalKind, string> = {
+  quote: "這是示範報價。\n1. 報價有效期間內接受，依本報價內容供貨或提供服務。\n2. 付款：訂單成立後 30 天內匯款。\n3. 以上金額含營業稅 5%。",
+  order: "這是示範訂單。\n1. 依本訂單內容供貨或提供服務。\n2. 付款：開立發票後 30 天內匯款。\n3. 以上金額含營業稅 5%。",
+  invoice: "這是示範發票。\n1. 請在付款期限前付款。\n2. 匯款後請告訴業務帳號末五碼，方便對帳。\n3. 以上金額含營業稅 5%。",
+};
 
 function addDays(ms: number, days: number) {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date(ms + days * 86_400_000));
@@ -367,7 +372,7 @@ export function demoDoc(t: DemoToken): PortalDoc {
     net: t.amount,
     tax: t.tax,
     total: t.amount + t.tax,
-    terms: DEMO_TERMS,
+    terms: DEMO_TERMS[kind],
     contact: DEMO_CONTACT,
     accepted: null,
     outstanding: kind === "invoice" ? (t.status === "paid" ? 0 : t.amount + t.tax) : null,
