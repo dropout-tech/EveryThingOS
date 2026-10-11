@@ -22,7 +22,12 @@ doc_events = {
 	},
 	"Customer": {"validate": "dropout_core.events.validate_customer_tax_id", "after_insert": "dropout_core.events.on_customer_insert"},
 	"Lead": {"after_insert": "dropout_core.events.on_lead_insert"},
-	"Quotation": {"on_submit": "dropout_core.events.on_quotation_submit"},
+	"Quotation": {
+		"validate": "dropout_core.approvals.set_discount_percent",
+		"before_submit": "dropout_core.approvals.guard_submit",
+		"on_submit": "dropout_core.events.on_quotation_submit",
+	},
+	"Purchase Order": {"before_submit": "dropout_core.approvals.guard_submit"},
 	"Sales Order": {"on_submit": "dropout_core.events.on_sales_order_submit"},
 	"Delivery Note": {"on_submit": "dropout_core.events.on_delivery_note_submit"},
 	"Sales Invoice": {"on_submit": "dropout_core.events.on_sales_invoice_submit"},

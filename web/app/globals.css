@@ -2328,3 +2328,184 @@ html[data-theme="white"] .os-shell .glass-chip {
     break-after: avoid;
   }
 }
+
+@layer components {
+  /* 簽核與報帳 */
+  .approval-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .approval-card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .approval-amount {
+    font-size: var(--ui-text-lg);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .approval-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: 2.75rem;
+  }
+
+  @media (max-width: 639px) {
+    .approval-actions {
+      padding-left: 0;
+    }
+
+    .approval-actions > .btn:not(.btn-sm) {
+      flex: 1 1 0;
+    }
+  }
+
+  .approval-sent {
+    align-items: flex-start;
+    padding-block: 0.75rem;
+  }
+
+  .receipt-thumb {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+    background: var(--surface-scrim);
+  }
+
+  .receipt-thumb:hover {
+    border-color: var(--field-border);
+  }
+
+  .receipt-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .receipt-full {
+    display: block;
+    max-width: 100%;
+    max-height: 70vh;
+    margin-inline: auto;
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-preview {
+    width: 6rem;
+    height: 8rem;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-drop {
+    display: flex;
+    width: 100%;
+    min-height: 7rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+    color: var(--cream);
+    text-align: center;
+  }
+
+  .receipt-drop:hover {
+    background: var(--surface-hover);
+  }
+
+  .receipt-sample {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.7rem;
+    background: var(--surface-card);
+  }
+
+  .receipt-sample span {
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--cream-dim);
+    opacity: 0.6;
+  }
+
+  .receipt-sample span:nth-child(2) {
+    width: 70%;
+  }
+
+  .receipt-sample span:nth-child(4) {
+    width: 45%;
+  }
+
+  .receipt-sample-lg {
+    width: 14rem;
+    height: 18rem;
+    margin-inline: auto;
+    gap: 1rem;
+    padding: 2rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-sample-lg span {
+    height: 4px;
+  }
+
+  .choice-chip {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    padding: 0 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: var(--chip-radius);
+    background: var(--control-fill);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    cursor: pointer;
+  }
+
+  .choice-chip:hover {
+    background: var(--control-fill-hover);
+  }
+
+  .choice-chip:has(input:checked) {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+
+  .choice-chip:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (pointer: coarse) {
+    .choice-chip {
+      min-height: var(--ui-tap);
+    }
+
+    .receipt-thumb {
+      width: var(--ui-tap);
+      min-width: 4rem;
+    }
+  }
+}

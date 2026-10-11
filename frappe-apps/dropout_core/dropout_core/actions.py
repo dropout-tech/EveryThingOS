@@ -152,13 +152,19 @@ def create_quotation(party_type, party, items, company=None, submit=1):
 				row.rate = flt(src["rate"])
 				row.price_list_rate = row.price_list_rate or row.rate
 		q.insert()
+		pending = None
 		if cint(submit):
-			q.submit()
+			from dropout_core.approvals import submit_or_send
+
+			pending = submit_or_send(q)
 	except frappe.PermissionError:
 		raise
 	except frappe.ValidationError as e:
 		return _refused(e)
-	return {"ok": True, "created": {"doctype": "Quotation", "name": q.name, "href": _desk("Quotation", q.name), "grand_total": q.grand_total}}
+	out = {"ok": True, "created": {"doctype": "Quotation", "name": q.name, "href": _desk("Quotation", q.name), "grand_total": q.grand_total}}
+	if pending:
+		out["message"] = _("{0} 的折扣超過門檻，已送主管核准").format(q.name)
+	return out
 
 
 def _sender():

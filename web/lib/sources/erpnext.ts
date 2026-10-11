@@ -121,6 +121,30 @@ export async function erpFile(method: string, args: Record<string, unknown>, con
   return request(method, args, config ?? (await liveConfig()), true, 120_000);
 }
 
+/** Frappe's own `upload_file` (multipart), as the logged-in user; ERPNext checks write access to the document it attaches to. */
+export async function erpUpload<T>(form: FormData, config?: LiveConfig): Promise<T> {
+  const cfg = config ?? (await liveConfig());
+  const erp = cfg.erpnext;
+  if (!erp) throw new SourceError("ERPNext 還沒接上", "unreachable");
+  let res: Response;
+  try {
+    res = await fetch(`${erp.url}/api/method/upload_file`, {
+      method: "POST",
+      headers: { Authorization: await authHeader(cfg), Accept: "application/json", ...hostHeader(erp) },
+      body: form,
+      cache: "no-store",
+      signal: AbortSignal.timeout(60_000),
+    });
+  } catch (error) {
+    if (error instanceof SourceError) throw error;
+    throw new SourceError(`連不到 ERPNext（${erp.url}）`, "unreachable");
+  }
+  if (res.status === 401) throw new SourceError("登入已過期，請重新登入", "login");
+  if (res.status === 403) throw new SourceError("你的 ERPNext 角色不能做這件事", "denied");
+  if (!res.ok) throw new SourceError(await upstreamMessage(res), "upstream");
+  return ((await res.json()) as { message: T }).message;
+}
+
 export function deskUrl(path: string | undefined, config: LiveConfig) {
   if (!path || !config.erpnext) return undefined;
   return `${config.erpnext.url}${path}`;
