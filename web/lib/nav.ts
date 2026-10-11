@@ -85,9 +85,16 @@ const TRAIL: Record<string, { label: string; parent?: string }> = {
   "/workspace/hygiene": { label: "資料健檢", parent: "/workspace/settings" },
 };
 
+/** What the last crumb says on a page below a known one, such as one project. */
+const DETAIL_LABELS: Record<string, string> = { "/workspace/projects": "這一案" };
+
 export function breadcrumbTrail(path: string): NavItem[] {
   const trail: NavItem[] = [];
-  let href: string | undefined = TRAIL[path] ? path : undefined;
+  let parent = path;
+  while (!TRAIL[parent] && parent.lastIndexOf("/") > 0) parent = parent.slice(0, parent.lastIndexOf("/"));
+  if (!TRAIL[parent]) return trail;
+  if (parent !== path) trail.push({ href: path, label: DETAIL_LABELS[parent] ?? "詳細" });
+  let href: string | undefined = parent;
   while (href) {
     trail.unshift({ href, label: TRAIL[href].label });
     href = TRAIL[href].parent;
@@ -113,5 +120,12 @@ export const PALETTE_ACTIONS: PaletteAction[] = [
   { href: "/workspace/erp/compare", label: "對照鼎新 A1／億看", keywords: "鼎新 億看 對照 比較", needs: "/workspace/erp/sales" },
   { href: "/workspace/settings/api", label: "對外 API 與 Webhook", keywords: "api webhook 金鑰 串接", needs: "/workspace/settings" },
   { href: "/workspace/settings#appearance", label: "換介面風格", keywords: "風格 外觀 主題 深色 淺色 極簡 流體 社群", needs: "/workspace/settings" },
+  { href: "/workspace/ask", label: "問助理", keywords: "問 助理 ai 問題 幫我寫 催款 訊息" },
+  { href: "/workspace/approvals?new=1", label: "報帳、拍收據", keywords: "報帳 報銷 收據 發票 費用 請款", needs: "/workspace/approvals" },
+  { href: "/workspace/approvals", label: "看等我簽的", keywords: "簽核 核准 簽呈 退回 待簽", needs: "/workspace/approvals" },
+  { href: "/workspace/projects", label: "記工時", keywords: "工時 專案 案子 timesheet 時數", needs: "/workspace/projects" },
+  { href: "/workspace/portal", label: "傳報價給客人簽", keywords: "客戶入口 簽名 分享 連結 line 報價", needs: "/workspace/portal" },
+  { href: "/workspace/automations", label: "設定自動提醒", keywords: "自動化 提醒 逾期 規則 請購", needs: "/workspace/automations" },
+  { href: "/workspace/settings/import", label: "從 Excel 匯入", keywords: "匯入 excel csv 搬家 客人 商品 供應商", needs: "/workspace/settings" },
   { href: "/help", label: "看說明", keywords: "說明 幫助 help 怎麼用 教學" },
 ];

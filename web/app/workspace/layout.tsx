@@ -7,6 +7,7 @@ import { openInvoice } from "@/lib/billing";
 import { guideScope, roleFor } from "@/lib/guide";
 import { readSession } from "@/lib/session";
 import { getMe } from "@/lib/sources";
+import { pendingApprovals } from "@/lib/sources/approvals";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
@@ -41,6 +42,12 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       person = me.data.fullName || me.data.user;
     }
   }
+  const modules = featuresFor(shop.modules, roles);
+  const counts: Record<string, number> = {};
+  if (config.erpnext && modules.includes("approvals")) {
+    const waiting = await Promise.race([pendingApprovals(industry).catch(() => null), new Promise<null>((done) => setTimeout(done, 1500, null))]);
+    if (waiting) counts["/workspace/approvals"] = waiting;
+  }
   const life = config.tenant?.lifecycle;
   const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
   const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due", readOnly: !life.writable, payUrl: invoice?.pay_url } : null;
@@ -48,13 +55,14 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   return (
     <OsShell
       industry={industry}
-      shop={{ ...shop, modules: featuresFor(shop.modules, roles) }}
+      shop={{ ...shop, modules }}
       company={config.tenant?.company}
       person={person}
       team={canManageTeam(roles)}
       reports={canSeeReports(roles)}
       notice={notice}
       canReset={!config.tenant?.profile}
+      counts={counts}
     >
       <GuideProvider scope={guide.scope} role={guide.role}>
         {children}

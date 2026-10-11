@@ -25,10 +25,12 @@ type OsShellProps = {
   /** Contract notice (trial, renewal, read-only). */
   notice?: { message: string; urgent: boolean; readOnly?: boolean; payUrl?: string } | null;
   canReset?: boolean;
+  /** Badge numbers by menu href, e.g. what waits for the person's signature. */
+  counts?: Record<string, number>;
 };
 
-export function OsShell({ industry, shop, children, company, person, team = false, reports = false, notice, canReset = true }: OsShellProps) {
-  const sections = navSections(navItemsForShop(shop, { team, reports }));
+export function OsShell({ industry, shop, children, company, person, team = false, reports = false, notice, canReset = true, counts = {} }: OsShellProps) {
+  const sections = navSections(navItemsForShop(shop, { team, reports }).map((item) => (counts[item.href] ? { ...item, count: counts[item.href] } : item)));
   const reset = canReset ? (
     <Link href="/start" className={buttonClass({ variant: "ghost", size: "sm" })}>
       重設現場
