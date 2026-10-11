@@ -56,6 +56,16 @@ CUSTOM_FIELDS = {
 			"no_copy": 1,
 		},
 	],
+	"User": [
+		{
+			"fieldname": "dropout_chatwoot_user_id",
+			"fieldtype": "Data",
+			"label": "Chatwoot 使用者 ID",
+			"insert_after": "username",
+			"read_only": 1,
+			"no_copy": 1,
+		},
+	],
 	"Stock Reconciliation": [
 		{
 			"fieldname": "dropout_import_key",

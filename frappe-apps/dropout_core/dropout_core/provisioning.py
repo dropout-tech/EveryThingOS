@@ -42,6 +42,41 @@ def create_integration_user(email=None):
 	return {"user": email, "api_key": frappe.db.get_value("User", email, "api_key"), "api_secret": secret}
 
 
+SHELL_CLIENT = "DropOut OS"
+
+
+def create_oauth_client(redirect_uri, app_name=SHELL_CLIENT):
+	"""Register the DropOut OS shell with Frappe's own OAuth provider. Staff log in
+	with their ERPNext user, so ERPNext roles decide what the shell may show."""
+	name = frappe.db.get_value("OAuth Client", {"app_name": app_name})
+	doc = frappe.get_doc("OAuth Client", name) if name else frappe.new_doc("OAuth Client")
+	uris = set(filter(None, (doc.redirect_uris or "").split()))
+	uris.add(redirect_uri)
+	doc.update(
+		{
+			"app_name": app_name,
+			"scopes": "all openid",
+			"redirect_uris": "\n".join(sorted(uris)),
+			"default_redirect_uri": doc.default_redirect_uri or redirect_uri,
+			"grant_type": "Authorization Code",
+			"response_type": "Code",
+			"skip_authorization": 1,
+		}
+	)
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return {"client_id": doc.client_id, "client_secret": doc.client_secret, "redirect_uris": doc.redirect_uris.split()}
+
+
+def link_chatwoot_user(email, chatwoot_user_id):
+	"""The shell opens Chatwoot through Platform API SSO for this user."""
+	if not frappe.db.exists("User", email):
+		return {"linked": False, "reason": "no such user"}
+	frappe.db.set_value("User", email, "dropout_chatwoot_user_id", str(chatwoot_user_id))
+	frappe.db.commit()
+	return {"linked": True}
+
+
 def data_import(doctype, file_path, import_type="Insert", submit_after_import=0):
 	"""Run a file through Frappe's Data Import document, the same path as the UI.
 

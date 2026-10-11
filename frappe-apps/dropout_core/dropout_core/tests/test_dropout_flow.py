@@ -220,6 +220,47 @@ class TestMeetingsAndImport(FrappeTestCase):
 			os.unlink(fh.name)
 
 
+class TestShellReadModels(FrappeTestCase):
+	def test_books_people_letter_as_admin(self):
+		from dropout_core import shell
+
+		customer = make_customer("殼客人", email="shell@example.com")
+		order = submit(
+			frappe.get_doc(
+				{"doctype": "Sales Order", "customer": customer, "company": company(), "transaction_date": nowdate(), "delivery_date": add_days(nowdate(), 3), "items": [{"item_code": make_item(), "qty": 2, "rate": 500}]}
+			)
+		)
+		books = shell.books()
+		self.assertEqual(books["denied"], [])
+		self.assertIn(order.name, [d["no"] for d in books["sales"]])
+		self.assertEqual(next(d for d in books["sales"] if d["no"] == order.name)["href"], f"/app/sales-order/{order.name}")
+		for key in ("month_sales", "ar", "ap", "cash", "inventory_value", "stock", "ar_aging", "journals", "einvoices", "pnl"):
+			self.assertIn(key, books)
+		self.assertIn(customer, [p["party"] for p in shell.people()])
+		letter = shell.letter()
+		self.assertIn("新朋友", [g["name"] for g in letter["groups"]])
+		self.assertEqual(set(letter["consent"]), {"granted", "pending", "withdrawn"})
+		self.assertEqual(shell.whoami()["user"], "Administrator")
+
+	def test_books_lists_denied_sections_for_a_sales_user(self):
+		from dropout_core import shell
+
+		email = "sales-only@example.com"
+		if not frappe.db.exists("User", email):
+			frappe.get_doc({"doctype": "User", "email": email, "first_name": "Sales", "send_welcome_email": 0}).insert(ignore_permissions=True)
+		user = frappe.get_doc("User", email)
+		user.add_roles("Sales User")
+		frappe.set_user(email)
+		try:
+			books = shell.books()
+		finally:
+			frappe.set_user("Administrator")
+		self.assertIn("journals", books["denied"])
+		self.assertIn("Purchase Order", books["denied"])
+		self.assertNotIn("sales", books["denied"])
+		self.assertNotIn("Sales Order", books["denied"])
+
+
 class TestWebsite(FrappeTestCase):
 	def test_publish_items_to_webshop(self):
 		from dropout_core.website import publish_items
