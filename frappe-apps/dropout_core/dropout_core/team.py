@@ -85,10 +85,13 @@ def _admins(exclude=None):
 
 
 def _profiles():
+	# Other DropOut apps describe the profiles they add with the `dropout_profile_notes` hook.
+	notes = {name: values[-1] for name, values in frappe.get_hooks("dropout_profile_notes", default={}).items()}
+	notes.update(PROFILE_NOTES)
 	rows = []
 	for name in frappe.get_all("Role Profile", pluck="name", order_by="creation asc"):
 		roles = frappe.get_all("Has Role", filters={"parenttype": "Role Profile", "parent": name}, pluck="role")
-		rows.append({"name": name, "note": PROFILE_NOTES.get(name, ""), "roles": sorted(roles), "admin": ADMIN in roles})
+		rows.append({"name": name, "note": notes.get(name, ""), "roles": sorted(roles), "admin": ADMIN in roles})
 	order = {name: i for i, (name, _n, _r) in enumerate(PROFILES)}
 	return sorted(rows, key=lambda r: order.get(r["name"], len(order)))
 

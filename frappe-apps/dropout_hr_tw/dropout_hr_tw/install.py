@@ -12,7 +12,7 @@ from frappe.utils import getdate
 SETTINGS = "Taiwan Payroll Settings"
 STRUCTURE = "台灣月薪範本"
 
-HR_PROFILE = ("人資", "員工資料、請假核准、打卡、薪資", ("HR Manager", "HR User", "Leave Approver", "Employee"))
+HR_PROFILE = ("人資", ("HR Manager", "HR User", "Leave Approver", "Employee"))
 # Added once, on first install, to dropout_core's profiles so the owner sees payroll and
 # managers can approve leave. Later edits by the company are not touched again.
 EXTEND_PROFILES = {
@@ -139,7 +139,7 @@ def _existing_roles():
 
 
 def ensure_hr_profile():
-	name, _note, roles = HR_PROFILE
+	name, roles = HR_PROFILE
 	if frappe.db.exists("Role Profile", name):
 		return
 	existing = _existing_roles()
