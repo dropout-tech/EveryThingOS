@@ -1840,6 +1840,48 @@ html[data-theme="white"] .os-shell .glass-chip {
   .link-card:hover {
     border-color: color-mix(in srgb, var(--cream) 45%, transparent);
   }
+
+  /* 通知 bell */
+  .notify-bell {
+    position: relative;
+  }
+
+  .notify-bell .badge-count {
+    margin-left: -0.125rem;
+  }
+
+  .notify-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-space-2);
+  }
+
+  .notify-item {
+    display: flex;
+    min-height: var(--ui-tap);
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--surface-card-border);
+    border-radius: var(--control-radius);
+    background: var(--surface-card);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    text-decoration: none;
+  }
+
+  .notify-item:hover {
+    background: var(--surface-hover);
+  }
+
+  .notify-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    margin-top: 0.4rem;
+    border-radius: 999px;
+    background: var(--accent);
+  }
 }
 
 /* Unlayered on purpose: `.glass > *` would otherwise force position: relative, and a clipping parent would trap it. */
