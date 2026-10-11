@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { Avatar } from "./ui/Avatar";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
@@ -94,16 +95,19 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
 
       {denied.has("on_leave") ? null : (
         <section className="space-y-2">
-          <h2 className="text-sm font-medium">今天誰請假</h2>
+          <h2 className="section-title">今天誰請假</h2>
           {data.onLeave.length ? (
             <ul className="grid gap-2 md:grid-cols-2">
               {data.onLeave.map((r) => (
                 <li key={`${r.name}-${r.fromDate}`} className="glass-chip flex items-center justify-between gap-3 p-3 text-sm">
-                  <span>
-                    {r.name}
-                    <span className="ml-2 text-cream-dim">
-                      {r.leaveType}
-                      {r.halfDay ? "（半天）" : ""}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Avatar name={r.name} />
+                    <span className="min-w-0">
+                      {r.name}
+                      <span className="ml-2 text-cream-dim">
+                        {r.leaveType}
+                        {r.halfDay ? "（半天）" : ""}
+                      </span>
                     </span>
                   </span>
                   <span className="text-xs text-cream-dim">
@@ -125,22 +129,25 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
 
       {denied.has("approvals") ? null : (
         <section className="space-y-2">
-          <h2 className="text-sm font-medium">等你核准的假單</h2>
+          <h2 id="leave" className="section-title">等你核准的假單</h2>
           {shownApprovals.length ? (
             <ul className="space-y-2">
               {shownApprovals.map((a) => (
                 <li key={a.name} className="glass flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
-                  <div className="min-w-0">
-                    <p>
-                      {a.employee}
-                      <span className="ml-2 text-cream-dim">
-                        {a.leaveType} · {days(a.fromDate, a.toDate)} · {a.days} 天
-                      </span>
-                    </p>
-                    {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Avatar name={a.employee} />
+                    <div className="min-w-0">
+                      <p>
+                        {a.employee}
+                        <span className="ml-2 text-cream-dim">
+                          {a.leaveType} · {days(a.fromDate, a.toDate)} · {a.days} 天
+                        </span>
+                      </p>
+                      {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
+                    </div>
                   </div>
                   <span className="flex items-center gap-2">
-                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-primary btn-sm">
+                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-secondary btn-sm">
                       核准
                     </button>
                     <button type="button" disabled={action.busy} onClick={async () => {
@@ -167,7 +174,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
       {data.payroll ? (
         <section className="glass-well space-y-2 p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-medium">{data.payroll.month} 薪資</h2>
+            <h2 className="section-title">{data.payroll.month} 薪資</h2>
             <p className="text-xs text-cream-dim">在職 {data.payroll.employees} 人</p>
           </div>
           <p className="text-lg">{PAYROLL_STATE[data.payroll.state]}</p>

@@ -40,7 +40,7 @@ export default function IndustriesPage() {
               <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((item) => (
                   <li key={item.id}>
-                    <Link href={`/industries/${item.id}`} className="glass-well block h-full p-4 hover:bg-white/10">
+                    <Link href={`/industries/${item.id}`} className="glass-well link-card block h-full p-4">
                       <p className="font-medium">{item.nameZh}</p>
                       <p className="mt-2 text-sm text-cream-dim">{item.tagline}</p>
                       <p className="mt-2 text-xs text-cream-dim">{item.sampleLoop}</p>

@@ -53,6 +53,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 可靠性：`/health`、每 5 分鐘監看各家站台、事故通知、公開 `/status`、GitHub Actions 外部監看（`uptime.yml`）、備份新鮮度警示、從 R2 還原演練 `backup verify --from-r2`、整台主機重建 `fleet restore-all`、解約 90 天後刪除 `fleet purge`、膠水 D1 每日匯出 | `glue/src/monitor.ts`、`glue/src/backups.ts`、`web/app/status`、`toolkit`、`.github/workflows/uptime.yml` | 目標、演練排程與各種警示的處理見 [docs/RELIABILITY.md](docs/RELIABILITY.md) |
 | 導入教學：開站清單（讀真實進度）、第一筆生意練習、各職務第一天指南、頁面提示、空白頁下一步、說明中心 `/help` | `web/app/workspace`、`web/app/help`、`web/lib/help.ts`、`dropout_core.api.setup_checklist` | 顧問導入腳本見 [docs/ONBOARDING-GUIDE.md](docs/ONBOARDING-GUIDE.md) |
 | 介面：設計 token 與共用元件、手機底部選單、載入與錯誤畫面、確認對話框、WCAG AA 對比、減少動態；官網價值主張、免費導入預約表單、SEO（sitemap、OG 圖） | `web/components/ui`、`web/app/globals.css`、`web/app/consulting` | [docs/UI-GUIDE.md](docs/UI-GUIDE.md) |
+| 三種介面風格：現代極簡、流體藝術（預設）、社群媒體，各有黑白兩色；官網首頁、頂部「風格」選單、`/workspace/settings#appearance` 可換，記在 `dropout_style` cookie；⌘K 指令面板、麵包屑、新手開站移到 `/start` | `web/lib/style.ts`、`web/app/styles/{minimal,fluid,social}.css`、`web/components/styles`、`web/components/StylePicker.tsx` | 只換外觀不換功能；新增元件請照 [docs/UI-GUIDE.md](docs/UI-GUIDE.md) 的風格掛勾 |
 | 信任文件：服務條款、隱私權政策、資料處理附約、SLA、資安說明 | `web/app/{terms,privacy,dpa,sla,security}` | **草稿**，公司資料待填、簽約前請律師審閱（[docs/TRUST.md](docs/TRUST.md)） |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |

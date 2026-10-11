@@ -48,7 +48,7 @@ export default function PricingPage() {
               <Link href="/consulting#book" className="glass-cta rounded-full px-6 py-3 font-medium">
                 約免費導入
               </Link>
-              <Link href="/" className="glass-pill px-6 py-3">
+              <Link href="/start" className="glass-pill px-6 py-3">
                 先看示範
               </Link>
             </div>

@@ -8,7 +8,10 @@ import { PRICE_LABEL } from "@/lib/commercial";
 import { RoleGuide } from "@/components/RoleGuide";
 import { SetupChecklist } from "@/components/SetupChecklist";
 import { SetupProgress } from "@/components/SetupProgress";
+import { StylePicker } from "@/components/StylePicker";
+import { currentStyle } from "@/lib/style-server";
 import { workspaceGuide } from "@/lib/guide-server";
+import { formatTwd } from "@/lib/format";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -76,63 +79,69 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   return (
     <ModuleFrame kicker="設定" title={pack.nameZh}>
       <div className="glass glass-hero space-y-5 p-6 md:p-8">
-        <div>
-          <p className="text-sm text-cream-dim">現場</p>
-          <p className="mt-1">{scene.label} · {size?.label}</p>
-        </div>
-        <div>
-          <p className="text-sm text-cream-dim">打開的</p>
-          <p className="mt-1">
-            {FEATURES.filter((item) => shop?.modules.includes(item.id))
-              .map((item) => item.label)
-              .join("、") || "還沒選"}
-          </p>
-        </div>
-        <div>
-          <p className="text-sm text-cream-dim">客人怎麼走</p>
-          <p className="mt-1">{pack.workflow.stages.join(" → ")}</p>
-        </div>
-        <div>
-          <p className="text-sm text-cream-dim">連線</p>
-          <ul className="mt-1 space-y-1 text-sm">
-            {SYSTEMS.map(([id, label, demo]) => (
-              <li key={id} className="flex flex-wrap items-center gap-2">
-                <span>{label}</span>
-                {live[id] ? <Badge tone="ok">已接上</Badge> : <Badge>{demo}</Badge>}
-              </li>
-            ))}
-          </ul>
-        </div>
-        {me.origin === "live" && me.data ? (
+        <dl className="grid gap-x-10 gap-y-5 md:grid-cols-2">
           <div>
-            <p className="text-sm text-cream-dim">登入的人</p>
-            <p className="mt-1">
-              {me.data.fullName}（{me.data.user}）· {me.data.company}
-            </p>
+            <dt className="text-sm text-cream-dim">現場</dt>
+            <dd className="mt-1">{scene.label} · {size?.label}</dd>
           </div>
-        ) : null}
-        {account ? (
-          <div id="plan">
-            <p className="text-sm text-cream-dim">方案與續約</p>
-            <p className="mt-1">
-              {account.company} · 年約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
-            </p>
-            {account.lifecycle.message ? <p className="mt-1 text-sm text-cream-dim">{account.lifecycle.message}</p> : null}
-            {invoice ? (
-              <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
-                <span>
-                  續約帳單 {invoice.id}：NT${invoice.amount.toLocaleString("en-US")}（含 5% 營業稅）
-                </span>
-                <a href={invoice.pay_url} className={buttonClass({ variant: "primary", size: "sm" })}>
-                  線上付款
-                </a>
-              </p>
-            ) : null}
+          <div>
+            <dt className="text-sm text-cream-dim">打開的</dt>
+            <dd className="mt-1">
+              {FEATURES.filter((item) => shop?.modules.includes(item.id))
+                .map((item) => item.label)
+                .join("、") || "還沒選"}
+            </dd>
           </div>
-        ) : null}
+          <div>
+            <dt className="text-sm text-cream-dim">客人怎麼走</dt>
+            <dd className="mt-1">{pack.workflow.stages.join(" → ")}</dd>
+          </div>
+          <div>
+            <dt className="text-sm text-cream-dim">連線</dt>
+            <dd className="mt-1">
+              <ul className="space-y-1 text-sm">
+                {SYSTEMS.map(([id, label, demo]) => (
+                  <li key={id} className="flex flex-wrap items-center gap-2">
+                    <span>{label}</span>
+                    {live[id] ? <Badge tone="ok">已接上</Badge> : <Badge>{demo}</Badge>}
+                  </li>
+                ))}
+              </ul>
+            </dd>
+          </div>
+          {me.origin === "live" && me.data ? (
+            <div>
+              <dt className="text-sm text-cream-dim">登入的人</dt>
+              <dd className="mt-1">
+                {me.data.fullName}（{me.data.user}）· {me.data.company}
+              </dd>
+            </div>
+          ) : null}
+          {account ? (
+            <div id="plan">
+              <dt className="text-sm text-cream-dim">方案與續約</dt>
+              <dd className="mt-1">
+                <p>
+                  {account.company} · 年約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
+                </p>
+                {account.lifecycle.message ? <p className="mt-1 text-sm text-cream-dim">{account.lifecycle.message}</p> : null}
+                {invoice ? (
+                  <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                    <span>
+                      續約帳單 {invoice.id}：{formatTwd(invoice.amount)}（含 5% 營業稅）
+                    </span>
+                    <a href={invoice.pay_url} className={buttonClass({ variant: "primary", size: "sm" })}>
+                      線上付款
+                    </a>
+                  </p>
+                ) : null}
+              </dd>
+            </div>
+          ) : null}
+        </dl>
         <div className="flex flex-wrap gap-2 border-t border-[var(--line)] pt-5">
           {account?.profile ? null : (
-            <Link href="/?setup=1" className={buttonClass({ variant: "secondary", size: "sm" })}>
+            <Link href="/start" className={buttonClass({ variant: "secondary", size: "sm" })}>
               重設現場與功能
             </Link>
           )}
@@ -185,6 +194,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           )}
         </section>
       ) : null}
+
+      <section id="appearance" className="glass-well space-y-3 p-5">
+        <h2 className="section-title">介面風格</h2>
+        <p className="text-sm text-cream-dim">每個人可以選自己看得舒服的樣子；功能和位置都一樣，只換外觀。</p>
+        <StylePicker current={await currentStyle()} variant="cards" />
+      </section>
 
       <section className="space-y-3" aria-label="導入教學">
         <RoleGuide allowed={guide.allowed} variant="settings" />

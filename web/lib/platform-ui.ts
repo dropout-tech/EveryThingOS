@@ -29,4 +29,4 @@ export const STAGE_TONE: Record<Stage, Tone> = {
 /** Most urgent first. */
 export const STAGE_ORDER: Stage[] = ["read_only", "past_due", "suspended", "due_soon", "trial", "active", "cancelled"];
 
-export const ntd = (n: number) => `NT$${n.toLocaleString("en-US")}`;
+export { formatTwd as ntd } from "./format";

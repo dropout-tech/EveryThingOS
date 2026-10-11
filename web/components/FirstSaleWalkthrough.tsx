@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Badge } from "./ui/Badge";
 import { demoKey, useDemoState } from "@/lib/demo-state";
 import { SALES_STEPS, advanceSalesDoc, formatTwd, makeQuote, type SalesDoc } from "@/lib/erp";
 import type { IndustryPack } from "@/lib/types";
@@ -77,7 +78,7 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
   return (
     <div className="space-y-5">
       <p className="glass-well inline-flex items-center gap-2 px-3 py-1.5 text-xs" role="note">
-        <span className="rounded-full bg-orange px-2 py-0.5 text-ink">練習</span>
+        <Badge tone="practice" />
         {live ? "只存在這個瀏覽器分頁，不會寫進 ERPNext。真的要開單，到「生意」。" : "用練習帳本，關掉分頁就清掉，不會動到任何真的資料。"}
       </p>
 
@@ -143,7 +144,7 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
                   開報價（練習）
                 </button>
                 {error ? (
-                  <p id="practice-error" className="w-full text-sm text-orange" role="alert">
+                  <p id="practice-error" className="w-full text-sm text-danger" role="alert">
                     {error}
                   </p>
                 ) : null}

@@ -6,7 +6,10 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
+import { Avatar } from "./ui/Avatar";
 import { buttonClass } from "./ui/Button";
+import { Drawer } from "./ui/Drawer";
+import { SearchBox } from "./ui/SearchBox";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
 import type { IndustryPack } from "@/lib/types";
@@ -45,6 +48,9 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
   const [leads, setLeads] = useBoardState(demoKey("leads", pack.id), initial, live);
   const stages = live ? liveStages(leads) : pack.workflow.stages;
   const [note, setNote] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [openName, setOpenName] = useState<string | null>(null);
+  const opened = leads.find((lead) => lead.name === openName) ?? null;
 
   function onNext(lead: Lead) {
     const index = stages.indexOf(lead.stage);
@@ -70,15 +76,29 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
     window.setTimeout(() => router.push("/workspace/erp/sales"), 700);
   }
 
+  const needle = query.trim().toLowerCase();
+  const shown = needle ? leads.filter((lead) => `${lead.name} ${lead.channel}`.toLowerCase().includes(needle)) : leads;
   const columns = stages.map((stage) => ({
     stage,
-    cards: leads.filter((lead) => lead.stage === stage),
+    cards: shown.filter((lead) => lead.stage === stage),
   }));
+  const nextLabel = (lead: Lead) => {
+    const index = stages.indexOf(lead.stage);
+    return index >= stages.length - 1 ? "轉成一筆生意" : `下一步：${stages[index + 1]}`;
+  };
 
   return (
     <div className="space-y-4">
       {live ? <LiveLeadForm /> : null}
       <ActionNote>{note}</ActionNote>
+      {leads.length ? (
+        <div className="toolbar" id="find">
+          <SearchBox label="找客人" placeholder="名字或從哪來，例如 LINE" value={query} onChange={setQuery} />
+          <p className="text-xs text-cream-dim" role="status">
+            {needle ? `找到 ${shown.length} 位` : `共 ${leads.length} 位`}
+          </p>
+        </div>
+      ) : null}
       {live && !leads.length ? (
         <EmptyState
           compact
@@ -92,9 +112,9 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
-            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+            <h2 className="flex items-center justify-between gap-2 text-sm font-medium">
               <span>{live ? stageLabel(column.stage) : column.stage}</span>
-              <span className="text-xs font-normal text-cream-dim">{column.cards.length}</span>
+              <span className="badge-count">{column.cards.length}</span>
             </h2>
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
@@ -103,8 +123,13 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                   const last = stageIndex >= stages.length - 1;
                   return (
                     <li key={lead.href ?? lead.name} className="glass-chip p-3">
-                      <p>{lead.name}</p>
-                      <p className="mt-1 text-xs text-cream-dim">{lead.channel}</p>
+                      <button type="button" className="flex w-full items-center gap-2 text-left" aria-haspopup="dialog" onClick={() => setOpenName(lead.name)}>
+                        <Avatar name={lead.name} />
+                        <span className="min-w-0">
+                          <span className="block truncate underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">{lead.name}</span>
+                          <span className="block text-xs text-cream-dim">{lead.channel}</span>
+                        </span>
+                      </button>
                       {live ? (
                         <span className="mt-2 flex gap-2">
                           <DeskLink href={lead.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
@@ -116,19 +141,64 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                         </span>
                       ) : (
                         <button type="button" onClick={() => onNext(lead)} className={buttonClass({ variant: last ? "primary" : "secondary", size: "sm", block: true, className: "mt-2" })}>
-                          {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}
+                          {nextLabel(lead)}
                         </button>
                       )}
                     </li>
                   );
                 })
               ) : (
-                <li className="text-xs text-cream-dim">這一格目前沒人</li>
+                <li className="text-xs text-cream-dim">{needle ? "這一格沒有符合的人" : "這一格目前沒人"}</li>
               )}
             </ul>
           </section>
         ))}
       </div>
+      <Drawer
+        open={Boolean(opened)}
+        title={opened?.name ?? ""}
+        onClose={() => setOpenName(null)}
+        footer={
+          opened ? (
+            live ? (
+              <>
+                <a href="/workspace/erp/sales#new-quote" className={buttonClass({ variant: "primary" })}>
+                  開報價
+                </a>
+                <DeskLink href={opened.href} className={buttonClass({ variant: "secondary" })}>
+                  在 ERPNext 打開
+                </DeskLink>
+              </>
+            ) : (
+              <button
+                type="button"
+                className={buttonClass({ variant: "primary" })}
+                onClick={() => {
+                  onNext(opened);
+                  setOpenName(null);
+                }}
+              >
+                {nextLabel(opened)}
+              </button>
+            )
+          ) : null
+        }
+      >
+        {opened ? (
+          <dl>
+            <dt>現在在</dt>
+            <dd>{live ? stageLabel(opened.stage) : opened.stage}</dd>
+            <dt>從哪來</dt>
+            <dd>{opened.channel}</dd>
+            {opened.score ? (
+              <>
+                <dt>熱度</dt>
+                <dd className="num">{opened.score}</dd>
+              </>
+            ) : null}
+          </dl>
+        ) : null}
+      </Drawer>
     </div>
   );
 }

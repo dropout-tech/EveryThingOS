@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { COMMERCIAL, FAQ, MODULE_STATUS, MODULES, ONBOARDING_FLOW, PRICE_YEAR_TWD, TRUST_LINKS, type ModuleStatus } from "@/lib/commercial";
 import { ERP_PARITY } from "@/lib/erp";
+import { formatTwd } from "@/lib/format";
 
 const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: "muted" };
 
@@ -15,7 +16,7 @@ export function SectionTitle({ kicker, title, children }: { kicker: string; titl
   );
 }
 
-export function SiteHero({ demoHref = "/", as: Heading = "h1" }: { demoHref?: string; as?: "h1" | "h2" }) {
+export function SiteHero({ demoHref = "/start", as: Heading = "h1" }: { demoHref?: string; as?: "h1" | "h2" }) {
   return (
     <section className="site-sheet p-6 sm:p-10" aria-labelledby="hero-title">
       <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">台灣中小企業的作業系統</p>
@@ -28,7 +29,7 @@ export function SiteHero({ demoHref = "/", as: Heading = "h1" }: { demoHref?: st
         {COMMERCIAL.audience}進銷存與帳對齊鼎新 A1／億看，畫面只問「下一步是什麼」。
       </p>
       <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-3xl font-medium sm:text-4xl">NT${PRICE_YEAR_TWD.toLocaleString("zh-TW")}</p>
+        <p className="num text-3xl font-medium sm:text-4xl">{formatTwd(PRICE_YEAR_TWD)}</p>
         <p className="text-cream-dim">一年・未稅・一間公司・不限帳號・含顧問到現場導入</p>
       </div>
       <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -163,7 +164,7 @@ export function TrustStrip() {
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRUST_LINKS.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} className="site-sheet block h-full p-4 hover:bg-white/10">
+            <Link href={t.href} className="site-sheet link-card block h-full p-4">
               <span className="font-medium">{t.label} →</span>
               <span className="mt-1 block text-sm text-cream-dim">{t.detail}</span>
             </Link>

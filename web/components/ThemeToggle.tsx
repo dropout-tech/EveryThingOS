@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { syncThemeColor } from "@/lib/style";
 import type { UiTheme } from "@/lib/theme";
 
 const options: { id: UiTheme; label: string; name: string }[] = [
@@ -14,7 +15,7 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
   const [pending, start] = useTransition();
 
   return (
-    <div className="theme-toggle flex rounded-full border border-[var(--line)] bg-white/10 p-0.5 text-xs" role="group" aria-label="介面顏色">
+    <div className="theme-toggle" role="group" aria-label="介面顏色">
       {options.map((option) => {
         const active = current === option.id;
         return (
@@ -25,11 +26,12 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
             aria-pressed={active}
             aria-label={option.name}
             title={option.name}
-            className={`min-h-8 min-w-9 rounded-full px-2.5 ${active ? "bg-teal font-medium text-ink" : "text-cream-dim hover:text-cream"}`}
+            className="min-h-8 min-w-9 rounded-full px-2.5"
             onClick={() => {
               if (active) return;
               start(async () => {
                 document.documentElement.dataset.theme = option.id;
+                syncThemeColor();
                 await fetch("/api/theme", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

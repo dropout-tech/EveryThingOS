@@ -16,16 +16,15 @@ export default async function WorkspaceHome() {
   if (books.origin === "error") return <SourceFailure source={books} />;
 
   return (
-    <div className="space-y-6">
-      <h1 className="sr-only">今天</h1>
-      <RoleGuide allowed={guide.allowed} />
-      <Hint id="today" help="module-today" />
-      <TodayList books={books.data} />
+    <div className="space-y-8">
+      <TodayList books={books.data} allowed={guide.allowed} />
       {guide.checklist ? (
         <SetupChecklist items={guide.checklist} practice={guide.practice} />
       ) : setup.origin === "live" && setup.data && setup.data.done < setup.data.total ? (
         <SetupProgress setup={setup.data} />
       ) : null}
+      <RoleGuide allowed={guide.allowed} />
+      <Hint id="today" help="module-today" />
       <SourceNote source={books} demoText="練習。導入後換成你們的客人與帳。" />
     </div>
   );

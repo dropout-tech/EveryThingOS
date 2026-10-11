@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { HINTS, type HintId } from "@/lib/guide";
 import { useGuideFlag } from "@/lib/guide-state";
+import { MoreText } from "./ui/MoreText";
 
 /**
  * A small dismissible tip for one page. Dismissal is remembered per person in
@@ -62,17 +63,17 @@ export function Hint({ id, help, className = "" }: { id: HintId; help?: string; 
       role="note"
       aria-labelledby={titleId}
       onKeyDown={onKeyDown}
-      className={`glass-well relative flex max-w-xl items-start gap-3 p-4 text-sm motion-safe:transition motion-safe:duration-300 starting:translate-y-1 starting:opacity-0 ${className}`}
+      className={`hint glass-well relative flex max-w-xl items-start gap-3 p-4 text-sm motion-safe:transition motion-safe:duration-300 starting:translate-y-1 starting:opacity-0 ${className}`}
     >
-      <span aria-hidden className="glass-cta mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs">
+      <span aria-hidden className="hint-icon mt-0.5">
         ?
       </span>
       <div className="min-w-0 flex-1">
         <p id={titleId} className="font-medium">
           {title}
         </p>
-        <p className="mt-1 text-cream-dim">{body}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
+        <MoreText className="mt-1 text-cream-dim">{body}</MoreText>
+        <div className="mt-2 flex flex-wrap items-center gap-4 text-xs">
           <button ref={closeRef} type="button" onClick={close} className="glass-pill rounded-full px-3 py-1">
             知道了
           </button>

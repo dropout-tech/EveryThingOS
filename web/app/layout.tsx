@@ -1,12 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
-import { GlassPointer } from "@/components/GlassPointer";
-import { OceanColumn } from "@/components/OceanColumn";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { StyleBackdrop } from "@/components/styles/StyleBackdrop";
 import { COMMERCIAL } from "@/lib/commercial";
 import { currentScene } from "@/lib/scene-server";
+import { themeColor } from "@/lib/style";
+import { currentStyle } from "@/lib/style-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
+import "./styles/minimal.css";
+import "./styles/fluid.css";
+import "./styles/social.css";
 
 const noto = Noto_Sans_TC({
   variable: "--font-noto",
@@ -38,17 +42,19 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export const viewport: Viewport = { themeColor: "#07080c" };
+export async function generateViewport(): Promise<Viewport> {
+  const [theme, style] = await Promise.all([currentTheme(), currentStyle()]);
+  return { themeColor: themeColor(style, theme) };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [theme, scene] = await Promise.all([currentTheme(), currentScene()]);
+  const [theme, scene, style] = await Promise.all([currentTheme(), currentScene(), currentStyle()]);
 
   return (
-    <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
+    <html lang="zh-TW" data-theme={theme} data-scene={scene} data-style={style} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
-        <GlassPointer />
-        <OceanColumn />
+        <StyleBackdrop style={style} />
         <div className="page-shell">{children}</div>
         <ServiceWorker />
       </body>

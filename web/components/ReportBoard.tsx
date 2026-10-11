@@ -47,10 +47,10 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="glass-chip p-4">
-      <p className="text-sm text-cream-dim">{label}</p>
-      <p className="display mt-2 text-2xl">{value}</p>
-      {sub ? <p className="mt-1 text-xs text-cream-dim">{sub}</p> : null}
+    <div className="kpi">
+      <p className="kpi-label">{label}</p>
+      <p className="kpi-value">{value}</p>
+      {sub ? <p className="kpi-note">{sub}</p> : null}
     </div>
   );
 }
@@ -136,7 +136,7 @@ function Numbers({ head, rows }: { head: string[]; rows: (string | number)[][] }
           <thead className="text-cream-dim">
             <tr>
               {head.map((h) => (
-                <th key={h} className="px-2 py-1 font-medium">
+                <th key={h} className={`px-2 py-1 font-medium ${h === head[0] ? "" : "num text-right"}`} data-numeric={h === head[0] ? undefined : ""}>
                   {h}
                 </th>
               ))}
@@ -146,7 +146,7 @@ function Numbers({ head, rows }: { head: string[]; rows: (string | number)[][] }
             {rows.map((row) => (
               <tr key={String(row[0])} className="border-t border-[var(--line)]">
                 {row.map((cell, i) => (
-                  <td key={i} className="px-2 py-1">
+                  <td key={i} className={`px-2 py-1 ${i ? "num text-right" : ""}`} data-numeric={i ? "" : undefined}>
                     {cell}
                   </td>
                 ))}
@@ -235,7 +235,7 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
         {demo ? <Badge tone="demo" /> : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="kpi-grid">
         <Kpi label="本月營收（未稅）" value={thisMonth ? formatTwd(thisMonth.amount) : "—"} sub={thisMonth ? (lastMonth ? `上個月整月 ${formatTwd(lastMonth.amount)}` : undefined) : unavailable("revenue")} />
         <Kpi label={`近 ${report.months} 個月營收`} value={revenue ? formatTwd(revenue.reduce((n, r) => n + r.amount, 0)) : "—"} sub={revenue ? "已扣掉退貨" : unavailable("revenue")} />
         <Kpi label="本月毛利率" value={marginNow?.percent != null ? `${marginNow.percent}%` : "—"} sub={marginNow ? `毛利 ${formatTwd(marginNow.profit)}` : margin ? undefined : unavailable("margin")} />
@@ -330,10 +330,10 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
                   <tr>
                     <th scope="col">品項</th>
                     <th scope="col">倉庫</th>
-                    <th scope="col">現有</th>
-                    <th scope="col">預計</th>
-                    <th scope="col">再訂購點</th>
-                    <th scope="col">建議補</th>
+                    <th scope="col" className="num" data-numeric="">現有</th>
+                    <th scope="col" className="num" data-numeric="">預計</th>
+                    <th scope="col" className="num" data-numeric="">再訂購點</th>
+                    <th scope="col" className="num" data-numeric="">建議補</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -341,10 +341,10 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
                     <tr key={`${r.code}-${r.warehouse}`}>
                       <td data-primary="">{r.href ? <DeskLink href={r.href} className="hover:underline">{r.name}</DeskLink> : r.name}</td>
                       <td data-label="倉庫" className="text-cream-dim">{r.warehouse}</td>
-                      <td data-label="現有">{r.actual}</td>
-                      <td data-label="預計" className={`font-medium ${r.projected <= 0 ? "text-danger" : "text-warn"}`}>{r.projected}</td>
-                      <td data-label="再訂購點">{r.reorderLevel}</td>
-                      <td data-label="建議補">{r.reorderQty || "—"}</td>
+                      <td data-label="現有" className="num" data-numeric="">{r.actual}</td>
+                      <td data-label="預計" data-numeric="" className={`num font-medium ${r.projected <= 0 ? "text-danger" : "text-warn"}`}>{r.projected}</td>
+                      <td data-label="再訂購點" className="num" data-numeric="">{r.reorderLevel}</td>
+                      <td data-label="建議補" className="num" data-numeric="">{r.reorderQty || "—"}</td>
                     </tr>
                   ))}
                 </tbody>

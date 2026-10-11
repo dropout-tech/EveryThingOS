@@ -3,9 +3,12 @@ import Link from "next/link";
 import { ToastRoot } from "./ActionNote";
 import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
+import { CommandPalette, PaletteTrigger } from "./CommandPalette";
 import { SideNav, TabBar } from "./SideNav";
+import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { navSections } from "@/lib/nav";
 import { navItemsForShop, type ShopProfile } from "@/lib/shop";
 import type { IndustryPack } from "@/lib/types";
 
@@ -14,6 +17,8 @@ type OsShellProps = {
   shop: ShopProfile;
   children: ReactNode;
   company?: string;
+  /** Signed-in person; practice mode has nobody. */
+  person?: string;
   team?: boolean;
   reports?: boolean;
   /** Contract notice (trial, renewal, read-only). */
@@ -21,10 +26,10 @@ type OsShellProps = {
   canReset?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true }: OsShellProps) {
-  const items = navItemsForShop(shop, { team, reports });
+export function OsShell({ industry, shop, children, company, person, team = false, reports = false, notice, canReset = true }: OsShellProps) {
+  const sections = navSections(navItemsForShop(shop, { team, reports }));
   const reset = canReset ? (
-    <Link href="/?setup=1" className={buttonClass({ variant: "ghost", size: "sm" })}>
+    <Link href="/start" className={buttonClass({ variant: "ghost", size: "sm" })}>
       重設現場
     </Link>
   ) : null;
@@ -38,7 +43,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
         <div className="border-b border-[var(--line)] px-4 py-4">
           <BrandMark href="/workspace" compact />
         </div>
-        <SideNav items={items} />
+        <SideNav sections={sections} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="glass glass-bar sticky top-0 z-30">
@@ -48,12 +53,24 @@ export function OsShell({ industry, shop, children, company, team = false, repor
               {company ?? industry.nameZh}
             </p>
             <div className="flex shrink-0 items-center gap-2">
+              <PaletteTrigger />
               <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 <span aria-hidden className="font-medium">?</span>
                 說明
               </Link>
-              <AppearanceBar />
-              <span className="hidden md:inline-flex">{reset}</span>
+              <span className="hidden md:inline-flex">
+                <AppearanceBar />
+              </span>
+              <span className="hidden lg:inline-flex">{reset}</span>
+              {person ? (
+                <span className="flex items-center gap-2 text-sm" title={person}>
+                  <Avatar name={person} />
+                  <span className="sr-only xl:not-sr-only xl:max-w-32 xl:truncate">
+                    <span className="sr-only">登入的人：</span>
+                    {person}
+                  </span>
+                </span>
+              ) : null}
             </div>
           </div>
           {notice ? (
@@ -80,7 +97,16 @@ export function OsShell({ industry, shop, children, company, team = false, repor
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
-      <TabBar items={items} extras={reset} />
+      <TabBar
+        sections={sections}
+        extras={
+          <>
+            <AppearanceBar />
+            {reset}
+          </>
+        }
+      />
+      <CommandPalette sections={sections} />
       <ToastRoot />
     </div>
   );
