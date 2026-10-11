@@ -1,0 +1,23 @@
+# Cloudflare Tunnel: the host opens no inbound port. Public hostnames are set on
+# the tunnel in the Cloudflare dashboard (or API), pointing at service names on
+# the `dropout` network:
+#
+#   erp.dropout.tw, *.erp.dropout.tw  -> http://frontend:8080
+#   chat.dropout.tw                   -> http://rails:3000
+#   meet-api.dropout.tw               -> http://api-gateway:8000  (Vexa)
+#
+# Put Cloudflare Access in front of /app/system-settings, Coolify, and the Vexa
+# admin API; the glue and the shell call them with service tokens.
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN}
+    networks: [dropout]
+
+networks:
+  dropout:
+    external: true

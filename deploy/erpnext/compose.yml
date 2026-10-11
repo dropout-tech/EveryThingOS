@@ -1,0 +1,118 @@
+# ERPNext for every DropOut company on one bench (one site per company).
+# Service layout follows frappe_docker's pwd.yml. No port is published: the
+# Cloudflare Tunnel (deploy/cloudflared) reaches `frontend` on the internal network.
+
+x-image: &image
+  image: ${ERPNEXT_IMAGE:-ghcr.io/dropout-tech/erpnext:15}
+  restart: unless-stopped
+
+x-backend: &backend
+  <<: *image
+  depends_on:
+    configurator:
+      condition: service_completed_successfully
+  volumes:
+    - sites:/home/frappe/frappe-bench/sites
+    - logs:/home/frappe/frappe-bench/logs
+  networks: [dropout]
+
+services:
+  configurator:
+    <<: *image
+    restart: on-failure
+    entrypoint: ["bash", "-c"]
+    command:
+      - >
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host $$DB_HOST;
+        bench set-config -gp db_port $$DB_PORT;
+        bench set-config -g redis_cache "redis://$$REDIS_CACHE";
+        bench set-config -g redis_queue "redis://$$REDIS_QUEUE";
+        bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
+        bench set-config -gp socketio_port $$SOCKETIO_PORT;
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+      SOCKETIO_PORT: "9000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+    networks: [dropout]
+
+  backend:
+    <<: *backend
+
+  frontend:
+    <<: *backend
+    command: ["nginx-entrypoint.sh"]
+    environment:
+      BACKEND: backend:8000
+      SOCKETIO: websocket:9000
+      FRAPPE_SITE_NAME_HEADER: $$host
+      UPSTREAM_REAL_IP_ADDRESS: 0.0.0.0/0
+      UPSTREAM_REAL_IP_HEADER: CF-Connecting-IP
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+      PROXY_READ_TIMEOUT: "120"
+      CLIENT_MAX_BODY_SIZE: 50m
+    depends_on: [backend, websocket]
+
+  websocket:
+    <<: *backend
+    command: ["node", "/home/frappe/frappe-bench/apps/frappe/socketio.js"]
+
+  queue-short:
+    <<: *backend
+    command: ["bench", "worker", "--queue", "short,default"]
+
+  queue-long:
+    <<: *backend
+    command: ["bench", "worker", "--queue", "long,default,short"]
+
+  scheduler:
+    <<: *backend
+    command: ["bench", "schedule"]
+
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 10
+    volumes:
+      - db:/var/lib/mysql
+    networks: [dropout]
+
+  redis-cache:
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    networks: [dropout]
+
+  redis-queue:
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-queue:/data
+    networks: [dropout]
+
+volumes:
+  sites:
+  logs:
+  db:
+  redis-queue:
+
+networks:
+  dropout:
+    name: dropout

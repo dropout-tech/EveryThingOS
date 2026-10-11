@@ -1,0 +1,67 @@
+# ERPNext v15 + Payments + Webshop + the DropOut apps.
+#
+# Same two stages as frappe_docker's images/layered/Containerfile (frappe/build
+# to assemble the bench, frappe/base to run it). Upstream apps come from
+# apps.json; the DropOut apps are copied from this repo because `bench get-app`
+# cannot install from a subdirectory. Build from the repo root:
+#
+#   docker build -f deploy/erpnext/Containerfile -t ghcr.io/dropout-tech/erpnext:15 .
+
+ARG FRAPPE_BRANCH=version-15
+
+FROM frappe/build:${FRAPPE_BRANCH} AS builder
+
+ARG FRAPPE_BRANCH=version-15
+ARG FRAPPE_PATH=https://github.com/frappe/frappe
+ARG DROPOUT_APPS="dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu"
+
+USER frappe
+COPY --chown=frappe:frappe deploy/erpnext/apps.json /opt/frappe/apps.json
+
+RUN bench init \
+    --apps_path=/opt/frappe/apps.json \
+    --frappe-branch=${FRAPPE_BRANCH} \
+    --frappe-path=${FRAPPE_PATH} \
+    --no-procfile \
+    --no-backups \
+    --skip-redis-config-generation \
+    --verbose \
+    /home/frappe/frappe-bench
+
+WORKDIR /home/frappe/frappe-bench
+COPY --chown=frappe:frappe frappe-apps/ /tmp/dropout-apps/
+
+RUN for app in ${DROPOUT_APPS}; do \
+      cp -r /tmp/dropout-apps/${app} apps/${app} \
+      && rm -rf apps/${app}/*.egg-info \
+      && ./env/bin/pip install --no-cache-dir -e apps/${app}; \
+    done \
+    && ls -1 apps > sites/apps.txt \
+    && bench build --apps "$(echo ${DROPOUT_APPS} | tr ' ' ',')" \
+    && echo "{}" > sites/common_site_config.json \
+    && find apps -mindepth 1 -path "*/.git" | xargs rm -fr
+
+FROM frappe/base:${FRAPPE_BRANCH} AS backend
+
+USER frappe
+COPY --from=builder --chown=frappe:frappe /home/frappe/frappe-bench /home/frappe/frappe-bench
+WORKDIR /home/frappe/frappe-bench
+
+VOLUME [ \
+  "/home/frappe/frappe-bench/sites", \
+  "/home/frappe/frappe-bench/sites/assets", \
+  "/home/frappe/frappe-bench/logs" \
+]
+
+CMD [ \
+  "/home/frappe/frappe-bench/env/bin/gunicorn", \
+  "--chdir=/home/frappe/frappe-bench/sites", \
+  "--bind=0.0.0.0:8000", \
+  "--threads=4", \
+  "--workers=2", \
+  "--worker-class=gthread", \
+  "--worker-tmp-dir=/dev/shm", \
+  "--timeout=120", \
+  "--preload", \
+  "frappe.app:application" \
+]

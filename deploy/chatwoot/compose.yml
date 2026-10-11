@@ -1,0 +1,57 @@
+# Chatwoot Community Edition, one installation with one Chatwoot account per company.
+# Same services as upstream docker-compose.production.yaml; settings live in .env
+# (copy .env.example). No port is published; the Tunnel reaches `rails`.
+#
+# First run:  docker compose run --rm rails bundle exec rails db:chatwoot_prepare
+
+x-chatwoot: &chatwoot
+  image: ${CHATWOOT_IMAGE:?pin a Chatwoot CE release, e.g. chatwoot/chatwoot:vX.Y.Z-ce}
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    RAILS_ENV: production
+    NODE_ENV: production
+    INSTALLATION_ENV: docker
+    POSTGRES_HOST: postgres
+    REDIS_URL: redis://redis:6379
+  volumes:
+    - storage:/app/storage
+  depends_on: [postgres, redis]
+  networks: [dropout]
+
+services:
+  rails:
+    <<: *chatwoot
+    entrypoint: docker/entrypoints/rails.sh
+    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+
+  sidekiq:
+    <<: *chatwoot
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chatwoot
+      POSTGRES_USER: ${POSTGRES_USERNAME:-chatwoot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks: [dropout]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    networks: [dropout]
+
+volumes:
+  storage:
+  postgres:
+  redis:
+
+networks:
+  dropout:
+    external: true
