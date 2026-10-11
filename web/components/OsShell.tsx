@@ -4,6 +4,7 @@ import { ToastRoot } from "./ActionNote";
 import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
 import { CommandPalette, PaletteTrigger } from "./CommandPalette";
+import { NotificationBell } from "./NotificationBell";
 import { SideNav, TabBar } from "./SideNav";
 import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
@@ -53,6 +54,7 @@ export function OsShell({ industry, shop, children, company, person, team = fals
               {company ?? industry.nameZh}
             </p>
             <div className="flex shrink-0 items-center gap-2">
+              <NotificationBell />
               <PaletteTrigger />
               <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 <span aria-hidden className="font-medium">?</span>

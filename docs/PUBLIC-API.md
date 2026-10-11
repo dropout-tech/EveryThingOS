@@ -174,6 +174,7 @@ curl -s https://glue.example.tw/v1/leads \
 | `delivery.submitted` | 出貨單送出 | `fulfilled` |
 | `invoice.submitted` | 銷項發票送出 | `invoiced` |
 | `payment.received` | 收到客戶的款項（Payment Entry 收款） | `paid` |
+| `automation.fired` | 一條自動化規則做完一件事（`data.rule`、`data.title`；見 [AUTOMATIONS.md](AUTOMATIONS.md)） | 膠水自己發，不經 ERPNext |
 
 不是另一條管線：ERPNext 每一筆 DropOut Event 本來就經 Frappe Webhook 送到膠水（`/erpnext/events`），膠水的佇列在處理時順便發給有訂這個事件的 Webhook。同一個事件對同一個 Webhook 只會排一次。
 

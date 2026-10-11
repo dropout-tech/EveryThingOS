@@ -451,7 +451,7 @@ components:
 
     EventType:
       type: string
-      enum: [customer.created, lead.created, quote.sent, sales_order.submitted, delivery.submitted, invoice.submitted, payment.received, ping]
+      enum: [customer.created, lead.created, quote.sent, sales_order.submitted, delivery.submitted, invoice.submitted, payment.received, automation.fired, ping]
 
     WebhookEvent:
       type: object

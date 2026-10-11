@@ -13,6 +13,7 @@ export const WEBHOOK_EVENTS = {
   "delivery.submitted": "fulfilled",
   "invoice.submitted": "invoiced",
   "payment.received": "paid",
+  "automation.fired": "automation_fired",
 } as const;
 
 export type WebhookEventType = keyof typeof WEBHOOK_EVENTS;
@@ -28,7 +29,7 @@ export type WebhookJob = { kind: "webhook"; site: string; webhook_id: string; ev
 
 type FanOutDeps = { store: Store; api?: ApiStore; queue?: { send(job: WebhookJob): Promise<unknown> } };
 
-const PAYLOAD_KEYS = ["amount", "currency", "is_return", "customer_name", "lead_name"];
+const PAYLOAD_KEYS = ["amount", "currency", "is_return", "customer_name", "lead_name", "rule", "title"];
 
 export function publicType(erpType: string): WebhookEventType | null {
   return (Object.entries(WEBHOOK_EVENTS).find(([, t]) => t === erpType)?.[0] as WebhookEventType) ?? null;
