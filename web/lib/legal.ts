@@ -108,7 +108,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "1. 誰跟誰簽",
         paragraphs: [
-          `服務提供者：${ENTITY.brand}（${ENTITY.name}，統一編號 ${ENTITY.taxId}，地址 ${ENTITY.address}，下稱 DropOut）。`,
+          `服務提供者：${ENTITY.brand}（${ENTITY.name}，統一編號 ${ENTITY.taxId}，代表人 ${ENTITY.representative}，地址 ${ENTITY.address}，下稱 DropOut）。`,
           `客戶：在訂單或報價單上簽名的公司。訂單與本條款不同時，以訂單為準。資料處理附約、服務水準、隱私權政策都是本條款的一部分。`,
         ],
       },
