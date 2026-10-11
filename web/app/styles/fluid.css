@@ -531,6 +531,267 @@ html[data-style="fluid"] .kicker::before {
   box-shadow: 0 0 10px rgb(var(--fluid-glow) / 0.5);
 }
 
+/* ---------- Style hooks and content primitives (same layer as the base, so Tailwind utilities still win) ---------- */
+
+html[data-style="fluid"] {
+  --surface-card: rgb(8 18 32 / 0.6);
+  --surface-card-border: rgb(var(--fluid-edge-a) / 0.16);
+  --surface-raised: #0a1523;
+  --surface-hover: rgb(var(--fluid-aqua) / 0.08);
+  --card-shadow: 0 24px 48px -30px rgb(var(--fluid-glow) / 0.5), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  --nav-indicator: #7ee8fa;
+  --avatar-fill: rgb(14 30 48 / 0.9);
+  --overlay: rgb(2 10 20 / 0.58);
+  --fluid-sheen: linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.07) 0%, transparent 38%, transparent 62%, rgb(var(--fluid-violet) / 0.08) 100%);
+  --fluid-card-edge: linear-gradient(
+    135deg,
+    rgb(var(--fluid-edge-a) / 0.55) 0%,
+    rgb(var(--fluid-edge-b) / 0.18) 30%,
+    rgb(255 255 255 / 0.04) 52%,
+    rgb(var(--fluid-edge-c) / 0.2) 78%,
+    rgb(var(--fluid-edge-d) / 0.45) 100%
+  );
+  --fluid-aurora:
+    radial-gradient(70% 90% at 0% 0%, rgb(var(--fluid-aqua) / 0.16), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgb(var(--fluid-violet) / 0.16), transparent 62%),
+    radial-gradient(40% 60% at 78% 0%, rgb(var(--fluid-pearl) / 0.07), transparent 70%);
+}
+
+html[data-style="fluid"][data-theme="white"] {
+  --surface-card: rgb(255 255 255 / 0.66);
+  --surface-card-border: rgb(var(--fluid-edge-a) / 0.16);
+  --surface-raised: #f8fbff;
+  --surface-hover: rgb(var(--fluid-edge-a) / 0.07);
+  --card-shadow: 0 22px 44px -30px rgb(var(--fluid-glow) / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --nav-indicator: #0369a1;
+  --avatar-fill: rgb(255 255 255 / 0.92);
+  --overlay: rgb(16 32 56 / 0.34);
+  --fluid-sheen: linear-gradient(200deg, rgb(var(--fluid-aqua) / 0.16) 0%, transparent 38%, transparent 62%, rgb(var(--fluid-violet) / 0.14) 100%);
+  --fluid-aurora:
+    radial-gradient(70% 90% at 0% 0%, rgb(var(--fluid-aqua) / 0.3), transparent 60%),
+    radial-gradient(60% 80% at 100% 100%, rgb(var(--fluid-violet) / 0.26), transparent 62%),
+    radial-gradient(40% 60% at 78% 0%, rgb(var(--fluid-pearl) / 0.22), transparent 70%);
+}
+
+@layer components {
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action) {
+    position: relative;
+    isolation: isolate;
+    background-image: var(--fluid-sheen);
+  }
+
+  /* Iridescent hairline: a gradient ring masked to the border box, static so a page of cards costs nothing per frame. */
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action)::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 2;
+    padding: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--fluid-card-edge);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    opacity: 0.9;
+    transition: opacity var(--motion-base) ease-out;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover::after {
+    opacity: 1;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive) {
+    transition:
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) ease-out,
+      border-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 28px 56px -28px rgb(var(--fluid-glow) / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+
+  html[data-style="fluid"] .kpi-value {
+    letter-spacing: -0.01em;
+  }
+
+  html[data-style="fluid"] .kpi-label {
+    letter-spacing: 0.02em;
+  }
+
+  /* 今天: the one next action reads as the hero — deeper glass, aurora light, a slow current behind the words. */
+  html[data-style="fluid"] .next-action {
+    overflow: hidden;
+    background-color: rgb(6 16 30 / 0.7);
+    background-image: var(--fluid-aurora);
+    box-shadow:
+      0 40px 90px -50px rgb(var(--fluid-glow) / 0.75),
+      inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+
+  html[data-style="fluid"][data-theme="white"] .next-action {
+    background-color: rgb(255 255 255 / 0.74);
+    box-shadow:
+      0 36px 80px -50px rgb(var(--fluid-glow) / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.95);
+  }
+
+  html[data-style="fluid"] .next-action::before {
+    content: "";
+    position: absolute;
+    inset: -60% -20%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(30% 40% at 30% 55%, rgb(var(--fluid-aqua) / 0.14), transparent 70%),
+      radial-gradient(26% 36% at 70% 45%, rgb(var(--fluid-violet) / 0.12), transparent 70%);
+    animation: fluid-current 38s ease-in-out infinite alternate;
+  }
+
+  html[data-style="fluid"] .next-action::after {
+    background: conic-gradient(
+      from 210deg at 20% 0%,
+      rgb(var(--fluid-edge-a) / 0.9),
+      rgb(var(--fluid-edge-b) / 0.6),
+      rgb(var(--fluid-edge-c) / 0.55),
+      rgb(var(--fluid-edge-d) / 0.75),
+      rgb(var(--fluid-edge-a) / 0.9)
+    );
+    opacity: var(--fluid-edge-alpha);
+  }
+
+  html[data-style="fluid"] .next-action-title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  @keyframes fluid-current {
+    from {
+      transform: translate3d(-6%, 0, 0) rotate(-4deg);
+    }
+    to {
+      transform: translate3d(6%, 4%, 0) rotate(5deg);
+    }
+  }
+
+  html[data-style="fluid"] a.queue-item {
+    transition: background-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] a.queue-item:hover {
+    background: linear-gradient(90deg, rgb(var(--fluid-aqua) / 0.1), transparent 70%);
+  }
+
+  /* Avatars wear a thin iridescent ring, like light caught on the rim of a droplet. */
+  html[data-style="fluid"] .avatar {
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(var(--avatar-fill), var(--avatar-fill)) padding-box,
+      conic-gradient(
+          from 200deg,
+          rgb(var(--fluid-edge-a)),
+          rgb(var(--fluid-edge-b)),
+          rgb(var(--fluid-edge-c)),
+          rgb(var(--fluid-edge-d)),
+          rgb(var(--fluid-edge-a))
+        )
+        border-box;
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+  }
+
+  html[data-style="fluid"] .progress {
+    background: rgb(var(--fluid-aqua) / 0.12);
+    box-shadow: inset 0 0 0 1px rgb(var(--fluid-edge-a) / 0.14);
+  }
+
+  html[data-style="fluid"] .progress > span {
+    background: linear-gradient(90deg, #5ee4f5, #8fb4ff 55%, #c4b0ff);
+    box-shadow: 0 0 12px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"][data-theme="white"] .progress > span {
+    background: linear-gradient(90deg, #0369a1, #3b4fd8 55%, #6d28d9);
+  }
+
+  html[data-style="fluid"] :is(.section-title, .cmdk-group-title, .nav-group-title) {
+    font-family: var(--font-heading), var(--font-body), sans-serif;
+  }
+
+  html[data-style="fluid"] .section-title {
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  html[data-style="fluid"] .page-title {
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  html[data-style="fluid"] .breadcrumbs a:hover {
+    text-decoration-color: rgb(var(--fluid-edge-a));
+  }
+
+  /* Palette, drawer and dialog: the deep-water surface with aurora light, an iridescent rim. */
+  html[data-style="fluid"] :is(.cmdk, .drawer) {
+    border-color: rgb(var(--fluid-edge-a) / 0.3);
+    background-image: var(--fluid-aurora);
+    box-shadow:
+      var(--ui-shadow-3),
+      0 40px 120px -50px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"] :is(.cmdk, .drawer)::backdrop {
+    background: var(--overlay);
+    backdrop-filter: blur(6px) saturate(130%);
+  }
+
+  html[data-style="fluid"] .cmdk-input {
+    border-bottom-color: rgb(var(--fluid-edge-a) / 0.22);
+  }
+
+  html[data-style="fluid"] .cmdk-item[aria-selected="true"] {
+    background: linear-gradient(90deg, rgb(var(--fluid-aqua) / 0.16), rgb(var(--fluid-violet) / 0.08) 70%, transparent);
+  }
+
+  html[data-style="fluid"] .drawer-head {
+    border-bottom-color: rgb(var(--fluid-edge-a) / 0.22);
+  }
+
+  html[data-style="fluid"] .cmdk-trigger {
+    transition:
+      border-color var(--motion-fast) ease-out,
+      box-shadow var(--motion-fast) ease-out;
+  }
+
+  html[data-style="fluid"] .cmdk-trigger:hover {
+    border-color: rgb(var(--fluid-edge-a) / 0.55);
+    box-shadow: 0 8px 22px -12px rgb(var(--fluid-glow) / 0.55);
+  }
+
+  html[data-style="fluid"] .kbd {
+    border-color: rgb(var(--fluid-edge-a) / 0.3);
+  }
+
+  html[data-style="fluid"] .style-card[aria-checked="true"] {
+    border-color: rgb(var(--fluid-edge-a) / 0.8);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--fluid-edge-a) / 0.8),
+      0 18px 40px -24px rgb(var(--fluid-glow) / 0.7);
+  }
+}
+
+@media (pointer: fine) {
+  html[data-style="fluid"]:not([data-fluid-lite]) :is(.card, .kpi, .queue, .next-action) {
+    backdrop-filter: blur(10px) saturate(140%);
+  }
+}
+
 /* ---------- Actions ---------- */
 
 html[data-style="fluid"] .btn-primary,
@@ -766,7 +1027,8 @@ html[data-style="fluid"][data-fluid-lite] .fluid-snow {
   display: none;
 }
 
-html[data-style="fluid"][data-fluid-lite] .fluid-field > * {
+html[data-style="fluid"][data-fluid-lite] .fluid-field > *,
+html[data-style="fluid"][data-fluid-lite] .next-action::before {
   animation: none;
   will-change: auto;
 }
@@ -776,19 +1038,22 @@ html[data-style="fluid"][data-fluid-lite] .fluid-field > * {
     display: none;
   }
 
-  html[data-style="fluid"] .fluid-field > * {
+  html[data-style="fluid"] .fluid-field > *,
+  html[data-style="fluid"] .next-action::before {
     animation: none;
     will-change: auto;
   }
 }
 
 html[data-style="fluid"][data-fluid-paused] .fluid-field > *,
+html[data-style="fluid"][data-fluid-paused] .next-action::before,
 html[data-style="fluid"][data-fluid-paused] .skeleton {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html[data-style="fluid"] .fluid-field > *,
+  html[data-style="fluid"] .next-action::before,
   html[data-style="fluid"] [data-fluid-ripple]::before {
     animation: none !important;
     transition: none !important;
@@ -800,7 +1065,8 @@ html[data-style="fluid"][data-fluid-paused] .skeleton {
   }
 
   html[data-style="fluid"] .btn-primary:not(:disabled):hover,
-  html[data-style="fluid"] .btn-primary:not(:disabled):active {
+  html[data-style="fluid"] .btn-primary:not(:disabled):active,
+  html[data-style="fluid"] :is(a.kpi, .card-interactive):hover {
     transform: none;
   }
 }
@@ -820,7 +1086,8 @@ html[data-style="fluid"][data-fluid-paused] .skeleton {
   }
 
   html[data-style="fluid"] .glass::before,
-  html[data-style="fluid"] :is(.lens-film, .glass-chip, .glass-pill, .glass-well, .btn-secondary, .toast, .tabbar, .site-sheet) {
+  html[data-style="fluid"] :is(.lens-film, .glass-chip, .glass-pill, .glass-well, .btn-secondary, .toast, .tabbar, .site-sheet),
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action) {
     backdrop-filter: none;
   }
 
@@ -834,6 +1101,8 @@ html[data-style="fluid"][data-fluid-paused] .skeleton {
 @media print {
   html[data-style="fluid"] .fluid-field,
   html[data-style="fluid"] :is(.glass, .lens)::after,
+  html[data-style="fluid"] :is(.card, .kpi, .queue, .next-action)::after,
+  html[data-style="fluid"] .next-action::before,
   html[data-style="fluid"] .kicker::before {
     display: none !important;
   }
