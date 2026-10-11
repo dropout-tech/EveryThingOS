@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
   const config = await liveConfig();
   if (!config.erpnext) return new Response("ERPNext 還沒接上", { status: 503 });
   try {
-    if (loginRequired(config) && !(await liveMe()).roles.includes(ADMIN_ROLE)) return new Response("只有老闆（System Manager）可以下載全部資料", { status: 403 });
+    if (!loginRequired(config)) return new Response("要先開啟個人登入，才能下載全部資料；或到 ERPNext 備份頁下載", { status: 403 });
+    if (!(await liveMe()).roles.includes(ADMIN_ROLE)) return new Response("只有老闆（System Manager）可以下載全部資料", { status: 403 });
     const table = `\`tab${spec.doctype}\``;
     const res = await erpFile("frappe.desk.reportview.export_query", {
       doctype: spec.doctype,

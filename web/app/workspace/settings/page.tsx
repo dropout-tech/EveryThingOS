@@ -66,7 +66,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   const account = config.tenant;
   const invoice = account && me.origin === "live" && me.data?.roles.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
   const exportUrl = deskUrl("/app/backups", config);
-  const owner = Boolean(exportUrl) && (!loginRequired(config) || (me.origin === "live" && Boolean(me.data?.roles.includes(ADMIN_ROLE))));
+  const owner = Boolean(exportUrl) && loginRequired(config) && me.origin === "live" && Boolean(me.data?.roles.includes(ADMIN_ROLE));
   const backup = owner ? await liveBackup().catch(() => null) : null;
   const { sync } = await searchParams;
   const notice = typeof sync === "string" ? SYNC_NOTICE[sync] : null;
@@ -168,20 +168,20 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
 
       {exportUrl ? (
         <section id="export" className="glass-well space-y-3 p-5">
-          <h3 className="text-sm">下載全部資料</h3>
+          <h2 className="font-medium">下載全部資料</h2>
           <p className="text-sm text-cream-dim">資料是你的。只能看、暫停、解約後 90 天內都可以下載。</p>
           {owner ? (
             <>
-              <p className="flex flex-wrap gap-4 text-sm">
-                <a href="/api/export?kind=customers" className="text-teal">客戶（CSV）</a>
-                <a href="/api/export?kind=items" className="text-teal">商品（CSV）</a>
-                <a href="/api/export?kind=invoices" className="text-teal">銷項發票（CSV）</a>
-                <a href={exportUrl} className="text-teal">完整備份（ERPNext 備份頁，含附件）</a>
-              </p>
+              <div className="flex flex-wrap gap-2">
+                <a href="/api/export?kind=customers" className={buttonClass({ variant: "secondary", size: "sm" })}>客戶（CSV）</a>
+                <a href="/api/export?kind=items" className={buttonClass({ variant: "secondary", size: "sm" })}>商品（CSV）</a>
+                <a href="/api/export?kind=invoices" className={buttonClass({ variant: "secondary", size: "sm" })}>銷項發票（CSV）</a>
+                <a href={exportUrl} className={buttonClass({ variant: "secondary", size: "sm" })}>完整備份（ERPNext 備份頁，含附件）</a>
+              </div>
               <p className="text-sm text-cream-dim">最近備份：{backupLine(backup)}</p>
             </>
           ) : (
-            <p className="text-sm">請老闆（System Manager）登入後下載。</p>
+            <p className="text-sm">請老闆（System Manager）用自己的帳號登入後下載；沒有開個人登入時，請到 ERPNext 備份頁下載。</p>
           )}
         </section>
       ) : null}
