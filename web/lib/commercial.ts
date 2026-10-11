@@ -6,9 +6,61 @@ export const COMMERCIAL = {
   product: "DropOut OS",
   legalName: "琢奧科技",
   domain: "dropout.tw",
+  siteUrl: "https://os.dropout.tw",
   email: "info@dropout.tw",
   promise: "一套畫面做完回覆、客人、生意、收錢。一百種行業可切換，顧問到現場免費帶。",
+  audience: "給 5 到 100 人、現在用試算表、LINE 或鼎新 A1／億看在記帳的台灣中小企業。",
 };
+
+export const SITE_NAV = [
+  { href: "/pricing", label: "產品與價格" },
+  { href: "/saas", label: "對照鼎新・億看" },
+  { href: "/industries", label: "產業包" },
+  { href: "/consulting", label: "免費導入" },
+] as const;
+
+export type ModuleStatus = "ready" | "setup" | "pilot";
+
+export const MODULE_STATUS: Record<ModuleStatus, { label: string; hint: string }> = {
+  ready: { label: "可用", hint: "簽約開站就能用" },
+  setup: { label: "導入時接上", hint: "要先有你們自己的外部帳號" },
+  pilot: { label: "試行", hint: "可以用，先跟顧問確認合不合適" },
+};
+
+export const MODULES: { id: string; name: string; detail: string; status: ModuleStatus; note?: string }[] = [
+  { id: "crm", name: "CRM 客人", detail: "誰來過、跟到哪、下一步做什麼。同一個 Email 或電話不會建兩次。", status: "ready" },
+  { id: "erp", name: "進銷存", detail: "報價、訂單、出貨、採購、進貨、多倉庫存。只顯示這張單的下一步。", status: "ready" },
+  { id: "finance", name: "財務", detail: "應收應付帳齡、收付款、傳票、營業稅。", status: "ready", note: "電子發票接綠界，要先申請綠界帳號" },
+  { id: "hr", name: "人事薪資", detail: "請假、核准、打卡、薪資，勞健保與勞退費率可改。", status: "ready", note: "費率每年要對勞保局、健保署公告" },
+  { id: "reports", name: "老闆報表", detail: "營收、毛利、帳齡、前十大客人、缺貨。手機可以加到主畫面。", status: "ready" },
+  { id: "chat", name: "對話", detail: "LINE、IG、FB、官網訊息在同一個收件匣，回完直接轉成客人。", status: "setup", note: "要接你們的 LINE 官方帳號與粉專" },
+  { id: "letter", name: "電子報", detail: "寫好就寄，退訂與同意紀錄自動留。退信的名單另外列出來。", status: "ready" },
+  { id: "meetings", name: "會議紀錄", detail: "線上會議派機器人記錄、整理摘要，每一場都可以關掉。", status: "pilot" },
+  { id: "api", name: "對外 API", detail: "每家公司自己的金鑰，客人、商品、訂單、發票；有事件時推 Webhook。", status: "setup", note: "由顧問幫你們開金鑰" },
+];
+
+export const ONBOARDING_FLOW = [
+  { id: "1", title: "約 30 分鐘看現場", body: "顧問看你們現在怎麼做事、哪一段最花時間。不用先簽約，也不用先填統編。" },
+  { id: "2", title: "開站、選產業包", body: "簽約付款後開好你們自己的網址，打開最像的產業包，用不到的功能先關。" },
+  { id: "3", title: "搬資料、跑一筆真的", body: "從試算表、LINE、舊系統搬客人與商品，再一起跑完一筆進線到收款。" },
+  { id: "4", title: "交給你們", body: "誰能看、誰能改都設好。之後有問題寫信或看說明中心，顧問時數內的調整不另收費。" },
+];
+
+export const FAQ = [
+  { q: "NT$100,000 包含什麼？", a: "一間公司一年的系統使用、顧問到現場導入、資料搬家、更新與備份。未稅。不收每人帳號費，模組不另外加購。" },
+  { q: "可以先試用嗎？", a: "可以。先約顧問看現場；決定要用之後開站，有試用期，試用期間資料都可以留下來接著用。" },
+  { q: "跟鼎新 A1、億看差在哪？", a: "進銷存與帳的範圍對齊它們，但畫面只問「下一步是什麼」，並且把客人、對話、電子報、報表放在同一個登入裡。" },
+  { q: "金流、簡訊、LINE、電子發票要另外付錢嗎？", a: "這些是外部服務，依各家原價收費，你們直接跟他們簽。我們負責接上，不抽成。" },
+  { q: "資料是誰的？不續約怎麼辦？", a: "資料是你們的。隨時可以在設定匯出全部資料；到期或解約後仍可以看和匯出一段時間，細節寫在服務條款。" },
+  { q: "資料放在哪裡、安不安全？", a: "每家公司有自己的資料庫，登入、權限、紀錄與每日備份的做法寫在資安說明與服務水準。" },
+] as const;
+
+export const TRUST_LINKS = [
+  { href: "/sla", label: "服務水準", detail: "月可用率目標與沒做到的補償" },
+  { href: "/security", label: "資安說明", detail: "登入、權限、紀錄、備份" },
+  { href: "/privacy", label: "隱私權政策", detail: "蒐集什麼、用多久、怎麼刪" },
+  { href: "/status", label: "系統狀態", detail: "現在是否正常、近期事故" },
+] as const;
 
 export const PILLARS = [
   {
