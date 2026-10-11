@@ -140,7 +140,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
                     {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
                   </div>
                   <span className="flex items-center gap-2">
-                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-primary btn-sm">
+                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-secondary btn-sm">
                       核准
                     </button>
                     <button type="button" disabled={action.busy} onClick={async () => {
