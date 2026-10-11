@@ -5,7 +5,18 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { openPalette } from "./CommandPalette";
 import { trapTab } from "./ui/ConfirmDialog";
+import { Icon, iconForHref } from "./ui/Icon";
 import { isActive, tabItems, type NavSection } from "@/lib/nav";
+
+function Count({ value, className = "badge-count" }: { value?: number; className?: string }) {
+  if (!value) return null;
+  return (
+    <span className={className}>
+      {value > 99 ? "99+" : value}
+      <span className="sr-only"> 件</span>
+    </span>
+  );
+}
 
 export function SideNav({ sections }: { sections: NavSection[] }) {
   const path = usePathname();
@@ -23,7 +34,9 @@ export function SideNav({ sections }: { sections: NavSection[] }) {
             {section.items.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} aria-current={isActive(path, item.href) ? "page" : undefined} className="nav-link">
-                  {item.label}
+                  <Icon name={iconForHref(item.href)} />
+                  <span className="min-w-0 truncate">{item.label}</span>
+                  <Count value={item.count} />
                 </Link>
               </li>
             ))}
@@ -53,7 +66,9 @@ export function TabBar({ sections, extras }: { sections: NavSection[]; extras?: 
         {tabs.map((item) => (
           <Link key={item.href} href={item.href} aria-current={isActive(path, item.href, item.match) ? "page" : undefined} className="tabbar-item">
             <span className="tabbar-dot" aria-hidden="true" />
+            <Icon name={item.match === "/workspace/erp" ? "sales" : iconForHref(item.href)} />
             {item.label}
+            <Count value={item.count} className="tabbar-badge" />
           </Link>
         ))}
         <button
@@ -68,6 +83,7 @@ export function TabBar({ sections, extras }: { sections: NavSection[]; extras?: 
           }}
         >
           <span className="tabbar-dot" aria-hidden="true" />
+          <Icon name="more" />
           更多
         </button>
       </nav>
@@ -109,7 +125,9 @@ export function TabBar({ sections, extras }: { sections: NavSection[]; extras?: 
                     {items.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} aria-current={isActive(path, item.href) ? "page" : undefined} className="nav-link glass-chip justify-center">
+                          <Icon name={iconForHref(item.href)} />
                           {item.label}
+                          <Count value={item.count} />
                         </Link>
                       </li>
                     ))}

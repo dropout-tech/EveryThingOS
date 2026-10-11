@@ -1,4 +1,4 @@
-export type NavItem = { href: string; label: string; match?: string };
+export type NavItem = { href: string; label: string; match?: string; count?: number };
 export type NavSection = { id: string; title?: string; items: NavItem[] };
 
 const LABELS: Record<string, string> = {
@@ -27,7 +27,7 @@ export function navSections(items: NavItem[]): NavSection[] {
       const item = byHref.get(href);
       if (!item) return [];
       placed.add(href);
-      return [{ href, label: LABELS[href] ?? item.label }];
+      return [{ ...item, href, label: LABELS[href] ?? item.label }];
     }),
   }));
   const rest = items.filter((item) => !placed.has(item.href));
