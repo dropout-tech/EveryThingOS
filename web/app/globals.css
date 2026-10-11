@@ -1392,6 +1392,14 @@ html[data-theme="white"] .os-shell .glass-chip {
     background: var(--accent);
   }
 
+  .progress[data-tone="warn"] > span {
+    background: var(--warn);
+  }
+
+  .progress[data-tone="danger"] > span {
+    background: var(--danger);
+  }
+
   /* Disclosure (details/summary) */
   .disclosure > summary {
     display: flex;

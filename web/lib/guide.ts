@@ -187,6 +187,7 @@ export const HINTS = {
   letter: { title: "只寄給說好的人", body: "勾同意、又點了確認信的人才會進名單。退訂一次，所有行銷通道一起關。" },
   hr: { title: "上下班各按一次", body: "打卡、核准假單在這裡。員工資料、排班、薪資結構在 ERPNext 人事後台。" },
   approvals: { title: "小額的一次簽完", body: "五千元以下的報帳、一天以內的假單可以一次核准。退回一定要寫原因，對方才知道要改什麼。自己送的單要別人簽。" },
+  projects: { title: "先看紅色和橘色", body: "「超支」是成本已經超過預算，「要注意」是花得比做得快或過了截止日。做完的工時，到專案裡按「開成發票」。" },
 } as const;
 
 export type HintId = keyof typeof HINTS;
