@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DayTour } from "@/components/DayTour";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ModuleGrid, SectionTitle, SiteHero, TrustStrip } from "@/components/SiteSections";
@@ -9,7 +10,7 @@ import { hasChosenIndustry } from "@/lib/workspace";
 
 export const metadata = {
   title: { absolute: "DropOut OS｜台灣中小企業的 CRM、進銷存、財務與薪資，一年 NT$100,000" },
-  description: "客人、進銷存、帳、人事薪資、老闆報表、對話與電子報，一個登入做完。對齊鼎新 A1／億看，每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
+  description: "客人、進銷存、帳、人事薪資、專案工時、簽核報帳、客戶線上簽報價、問助理與自動化，一個登入做完。對齊鼎新 A1／億看，每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
   alternates: { canonical: "/" },
 };
 
@@ -36,6 +37,14 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
               用這個樣子看示範
             </Link>
           </p>
+        </section>
+        <section className="space-y-5" aria-labelledby="day">
+          <div id="day">
+            <SectionTitle kicker="一天怎麼用" title="從早上打卡到晚上看報表，都在同一個地方">
+              每一步都可以直接點進示範，用的是假資料，按什麼都不會影響真的帳。
+            </SectionTitle>
+          </div>
+          <DayTour />
         </section>
         <ModuleGrid />
         <TrustStrip />
