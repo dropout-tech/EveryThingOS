@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { STYLES, type UiStyle } from "@/lib/style";
+import { STYLES, syncThemeColor, type UiStyle } from "@/lib/style";
 
 export function StylePicker({ current, variant = "compact" }: { current: UiStyle; variant?: "compact" | "cards" }) {
   const router = useRouter();
@@ -12,6 +12,7 @@ export function StylePicker({ current, variant = "compact" }: { current: UiStyle
     if (id === current) return;
     start(async () => {
       document.documentElement.dataset.style = id;
+      syncThemeColor();
       await fetch("/api/theme", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

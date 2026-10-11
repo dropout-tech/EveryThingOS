@@ -4,6 +4,7 @@ import { ServiceWorker } from "@/components/ServiceWorker";
 import { StyleBackdrop } from "@/components/styles/StyleBackdrop";
 import { COMMERCIAL } from "@/lib/commercial";
 import { currentScene } from "@/lib/scene-server";
+import { themeColor } from "@/lib/style";
 import { currentStyle } from "@/lib/style-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
@@ -41,7 +42,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export const viewport: Viewport = { themeColor: "#07080c" };
+export async function generateViewport(): Promise<Viewport> {
+  const [theme, style] = await Promise.all([currentTheme(), currentStyle()]);
+  return { themeColor: themeColor(style, theme) };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [theme, scene, style] = await Promise.all([currentTheme(), currentScene(), currentStyle()]);

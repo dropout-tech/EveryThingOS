@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent } from "react";
 import { PALETTE_ACTIONS, type NavSection } from "@/lib/nav";
-import { STYLES } from "@/lib/style";
+import { STYLES, syncThemeColor } from "@/lib/style";
 
 type Entry = { id: string; group: string; label: string; hint?: string; keywords: string; href?: string; look?: { style?: string; theme?: string } };
 
@@ -96,6 +96,7 @@ export function CommandPalette({ sections }: { sections: NavSection[] }) {
     if (!entry.look) return;
     if (entry.look.style) document.documentElement.dataset.style = entry.look.style;
     if (entry.look.theme) document.documentElement.dataset.theme = entry.look.theme;
+    syncThemeColor();
     await fetch("/api/theme", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(entry.look) });
     router.refresh();
   }

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { syncThemeColor } from "@/lib/style";
 import type { UiTheme } from "@/lib/theme";
 
 const options: { id: UiTheme; label: string; name: string }[] = [
@@ -30,6 +31,7 @@ export function ThemeToggle({ current }: { current: UiTheme }) {
               if (active) return;
               start(async () => {
                 document.documentElement.dataset.theme = option.id;
+                syncThemeColor();
                 await fetch("/api/theme", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
