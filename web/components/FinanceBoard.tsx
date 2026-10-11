@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { buttonClass } from "./ui/Button";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { collectOverdue, formatTwd, type AgingRow, type Books } from "@/lib/erp";
 
@@ -41,39 +42,41 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
       </p>
       <ActionNote>{note}</ActionNote>
       <section>
-        <h3 className="text-lg">誰欠我們（帳齡）</h3>
-        <div className="glass mt-3 overflow-x-auto">
-          <table className="w-full min-w-[40rem] text-left text-sm">
-            <thead className="bg-ink-2 text-cream-dim">
+        <h2 className="text-lg font-medium">誰欠我們（帳齡）</h2>
+        <div className="glass mt-3 sm:overflow-x-auto">
+          <table className="table-stack sm:min-w-[40rem]">
+            <thead className="bg-ink-2">
               <tr>
-                <th className="px-4 py-3">客戶</th>
-                <th className="px-4 py-3">未到期</th>
-                <th className="px-4 py-3">30 天</th>
-                <th className="px-4 py-3">60 天</th>
-                <th className="px-4 py-3">90 天＋</th>
-                <th className="px-4 py-3">下一步</th>
+                <th scope="col">客戶</th>
+                <th scope="col">未到期</th>
+                <th scope="col">30 天</th>
+                <th scope="col">60 天</th>
+                <th scope="col">90 天＋</th>
+                <th scope="col">下一步</th>
               </tr>
             </thead>
             <tbody>
               {live && !aging.length ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-cream-dim">
+                  <td colSpan={6} className="py-6 text-center text-cream-dim">
                     沒有人欠款
                   </td>
                 </tr>
               ) : null}
               {aging.map((row) => (
-                <tr key={row.party} className="border-t border-[var(--line)]">
-                  <td className="px-4 py-3">{row.party}</td>
-                  <td className="px-4 py-3">{formatTwd(row.current)}</td>
-                  <td className="px-4 py-3">{formatTwd(row.d30)}</td>
-                  <td className={row.d60 ? "px-4 py-3 text-gold" : "px-4 py-3"}>{formatTwd(row.d60)}</td>
-                  <td className={row.d90 ? "px-4 py-3 text-orange" : "px-4 py-3"}>{formatTwd(row.d90)}</td>
-                  <td className="px-4 py-3">
+                <tr key={row.party}>
+                  <td data-primary="">{row.party}</td>
+                  <td data-label="未到期">{formatTwd(row.current)}</td>
+                  <td data-label="30 天">{formatTwd(row.d30)}</td>
+                  <td data-label="60 天" className={row.d60 ? "font-medium text-warn" : ""}>{formatTwd(row.d60)}</td>
+                  <td data-label="90 天＋" className={row.d90 ? "font-medium text-danger" : ""}>{formatTwd(row.d90)}</td>
+                  <td data-label="下一步">
                     {live ? (
-                      <DeskLink href={row.href}>{row.d90 || row.d60 ? "催收" : "對帳"}</DeskLink>
+                      <DeskLink href={row.href} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
+                        {row.d90 || row.d60 ? "催收" : "對帳"}
+                      </DeskLink>
                     ) : (
-                      <button type="button" onClick={() => onCollect(row)} className="text-teal">
+                      <button type="button" onClick={() => onCollect(row)} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
                         {row.d90 || row.d60 ? "催收並入帳" : "對帳"}
                       </button>
                     )}
@@ -86,18 +89,18 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
       </section>
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="glass-chip p-4">
-          <h3>本月損益</h3>
+          <h2 className="font-medium">本月損益</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {books.pnl.map((row) => (
               <li key={row.label} className="flex justify-between">
                 <span className="text-cream-dim">{row.label}</span>
-                <span className={row.amount < 0 ? "text-orange" : "text-teal"}>{formatTwd(row.amount)}</span>
+                <span className={row.amount < 0 ? "font-medium text-danger" : "font-medium"}>{formatTwd(row.amount)}</span>
               </li>
             ))}
           </ul>
         </div>
         <div className="glass-chip p-4">
-          <h3>自動入帳</h3>
+          <h2 className="font-medium">自動入帳</h2>
           <ul className="mt-3 space-y-3 text-sm">
             {books.journals.map((row) => (
               <li key={row.no}>
@@ -115,23 +118,23 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
         </div>
       </section>
       <section>
-        <h3 className="text-lg">電子發票</h3>
+        <h2 className="text-lg font-medium">電子發票</h2>
         <ul className="mt-3 space-y-2 text-sm">
           {live && !invoices.length ? <li className="text-cream-dim">還沒有電子發票</li> : null}
           {invoices.map((row) => (
             <li key={row.related} className="glass-chip flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <span>
                 {row.no} · 對應 {row.related}
-                {row.error ? <span className="block text-xs text-orange">{row.error}</span> : null}
+                {row.error ? <span className="block text-xs text-danger">{row.error}</span> : null}
               </span>
-              <span className="flex items-center gap-3 text-teal">
+              <span className="flex items-center gap-3">
                 {row.status} · {formatTwd(row.amount)}
                 {live ? (
-                  <DeskLink href={row.href} className="text-xs underline">
+                  <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
                     打開
                   </DeskLink>
                 ) : row.status !== "已上傳" ? (
-                  <button type="button" onClick={() => onUpload(row.no)} className="text-xs underline">
+                  <button type="button" onClick={() => onUpload(row.no)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                     上傳加值中心
                   </button>
                 ) : null}

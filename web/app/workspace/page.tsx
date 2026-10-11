@@ -13,6 +13,7 @@ export default async function WorkspaceHome() {
 
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">今天</h1>
       <TodayList books={books.data} />
       {setup.origin === "live" && setup.data && setup.data.done < setup.data.total ? <SetupProgress setup={setup.data} /> : null}
       <SourceNote source={books} demoText="練習。導入後換成你們的客人與帳。" />

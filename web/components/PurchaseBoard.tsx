@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
+import { buttonClass } from "./ui/Button";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { advancePurchase, formatTwd, type PurchaseDoc } from "@/lib/erp";
 
@@ -36,45 +37,46 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
       </p>
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
-      <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
-        <table className="w-full min-w-[40rem] text-left text-sm">
-          <thead className="bg-ink-2 text-cream-dim">
+      <div className="glass sm:overflow-x-auto">
+        <table className="table-stack sm:min-w-[40rem]">
+          <caption className="sr-only">進貨單</caption>
+          <thead className="bg-ink-2">
             <tr>
-              <th className="px-4 py-3">單號</th>
-              <th className="px-4 py-3">對象</th>
-              <th className="px-4 py-3">項目</th>
-              <th className="px-4 py-3">金額</th>
-              <th className="px-4 py-3">現在</th>
-              <th className="px-4 py-3">下一步</th>
+              <th scope="col">對象</th>
+              <th scope="col">單號</th>
+              <th scope="col">項目</th>
+              <th scope="col">金額</th>
+              <th scope="col">現在</th>
+              <th scope="col">下一步</th>
             </tr>
           </thead>
           <tbody>
             {live && !rows.length ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-cream-dim">
+                <td colSpan={6} className="py-6 text-center text-cream-dim">
                   沒有待到貨或待付款的單
                 </td>
               </tr>
             ) : null}
             {rows.map((row) => (
-              <tr key={row.no} className="border-t border-[var(--line)]">
-                <td className="px-4 py-3">{row.no}</td>
-                <td className="px-4 py-3">{row.vendor}</td>
-                <td className="px-4 py-3">{row.item}</td>
-                <td className="px-4 py-3">{formatTwd(row.amount)}</td>
-                <td className="px-4 py-3 text-cream-dim">{row.status}</td>
-                <td className="px-4 py-3">
+              <tr key={row.no}>
+                <td data-primary="">{row.vendor}</td>
+                <td data-label="單號">{row.no}</td>
+                <td data-label="項目">{row.item}</td>
+                <td data-label="金額">{formatTwd(row.amount)}</td>
+                <td data-label="現在" className="text-cream-dim">{row.status}</td>
+                <td data-label="下一步">
                   {live ? (
                     <span className="flex items-center gap-3">
-                      <AdvanceButton doctype={row.doctype} name={row.no} label={row.next} run={action.run} busy={action.busy} className="text-teal disabled:opacity-40" />
-                      <DeskLink href={row.href} className="text-xs text-cream-dim hover:text-cream">
+                      <AdvanceButton doctype={row.doctype} name={row.no} label={row.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "secondary", size: "sm" })} />
+                      <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
                         打開
                       </DeskLink>
                     </span>
                   ) : row.next === "完成" ? (
                     <span className="text-cream-dim">完成</span>
                   ) : (
-                    <button type="button" onClick={() => onAdvance(row)} className="text-teal">
+                    <button type="button" onClick={() => onAdvance(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                       {row.next}
                     </button>
                   )}
