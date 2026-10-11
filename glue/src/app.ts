@@ -11,6 +11,7 @@ import { healthResponse, monitorStore, statusResponse, uptime } from "./monitor"
 import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import type { ApiStore } from "./apiStore";
+import { isPortalRoute, managePortal, type PortalStore } from "./portal";
 import { apiStoreFor, isIntegrationRoute, manageIntegrations, publicApi } from "./publicApi";
 import { D1Store, type Store, type Tenant } from "./store";
 
@@ -58,6 +59,7 @@ export type App = {
   fetcher: typeof fetch;
   monitor?: (env: Env) => MonitorStore;
   api?: (env: Env) => ApiStore;
+  portal?: (env: Env) => PortalStore;
 };
 
 const defaultApp: App = { store: (env) => new D1Store(env.DB, env.TENANT_KEY), fetcher: (...a) => fetch(...a) };
@@ -100,7 +102,7 @@ function caller(req: Request, env: Env): "admin" | "shell" | null {
   return null;
 }
 
-/** Admin routes the shell token may also use: one company's own sync and meeting views. */
+/** Admin routes the shell token may also use: one company's own sync, meeting views, integrations and customer-portal links. */
 function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "dead-letters" && !parts[4] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && !parts[4] && method === "GET") return true;
@@ -108,6 +110,7 @@ function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
   if (isIntegrationRoute(parts) && (method === "GET" || method === "POST")) return true;
+  if (isPortalRoute(parts) && (method === "GET" || method === "POST")) return true;
   return false;
 }
 
@@ -389,6 +392,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     const billed = await billingAdmin(req, url, parts, { ...billing, actor });
     if (billed) return billed;
     if (isIntegrationRoute(parts)) return manageIntegrations(req, env, app, parts, actor);
+    if (isPortalRoute(parts)) return managePortal(req, env, app, parts, actor);
     if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
       const now = new Date();
       return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });
