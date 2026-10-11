@@ -1,0 +1,79 @@
+{
+ "domains": [
+  "Manufacturing",
+  "Distribution"
+ ],
+ "item_groups": [
+  "原料",
+  "半成品",
+  "成品",
+  "耗材",
+  "模具治具"
+ ],
+ "customer_groups": [
+  "經銷商",
+  "終端客戶",
+  "OEM 客戶"
+ ],
+ "uoms": [
+  "公斤",
+  "片",
+  "箱",
+  "捲"
+ ],
+ "sales_stages": [
+  "詢價",
+  "打樣",
+  "報價",
+  "議價",
+  "下單"
+ ],
+ "lead_sources": [
+  "展覽",
+  "官網",
+  "業務開發",
+  "舊客介紹"
+ ],
+ "project_templates": [
+  {
+   "name": "打樣流程",
+   "tasks": [
+    {
+     "subject": "收規格",
+     "duration": 1
+    },
+    {
+     "subject": "打樣",
+     "start": 1,
+     "duration": 5
+    },
+    {
+     "subject": "客戶確認",
+     "start": 6,
+     "duration": 2
+    },
+    {
+     "subject": "量產準備",
+     "start": 8,
+     "duration": 3
+    }
+   ]
+  }
+ ],
+ "email_templates": [
+  {
+   "name": "報價追蹤",
+   "subject": "{{ doc.name }} 報價確認",
+   "response": "<p>您好，附上報價 {{ doc.name }}，有任何規格問題請直接回覆這封信。</p>"
+  }
+ ],
+ "webshop": {
+  "enabled": 1,
+  "company": "{company}",
+  "price_list": "{selling_price_list}",
+  "show_price": 0,
+  "enable_checkout": 0,
+  "show_contact_us_button": 1,
+  "show_stock_availability": 1
+ }
+}

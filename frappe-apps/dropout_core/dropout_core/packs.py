@@ -1,0 +1,154 @@
+"""Industry packs. A pack app only ships `pack.json`; this module turns it into
+standard ERPNext records. Everything is get-or-create, so re-running is safe and
+removing a pack app never deletes business data."""
+
+import json
+import os
+
+import frappe
+
+HANDLERS = {}
+
+
+def handler(key):
+	def wrap(fn):
+		HANDLERS[key] = fn
+		return fn
+
+	return wrap
+
+
+def load(app):
+	path = frappe.get_app_path(app, "pack.json")
+	with open(path, encoding="utf-8") as fh:
+		return json.load(fh)
+
+
+def install_from_app(app):
+	pack = load(app)
+	applied = apply(pack)
+	frappe.db.commit()
+	return applied
+
+
+def apply(pack):
+	applied = {}
+	for key, value in pack.items():
+		if key in HANDLERS and value:
+			applied[key] = HANDLERS[key](value)
+	return applied
+
+
+def _ensure(doctype, name, values, name_field=None):
+	if frappe.db.exists(doctype, name):
+		return False
+	if name_field == "name":
+		frappe.get_doc({"doctype": doctype, **values}).insert(ignore_permissions=True, set_name=name)
+		return True
+	doc = frappe.get_doc({"doctype": doctype, **({name_field: name} if name_field else {}), **values})
+	doc.insert(ignore_permissions=True)
+	return True
+
+
+@handler("domains")
+def _domains(domains):
+	available = set(frappe.get_all("Domain", pluck="name"))
+	wanted = [d for d in domains if d in available]
+	settings = frappe.get_single("Domain Settings")
+	current = {row.domain for row in settings.active_domains}
+	missing = [d for d in wanted if d not in current]
+	if missing:
+		settings.set_active_domains(sorted(current | set(missing)))
+	return missing
+
+
+@handler("item_groups")
+def _item_groups(groups):
+	root = frappe.db.get_value("Item Group", {"is_group": 1, "parent_item_group": ["in", ["", None]]}) or "All Item Groups"
+	return [g for g in groups if _ensure("Item Group", g, {"parent_item_group": root, "is_group": 0}, "item_group_name")]
+
+
+@handler("customer_groups")
+def _customer_groups(groups):
+	root = frappe.db.get_value("Customer Group", {"is_group": 1, "parent_customer_group": ["in", ["", None]]}) or "All Customer Groups"
+	return [g for g in groups if _ensure("Customer Group", g, {"parent_customer_group": root, "is_group": 0}, "customer_group_name")]
+
+
+@handler("uoms")
+def _uoms(uoms):
+	return [u for u in uoms if _ensure("UOM", u, {"must_be_whole_number": 0}, "uom_name")]
+
+
+@handler("sales_stages")
+def _sales_stages(stages):
+	return [s for s in stages if _ensure("Sales Stage", s, {}, "stage_name")]
+
+
+@handler("lead_sources")
+def _lead_sources(sources):
+	return [s for s in sources if _ensure("Lead Source", s, {}, "source_name")]
+
+
+@handler("project_templates")
+def _project_templates(templates):
+	created = []
+	for template in templates:
+		if frappe.db.exists("Project Template", template["name"]):
+			continue
+		rows = []
+		for idx, task in enumerate(template.get("tasks", [])):
+			subject = f"{template['name']}｜{task['subject']}"
+			name = frappe.db.get_value("Task", {"subject": subject, "is_template": 1})
+			if not name:
+				name = (
+					frappe.get_doc(
+						{
+							"doctype": "Task",
+							"subject": subject,
+							"is_template": 1,
+							"start": task.get("start", idx),
+							"duration": task.get("duration", 1),
+						}
+					)
+					.insert(ignore_permissions=True)
+					.name
+				)
+			rows.append({"task": name, "subject": subject})
+		frappe.get_doc({"doctype": "Project Template", "name": template["name"], "tasks": rows}).insert(ignore_permissions=True, set_name=template["name"])
+		created.append(template["name"])
+	return created
+
+
+@handler("email_templates")
+def _email_templates(templates):
+	return [
+		t["name"]
+		for t in templates
+		if _ensure("Email Template", t["name"], {"subject": t["subject"], "response": t["response"], "use_html": 1}, "name")
+	]
+
+
+@handler("webshop")
+def _webshop(settings):
+	if "webshop" not in frappe.get_installed_apps():
+		return "skipped: webshop not installed"
+	doc = frappe.get_single("Webshop Settings")
+	company = frappe.defaults.get_global_default("company")
+	price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
+	for key, value in settings.items():
+		if value == "{company}":
+			value = company
+		elif value == "{selling_price_list}":
+			value = price_list
+		if doc.meta.has_field(key) and value is not None:
+			doc.set(key, value)
+	if not (doc.company and doc.price_list):
+		doc.enabled = 0
+	doc.flags.ignore_permissions = True
+	doc.flags.ignore_mandatory = True
+	doc.save()
+	return {"enabled": doc.enabled}
+
+
+def pack_dir(app):
+	return os.path.dirname(frappe.get_app_path(app, "pack.json"))

@@ -1,0 +1,72 @@
+{
+ "domains": [
+  "Services"
+ ],
+ "item_groups": [
+  "課程",
+  "期班",
+  "教材"
+ ],
+ "customer_groups": [
+  "學員",
+  "家長",
+  "企業包班"
+ ],
+ "uoms": [
+  "堂",
+  "期",
+  "本"
+ ],
+ "sales_stages": [
+  "詢問",
+  "試聽",
+  "報名",
+  "續報"
+ ],
+ "lead_sources": [
+  "試聽活動",
+  "官網",
+  "社群"
+ ],
+ "project_templates": [
+  {
+   "name": "開班",
+   "tasks": [
+    {
+     "subject": "招生",
+     "duration": 21
+    },
+    {
+     "subject": "開課通知",
+     "start": 21,
+     "duration": 1
+    },
+    {
+     "subject": "上課",
+     "start": 22,
+     "duration": 56
+    },
+    {
+     "subject": "結業與續報",
+     "start": 78,
+     "duration": 7
+    }
+   ]
+  }
+ ],
+ "email_templates": [
+  {
+   "name": "開課通知",
+   "subject": "開課通知：{{ doc.name }}",
+   "response": "<p>您好，課程即將開始，上課時間與地點如下。</p>"
+  }
+ ],
+ "webshop": {
+  "enabled": 1,
+  "company": "{company}",
+  "price_list": "{selling_price_list}",
+  "show_price": 1,
+  "enable_checkout": 1,
+  "show_stock_availability": 0
+ }
+}

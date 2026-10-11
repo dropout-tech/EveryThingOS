@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "creation": "2026-10-11 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "sandbox",
+  "merchant_id",
+  "hash_key",
+  "hash_iv",
+  "notify_url",
+  "return_path"
+ ],
+ "fields": [
+  {
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled",
+   "default": "0"
+  },
+  {
+   "fieldname": "sandbox",
+   "fieldtype": "Check",
+   "label": "Sandbox",
+   "default": "1",
+   "description": "Use the gateway's test environment"
+  },
+  {
+   "fieldname": "merchant_id",
+   "fieldtype": "Data",
+   "label": "Merchant ID",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "fieldname": "hash_key",
+   "fieldtype": "Password",
+   "label": "HashKey",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "fieldname": "hash_iv",
+   "fieldtype": "Password",
+   "label": "HashIV",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "fieldname": "notify_url",
+   "fieldtype": "Data",
+   "label": "Notify URL",
+   "description": "Server-to-server callback. Point it at the DropOut glue: https://<glue>/pay/<gateway>?site=<site>"
+  },
+  {
+   "fieldname": "return_path",
+   "fieldtype": "Data",
+   "label": "Return Path",
+   "default": "/payment-success",
+   "description": "Where the customer lands after paying"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-11 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "DropOut Pay TW",
+ "name": "ECPay Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,11 @@
+{% extends "templates/web.html" %}
+{% block page_content %}
+<form id="tw-pay" method="post" action="{{ action }}">
+  {% for key, value in fields.items() %}
+  <input type="hidden" name="{{ key }}" value="{{ value }}">
+  {% endfor %}
+  <p>正在前往付款頁…</p>
+  <button type="submit" class="btn btn-primary">沒有自動跳轉，按這裡</button>
+</form>
+<script>document.getElementById("tw-pay").submit();</script>
+{% endblock %}

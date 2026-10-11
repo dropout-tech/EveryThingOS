@@ -1,0 +1,77 @@
+{
+ "domains": [
+  "Services"
+ ],
+ "item_groups": [
+  "顧問方案",
+  "工作坊",
+  "時數"
+ ],
+ "customer_groups": [
+  "中小企業",
+  "公部門",
+  "個人"
+ ],
+ "uoms": [
+  "小時",
+  "場",
+  "月"
+ ],
+ "sales_stages": [
+  "初談",
+  "需求訪談",
+  "提案",
+  "簽約"
+ ],
+ "lead_sources": [
+  "講座",
+  "官網",
+  "轉介"
+ ],
+ "project_templates": [
+  {
+   "name": "顧問專案",
+   "tasks": [
+    {
+     "subject": "啟動會議",
+     "duration": 1
+    },
+    {
+     "subject": "現況診斷",
+     "start": 1,
+     "duration": 10
+    },
+    {
+     "subject": "提案與共識",
+     "start": 11,
+     "duration": 5
+    },
+    {
+     "subject": "執行",
+     "start": 16,
+     "duration": 30
+    },
+    {
+     "subject": "結案報告",
+     "start": 46,
+     "duration": 3
+    }
+   ]
+  }
+ ],
+ "email_templates": [
+  {
+   "name": "提案寄送",
+   "subject": "{{ doc.name }} 提案",
+   "response": "<p>您好，附上這次的提案，方便的時間我們約一個三十分鐘的討論。</p>"
+  }
+ ],
+ "webshop": {
+  "enabled": 1,
+  "company": "{company}",
+  "price_list": "{selling_price_list}",
+  "show_price": 1,
+  "enable_checkout": 1,
+  "show_stock_availability": 0
+ }
+}
