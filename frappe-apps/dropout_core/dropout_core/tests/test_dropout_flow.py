@@ -286,3 +286,69 @@ class TestWebsite(FrappeTestCase):
 			self.skipTest(result["skipped"])
 		self.assertTrue(frappe.db.exists("Website Item", {"item_code": code}))
 		self.assertNotIn(code, publish_items()["published"])
+
+
+class TestShellActions(FrappeTestCase):
+	def test_quote_to_cash_from_the_shell(self):
+		from dropout_core import actions, shell
+
+		customer = make_customer("殼動作客人", email="act@example.com")
+		q = actions.create_quotation("Customer", customer, [{"item_code": make_item(), "qty": 3, "rate": 200}])
+		self.assertTrue(q["ok"], q)
+		self.assertEqual(q["created"]["grand_total"], frappe.db.get_value("Quotation", q["created"]["name"], "grand_total"))
+		self.assertIn(q["created"]["name"], [d["no"] for d in shell.books()["sales"]])
+
+		chain = [("Quotation", q["created"]["name"])]
+		for _ in range(4):
+			step = actions.advance(*chain[-1])
+			if not step["ok"]:
+				break
+			chain.append((step["created"]["doctype"], step["created"]["name"]))
+		kinds = [dt for dt, _n in chain]
+		self.assertEqual(kinds[0], "Quotation")
+		self.assertIn("Sales Order", kinds)
+		self.assertIn("Sales Invoice", kinds)
+		self.assertEqual(kinds[-1], "Payment Entry")
+		invoice = next(n for dt, n in chain if dt == "Sales Invoice")
+		self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "outstanding_amount"), 0)
+		again = actions.advance("Sales Invoice", invoice)
+		self.assertFalse(again["ok"])
+		self.assertEqual(again["message"], "這張單已經走完了")
+
+	def test_sales_user_cannot_take_payment(self):
+		from dropout_core import actions
+
+		customer = make_customer("殼權限客人")
+		si = submit(frappe.get_doc({"doctype": "Sales Invoice", "customer": customer, "company": company(), "posting_date": nowdate(), "due_date": nowdate(), "items": [{"item_code": make_item(), "qty": 1, "rate": 100}]}))
+		email = "sales-only@example.com"
+		if not frappe.db.exists("User", email):
+			frappe.get_doc({"doctype": "User", "email": email, "first_name": "Sales", "send_welcome_email": 0}).insert(ignore_permissions=True)
+		frappe.get_doc("User", email).add_roles("Sales User")
+		frappe.set_user(email)
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				actions.advance("Sales Invoice", si.name)
+		finally:
+			frappe.set_user("Administrator")
+
+	def test_create_lead_returns_known_person(self):
+		from dropout_core import actions
+
+		tag = frappe.generate_hash(length=6)
+		first = actions.create_lead("手動新客人", email=f"Manual-{tag}@Example.com", notes="展場認識")
+		self.assertTrue(first["ok"])
+		self.assertFalse(first["existing"])
+		second = actions.create_lead("同一個人", email=f"manual-{tag}@example.com")
+		self.assertTrue(second["existing"])
+		self.assertEqual(second["party"], first["party"])
+
+	def test_newsletter_draft_and_read_models(self):
+		from dropout_core import actions, shell
+
+		group = frappe.db.get_value("Email Group", {}) or frappe.get_doc({"doctype": "Email Group", "title": "殼測試群組"}).insert().name
+		out = actions.draft_newsletter("本月消息", "<p>你好</p>", [group])
+		self.assertTrue(out["ok"], out)
+		self.assertEqual(frappe.db.get_value("Newsletter", out["name"], "email_sent"), 0)
+		for fn in (shell.catalog, shell.website, shell.meetings, shell.hygiene):
+			fn()
+		self.assertIn(make_item(), [i["item_code"] for i in shell.catalog()["items"]])

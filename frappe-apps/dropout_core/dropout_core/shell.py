@@ -293,6 +293,105 @@ def letter():
 
 
 @frappe.whitelist()
+def catalog(limit=100):
+	"""Sellable items with the default selling price, for the quotation form."""
+	price_list = frappe.db.get_single_value("Selling Settings", "selling_price_list")
+	items = frappe.get_list("Item", filters={"disabled": 0, "is_sales_item": 1, "has_variants": 0}, fields=["name", "item_name", "stock_uom"], order_by="item_name asc", limit=min(int(limit), 500))
+	prices = {}
+	if items and price_list:
+		for p in frappe.get_all("Item Price", filters={"price_list": price_list, "item_code": ["in", [i.name for i in items]]}, fields=["item_code", "price_list_rate"]):
+			prices[p.item_code] = flt(p.price_list_rate)
+	parties = [{"party_type": "Customer", "party": c.name, "label": c.customer_name} for c in frappe.get_list("Customer", filters={"disabled": 0}, fields=["name", "customer_name"], order_by="modified desc", limit=100)]
+	parties += [{"party_type": "Lead", "party": l.name, "label": l.lead_name or l.company_name or l.name} for l in frappe.get_list("Lead", filters={"status": ["not in", ["Converted", "Do Not Contact"]]}, fields=["name", "lead_name", "company_name"], order_by="modified desc", limit=100)]
+	return {"items": [{"item_code": i.name, "item_name": i.item_name, "uom": i.stock_uom, "rate": prices.get(i.name)} for i in items], "parties": parties}
+
+
+@frappe.whitelist()
+def website():
+	"""官網: what is published on Webshop, online orders and form leads in the last 30 days."""
+	s = _Sections()
+	since = add_months(getdate(nowdate()), -1)
+	s.run(
+		"items",
+		lambda: frappe.get_list("Website Item", filters={"published": 1}, fields=["name", "item_code", "web_item_name", "route"], order_by="ranking desc, modified desc", limit=LIMIT),
+		[],
+	)
+	s.run("published", lambda: frappe.db.count("Website Item", {"published": 1}) if frappe.has_permission("Website Item") else 0, 0)
+	s.run(
+		"orders",
+		lambda: frappe.get_list(
+			"Sales Order",
+			filters={"order_type": "Shopping Cart", "docstatus": 1, "transaction_date": [">=", since]},
+			fields=["name", "customer_name", "grand_total", "status", "transaction_date"],
+			order_by="transaction_date desc",
+			limit=LIMIT,
+		),
+		[],
+	)
+	s.run("form_leads", lambda: len(frappe.get_list("DropOut Event", filters={"event_type": "lead_captured", "occurred_at": [">=", since]}, pluck="name", limit=1000)), 0)
+	o = s.out
+	return {
+		"items": [{"code": i.item_code, "name": i.web_item_name, "route": f"/{i.route}" if i.route else None, "href": _desk("Website Item", i.name)} for i in o["items"]],
+		"published": o["published"],
+		"orders": [{"no": so.name, "party": so.customer_name, "amount": so.grand_total, "status": so.status, "date": str(so.transaction_date), "href": _desk("Sales Order", so.name)} for so in o["orders"]],
+		"form_leads": o["form_leads"],
+		"shop_path": "/all-products",
+		"denied": s.denied,
+	}
+
+
+@frappe.whitelist()
+def meetings(limit=20):
+	"""Meeting summaries written by the meeting bot, newest first."""
+	rows = frappe.get_list(
+		"DropOut Event",
+		filters={"event_type": "meeting_summarized"},
+		fields=["name", "party_type", "party", "occurred_at", "payload", "external_id"],
+		order_by="occurred_at desc",
+		limit=min(int(limit), 100),
+	)
+	out = []
+	for r in rows:
+		payload = frappe.parse_json(r.payload or "{}") or {}
+		summary = payload.get("summary") or ""
+		title, _sep, body = summary.partition("\n") if "\n" in summary else ("", "", summary)
+		out.append(
+			{
+				"title": title or "會議",
+				"summary": body or summary,
+				"at": str(r.occurred_at) if r.occurred_at else None,
+				"attendees": payload.get("attendees") or [],
+				"party": r.party,
+				"href": _desk(r.party_type, r.party) if r.party_type and r.party else _desk("DropOut Event", r.name),
+			}
+		)
+	return out
+
+
+@frappe.whitelist()
+def hygiene(limit=50):
+	"""Addresses we stopped sending to, and sign-ups still waiting for the confirmation click."""
+	s = _Sections()
+	s.run(
+		"bounced",
+		lambda: frappe.get_list("DropOut Event", filters={"event_type": "email_bounced"}, fields=["external_id", "occurred_at", "payload", "party_type", "party"], order_by="occurred_at desc", limit=min(int(limit), 200)),
+		[],
+	)
+	s.run(
+		"pending",
+		lambda: frappe.get_list("DropOut Consent", filters={"purpose": "marketing", "status": "pending"}, fields=["email", "creation", "party_type", "party"], order_by="creation desc", limit=min(int(limit), 200)),
+		[],
+	)
+	rows = []
+	for b in s.out["bounced"]:
+		reason = (frappe.parse_json(b.payload or "{}") or {}).get("reason")
+		rows.append({"email": b.external_id, "result": "退信，已停寄", "action": reason or "換一個信箱或改用電話", "href": _desk(b.party_type, b.party) if b.party else None})
+	for c in s.out["pending"]:
+		rows.append({"email": c.email, "result": "還沒點確認信", "action": "不寄電子報；七天後可再寄一次確認信", "href": _desk(c.party_type, c.party) if c.party else None})
+	return {"rows": rows, "denied": s.denied}
+
+
+@frappe.whitelist()
 def whoami():
 	user = frappe.session.user
 	if user == "Guest":
