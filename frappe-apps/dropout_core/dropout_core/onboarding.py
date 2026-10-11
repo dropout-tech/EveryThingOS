@@ -31,3 +31,32 @@ def steps():
 	]
 	out = [{"id": key, "label": label, "count": count, "done": count > 0} for key, label, count in data]
 	return {"steps": out, "done": sum(s["done"] for s in out), "total": len(out), "issues": len(issues)}
+
+
+def _colleagues():
+	from dropout_core.team import _staff_filters
+
+	return _count("User", {**_staff_filters(), "enabled": 1})
+
+
+def checklist():
+	"""開站清單 for the owner. Same rule as `steps`: each item is read from the
+	records themselves. `applies` is false when the site cannot do that step
+	(no HRMS installed), so the shell can leave it out."""
+	hr = "hrms" in frappe.get_installed_apps()
+	data = [
+		("company", _count("Company", {"tax_id": ["is", "set"]}), True),
+		# The owner is the first person; the step is done once someone else has an account.
+		("team", max(_colleagues() - 1, 0), True),
+		("customers", _count("Customer"), True),
+		("items", min(_count("Item", {"disabled": 0}), _count("Item Price")), True),
+		("first_quotation", _count("Quotation", {"docstatus": 1}), True),
+		("first_payment", _count("Payment Entry", {"payment_type": "Receive", "docstatus": 1}), True),
+		("channels", _count("DropOut Identity", {"channel": ["in", ["line", "ig", "fb", "web_chat"]]}), True),
+		("newsletter", _count("Newsletter"), True),
+		("employees", _count("Employee", {"status": "Active"}) if hr else 0, hr),
+		("einvoice", _count("Sales Invoice", {"docstatus": 1, "dropout_einvoice_number": ["is", "set"]}), True),
+	]
+	out = [{"id": key, "count": count, "done": count > 0, "applies": applies} for key, count, applies in data]
+	used = [s for s in out if s["applies"]]
+	return {"steps": out, "done": sum(s["done"] for s in used), "total": len(used)}
