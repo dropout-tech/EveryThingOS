@@ -18,14 +18,15 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
   const path = `/admin/accounts/${encodeURIComponent(site)}`;
   const res =
     body.action === "renew"
-      ? await glueAdmin<{ account: PlatformAccount }>(`${path}/renew`, { method: "POST", body: { years: body.years ?? 1, reference: body.reference } })
+      ? await glueAdmin<{ account: PlatformAccount; erpnext?: boolean }>(`${path}/renew`, { method: "POST", body: { years: body.years ?? 1, reference: body.reference } })
       : body.action === "state"
-        ? await glueAdmin<{ account: PlatformAccount }>(`${path}/state`, { method: "POST", body: { state: body.state, reason: body.reason } })
-        : await glueAdmin<{ account: PlatformAccount }>(path, {
+        ? await glueAdmin<{ account: PlatformAccount; erpnext?: boolean }>(`${path}/state`, { method: "POST", body: { state: body.state, reason: body.reason } })
+        : await glueAdmin<{ account: PlatformAccount; erpnext?: boolean }>(path, {
             method: "PUT",
             body: { company: body.company, contact_email: body.contact_email, hosts: body.hosts, trial_ends: body.trial_ends, renews_on: body.renews_on },
           });
   if (!res.ok || !res.data) return refuse(res.text || `回應 ${res.status}`, res.status === 409 ? 409 : 502);
   const a = res.data.account;
-  return reply({ ok: true, message: `${a.company}：${a.lifecycle.message || "使用中"}`, account: a });
+  const erp = res.data.erpnext === false ? "（ERPNext 沒有回應，後台要等每日排程才會跟上；殼與膠水已經生效）" : "";
+  return reply({ ok: true, message: `${a.company}：${a.lifecycle.message || "使用中"}${erp}`, account: a });
 }

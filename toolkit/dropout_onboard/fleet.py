@@ -145,4 +145,6 @@ def change(a, out=print):
 		data = _glue(a, "POST", f"/admin/accounts/{site}/state", {"state": state, "reason": getattr(a, "reason", None)})
 	acc = data["account"]
 	out(f"{acc['company']}：{STAGE.get(acc['lifecycle']['stage'])}{'，' + acc['lifecycle']['message'] if acc['lifecycle']['message'] else ''}")
+	if data.get("erpnext") is False:
+		out("  ERPNext 沒有回應：殼與膠水已經生效，ERPNext 後台等每日排程跟上")
 	return 0
