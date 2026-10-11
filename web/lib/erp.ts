@@ -142,6 +142,10 @@ export type SalesDoc = {
   next: string;
   overdueDays?: number;
   invoiceNo?: string;
+  /** Day the document was made (YYYY-MM-DD); empty when the source does not say. */
+  date?: string;
+  /** Quote valid till, order delivery date, or invoice due date (YYYY-MM-DD); empty when the source does not say. */
+  due?: string;
   href?: string;
   doctype?: string;
 };
@@ -153,6 +157,8 @@ export type PurchaseDoc = {
   amount: number;
   status: string;
   next: string;
+  /** Payment due date of a purchase invoice (YYYY-MM-DD); empty when the source does not say. */
+  due?: string;
   href?: string;
   doctype?: string;
 };
