@@ -12,8 +12,11 @@
 | `POST /mail/:site` | G7 開信／點擊、G8 退信、客訴 | Resend（Svix）或通用 HMAC |
 | `POST /pay/ecpay?site=`、`/pay/newebpay?site=` | G9 金流通知 → 收款（金額不符進人工） | CheckMacValue／TradeSha |
 | `POST /vexa/:site/:token` | 會議結束 → 逐字稿 → Workers AI 摘要 → 客人時間軸 | 私密路徑 token |
-| 排程每 5 分鐘 | 讀公司行事曆（ICS），十分鐘內開始的 Meet／Zoom／Teams 派機器人 | |
-| `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access |
+| 排程每 5 分鐘 | 讀公司行事曆（ICS），十分鐘內開始的 Meet／Zoom／Teams 派機器人；10 家一批，只能看／暫停的公司不派 | |
+| `GET /shell/tenant?host=` | 殼依網址查公司：ERPNext 網址與 OAuth client、Chatwoot 帳戶、合約狀態（不回 ERPNext 金鑰） | `SHELL_TOKEN` |
+| `/admin/accounts`、`/admin/accounts/:site`（`PUT`、`/renew`、`/state`） | 公司合約：試用、續約、暫停、解約、網址；每次變更記進歷史（`x-actor`） | `ADMIN_TOKEN` |
+| `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access；`SHELL_TOKEN` 只能看自己那家的死信與會議、關掉某場會議的機器人、重送自己那家的死信 |
+| 排程每天 02:00（台灣） | 收各家用量（`dropout_core.team.usage`）、清 180 天前的去重紀錄 | |
 
 失敗規則：5xx／網路錯誤依 30、60、120 秒重試；4xx 或第 4 次仍失敗 → 寫進死信（D1）並在 ERPNext 標示（例：電子發票「失敗」）。Worker 本身崩潰的訊息由 Queues 內建死信佇列接住。
 
@@ -37,6 +40,7 @@ npx wrangler queues create dropout-jobs-dlq
 npm run db:migrate
 npx wrangler secret put TENANT_KEY         # openssl rand -base64 32
 npx wrangler secret put ADMIN_TOKEN
+npx wrangler secret put SHELL_TOKEN        # 給多公司模式的殼
 npm run deploy
 ```
 

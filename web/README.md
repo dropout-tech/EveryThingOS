@@ -27,7 +27,9 @@ npm run dev
 | `/workspace/meetings` | 會議紀錄：接下來的會議（可逐場關掉機器人）與摘要 |
 | `/workspace/website` | 官網：上架商品、網路訂單、表單名單、可貼的詢問表單 |
 | `/workspace/hygiene` | 退信與待確認的行銷同意 |
-| `/workspace/settings` | 連線狀態、登入的人、匯出設定檔、導入進度、同步失敗重送 |
+| `/workspace/team` | 團隊：邀請、職務、停用、登入安全（兩步驟驗證、密碼強度、鎖帳號、閒置登出）、最近紀錄；只有老闆看得到 |
+| `/workspace/settings` | 連線狀態、登入的人、方案與續約、匯出全部資料、匯出設定檔、導入進度、同步失敗重送 |
+| `/platform`、`/platform/[site]` | 營運後台（另外部署，見下） |
 
 舊路徑 `/workspace/reply`、`/workspace/funnel` 永久轉址到 `chat`、`letter`；舊瀏覽器裡存的功能代號會自動對上新名字。
 
@@ -43,8 +45,10 @@ npm run dev
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
 | `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |
 | `POST /api/meetings/skip` | 這場會議不派機器人／恢復 |
+| `POST /api/team/{invite,profile,enabled,security}` | 邀請、換職務、停用／恢復、登入安全（`dropout_core.team.*`，限 System Manager） |
+| `POST /api/platform/accounts/[site]` | 營運：續約、暫停／恢復／解約、改公司資料 |
 
-寫入的 API 只收同網域送來的 JSON（檢查 `Origin`），權限照 ERPNext：登入模式是那個人自己的權限，固定金鑰模式是整合帳號的權限（例如要寄電子報，整合帳號要有 Newsletter Manager）。ERPNext 拒絕時畫面顯示原因，不會假裝成功。
+寫入的 API 只收同網域送來的 JSON（檢查 `Origin`）；公司在只能看、暫停、解約時回 423 並說明原因（團隊管理除外）；權限照 ERPNext：登入模式是那個人自己的權限，固定金鑰模式是整合帳號的權限（例如要寄電子報，整合帳號要有 Newsletter Manager）。ERPNext 拒絕時畫面顯示原因，不會假裝成功。
 
 ## 資料來源：每個系統各自示範或真實
 
@@ -72,6 +76,14 @@ dropout-onboard provision shop.json --site acme.erp.dropout.tw --company 安安�
 ```
 
 它會呼叫 `dropout_core.provisioning.create_oauth_client`，最後印出要貼進殼的環境變數。
+
+## 多公司模式
+
+設 `GLUE_URL`、`SHELL_TOKEN`、`SESSION_SECRET`（Chatwoot 單一登入再加 `CHATWOOT_PLATFORM_TOKEN`）就是一個部署服務所有公司：打開的網址（`Host`／`X-Forwarded-Host`）向膠水 `GET /shell/tenant` 查是哪一家，拿到那家的 ERPNext 網址、OAuth client、Chatwoot 帳戶與合約狀態。不需要也不接受共用的 ERPNext API key；每個人用自己的 ERPNext 帳號登入，session 綁那一家。這時 `ERPNEXT_*`、`SHELL_URL`、`GLUE_SITE` 不用設。公司用 `dropout-onboard provision --shell-url https://<slug>.os.dropout.tw` 登記網址。
+
+## 營運後台
+
+另外部署一份，只設 `GLUE_URL`、`GLUE_ADMIN_TOKEN`、`PLATFORM_ADMINS`、`CF_ACCESS_TEAM_DOMAIN`、`CF_ACCESS_AUD`，網址放在 Cloudflare Access 後面。說明見 [docs/SAAS-OPERATIONS.md](../docs/SAAS-OPERATIONS.md)。
 
 ## 部署
 

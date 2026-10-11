@@ -10,6 +10,8 @@ ERPNext v15 的 DropOut OS 核心 app。不改 ERPNext 原始碼，只加：
 - `dropout_core.shell.*`：殼的讀取 API（生意、客人、商品目錄、官網、會議、名單健康）
 - `DropOut Import Check` 報表與 `setup_status` 導入進度；`provisioning.import_defaults` 給導入工具讀站台預設值
 - 電子報分群「新朋友」「老客人」（ERPNext 內建 Email Group）
+- `dropout_core.team.*`：團隊頁。職務用 ERPNext Role Profile（老闆、主管、業務、倉管、採購、會計、客服、行銷，只補缺的）；邀請、換職務、停用（一併撤銷 OAuth token）、兩步驟驗證與密碼規則（System Settings）、最近紀錄、用量
+- `provisioning.configure_backups`：ERPNext 內建 S3 備份（R2 也可以），每站一個資料夾
 
 安裝方式見 [`frappe-apps/README.md`](../README.md)。裝好之後接上膠水：
 

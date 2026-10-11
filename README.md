@@ -38,12 +38,13 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 
 | 部分 | 位置 | 狀態 |
 | --- | --- | --- |
-| 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、會議、官網、名單健康、設定 | `web/` | 示範與真實資料都可用；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入；殼裡直接開報價、單據下一步、收款、新增客人、寄電子報、關掉某場會議機器人 |
-| ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀寫 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（23 項測試） |
+| 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、會議、官網、名單健康、團隊、設定 | `web/` | 示範與真實資料都可用；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入；殼裡直接開報價、單據下一步、收款、新增客人、寄電子報、關掉某場會議機器人；**一個部署服務所有公司**（依網址分公司）；團隊與權限、試用與續約提醒 |
+| 營運後台：所有公司的合約、用量、續約、暫停、解約 | `web/app/platform` | Cloudflare Access 保護，另外部署 |
+| ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀寫 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（27 項測試）；含職務、邀請、兩步驟驗證、稽核紀錄、每日備份 |
 | 產業包：製造、顧問、教育 | `frappe-apps/dropout_pack_*` | 設定精靈完成後自動套用 |
 | 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
-| 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C） | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
-| 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
+| 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
+| 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）**、**fleet（一次很多家、續約、暫停）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
 | CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑 |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
@@ -59,6 +60,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 - 對話、電子報、客人、生意四系統規劃：[docs/FOUR-SYSTEMS-PLAN.md](docs/FOUR-SYSTEMS-PLAN.md)
 - 大整合（重複造輪子檢查、會議紀錄機器人、Cloudflare 部署）：[docs/PLATFORM-INTEGRATION.md](docs/PLATFORM-INTEGRATION.md)
 - 官網商店與導入工具：[docs/ONBOARDING-TOOLKIT.md](docs/ONBOARDING-TOOLKIT.md)
+- 很多家公司一起用（容量、費用、權限、續約）：[docs/SAAS-OPERATIONS.md](docs/SAAS-OPERATIONS.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）

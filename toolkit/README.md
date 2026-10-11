@@ -26,6 +26,24 @@ dropout-onboard bootstrap examples/make --site demo-make.local --admin-email bos
 - 進度依檔案內容記在狀態檔，同一份檔案再跑一次會略過；改了檔案才會重匯。
 - 三家示範公司：`examples/make`（琢奧精密製造）、`examples/service`（琢奧管理顧問）、`examples/edu`（琢奧學院）。
 
+## 一次很多家：`fleet`
+
+```bash
+dropout-onboard fleet bootstrap examples/fleet.csv --shell-url-template "https://{slug}.os.dropout.tw"          # 預演
+dropout-onboard fleet bootstrap examples/fleet.csv --bench-dir ~/frappe-bench --glue-url https://glue.dropout.tw \
+  --shell-url-template "https://{slug}.os.dropout.tw" --concurrency 2 --apply
+dropout-onboard fleet list   --glue-url https://glue.dropout.tw
+dropout-onboard fleet renew  demo-make.local --years 1 --reference INV-2026-001 --glue-url https://glue.dropout.tw
+dropout-onboard fleet suspend|resume|cancel demo-make.local --reason 未付款 --glue-url https://glue.dropout.tw
+```
+
+- CSV 一列一家：`folder`、`site`、`admin_email` 必填；`company`、`abbr`、`shell_url`、`renews_on`、`trial_days`、`calendar` 選填。先檢查整份 CSV，有錯一家都不開。
+- 每家在自己的程序裡跑 `bootstrap`，紀錄在 `<state_dir>/fleet-logs/<site>.log`（權限 600）。`GLUE_ADMIN_TOKEN`、`CHATWOOT_PLATFORM_TOKEN`、`VEXA_ADMIN_TOKEN` 只經環境變數傳，不會出現在 `ps` 或紀錄裡。
+- 第一次登記到膠水時寫進合約：`--trial-days`（預設 30）或 `--renews-on`（已簽約的到期日）。之後重跑不會改合約，續約用 `fleet renew` 或營運後台。
+- `--backup-bucket`、`--backup-endpoint` 加上環境變數 `BACKUP_ACCESS_KEY_ID`、`BACKUP_SECRET_ACCESS_KEY`，開站時順便設定每日備份。
+
+容量、費用、合約階段見 [docs/SAAS-OPERATIONS.md](../docs/SAAS-OPERATIONS.md)。
+
 ## 流程
 
 下面是 `bootstrap` 拆開的每一步，需要個別控制時用。
@@ -43,7 +61,7 @@ dropout-onboard bootstrap examples/make --site demo-make.local --admin-email bos
      --calendar https://calendar.google.com/calendar/ical/.../basic.ics
    ```
 
-   步驟：建站 → 裝 app → 設定精靈（台灣、新台幣、Asia/Taipei）→ 同步帳號（glue 使用者與 API key）→ 登記到膠水（ERPNext Webhook 指向膠水）→ 對話帳號（Chatwoot 帳戶、管理員、Webhook）→ 會議機器人（Vexa 使用者、Webhook、行事曆）。沒給的服務網址就跳過那一步。
+   步驟：建站 → 裝 app → 設定精靈（台灣、新台幣、Asia/Taipei）→ 同步帳號（glue 使用者與 API key）→ 登記到膠水（ERPNext Webhook 指向膠水；有 `--shell-url` 時一併登記網址與合約）→ 對話帳號（Chatwoot 帳戶、管理員、Webhook）→ 會議機器人（Vexa 使用者、Webhook、行事曆）。沒給的服務網址就跳過那一步。
 
    每一步做完記在 `~/.dropout-onboard/<site>.json`（權限 600，內含 API 金鑰，別放進 git）。中途失敗就修好再跑一次，做過的步驟會略過。
 

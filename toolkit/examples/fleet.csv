@@ -1,0 +1,4 @@
+folder,site,admin_email,company,renews_on,trial_days,calendar
+make,demo-make.local,boss@make.example.tw,琢奧精密製造,,30,
+service,demo-service.local,boss@service.example.tw,琢奧管理顧問,,30,
+edu,demo-edu.local,boss@edu.example.tw,琢奧學院,2027-10-31,,
