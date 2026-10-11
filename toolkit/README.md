@@ -44,6 +44,21 @@ dropout-onboard fleet suspend|resume|cancel demo-make.local --reason 未付款 -
 
 容量、費用、合約階段見 [docs/SAAS-OPERATIONS.md](../docs/SAAS-OPERATIONS.md)。
 
+## 還原演練：`backup verify`
+
+```bash
+dropout-onboard backup verify demo-make.local --bench-dir ~/frappe-bench                     # 預演：列出會用哪個備份、每一步
+DB_ROOT_PASSWORD=... dropout-onboard backup verify demo-make.local --bench-dir ~/frappe-bench --apply
+dropout-onboard backup verify demo-make.local --backup ~/r2/20261011_020000-demo-make_local-database.sql.gz --with-files --apply
+```
+
+- 把 `sites/<site>/private/backups` 裡最新的備份（或 `--backup` 指定的檔）還原到暫存站 `restore-drill.<site>`，排程暫停、不寄信；正式站不動。
+- 比對正式站與暫存站的單據筆數和資料檢查（`dropout_core.checks.summary`），然後刪掉暫存站；中途失敗也會刪。
+- 沒通過的情況：備份超過 24 小時、還原失敗、有單據還原後變 0 筆或整種不見。備份之後新增或刪除的筆數只列為提醒。
+- 報告寫在 `<state_dir>/restore-drills/<site>-<時間>.json`（權限 600），記下備份時間、還原花幾分鐘、每種單據筆數；資料庫密碼不會寫進報告。
+
+目標與每月演練排程見 [docs/RELIABILITY.md](../docs/RELIABILITY.md)。
+
 ## 流程
 
 下面是 `bootstrap` 拆開的每一步，需要個別控制時用。

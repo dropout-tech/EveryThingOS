@@ -2,8 +2,11 @@ import { addYears, lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDa
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
+import { errorText, log } from "./log";
 import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
+import { healthResponse, statusResponse, uptime } from "./monitor";
+import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import { D1Store, type Store, type Tenant } from "./store";
 
@@ -24,6 +27,10 @@ export type Env = {
   PLATFORM_MAIL_FROM?: string;
   /** Verified DropOut address that gets a copy of every reminder through the EMAIL binding. */
   PLATFORM_NOTIFY?: string;
+  /** Ops alerts when a company's ERPNext or shell goes down or comes back (Slack, Discord, Google Chat or any JSON endpoint). */
+  ALERT_WEBHOOK_URL?: string;
+  ALERT_WEBHOOK_TOKEN?: string;
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
 };
 
 export const MAX_ATTEMPTS = 4;
@@ -43,6 +50,7 @@ const CHANNELS: Record<string, string> = {
 export type App = {
   store: (env: Env) => Store;
   fetcher: typeof fetch;
+  monitor?: (env: Env) => MonitorStore;
 };
 
 const defaultApp: App = { store: (env) => new D1Store(env.DB, env.TENANT_KEY), fetcher: (...a) => fetch(...a) };
@@ -161,7 +169,12 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
   const store = app.store(env);
   const tenantFor = async (site: string | null | undefined): Promise<Tenant | null> => (site ? store.getTenant(site) : null);
 
-  if (parts[0] === "health") return json({ ok: true });
+  if (parts[0] === "health") return healthResponse(env, app);
+  if (parts[0] === "status" && !parts[1] && req.method === "GET") {
+    const site = url.searchParams.get("site");
+    if (site && !caller(req, env)) return text("forbidden", 403);
+    return statusResponse(env, app, site);
+  }
 
   // G1: Chatwoot webhook. CE has no body signature, so the path carries a per-tenant token.
   if (parts[0] === "chatwoot" && req.method === "POST") {
@@ -468,6 +481,7 @@ export async function consume(batch: MessageBatch<Job>, env: Env, app: App = def
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       if (!isRetryable(e) || msg.attempts >= MAX_ATTEMPTS) {
+        log("error", "job.dead_letter", { site: msg.body.site, kind: msg.body.kind, attempts: msg.attempts, error: errorText(e) });
         await d.store.addDeadLetter(msg.body.site, msg.body.kind, JSON.stringify(msg.body), error);
         await onGiveUp(msg.body, error, d);
         msg.ack();
@@ -581,6 +595,7 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */
 export async function scheduled(env: Env, app: App = defaultApp, now = new Date()) {
   const queued = await scheduleMeetings(env, app, now);
+  const monitor = await uptime(env, app, now).catch((e) => (log("error", "monitor.failed", { error: errorText(e) }), null));
   const isDailySlot = now.getUTCHours() === 18 && now.getUTCMinutes() < 5;
-  return { queued, daily: isDailySlot ? await daily(env, app, now) : null };
+  return { queued, monitor, daily: isDailySlot ? await daily(env, app, now) : null };
 }

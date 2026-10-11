@@ -12,6 +12,9 @@
 | `POST /mail/:site` | G7 開信／點擊、G8 退信、客訴 | Resend（Svix）或通用 HMAC |
 | `POST /pay/ecpay?site=`、`/pay/newebpay?site=` | G9 金流通知 → 收款（金額不符進人工） | CheckMacValue／TradeSha |
 | `POST /vexa/:site/:token` | 會議結束 → 逐字稿 → Workers AI 摘要 → 客人時間軸 | 私密路徑 token |
+| `GET /health` | D1 是否回應、部署版本；壞了回 503 | 不用 |
+| `GET /status` | 公開狀態頁用：殼、膠水、ERPNext 整體是否正常、近 30 天可用率、近 14 天事故時間；不含公司名稱與網址 | 不用；加 `?site=` 看單一公司要 `SHELL_TOKEN` |
+| 排程每 5 分鐘（監看） | 每家沒解約的公司：ERPNext `/api/method/ping`、殼網址 `/api/health`；連續 2 次失敗算連不上、開事故，恢復就關；有變化時一次通知營運（`ALERT_WEBHOOK_URL`、`PLATFORM_NOTIFY`），也記在公司歷史 | |
 | 排程每 5 分鐘 | 讀公司行事曆（ICS），十分鐘內開始的 Meet／Zoom／Teams 派機器人；10 家一批，只能看／暫停的公司不派 | |
 | `GET /shell/tenant?host=` | 殼依網址查公司：ERPNext 網址與 OAuth client、Chatwoot 帳戶、合約狀態（不回 ERPNext 金鑰） | `SHELL_TOKEN` |
 | `/admin/accounts`、`/admin/accounts/:site`（`PUT`、`/renew`、`/state`） | 公司合約：試用、續約、暫停、解約、網址；每次變更記進歷史（`x-actor`） | `ADMIN_TOKEN` |
@@ -21,6 +24,8 @@
 失敗規則：5xx／網路錯誤依 30、60、120 秒重試；4xx 或第 4 次仍失敗 → 寫進死信（D1）並在 ERPNext 標示（例：電子發票「失敗」）。Worker 本身崩潰的訊息由 Queues 內建死信佇列接住。
 
 續約提醒：試用到期前 7、3、1、0 天；年約到期前 59、30、14、7、1、0 天；到期後第 1、7、14 天；改成只能看那天。每則只寄一次，續約後到期日變了就重新算。寄給公司的聯絡人（Resend），副本經 Cloudflare EMAIL 寄到 `PLATFORM_NOTIFY`；沒設寄信也會記在營運後台的公司歷史。
+
+監看：每次排程最多 5 個同時、整輪 90 秒內；沒輪到的公司下一輪先做。通知格式依網址自動選：Slack、Google Chat 用 `text`，Discord 用 `content`，其他網址收 `text`、`content`、`message` 和 `events`（每筆變化的公司、站台、項目、時間）。紀錄寫成一行一個 JSON（`level`、`event`、`site`），在 Workers Logs 篩。目標與事故處理見 [docs/RELIABILITY.md](../docs/RELIABILITY.md)。
 
 每家公司的金鑰（ERPNext API key、金流 HashKey…）用 `TENANT_KEY`（AES-256-GCM）加密後才存進 D1。
 
@@ -44,6 +49,8 @@ npx wrangler secret put TENANT_KEY         # openssl rand -base64 32
 npx wrangler secret put ADMIN_TOKEN
 npx wrangler secret put SHELL_TOKEN        # 給多公司模式的殼
 npx wrangler secret put RESEND_API_KEY     # 選用：續約提醒寄給客戶；另設 vars PLATFORM_MAIL_FROM、PLATFORM_NOTIFY
+npx wrangler secret put ALERT_WEBHOOK_URL  # 選用：監看通知（Slack、Discord、Google Chat 或任何收 JSON 的網址，要 https）
+npx wrangler secret put ALERT_WEBHOOK_TOKEN  # 選用：通知網址要 Bearer token 時才設
 npm run deploy
 ```
 

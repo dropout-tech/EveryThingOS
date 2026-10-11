@@ -4,7 +4,8 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-11",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true },
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
   "d1_databases": [
     { "binding": "DB", "database_name": "dropout-glue", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
   ],
@@ -21,5 +22,5 @@
   "vars": {
     "SUMMARY_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
   }
-  // Secrets (wrangler secret put): TENANT_KEY (base64, 32 bytes), ADMIN_TOKEN, SHELL_TOKEN (the shell's narrower key), optional TURNSTILE_SECRET, AI_GATEWAY, RESEND_API_KEY (renewal reminders to customers). Vars: PLATFORM_MAIL_FROM, PLATFORM_NOTIFY (verified ops address for copies).
+  // Secrets (wrangler secret put): TENANT_KEY (base64, 32 bytes), ADMIN_TOKEN, SHELL_TOKEN (the shell's narrower key), optional TURNSTILE_SECRET, AI_GATEWAY, RESEND_API_KEY (renewal reminders to customers), ALERT_WEBHOOK_URL and ALERT_WEBHOOK_TOKEN (ops alerts from uptime checks). Vars: PLATFORM_MAIL_FROM, PLATFORM_NOTIFY (verified ops address for copies and alerts).
 }

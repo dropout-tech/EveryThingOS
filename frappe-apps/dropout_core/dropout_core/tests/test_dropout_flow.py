@@ -3,7 +3,7 @@ from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, nowdate
 
 from dropout_core import api
-from dropout_core.checks import run_all
+from dropout_core.checks import run_all, summary
 from dropout_core.install import configure_glue
 from dropout_core.taiwan import is_valid_tax_id, normalize_phone
 
@@ -182,6 +182,10 @@ class TestSetup(FrappeTestCase):
 		frappe.db.set_value("Customer", bad, "tax_id", "11111111")
 		checks = {i["check"] for i in run_all()}
 		self.assertIn("統編檢查碼錯誤", checks)
+		totals = summary()
+		self.assertGreaterEqual(totals["counts"]["Customer"], 1)
+		self.assertGreaterEqual(totals["by_check"]["統編檢查碼錯誤"], 1)
+		self.assertEqual(totals["issues"], sum(totals["by_check"].values()))
 		status = api.setup_status()
 		self.assertEqual(status["total"], len(status["steps"]))
 		self.assertTrue(next(s for s in status["steps"] if s["id"] == "company")["done"])
