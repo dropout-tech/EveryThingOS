@@ -1,0 +1,49 @@
+# Daily export of the glue's D1 database to R2 (d1/<db>/<time>.sql.gz), on top of
+# D1 Time Travel (30 days on Workers Paid). Runs at 05:30 Taiwan, away from the
+# glue's 02:00 daily job: a remote export blocks other queries while it runs.
+#
+# Repository secrets: CLOUDFLARE_API_TOKEN (Account → D1 Edit, Workers R2 Storage Edit),
+# CLOUDFLARE_ACCOUNT_ID. Repository variable: D1_BACKUP_BUCKET. Optional variable
+# D1_DATABASE (default dropout-glue). Without the token or bucket the job does nothing.
+
+name: D1 backup
+
+on:
+  schedule:
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d1-backup
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      D1_BACKUP_BUCKET: ${{ vars.D1_BACKUP_BUCKET }}
+      D1_DATABASE: ${{ vars.D1_DATABASE }}
+    steps:
+      - id: setup
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$D1_BACKUP_BUCKET" ]; then
+            echo "CLOUDFLARE_API_TOKEN or D1_BACKUP_BUCKET not set; nothing to do"
+            echo "skip=1" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.setup.outputs.skip != '1'
+        uses: actions/checkout@v4
+      - if: steps.setup.outputs.skip != '1'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: glue/package-lock.json
+      - if: steps.setup.outputs.skip != '1'
+        working-directory: glue
+        run: npm ci && bash scripts/d1-backup.sh export

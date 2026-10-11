@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 
 type LensProps = {
   children: ReactNode;
@@ -45,6 +45,23 @@ function edgeMap(width: number, height: number, radius: number) {
   return canvas.toDataURL("image/png");
 }
 
+const LITE_QUERY = "(prefers-reduced-motion: reduce), (pointer: coarse), (prefers-reduced-transparency: reduce)";
+
+function subscribeLite(onChange: () => void) {
+  const query = window.matchMedia(LITE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+/** Phones, slow machines and reduced-motion users get the frosted film without displacement or elastic follow. */
+function useLiteGlass() {
+  return useSyncExternalStore(
+    subscribeLite,
+    () => window.matchMedia(LITE_QUERY).matches || (navigator.hardwareConcurrency || 8) <= 4,
+    () => true,
+  );
+}
+
 export function Lens({ children, className = "", radius = 40, elasticity = 0.14 }: LensProps) {
   const rawId = useId().replace(/:/g, "");
   const filterId = `lens-${rawId}`;
@@ -52,10 +69,11 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
   const [map, setMap] = useState("");
   const [scale, setScale] = useState(36);
   const [shift, setShift] = useState({ x: 0, y: 0, sx: 1, sy: 1, px: 28, py: 18 });
+  const lite = useLiteGlass();
 
   useEffect(() => {
     const node = root.current;
-    if (!node) return;
+    if (!node || lite) return;
 
     function paint() {
       if (!node) return;
@@ -69,11 +87,11 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
     const observer = new ResizeObserver(paint);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [radius]);
+  }, [radius, lite]);
 
   useEffect(() => {
     const node = root.current;
-    if (!node) return;
+    if (!node || lite) return;
 
     function onMove(event: PointerEvent) {
       if (!node) return;
@@ -101,12 +119,12 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
       node.removeEventListener("pointermove", onMove);
       node.removeEventListener("pointerleave", onLeave);
     };
-  }, [elasticity]);
+  }, [elasticity, lite]);
 
   const style = {
     "--glass-px": `${shift.px}%`,
     "--glass-py": `${shift.py}%`,
-    transform: `translate(${shift.x.toFixed(2)}px, ${shift.y.toFixed(2)}px) scale(${shift.sx.toFixed(3)}, ${shift.sy.toFixed(3)})`,
+    transform: lite ? undefined : `translate(${shift.x.toFixed(2)}px, ${shift.y.toFixed(2)}px) scale(${shift.sx.toFixed(3)}, ${shift.sy.toFixed(3)})`,
     borderRadius: `${radius}px`,
   } as CSSProperties;
 
@@ -114,7 +132,7 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
     <div ref={root} className={`lens ${className}`} style={style}>
       <svg className="lens-defs" aria-hidden="true" width="0" height="0">
         <filter id={filterId} x="-12%" y="-12%" width="124%" height="124%" colorInterpolationFilters="sRGB">
-          {map ? (
+          {map && !lite ? (
             <feImage href={map} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
           ) : null}
           <feDisplacementMap
@@ -135,7 +153,7 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
           <feBlend in="red" in2="gb" mode="screen" />
         </filter>
       </svg>
-      <div className="lens-film" style={{ filter: map ? `url(#${filterId})` : undefined }} />
+      <div className="lens-film" style={{ filter: map && !lite ? `url(#${filterId})` : undefined }} />
       <div className="lens-body">{children}</div>
     </div>
   );

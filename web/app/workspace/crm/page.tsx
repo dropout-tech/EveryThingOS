@@ -1,4 +1,5 @@
 import { CrmBoard } from "@/components/CrmBoard";
+import { Hint } from "@/components/Hint";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { sanitizeImportedHandle } from "@/lib/reply";
@@ -26,6 +27,7 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
       kicker="客人"
       title="往右，跟到答應"
     >
+      <Hint id="crm" help="module-crm" />
       <CrmBoard
         pack={{
           id: pack.id,

@@ -7,6 +7,14 @@ from frappe import _
 from dropout_core.taiwan import is_valid_tax_id
 
 
+# What the restore drill compares between a site and its restored backup.
+COUNTED = (
+	"Customer", "Supplier", "Item", "Lead", "Quotation", "Sales Order", "Delivery Note", "Sales Invoice",
+	"Purchase Order", "Purchase Receipt", "Purchase Invoice", "Payment Entry", "Journal Entry",
+	"GL Entry", "Stock Ledger Entry", "User", "File",
+)
+
+
 def run_all():
 	issues = []
 	for check in (invalid_tax_ids, duplicate_tax_ids, duplicate_customer_names, items_without_price, negative_stock):
@@ -58,3 +66,13 @@ def items_without_price():
 def negative_stock():
 	rows = frappe.get_all("Bin", filters={"actual_qty": ["<", 0]}, fields=["item_code", "warehouse", "actual_qty"])
 	return [_issue(_("負庫存"), "Item", r.item_code, f"{r.warehouse}: {r.actual_qty}") for r in rows]
+
+
+def summary():
+	"""Document totals and check results in one call, for `dropout-onboard backup verify`."""
+	issues = run_all()
+	by_check = {}
+	for i in issues:
+		by_check[i["check"]] = by_check.get(i["check"], 0) + 1
+	counts = {dt: frappe.db.count(dt) for dt in COUNTED if frappe.db.exists("DocType", dt)}
+	return {"counts": counts, "issues": len(issues), "by_check": by_check}

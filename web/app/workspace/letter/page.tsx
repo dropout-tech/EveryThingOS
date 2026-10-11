@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/EmptyState";
+import { Hint } from "@/components/Hint";
 import { LetterComposer, SendDraftButton } from "@/components/LiveLetter";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
@@ -35,6 +37,15 @@ export default async function LetterPage() {
 
   return (
     <ModuleFrame kicker="電子報" title="只寄給說好的人" hint="勾同意並點確認信的人才會進名單；退訂一次，所有行銷通道一起關。">
+      <Hint id="letter" help="module-letter" />
+      {desk && !data.groups.length ? (
+        <EmptyState
+          title="還沒有名單"
+          detail="官網表單勾同意、又點了確認信的人會自動進名單；舊名單要有同意紀錄才能匯入。"
+          action={{ href: "/workspace/website", label: "看官網留資料表單" }}
+          help="module-letter"
+        />
+      ) : null}
       <div className="grid gap-3 md:grid-cols-2">
         {data.groups.map((group) => (
           <a key={group.name} href={group.href} className="glass block p-5">
@@ -61,14 +72,14 @@ export default async function LetterPage() {
 
       {desk ? (
         <section className="space-y-2">
-          <h3 className="text-sm">寫一封</h3>
+          <h2 className="text-sm font-medium">寫一封</h2>
           <LetterComposer groups={data.groups} />
         </section>
       ) : null}
 
       <section className="space-y-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm">最近的信</h3>
+          <h2 className="text-sm font-medium">最近的信</h2>
           {desk ? (
             <a href={`${desk}/app/newsletter/new`} className="text-sm text-cream-dim hover:text-cream" target="_blank" rel="noreferrer">
               用 ERPNext 排版
@@ -79,7 +90,7 @@ export default async function LetterPage() {
           {data.newsletters.length ? (
             data.newsletters.map((letter) => (
               <li key={letter.name} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 p-3">
-                <a href={letter.href} target={desk ? "_blank" : undefined} rel="noreferrer">
+                <a href={letter.href} target={desk ? "_blank" : undefined} rel="noreferrer" className="inline-flex min-h-11 items-center font-medium">
                   {letter.subject}
                 </a>
                 <span className="flex items-baseline gap-3 text-xs text-cream-dim">
@@ -89,13 +100,15 @@ export default async function LetterPage() {
               </li>
             ))
           ) : (
-            <li className="text-sm text-cream-dim">還沒寄過電子報。</li>
+            <li>
+              <EmptyState compact title="還沒寄過電子報" detail={desk ? "在上面寫一封，先存草稿，確認好再按寄出。" : undefined} help="module-letter" />
+            </li>
           )}
         </ul>
       </section>
 
       <section>
-        <h3 className="text-sm">近 30 天</h3>
+        <h2 className="text-sm font-medium">近 30 天</h2>
         <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           {ACTIVITY.map(([key, label]) => (
             <div key={key} className="flex gap-2">

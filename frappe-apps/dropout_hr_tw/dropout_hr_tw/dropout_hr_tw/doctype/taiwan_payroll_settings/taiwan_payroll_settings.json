@@ -1,0 +1,237 @@
+{
+ "actions": [],
+ "creation": "2026-10-11 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "effective_year",
+  "verified",
+  "verified_by",
+  "verified_on",
+  "verify_note",
+  "wage_section",
+  "minimum_wage_monthly",
+  "minimum_wage_hourly",
+  "meal_allowance_cap",
+  "labor_section",
+  "labor_ordinary_rate",
+  "employment_insurance_rate",
+  "labor_employee_share",
+  "labor_employer_share",
+  "health_section",
+  "health_rate",
+  "health_employee_share",
+  "health_employer_share",
+  "health_max_dependents",
+  "health_avg_dependents",
+  "pension_section",
+  "pension_employer_rate",
+  "pension_voluntary_max",
+  "tax_section",
+  "income_tax_rate",
+  "income_tax_threshold",
+  "grades_section",
+  "grades"
+ ],
+ "fields": [
+  {
+   "fieldname": "effective_year",
+   "fieldtype": "Int",
+   "label": "適用年度（西元）",
+   "reqd": 1
+  },
+  {
+   "fieldname": "verified",
+   "fieldtype": "Check",
+   "label": "已對照官方公告核對",
+   "default": "0",
+   "description": "換年度或改費率後會自動取消，核對完再勾。"
+  },
+  {
+   "fieldname": "verified_by",
+   "fieldtype": "Link",
+   "label": "核對人",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verified_on",
+   "fieldtype": "Date",
+   "label": "核對日期",
+   "read_only": 1
+  },
+  {
+   "fieldname": "verify_note",
+   "fieldtype": "HTML",
+   "label": "每年要核對",
+   "options": "<p>這裡的數字每年都會變。發薪前請對照：勞動部勞工保險局（勞保、就業保險、勞退、投保薪資分級表）、衛生福利部中央健康保險署（健保費率、投保金額分級表）、勞動部（基本工資）、財政部（薪資扣繳、伙食費免稅額度）的當年度公告。預設值只是起點，不是官方數字。</p>"
+  },
+  {
+   "fieldname": "wage_section",
+   "fieldtype": "Section Break",
+   "label": "基本工資與伙食津貼"
+  },
+  {
+   "fieldname": "minimum_wage_monthly",
+   "fieldtype": "Currency",
+   "label": "基本工資（月）",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "minimum_wage_hourly",
+   "fieldtype": "Currency",
+   "label": "基本工資（時）",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "meal_allowance_cap",
+   "fieldtype": "Currency",
+   "label": "伙食津貼每月免稅額度",
+   "non_negative": 1,
+   "description": "薪資結構裡「伙食津貼」的公式用這個數字。"
+  },
+  {
+   "fieldname": "labor_section",
+   "fieldtype": "Section Break",
+   "label": "勞工保險"
+  },
+  {
+   "fieldname": "labor_ordinary_rate",
+   "fieldtype": "Percent",
+   "label": "普通事故保險費率",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "employment_insurance_rate",
+   "fieldtype": "Percent",
+   "label": "就業保險費率",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "labor_employee_share",
+   "fieldtype": "Percent",
+   "label": "勞工負擔比例",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "labor_employer_share",
+   "fieldtype": "Percent",
+   "label": "雇主負擔比例",
+   "non_negative": 1,
+   "description": "職業災害保險費由雇主全額負擔、費率依行業別，這裡不計算。"
+  },
+  {
+   "fieldname": "health_section",
+   "fieldtype": "Section Break",
+   "label": "全民健康保險"
+  },
+  {
+   "fieldname": "health_rate",
+   "fieldtype": "Percent",
+   "label": "健保費率",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "health_employee_share",
+   "fieldtype": "Percent",
+   "label": "被保險人負擔比例",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "health_employer_share",
+   "fieldtype": "Percent",
+   "label": "投保單位負擔比例",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "health_max_dependents",
+   "fieldtype": "Int",
+   "label": "眷屬計費上限（口）",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "health_avg_dependents",
+   "fieldtype": "Float",
+   "label": "投保單位平均眷口數",
+   "precision": "2",
+   "non_negative": 1,
+   "description": "只用來估雇主負擔。空白就不估。"
+  },
+  {
+   "fieldname": "pension_section",
+   "fieldtype": "Section Break",
+   "label": "勞工退休金（新制）"
+  },
+  {
+   "fieldname": "pension_employer_rate",
+   "fieldtype": "Percent",
+   "label": "雇主提繳率",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "pension_voluntary_max",
+   "fieldtype": "Percent",
+   "label": "勞工自提上限",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "tax_section",
+   "fieldtype": "Section Break",
+   "label": "薪資所得扣繳"
+  },
+  {
+   "fieldname": "income_tax_rate",
+   "fieldtype": "Percent",
+   "label": "扣繳率",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "income_tax_threshold",
+   "fieldtype": "Currency",
+   "label": "每月起扣金額",
+   "non_negative": 1,
+   "description": "本薪達到這個金額才扣繳。空白就不扣，避免用錯門檻。"
+  },
+  {
+   "fieldname": "grades_section",
+   "fieldtype": "Section Break",
+   "label": "投保薪資分級表"
+  },
+  {
+   "fieldname": "grades",
+   "fieldtype": "Table",
+   "label": "分級",
+   "options": "Taiwan Insured Salary Grade",
+   "description": "月薪套到「大於或等於月薪」的最低一級；超過最高級就用最高級。員工資料填了投保薪資就以員工資料為準。"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-10-11 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "DropOut HR TW",
+ "name": "Taiwan Payroll Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "HR Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "HR User",
+   "read": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

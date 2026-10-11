@@ -35,9 +35,45 @@ export type AccountEvent = { id: number; site: string; at: string; actor: string
 
 export type DeadLetter = { id: number; site: string; kind: string; body: string; error: string; created_at: string };
 
+export type InvoiceStatus = "open" | "paid" | "void";
+
+/** DropOut's own renewal invoice to a customer company. Amounts are whole NT$. */
+export type Invoice = {
+  id: string;
+  site: string;
+  period: string;
+  buyer_name: string;
+  buyer_tax_id: string | null;
+  buyer_email: string | null;
+  buyer_address: string | null;
+  net: number;
+  tax: number;
+  amount: number;
+  status: InvoiceStatus;
+  created_at: string;
+  paid_at: string | null;
+  paid_via: "ecpay" | "offline" | null;
+  trade_no: string | null;
+  gateway_txn: string | null;
+  reference: string | null;
+  renewed_until: string | null;
+  void_reason: string | null;
+  einvoice_number: string | null;
+  einvoice_error: string | null;
+  einvoice_at: string | null;
+};
+
+export type InvoicePatch = Partial<Omit<Invoice, "id" | "site" | "period" | "created_at">>;
+
+export type InvoicePayment = { trade_no: string; invoice_id: string; amount: number; created_at: string };
+
+const INVOICE_FIELDS = ["buyer_name", "buyer_tax_id", "buyer_email", "buyer_address", "net", "tax", "amount", "status", "paid_at", "paid_via", "trade_no", "gateway_txn", "reference", "renewed_until", "void_reason", "einvoice_number", "einvoice_error", "einvoice_at"] as const;
+
 export interface Store {
   getTenant(site: string): Promise<Tenant | null>;
   putTenant(t: Tenant): Promise<void>;
+  /** Forget a purged company's sealed credentials. */
+  deleteTenant(site: string): Promise<void>;
   listSites(): Promise<string[]>;
   /** True the first time a key is seen. */
   claim(key: string): Promise<boolean>;
@@ -57,6 +93,15 @@ export interface Store {
   listAccountEvents(site: string): Promise<AccountEvent[]>;
   /** Forget dedupe keys older than the cutoff; per-meeting skip choices are kept. */
   pruneSeen(before: string): Promise<number>;
+  /** False when the company already has an open or paid invoice for that period. */
+  insertInvoice(inv: Invoice): Promise<boolean>;
+  getInvoice(id: string): Promise<Invoice | null>;
+  /** One company's invoices, newest first; every company's when `site` is omitted. */
+  listInvoices(site?: string): Promise<Invoice[]>;
+  /** Applies the patch only while the invoice is still in `from` (when given); true if it did. */
+  updateInvoice(id: string, from: InvoiceStatus | null, patch: InvoicePatch): Promise<boolean>;
+  addPayment(p: InvoicePayment): Promise<void>;
+  getPayment(tradeNo: string): Promise<InvoicePayment | null>;
 }
 
 type AccountRow = Omit<Account, "profile" | "usage" | "hosts"> & { profile: string | null; usage: string | null };
@@ -79,6 +124,10 @@ export class D1Store implements Store {
       .prepare("INSERT INTO tenants (site, config, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(site) DO UPDATE SET config = excluded.config, updated_at = excluded.updated_at")
       .bind(t.site, sealed)
       .run();
+  }
+
+  async deleteTenant(site: string) {
+    await this.db.prepare("DELETE FROM tenants WHERE site = ?").bind(site).run();
   }
 
   async listSites() {
@@ -142,14 +191,16 @@ export class D1Store implements Store {
     await this.db.batch([
       this.db
         .prepare(
-          `INSERT INTO accounts (site, company, plan, state, state_reason, trial_ends, renews_on, contact_email, profile, usage, usage_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO accounts (site, company, plan, state, state_reason, trial_ends, renews_on, contact_email, tax_id, billing_address, profile, usage, usage_at, cancelled_at, purged_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(site) DO UPDATE SET company = excluded.company, plan = excluded.plan, state = excluded.state, state_reason = excluded.state_reason,
-             trial_ends = excluded.trial_ends, renews_on = excluded.renews_on, contact_email = excluded.contact_email, profile = excluded.profile,
-             usage = excluded.usage, usage_at = excluded.usage_at, updated_at = excluded.updated_at`,
+             trial_ends = excluded.trial_ends, renews_on = excluded.renews_on, contact_email = excluded.contact_email, tax_id = excluded.tax_id,
+             billing_address = excluded.billing_address, profile = excluded.profile, usage = excluded.usage, usage_at = excluded.usage_at,
+             cancelled_at = excluded.cancelled_at, purged_at = excluded.purged_at, updated_at = excluded.updated_at`,
         )
-        .bind(a.site, a.company, a.plan, a.state, a.state_reason ?? null, a.trial_ends ?? null, a.renews_on ?? null, a.contact_email ?? null,
-          a.profile == null ? null : JSON.stringify(a.profile), a.usage == null ? null : JSON.stringify(a.usage), a.usage_at ?? null, a.created_at, a.updated_at),
+        .bind(a.site, a.company, a.plan, a.state, a.state_reason ?? null, a.trial_ends ?? null, a.renews_on ?? null, a.contact_email ?? null, a.tax_id ?? null,
+          a.billing_address ?? null, a.profile == null ? null : JSON.stringify(a.profile), a.usage == null ? null : JSON.stringify(a.usage), a.usage_at ?? null,
+          a.cancelled_at ?? null, a.purged_at ?? null, a.created_at, a.updated_at),
       this.db.prepare("DELETE FROM hosts WHERE site = ?").bind(a.site),
       ...a.hosts.map((h) => this.db.prepare("INSERT INTO hosts (host, site) VALUES (?, ?)").bind(h, a.site)),
     ]);
@@ -182,6 +233,44 @@ export class D1Store implements Store {
     const res = await this.db.prepare("DELETE FROM seen WHERE created_at < ? AND key NOT LIKE 'skip:%'").bind(before.replace("T", " ").slice(0, 19)).run();
     return res.meta.changes ?? 0;
   }
+
+  async insertInvoice(inv: Invoice) {
+    const cols = ["id", "site", "period", "created_at", ...INVOICE_FIELDS] as const;
+    const res = await this.db
+      .prepare(`INSERT OR IGNORE INTO invoices (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`)
+      .bind(...cols.map((c) => inv[c] ?? null))
+      .run();
+    return (res.meta.changes ?? 0) > 0;
+  }
+
+  async getInvoice(id: string) {
+    return (await this.db.prepare("SELECT * FROM invoices WHERE id = ?").bind(id).first<Invoice>()) ?? null;
+  }
+
+  async listInvoices(site?: string) {
+    const q = site
+      ? this.db.prepare("SELECT * FROM invoices WHERE site = ? ORDER BY created_at DESC LIMIT 100").bind(site)
+      : this.db.prepare("SELECT * FROM invoices ORDER BY created_at DESC LIMIT 5000");
+    return (await q.all<Invoice>()).results;
+  }
+
+  async updateInvoice(id: string, from: InvoiceStatus | null, patch: InvoicePatch) {
+    const keys = INVOICE_FIELDS.filter((k) => patch[k] !== undefined);
+    if (!keys.length) return false;
+    const res = await this.db
+      .prepare(`UPDATE invoices SET ${keys.map((k) => `${k} = ?`).join(", ")} WHERE id = ?${from ? " AND status = ?" : ""}`)
+      .bind(...keys.map((k) => patch[k] ?? null), id, ...(from ? [from] : []))
+      .run();
+    return (res.meta.changes ?? 0) > 0;
+  }
+
+  async addPayment(p: InvoicePayment) {
+    await this.db.prepare("INSERT INTO invoice_payments (trade_no, invoice_id, amount, created_at) VALUES (?, ?, ?, ?)").bind(p.trade_no, p.invoice_id, p.amount, p.created_at).run();
+  }
+
+  async getPayment(tradeNo: string) {
+    return (await this.db.prepare("SELECT * FROM invoice_payments WHERE trade_no = ?").bind(tradeNo).first<InvoicePayment>()) ?? null;
+  }
 }
 
 export class MemoryStore implements Store {
@@ -198,6 +287,9 @@ export class MemoryStore implements Store {
   }
   async putTenant(t: Tenant) {
     this.tenants.set(t.site, t);
+  }
+  async deleteTenant(site: string) {
+    this.tenants.delete(site);
   }
   async listSites() {
     return [...this.tenants.keys()].sort();
@@ -259,5 +351,33 @@ export class MemoryStore implements Store {
       }
     }
     return n;
+  }
+  invoices: Invoice[] = [];
+  payments = new Map<string, InvoicePayment>();
+  async insertInvoice(inv: Invoice) {
+    if (this.invoices.some((i) => i.id === inv.id || (i.site === inv.site && i.period === inv.period && i.status !== "void"))) return false;
+    this.invoices.push(structuredClone(inv));
+    return true;
+  }
+  async getInvoice(id: string) {
+    const inv = this.invoices.find((i) => i.id === id);
+    return inv ? structuredClone(inv) : null;
+  }
+  async listInvoices(site?: string) {
+    return this.invoices.filter((i) => !site || i.site === site).sort((a, b) => b.created_at.localeCompare(a.created_at)).map((i) => structuredClone(i));
+  }
+  async updateInvoice(id: string, from: InvoiceStatus | null, patch: InvoicePatch) {
+    const inv = this.invoices.find((i) => i.id === id);
+    if (!inv || (from && inv.status !== from)) return false;
+    for (const k of INVOICE_FIELDS) if (patch[k] !== undefined) (inv as Record<string, unknown>)[k] = patch[k];
+    return true;
+  }
+  async addPayment(p: InvoicePayment) {
+    if (this.payments.has(p.trade_no)) throw new Error("UNIQUE constraint failed: invoice_payments.trade_no");
+    this.payments.set(p.trade_no, { ...p });
+  }
+  async getPayment(tradeNo: string) {
+    const p = this.payments.get(tradeNo);
+    return p ? { ...p } : null;
   }
 }

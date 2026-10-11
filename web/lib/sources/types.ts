@@ -20,6 +20,12 @@ export type SetupStatus = {
   issues: number;
 };
 
+export type Checklist = {
+  steps: { id: string; count: number; done: boolean; applies: boolean }[];
+  done: number;
+  total: number;
+};
+
 export type DeadLetter = { id: number; kind: string; error: string; created_at: string };
 
 export type LetterOverview = {
@@ -70,6 +76,17 @@ export type Security = {
 };
 
 export type Team = { users: TeamMember[]; profiles: JobProfile[]; me: string; security: Security; active: number };
+
+export type HrToday = {
+  date: string;
+  me: { employee: string | null; name: string; logs: { type: "IN" | "OUT"; time: string }[]; next: "IN" | "OUT" | null };
+  onLeave: { name: string; leaveType: string; fromDate: string; toDate: string; halfDay: boolean; href?: string }[];
+  approvals: { name: string; employee: string; leaveType: string; fromDate: string; toDate: string; days: number; reason: string; href?: string }[];
+  payroll: { month: string; state: "not_started" | "started" | "slips" | "paid"; employees: number; draft: number; submitted: number; netPay: number; entries: { name: string; status: string; href?: string }[] } | null;
+  rates: { year: number; verified: boolean; current: boolean; href?: string } | null;
+  can: { approve: boolean; payroll: boolean };
+  denied?: string[];
+};
 
 export type AuditRow = { at: string; who: string; what: string; detail: string; href?: string | null };
 

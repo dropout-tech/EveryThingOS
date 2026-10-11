@@ -57,6 +57,24 @@ export class ERPNext {
     return body?.data as T;
   }
 
+  /** Frappe REST list. Callers pass fixed field lists and filters they built themselves, never client input as-is. */
+  async list<T = Record<string, unknown>>(doctype: string, q: { fields: readonly string[]; filters: unknown[][]; orderBy: string; start: number; limit: number }): Promise<T[]> {
+    const params = new URLSearchParams({
+      fields: JSON.stringify(q.fields),
+      filters: JSON.stringify(q.filters),
+      order_by: q.orderBy,
+      limit_start: String(q.start),
+      limit_page_length: String(q.limit),
+    });
+    const body = await call(
+      this.fetcher,
+      `${this.t.erpnext_url}/api/resource/${encodeURIComponent(doctype)}?${params}`,
+      { headers: this.headers() },
+      `erpnext list ${doctype}`,
+    );
+    return (body?.data ?? []) as T[];
+  }
+
   api<T = unknown>(fn: string, args: Record<string, unknown> = {}) {
     return this.method<T>(`dropout_core.api.${fn}`, args);
   }

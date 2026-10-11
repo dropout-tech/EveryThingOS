@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 
-const field = "mt-1 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream";
+const field = "field";
 
 /** 新增一個人. Same email or phone as someone already known opens that person instead of making a duplicate. */
 export function LiveLeadForm() {
@@ -20,27 +20,27 @@ export function LiveLeadForm() {
   return (
     <form onSubmit={submit} className="glass space-y-2 p-4">
       <div className="flex flex-wrap items-end gap-2">
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">名字</span>
-          <input value={form.name} onChange={set("name")} maxLength={140} className={`${field} w-36`} />
+        <label className="w-full text-sm sm:w-auto">
+          <span className="field-label">名字</span>
+          <input value={form.name} onChange={set("name")} maxLength={140} className={`${field} sm:w-36`} />
         </label>
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">公司</span>
-          <input value={form.company_name} onChange={set("company_name")} maxLength={140} className={`${field} w-40`} />
+        <label className="w-full text-sm sm:w-auto">
+          <span className="field-label">公司</span>
+          <input value={form.company_name} onChange={set("company_name")} maxLength={140} className={`${field} sm:w-40`} />
         </label>
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">Email</span>
-          <input type="email" value={form.email} onChange={set("email")} className={`${field} w-52`} />
+        <label className="w-full text-sm sm:w-auto">
+          <span className="field-label">Email</span>
+          <input type="email" value={form.email} onChange={set("email")} className={`${field} sm:w-52`} />
         </label>
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">手機</span>
-          <input value={form.phone} onChange={set("phone")} inputMode="tel" placeholder="0912345678" className={`${field} w-36`} />
+        <label className="w-full text-sm sm:w-auto">
+          <span className="field-label">手機</span>
+          <input value={form.phone} onChange={set("phone")} inputMode="tel" placeholder="0912345678" className={`${field} sm:w-36`} />
         </label>
-        <label className="text-sm">
-          <span className="block text-xs text-cream-dim">怎麼認識的</span>
-          <input value={form.notes} onChange={set("notes")} maxLength={500} placeholder="展場、介紹…" className={`${field} w-44`} />
+        <label className="w-full text-sm sm:w-auto">
+          <span className="field-label">怎麼認識的</span>
+          <input value={form.notes} onChange={set("notes")} maxLength={500} placeholder="展場、介紹…" className={`${field} sm:w-44`} />
         </label>
-        <button type="submit" disabled={action.busy} className="glass-cta rounded-full px-4 py-2 text-sm disabled:opacity-50">
+        <button type="submit" disabled={action.busy} className="btn btn-primary">
           {action.busy ? "新增中…" : "新增一個人"}
         </button>
       </div>

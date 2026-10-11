@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import { GuideProvider } from "@/components/GuideProvider";
 import { OsShell } from "@/components/OsShell";
 import { OnboardScreen } from "@/components/OnboardScreen";
-import { canManageTeam, featuresFor } from "@/lib/access";
+import { ADMIN_ROLE, canManageTeam, canSeeReports, featuresFor } from "@/lib/access";
+import { openInvoice } from "@/lib/billing";
+import { guideScope, roleFor } from "@/lib/guide";
 import { readSession } from "@/lib/session";
 import { getMe } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -27,13 +30,16 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   const industry = await currentIndustry();
 
   let roles: string[] | null = null;
+  let guide = { scope: guideScope(null), role: null as string | null };
   if (personal) {
     const me = await getMe();
     if (me.origin === "error" && me.kind === "login") redirect("/login");
     roles = me.origin === "live" && me.data ? me.data.roles : [];
+    if (me.origin === "live" && me.data) guide = { scope: guideScope(me.data.user), role: roleFor(me.data.profile, roles) };
   }
   const life = config.tenant?.lifecycle;
-  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due" } : null;
+  const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
+  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due", readOnly: !life.writable, payUrl: invoice?.pay_url } : null;
 
   return (
     <OsShell
@@ -41,10 +47,13 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       shop={{ ...shop, modules: featuresFor(shop.modules, roles) }}
       company={config.tenant?.company}
       team={canManageTeam(roles)}
+      reports={canSeeReports(roles)}
       notice={notice}
       canReset={!config.tenant?.profile}
     >
-      {children}
+      <GuideProvider scope={guide.scope} role={guide.role}>
+        {children}
+      </GuideProvider>
     </OsShell>
   );
 }

@@ -8,11 +8,18 @@ export type Account = {
   trial_ends?: string | null;
   renews_on?: string | null;
   contact_email?: string | null;
+  /** 統編 and invoice address for DropOut's own renewal invoices. */
+  tax_id?: string | null;
+  billing_address?: string | null;
   /** ShopProfile chosen at onboarding, so every staff member sees the same modules. */
   profile?: unknown;
   usage?: Record<string, unknown> | null;
   usage_at?: string | null;
   hosts: string[];
+  /** Set when the state becomes cancelled, cleared when it comes back; starts the export window. */
+  cancelled_at?: string | null;
+  /** The site and its backups were deleted (`dropout-onboard fleet purge`). The row stays as contract history. */
+  purged_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -51,6 +58,11 @@ export function addDays(date: string, days: number) {
   return new Date(new Date(`${date}T12:00:00Z`).getTime() + days * DAY).toISOString().slice(0, 10);
 }
 
+/** A renewal adds whole years to the current end date, or to today once it has passed. */
+export function renewalEnd(renewsOn: string | null | undefined, today: string, years = 1) {
+  return addYears(renewsOn && renewsOn > today ? renewsOn : today, years);
+}
+
 export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_ends" | "renews_on">, now = new Date()): Lifecycle {
   if (a.state === "cancelled") {
     return { stage: "cancelled", days: null, ends: a.renews_on ?? null, writable: false, bots: false, message: "已解約。資料保留，可以看和匯出；要回來請聯絡我們。" };
@@ -87,7 +99,7 @@ const REMIND_AT: Partial<Record<Stage, number[]>> = {
  * The reminder due today, if any. `key` names the stage, end date and day, so
  * each reminder goes out once and a renewal (new end date) starts a fresh set.
  */
-export function reminderFor(a: Account, now = new Date()): { key: string; subject: string; text: string } | null {
+export function reminderFor(a: Account, now = new Date(), payUrl?: string | null): { key: string; subject: string; text: string } | null {
   const l = lifecycle(a, now);
   if (l.days === null || !REMIND_AT[l.stage]?.includes(l.days)) return null;
   const subject = {
@@ -99,7 +111,7 @@ export function reminderFor(a: Account, now = new Date()): { key: string; subjec
   return {
     key: `remind:${a.site}:${l.stage}:${l.ends}:${l.days}`,
     subject: `${subject}（${a.company}）`,
-    text: `${a.company} 您好，\n\n${l.message}\n\n要續約或有任何問題，直接回覆這封信即可。\n\nDropOut OS`,
+    text: `${a.company} 您好，\n\n${l.message}\n\n${payUrl ? `線上付款（刷卡或 ATM）：\n${payUrl}\n\n` : ""}要續約或有任何問題，直接回覆這封信即可。\n\nDropOut OS`,
   };
 }
 
@@ -116,11 +128,25 @@ export function mergeAccount(site: string, current: Account | null, patch: Parti
     updated_at: stamp,
   };
   const next: Account = { ...base, updated_at: stamp };
-  for (const key of ["company", "plan", "state", "state_reason", "trial_ends", "renews_on", "contact_email", "profile", "hosts"] as const) {
+  for (const key of ["company", "plan", "state", "state_reason", "trial_ends", "renews_on", "contact_email", "tax_id", "billing_address", "profile", "hosts"] as const) {
     if (patch[key] !== undefined) (next as Record<string, unknown>)[key] = patch[key];
   }
   next.hosts = [...new Set((next.hosts ?? []).map((h) => normalizeHost(h)).filter(Boolean))];
+  next.cancelled_at = next.state !== "cancelled" ? null : base.state === "cancelled" && base.cancelled_at ? base.cancelled_at : stamp;
   return next;
+}
+
+/** Days after cancellation the company can still sign in and export (web/lib/legal.ts CONTRACT.exportDays). */
+export const EXPORT_DAYS = 90;
+
+export type Purge = { due_on: string | null; due: boolean; purged_at: string | null };
+
+/** Cancelled on day 1 means the export window covers days 1–90 and deletion may start on day 91. */
+export function purgeStatus(a: Pick<Account, "state" | "cancelled_at" | "purged_at">, now = new Date()): Purge {
+  const purged_at = a.purged_at ?? null;
+  if (a.state !== "cancelled" || !a.cancelled_at) return { due_on: null, due: false, purged_at };
+  const due_on = addDays(taiwanDate(new Date(a.cancelled_at)), EXPORT_DAYS);
+  return { due_on, due: !purged_at && taiwanDate(now) >= due_on, purged_at };
 }
 
 export function normalizeHost(host: string) {
@@ -132,5 +158,6 @@ export function validAccount(a: Account): string | null {
   if (!["active", "suspended", "cancelled"].includes(a.state)) return "state 只能是 active、suspended、cancelled";
   for (const d of [a.trial_ends, a.renews_on]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) return "日期要寫成 YYYY-MM-DD";
   if (a.hosts.some((h) => !/^[a-z0-9.-]+$/.test(h))) return "網址只能有英數、點和連字號";
+  if (a.tax_id && !/^\d{8}$/.test(a.tax_id)) return "統編是 8 位數字";
   return null;
 }

@@ -32,6 +32,13 @@ class TestPlan(unittest.TestCase):
 		p = plan.plan({"scene": "make", "modules": ["sales"]})
 		self.assertEqual(p["apps"], ["erpnext", "dropout_core", "dropout_pack_make"])
 
+	def test_hr_module_adds_hrms_and_taiwan_payroll(self):
+		p = plan.plan({"scene": "make", "modules": ["sales", "hr", "website"]})
+		self.assertEqual(p["apps"], ["erpnext", "payments", "webshop", "hrms", "dropout_core", "dropout_pay_tw", "dropout_hr_tw", "dropout_pack_make"])
+		self.assertTrue(p["hr"])
+		self.assertFalse(plan.plan({"scene": "make", "modules": ["sales"]})["hr"])
+		self.assertTrue(os.path.exists(os.path.join(HERE, "..", "frappe-apps", "dropout_hr_tw", "pyproject.toml")))
+
 	def test_unknown_scene_falls_back_to_service(self):
 		self.assertEqual(plan.plan({"scene": "space"})["pack"], "dropout_pack_service")
 		self.assertEqual(plan.plan({"scene": "edu"})["pack"], "dropout_pack_edu")

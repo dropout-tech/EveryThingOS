@@ -1,0 +1,79 @@
+[
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "特休",
+  "is_lwp": 0,
+  "allow_encashment": 1,
+  "is_carry_forward": 0,
+  "include_holiday": 0,
+  "description": "勞動基準法第38條。天數依年資，請用「假別分配」給每個人；年度終結未休完的要折發工資。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "病假",
+  "is_lwp": 0,
+  "is_ppl": 1,
+  "fraction_of_daily_salary_per_leave": 0.5,
+  "max_leaves_allowed": 30,
+  "include_holiday": 0,
+  "description": "勞工請假規則第4條。未住院一年 30 日內工資折半；住院另計。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "事假",
+  "is_lwp": 1,
+  "max_leaves_allowed": 14,
+  "include_holiday": 0,
+  "description": "勞工請假規則第7條。一年 14 日，不給工資。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "婚假",
+  "is_lwp": 0,
+  "max_leaves_allowed": 8,
+  "include_holiday": 0,
+  "description": "勞工請假規則第2條。8 日，工資照給。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "喪假",
+  "is_lwp": 0,
+  "max_leaves_allowed": 8,
+  "include_holiday": 0,
+  "description": "勞工請假規則第3條。依親屬關係 3、6 或 8 日，工資照給。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "產假",
+  "is_lwp": 0,
+  "max_leaves_allowed": 56,
+  "include_holiday": 1,
+  "description": "勞動基準法第50條、性別平等工作法第15條。分娩前後 8 星期；受僱滿 6 個月工資照給，未滿減半。流產依週數另計。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "陪產假",
+  "is_lwp": 0,
+  "max_leaves_allowed": 7,
+  "include_holiday": 0,
+  "description": "性別平等工作法第15條。陪產檢及陪產假 7 日，工資照給。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "生理假",
+  "is_lwp": 0,
+  "is_ppl": 1,
+  "fraction_of_daily_salary_per_leave": 0.5,
+  "max_leaves_allowed": 12,
+  "include_holiday": 0,
+  "description": "性別平等工作法第14條。每月 1 日；全年 3 日內不併入病假，其餘併入病假；工資減半。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "家庭照顧假",
+  "is_lwp": 1,
+  "max_leaves_allowed": 7,
+  "include_holiday": 0,
+  "description": "性別平等工作法第20條。一年 7 日，併入事假，不給工資。"
+ }
+]

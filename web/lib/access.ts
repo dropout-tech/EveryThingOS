@@ -15,6 +15,8 @@ const FEATURE_ROLES: Record<FeatureId, string[]> = {
   chat: ["Sales User", "Support Team"],
   meetings: [],
   website: ["Website Manager", "Sales Manager"],
+  // Everyone clocks in; leave approvals and payroll on the page follow the HRMS roles.
+  hr: [],
 };
 
 export const ADMIN_ROLE = "System Manager";
@@ -27,4 +29,11 @@ export function featuresFor(modules: FeatureId[], roles: string[] | null): Featu
 
 export function canManageTeam(roles: string[] | null) {
   return roles === null || roles.includes(ADMIN_ROLE);
+}
+
+/** 老闆、主管、會計. Same list as `dropout_core.reports.REPORT_ROLES`, which is what actually decides. */
+export const REPORT_ROLES = [ADMIN_ROLE, "Accounts Manager", "Sales Manager"];
+
+export function canSeeReports(roles: string[] | null) {
+  return roles === null || REPORT_ROLES.some((role) => roles.includes(role));
 }

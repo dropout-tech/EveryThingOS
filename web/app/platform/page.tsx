@@ -1,74 +1,117 @@
 import Link from "next/link";
-import { glueAdmin, STAGE_LABEL, type PlatformAccount } from "@/lib/platform";
+import { PlatformTable, type PlatformRow } from "@/components/PlatformTable";
+import { glueAdmin, type BillingSummary, type PlatformAccount } from "@/lib/platform";
 import type { Stage } from "@/lib/sources/config";
-
-const ORDER: Stage[] = ["read_only", "past_due", "suspended", "due_soon", "trial", "active", "cancelled"];
 
 function num(v: unknown) {
   return typeof v === "number" ? v : null;
 }
 
-export default async function PlatformPage() {
-  const res = await glueAdmin<{ today: string; accounts: PlatformAccount[] }>("/admin/accounts");
+function backupAge(iso: string, bytes?: number) {
+  const hours = Math.max(0, (Date.now() - new Date(iso).getTime()) / 3_600_000);
+  return `${hours < 1 ? "1 小時內" : `${Math.round(hours)} 小時前`}・${Math.round((bytes ?? 0) / 1048576)} MB`;
+}
+
+function Gateway({ label, mode }: { label: string; mode: "production" | "staging" | null }) {
+  return (
+    <span className="site-chip" data-tone={mode === "production" ? "ok" : mode === "staging" ? "warn" : "bad"}>
+      {label}：{mode === "production" ? "正式" : mode === "staging" ? "測試環境（不會真的扣款）" : "沒有設定"}
+    </span>
+  );
+}
+
+export default async function PlatformPage({ searchParams }: PageProps<"/platform">) {
+  const [res, bill] = await Promise.all([glueAdmin<{ today: string; accounts: PlatformAccount[] }>("/admin/accounts"), glueAdmin<BillingSummary>("/admin/billing")]);
   if (!res.operator) return null;
-  if (!res.ok || !res.data) return <p className="text-orange">讀不到公司清單：{res.text || res.status}</p>;
+  if (!res.ok || !res.data)
+    return (
+      <p role="alert" className="site-sheet site-error p-5">
+        讀不到公司清單：{res.text || res.status}
+      </p>
+    );
   const { accounts, today } = res.data;
-  const sorted = [...accounts].sort((a, b) => ORDER.indexOf(a.lifecycle.stage) - ORDER.indexOf(b.lifecycle.stage) || (a.lifecycle.ends ?? "9").localeCompare(b.lifecycle.ends ?? "9"));
-  const count = (stage: Stage) => accounts.filter((a) => a.lifecycle.stage === stage).length;
-  const seats = accounts.reduce((n, a) => n + (num(a.usage?.users) ?? 0), 0);
+  const billing = bill.ok ? bill.data : null;
+  const { sort } = await searchParams;
+  const count = (...stages: Stage[]) => accounts.filter((a) => stages.includes(a.lifecycle.stage)).length;
+  const rows: PlatformRow[] = accounts.map((a) => {
+    const b = billing?.accounts[a.site];
+    const db = num(a.usage?.db_mb);
+    return {
+      site: a.site,
+      company: a.company,
+      stage: a.lifecycle.stage,
+      ends: a.lifecycle.ends,
+      health: b?.health ?? null,
+      open: b?.open?.amount ?? null,
+      einvoiceFailed: Boolean(b?.einvoice_failed),
+      users: num(a.usage?.users),
+      active: num(a.usage?.active_users_30d),
+      invoices: num(a.usage?.invoices_this_month),
+      dataMb: db !== null ? Math.round(db + (num(a.usage?.files_mb) ?? 0)) : null,
+      usageError: typeof a.usage?.error === "string",
+      backup: a.usage?.backup?.offsite?.taken_at ? backupAge(a.usage.backup.offsite.taken_at, a.usage.backup.offsite.bytes) : null,
+      backupProblem: a.backup_problem ?? null,
+      hosts: a.hosts,
+    };
+  });
+  const purgeDue = accounts.filter((a) => a.purge?.due);
+  const staleBackups = accounts.filter((a) => a.backup_problem).length;
+  const stats: [string, number | string, string?][] = [
+    ["公司", accounts.length],
+    ["帳號", rows.reduce((n, r) => n + (r.users ?? 0), 0)],
+    ["試用", count("trial")],
+    ["60 天內到期", count("due_soon"), count("due_soon") ? "warn" : undefined],
+    ["寬限中", count("past_due"), count("past_due") ? "bad" : undefined],
+    ["只能看／暫停", count("read_only", "suspended"), count("read_only", "suspended") ? "bad" : undefined],
+    ["高風險", billing ? rows.filter((r) => r.health?.level === "high").length : "—", billing && rows.some((r) => r.health?.level === "high") ? "bad" : undefined],
+    ["未付帳單", billing ? rows.filter((r) => r.open !== null).length : "—", billing && rows.some((r) => r.open !== null) ? "warn" : undefined],
+  ];
 
   return (
     <div className="space-y-5">
-      <section className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {[
-          ["公司", accounts.length],
-          ["帳號", seats],
-          ["試用", count("trial")],
-          ["60 天內到期", count("due_soon")],
-          ["寬限中", count("past_due")],
-          ["只能看／暫停", count("read_only") + count("suspended")],
-        ].map(([label, value]) => (
-          <div key={label as string} className="glass p-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-8" aria-label="總覽">
+        {stats.map(([label, value, tone]) => (
+          <div key={label} className="site-sheet !rounded-2xl p-4">
             <p className="text-xs text-cream-dim">{label}</p>
-            <p className="mt-1 text-2xl">{value}</p>
+            <p className="mt-1 text-2xl tabular-nums">{tone ? <span className="site-chip site-chip-icon !text-xl" data-tone={tone}>{value}</span> : value}</p>
           </div>
         ))}
       </section>
-      <p className="text-xs text-cream-dim">今天 {today}（台灣）。用量每天凌晨兩點更新。</p>
-      <section className="glass overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="text-xs text-cream-dim">
-            <tr>
-              {["公司", "狀態", "到期", "帳號／30 天活躍", "本月發票", "資料量", "網址"].map((h) => (
-                <th key={h} className="px-4 py-3 font-normal">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((a) => (
-              <tr key={a.site} className="border-t border-[var(--line)]">
-                <td className="px-4 py-3">
-                  <Link href={`/platform/${encodeURIComponent(a.site)}`} className="hover:text-teal">
-                    {a.company}
-                  </Link>
-                  <span className="block text-xs text-cream-dim">{a.site}</span>
-                </td>
-                <td className={`px-4 py-3 ${a.lifecycle.writable && a.lifecycle.stage !== "past_due" ? "" : "text-orange"}`}>{STAGE_LABEL[a.lifecycle.stage]}</td>
-                <td className="px-4 py-3">{a.lifecycle.ends ?? "—"}</td>
-                <td className="px-4 py-3">
-                  {num(a.usage?.users) ?? "—"} ／ {num(a.usage?.active_users_30d) ?? "—"}
-                </td>
-                <td className="px-4 py-3">{num(a.usage?.invoices_this_month) ?? "—"}</td>
-                <td className="px-4 py-3">{num(a.usage?.db_mb) !== null ? `${Math.round((num(a.usage?.db_mb) ?? 0) + (num(a.usage?.files_mb) ?? 0))} MB` : typeof a.usage?.error === "string" ? <span className="text-orange">讀不到</span> : "—"}</td>
-                <td className="px-4 py-3 text-xs text-cream-dim">{a.hosts.join("、") || "—"}</td>
-              </tr>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-cream-dim">
+        <span>今天 {today}（台灣）・用量每天凌晨兩點更新</span>
+        {staleBackups ? (
+          <span className="site-chip" data-tone="bad">
+            {staleBackups} 家備份有問題（看「最近備份」欄）
+          </span>
+        ) : null}
+        {billing ? (
+          <>
+            <Gateway label="線上付款（綠界）" mode={billing.gateway.ecpay} />
+            <Gateway label="電子發票" mode={billing.gateway.einvoice} />
+          </>
+        ) : (
+          <span className="site-chip" data-tone="bad">
+            讀不到帳單與健康度：{bill.text || bill.status}
+          </span>
+        )}
+      </div>
+      {purgeDue.length ? (
+        <section className="site-sheet space-y-2 p-5">
+          <h2 className="text-lg font-medium">解約滿 90 天，待刪除</h2>
+          <p className="text-xs text-cream-dim">系統不會自動刪。確認客戶已經拿到資料後，在主機上跑 dropout-onboard fleet purge &lt;site&gt;（先預演，再加 --apply）。</p>
+          <ul className="space-y-1 text-sm">
+            {purgeDue.map((a) => (
+              <li key={a.site}>
+                <Link href={`/platform/${encodeURIComponent(a.site)}`} className="underline-offset-4 hover:underline">
+                  {a.company}
+                </Link>
+                <span className="text-cream-dim">（{a.site}）解約 {a.cancelled_at?.slice(0, 10) ?? "—"}，{a.purge?.due_on} 起可刪</span>
+              </li>
             ))}
-          </tbody>
-        </table>
-        {!accounts.length ? <p className="p-5 text-sm text-cream-dim">還沒有公司。用導入工具 `dropout-onboard provision` 或 `fleet` 開第一家。</p> : null}
-      </section>
+          </ul>
+        </section>
+      ) : null}
+      <PlatformTable rows={rows} initialSort={sort === "ends" ? "stage" : "risk"} />
     </div>
   );
 }

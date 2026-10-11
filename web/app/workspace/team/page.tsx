@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/EmptyState";
+import { Hint } from "@/components/Hint";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure } from "@/components/SourceNote";
 import { TeamBoard } from "@/components/TeamBoard";
@@ -24,6 +26,7 @@ const DEMO: Team = {
     { name: "會計", note: "發票、收付款、帳務", roles: [], admin: false },
     { name: "客服", note: "對話、客人資料", roles: [], admin: false },
     { name: "行銷", note: "電子報、名單、官網", roles: [], admin: false },
+    { name: "人資", note: "員工資料、請假核准、打卡、薪資", roles: [], admin: false },
   ],
   security: { enable_two_factor_auth: 0, two_factor_for_everyone: 0, two_factor_method: "OTP App", enable_password_policy: 1, minimum_password_score: "3", session_expiry: "08:00", allow_consecutive_login_attempts: 5, deny_multiple_sessions: 0 },
 };
@@ -51,10 +54,19 @@ export default async function TeamPage() {
 
   return (
     <ModuleFrame kicker="團隊" title="誰能看什麼、做什麼" hint="職務就是 ERPNext 的角色組合；改職務立刻生效，停用的人馬上登出。">
+      <Hint id="team" help="module-team" />
+      {live && team.data && team.data.users.filter((u) => u.enabled && u.email !== team.data?.me).length === 0 ? (
+        <EmptyState
+          compact
+          title="公司裡現在只有你"
+          detail="在下面加同事的 Email、選職務，他會收到設定密碼的信；職務決定他看得到哪些畫面。"
+          help="roles"
+        />
+      ) : null}
       <TeamBoard team={team.data ?? DEMO} live={live} />
       <section className="glass-well space-y-2 p-5">
-        <h3 className="text-sm">最近紀錄</h3>
-        {audit.origin === "error" ? <p className="text-sm text-orange">{audit.message}</p> : null}
+        <h2 className="text-sm font-medium">最近紀錄</h2>
+        {audit.origin === "error" ? <p className="text-sm text-warn">{audit.message}</p> : null}
         {rows.length ? (
           <ul className="space-y-1 text-sm">
             {rows.map((r, i) => (
@@ -63,7 +75,7 @@ export default async function TeamPage() {
                 <span>{r.who}</span>
                 <span>{r.what}</span>
                 {r.href ? (
-                  <a href={r.href} target="_blank" rel="noreferrer" className="text-teal">
+                  <a href={r.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                     {r.detail}
                   </a>
                 ) : (

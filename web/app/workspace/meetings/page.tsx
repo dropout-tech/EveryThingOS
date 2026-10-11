@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { UpcomingMeetings } from "@/components/UpcomingMeetings";
@@ -33,9 +34,9 @@ export default async function MeetingsPage() {
   return (
     <ModuleFrame kicker="會議紀錄" title="會議自己記，摘要進客人" hint="機器人照公司行事曆，開會前自己進 Zoom、Google Meet、Teams；會後整理成重點、決定、待辦，記在與會客人的時間軸上。">
       <section className="space-y-2">
-        <h3 className="text-sm">接下來的會</h3>
+        <h2 className="text-sm font-medium">接下來的會</h2>
         {data.upcoming === null ? (
-          <p className="text-sm text-cream-dim">會議機器人還沒接上。導入工具加上 --vexa-url 與公司行事曆後，這裡會列出接下來的會。</p>
+          <EmptyState compact title="會議機器人還沒接上" detail="導入工具加上 --vexa-url 與公司行事曆後，這裡會列出接下來的會，機器人會自己進會議做紀錄。" help="module-meetings" />
         ) : !data.bot && live ? (
           <p className="text-sm text-cream-dim">這家公司還沒開會議機器人。</p>
         ) : live ? (
@@ -50,11 +51,11 @@ export default async function MeetingsPage() {
             ))}
           </ul>
         )}
-        {data.failedCalendars ? <p className="text-xs text-orange">{data.failedCalendars} 個行事曆讀不到，請到設定看同步失敗的原因。</p> : null}
+        {data.failedCalendars ? <p className="text-xs text-warn">{data.failedCalendars} 個行事曆讀不到，請到設定看同步失敗的原因。</p> : null}
       </section>
 
       <section className="space-y-2">
-        <h3 className="text-sm">最近的摘要</h3>
+        <h2 className="text-sm font-medium">最近的摘要</h2>
         {data.summaries.length ? (
           <ul className="space-y-2">
             {data.summaries.map((s, i) => (
@@ -67,7 +68,7 @@ export default async function MeetingsPage() {
                     {s.href ? (
                       <>
                         {" · "}
-                        <a href={s.href} target="_blank" rel="noreferrer" className="text-teal">
+                        <a href={s.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                           打開
                         </a>
                       </>
@@ -79,7 +80,7 @@ export default async function MeetingsPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-cream-dim">還沒有會議摘要。</p>
+          <EmptyState compact title="還沒有會議摘要" detail="機器人進過一場會之後，重點、決定、待辦會出現在這裡，也會記在與會客人的時間軸上。" help="module-meetings" />
         )}
       </section>
 

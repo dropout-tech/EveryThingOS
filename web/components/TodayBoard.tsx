@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Lens } from "./Lens";
+import { buttonClass } from "./ui/Button";
 import type { Books } from "@/lib/erp";
 
 export function TodayList({ books }: { books: Books }) {
@@ -8,20 +9,21 @@ export function TodayList({ books }: { books: Books }) {
   return (
     <section className="space-y-6">
       <Lens className="block" radius={40}>
-        <Link href={primary.href} className="block p-8 md:p-10">
-          <p className="display text-[11px] tracking-[0.2em] text-cream-dim uppercase">現在這件</p>
-          <h2 className="mt-4 max-w-xl text-4xl leading-[1.12] font-medium md:text-5xl">{primary.title}</h2>
+        <Link href={primary.href} className="block rounded-[40px] p-8 focus-visible:[outline-offset:-5px] md:p-10">
+          <p className="kicker">現在這件</p>
+          <h2 className="mt-4 max-w-xl text-3xl leading-[1.15] font-medium sm:text-4xl md:text-5xl">{primary.title}</h2>
           <p className="mt-4 max-w-xl text-base text-cream-dim">{primary.detail}</p>
-          <span className="glass-cta mt-8 inline-flex rounded-full px-5 py-2.5 text-sm">去做</span>
+          <span className={buttonClass({ variant: "primary", className: "mt-8 px-6" })}>去做</span>
         </Link>
       </Lens>
       {rest.length ? (
-        <ol className="space-y-2 px-1">
+        <ol className="glass-well divide-y divide-[var(--line)] px-2" aria-label="接著做">
           {rest.map((item, index) => (
             <li key={item.title}>
-              <Link href={item.href} className="flex items-baseline gap-3 text-sm text-cream-dim hover:text-cream">
-                <span className="display text-xs">0{index + 2}</span>
-                <span>{item.title}</span>
+              <Link href={item.href} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm hover:bg-white/5">
+                <span className="display text-xs text-cream-dim">0{index + 2}</span>
+                <span className="flex-1">{item.title}</span>
+                <span aria-hidden="true" className="text-cream-dim">→</span>
               </Link>
             </li>
           ))}

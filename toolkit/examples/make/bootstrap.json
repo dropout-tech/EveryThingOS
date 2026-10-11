@@ -1,7 +1,7 @@
 {
  "company": "琢奧精密製造",
  "abbr": "ZAM",
- "profile": {"scene": "make", "size": "small", "modules": ["crm", "sales", "stock", "purchase", "finance", "letter", "chat", "website"]},
+ "profile": {"scene": "make", "size": "small", "modules": ["crm", "sales", "stock", "purchase", "finance", "letter", "chat", "website", "hr"]},
  "source": "excel",
  "files": {"customers": "customers.csv", "suppliers": "suppliers.csv", "items": "items.csv", "opening_stock": "opening_stock.csv"},
  "opening_receivables": "opening_receivables.csv",

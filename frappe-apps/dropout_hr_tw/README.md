@@ -1,0 +1,17 @@
+# DropOut HR TW
+
+台灣人事薪資設定，裝在 Frappe HRMS（version-15）上。不改 HRMS 原始碼，差異都在這個 app。
+
+- 薪資元件：本薪、伙食津貼（免稅額度）、加班費、勞保自付額、健保自付額、勞退自提、所得稅扣繳（`setup/salary_components.json`）
+- 假別：特休、病假、事假、婚假、喪假、產假、陪產假、生理假、家庭照顧假（`setup/leave_types.json`）
+- `Taiwan Payroll Settings`：當年度費率與投保薪資分級表，公式只讀這裡的數字
+- 每家公司一份草稿薪資結構「台灣月薪範本 - 公司縮寫」，人資檢查後送出、指派
+- 職務「人資」；第一次安裝時替「老闆」補上 HR 角色、替「主管」補上請假核准
+- 殼的人事頁 API：`dropout_hr_tw.shell.today`、`check_in`、`decide_leave`
+
+全部是「沒有才建」：公司改過的假別、薪資元件、職務、費率，重跑 `bench migrate` 不會被蓋掉。
+
+費率每年都要核對，清單與說明在 `docs/HR.md`。
+
+- 裝：`bench --site <site> install-app dropout_hr_tw`（會先要求 hrms）
+- 測試：`bench --site <site> run-tests --app dropout_hr_tw`

@@ -83,7 +83,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y mariadb-client
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'; SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
-      - name: Bench with ERPNext, Payments, Webshop (version-15)
+      - name: Bench with ERPNext, Payments, Webshop, HRMS (version-15)
         run: |
           pip install frappe-bench
           bench init --frappe-branch version-15 --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
@@ -91,7 +91,8 @@ jobs:
           bench get-app --branch version-15 --skip-assets erpnext
           bench get-app --branch version-15 --skip-assets payments
           bench get-app --branch version-15 --skip-assets webshop
-          for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu; do
+          bench get-app --branch version-15 --skip-assets hrms
+          for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu dropout_hr_tw; do
             cp -r "$GITHUB_WORKSPACE/frappe-apps/$app" apps/
             ./env/bin/pip install -e "apps/$app"
             [ -z "$(tail -c1 sites/apps.txt)" ] || echo >> sites/apps.txt
@@ -106,7 +107,7 @@ jobs:
           CI: "Yes"
         run: |
           bench new-site --db-host 127.0.0.1 --db-root-password root --admin-password admin --mariadb-user-host-login-scope='%' --install-app erpnext test.local
-          for app in payments webshop dropout_core dropout_pay_tw dropout_pack_make; do bench --site test.local install-app "$app"; done
+          for app in payments webshop hrms dropout_core dropout_pay_tw dropout_pack_make dropout_hr_tw; do bench --site test.local install-app "$app"; done
           bench --site test.local execute dropout_core.provisioning.complete_setup --kwargs '{"company_name": "示範製造", "company_abbr": "DM"}'
           bench --site test.local set-config allow_tests true
       - name: Tests
@@ -114,3 +115,4 @@ jobs:
         run: |
           bench --site test.local run-tests --app dropout_core
           bench --site test.local run-tests --app dropout_pay_tw
+          bench --site test.local run-tests --app dropout_hr_tw

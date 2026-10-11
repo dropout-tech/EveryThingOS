@@ -12,7 +12,8 @@ export type FeatureId =
   | "letter"
   | "chat"
   | "meetings"
-  | "website";
+  | "website"
+  | "hr";
 
 export type ShopSize = "solo" | "small" | "mid" | "large";
 
@@ -46,6 +47,7 @@ export const FEATURES: { id: FeatureId; label: string; hint: string }[] = [
   { id: "chat", label: "對話", hint: "LINE、IG、FB、官網" },
   { id: "meetings", label: "會議紀錄", hint: "機器人自己進 Zoom／Meet" },
   { id: "website", label: "官網", hint: "客人看得到的頁" },
+  { id: "hr", label: "人事", hint: "請假、打卡、薪資" },
 ];
 
 export const SIZES: { id: ShopSize; label: string; hint: string }[] = [
@@ -108,6 +110,8 @@ export function recommendModules(sceneId: string, size: ShopSize, picked: Featur
   }
   if (size === "solo") {
     set.delete("website");
+  } else {
+    set.add("hr");
   }
   if (size === "large" && (sceneId === "retail" || sceneId === "stay" || sceneId === "edu")) {
     set.add("website");
@@ -190,10 +194,12 @@ export function moduleHref(id: FeatureId): string {
       return "/workspace/meetings";
     case "website":
       return "/workspace/website";
+    case "hr":
+      return "/workspace/hr";
   }
 }
 
-export function navItemsForShop(shop: ShopProfile, { team = false } = {}): { href: string; label: string }[] {
+export function navItemsForShop(shop: ShopProfile, { team = false, reports = false } = {}): { href: string; label: string }[] {
   const labels: Record<FeatureId, string> = {
     crm: "客人",
     sales: "生意",
@@ -204,11 +210,13 @@ export function navItemsForShop(shop: ShopProfile, { team = false } = {}): { hre
     chat: "對話",
     meetings: "會議",
     website: "官網",
+    hr: "人事",
   };
   const items = [{ href: "/workspace", label: "今天" }];
   for (const id of FEATURES.map((item) => item.id)) {
     if (shop.modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
   }
+  if (reports) items.push({ href: "/workspace/reports", label: "報表" });
   if (team) items.push({ href: "/workspace/team", label: "團隊" });
   items.push({ href: "/workspace/settings", label: "設定" });
   return items;

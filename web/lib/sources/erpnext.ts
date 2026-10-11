@@ -60,6 +60,10 @@ async function refresh(config: LiveConfig, session: Session): Promise<Session> {
 }
 
 async function call<T>(method: string, args: Record<string, unknown>, config: LiveConfig, post: boolean): Promise<T> {
+  return ((await (await request(method, args, config, post)).json()) as { message: T }).message;
+}
+
+async function request(method: string, args: Record<string, unknown>, config: LiveConfig, post: boolean, timeout?: number): Promise<Response> {
   const erp = config.erpnext;
   if (!erp) throw new SourceError("ERPNext 還沒接上", "unreachable");
   const query = new URLSearchParams(Object.entries(args).map(([k, v]) => [k, typeof v === "string" ? v : JSON.stringify(v)]));
@@ -75,7 +79,7 @@ async function call<T>(method: string, args: Record<string, unknown>, config: Li
       },
       body: post ? JSON.stringify(args) : undefined,
       cache: "no-store",
-      signal: AbortSignal.timeout(post ? 30_000 : 15_000),
+      signal: AbortSignal.timeout(timeout ?? (post ? 30_000 : 15_000)),
     });
   } catch (error) {
     if (error instanceof SourceError) throw error;
@@ -84,7 +88,7 @@ async function call<T>(method: string, args: Record<string, unknown>, config: Li
   if (res.status === 401) throw new SourceError("登入已過期，請重新登入", "login");
   if (res.status === 403) throw new SourceError("你的 ERPNext 角色不能做這件事", "denied");
   if (!res.ok) throw new SourceError(await upstreamMessage(res), "upstream");
-  return ((await res.json()) as { message: T }).message;
+  return res;
 }
 
 /** Frappe puts the user-facing reason in `_server_messages`; show that instead of a status code. */
@@ -110,6 +114,11 @@ export async function erpMethod<T>(method: string, args: Record<string, unknown>
 /** Same as `erpMethod`, for methods that change data (`@frappe.whitelist(methods=["POST"])`). */
 export async function erpPost<T>(method: string, args: Record<string, unknown> = {}, config?: LiveConfig): Promise<T> {
   return call<T>(method, args, config ?? (await liveConfig()), true);
+}
+
+/** For methods that answer with a file (`frappe.response.type = "binary"`), such as `frappe.desk.reportview.export_query`. */
+export async function erpFile(method: string, args: Record<string, unknown>, config?: LiveConfig): Promise<Response> {
+  return request(method, args, config ?? (await liveConfig()), true, 120_000);
 }
 
 export function deskUrl(path: string | undefined, config: LiveConfig) {
