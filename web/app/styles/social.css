@@ -521,6 +521,7 @@ html[data-style="social"] :is(.bubble, .chat-bubble, [data-bubble]) {
   max-width: min(36rem, 88%);
   padding: 0.65rem 0.95rem;
   border-radius: 20px 20px 20px 6px;
+  border-color: transparent;
   background: var(--soc-raised);
   color: var(--soc-text);
   line-height: 1.5;
