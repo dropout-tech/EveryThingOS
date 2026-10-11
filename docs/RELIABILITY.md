@@ -218,7 +218,8 @@ Chatwoot、Vexa 裡這家的資料不在這個指令裡，要在那兩邊的後�
 
 - [ ] `npx wrangler d1 create dropout-glue`，把 `database_id` 填進 `glue/wrangler.jsonc`
 - [ ] `npx wrangler queues create dropout-jobs`、`npx wrangler queues create dropout-jobs-dlq`
-- [ ] `npm run db:migrate`（`0001`–`0006` 都要是 ✅）
+- [ ] `npm run db:migrate`（`0001`–`0008` 都要是 ✅）
+- [ ] 殼設定 `PORTAL_SECRET`（至少 32 個字元，客戶入口連結簽章用；換掉會讓已寄出的連結全部失效）
 - [ ] secrets：`TENANT_KEY`（`openssl rand -base64 32`，另外存一份在密碼管理器，掉了所有公司的金鑰都解不開）、`ADMIN_TOKEN`、`SHELL_TOKEN`、`ALERT_WEBHOOK_URL`；選用 `RESEND_API_KEY`、`TURNSTILE_SECRET`、`ALERT_WEBHOOK_TOKEN`
 - [ ] vars：`PLATFORM_MAIL_FROM`、`PLATFORM_NOTIFY`（在 Email Routing 驗證過）
 - [ ] `npm run deploy`，`curl https://<glue>/health` 回 `ok: true`
