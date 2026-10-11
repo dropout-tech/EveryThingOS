@@ -30,7 +30,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
           </p>
         </div>
         {connected ? (
-          <a href="/api/chat/open" className="glass-cta rounded-full px-5 py-2.5 text-sm">
+          <a href="/api/chat/open" className="btn btn-primary">
             打開收件匣
           </a>
         ) : null}

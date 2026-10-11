@@ -84,7 +84,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           {catalog ? <LiveQuoteForm catalog={catalog} action={action} /> : null}
           <p className="text-xs text-cream-dim">
             報價、轉訂單、出貨、開發票、收款都直接寫進 ERPNext，照你的角色權限。要改細節時{" "}
-            <DeskLink href={`${deskUrl}/app/quotation/new`} className="text-teal underline">
+            <DeskLink href={`${deskUrl}/app/quotation/new`} className="underline underline-offset-2">
               在 ERPNext 開單
             </DeskLink>
             。

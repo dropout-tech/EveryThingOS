@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { DeskLink } from "./DeskLink";
+import { Badge } from "./ui/Badge";
 import { formatTwd } from "@/lib/erp";
 import { REPORT_MONTHS, monthLabel, type OwnerReport, type ReportSection } from "@/lib/reports";
 
@@ -13,9 +14,9 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
   return (
     <section className="glass space-y-3 p-5" aria-labelledby={`report-${id}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 id={`report-${id}`} className="text-lg">
+        <h2 id={`report-${id}`} className="text-lg font-medium">
           {title}
-        </h3>
+        </h2>
         {link ? (
           <DeskLink href={link} className="text-sm text-cream-dim hover:text-cream">
             在 ERPNext 打開
@@ -26,7 +27,7 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
       {report.denied.includes(id) ? (
         <p className="text-sm text-cream-dim">你的 ERPNext 角色看不到這一段。需要的話，請老闆到「團隊」調整職務。</p>
       ) : report.failed.includes(id) ? (
-        <p role="alert" className="text-sm text-orange">
+        <p role="alert" className="text-sm text-warn">
           這一段現在拿不到，其他段落不受影響。原因記在 ERPNext 的
           {report.links?.errors ? (
             <DeskLink href={report.links.errors} className="underline">
@@ -170,8 +171,8 @@ function HBar({ value, max }: { value: number; max: number }) {
 const AGING_BUCKETS: { key: "d0_30" | "d31_60" | "d61_90" | "d90plus"; label: string; opacity: number; tone: string }[] = [
   { key: "d0_30", label: "未到期與 30 天內", opacity: 0.3, tone: "" },
   { key: "d31_60", label: "31–60 天", opacity: 0.55, tone: "" },
-  { key: "d61_90", label: "61–90 天", opacity: 0.8, tone: "text-gold" },
-  { key: "d90plus", label: "超過 90 天", opacity: 1, tone: "text-orange" },
+  { key: "d61_90", label: "61–90 天", opacity: 0.8, tone: "font-medium text-warn" },
+  { key: "d90plus", label: "超過 90 天", opacity: 1, tone: "font-medium text-danger" },
 ];
 
 function AgingBar({ aging }: { aging: NonNullable<OwnerReport["aging"]> }) {
@@ -222,15 +223,17 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
 
   return (
     <div className="space-y-5">
-      <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="期間">
-        {REPORT_MONTHS.map((m) => (
-          <Link key={m} href={`/workspace/reports?months=${m}`} aria-current={m === report.months ? "page" : undefined} className={`rounded-full px-3 py-1.5 ${m === report.months ? "glass-cta" : "glass-chip"}`}>
-            近 {m} 個月
-          </Link>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        <nav className="segmented" aria-label="期間">
+          {REPORT_MONTHS.map((m) => (
+            <Link key={m} href={`/workspace/reports?months=${m}`} aria-current={m === report.months ? "page" : undefined}>
+              近 {m} 個月
+            </Link>
+          ))}
+        </nav>
         <span className="text-xs text-cream-dim">算到 {report.asOf}</span>
-        {demo ? <span className="glass-chip px-3 py-1 text-xs">示範資料</span> : null}
-      </nav>
+        {demo ? <Badge tone="demo" /> : null}
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label="本月營收（未稅）" value={thisMonth ? formatTwd(thisMonth.amount) : "—"} sub={thisMonth ? (lastMonth ? `上個月整月 ${formatTwd(lastMonth.amount)}` : undefined) : unavailable("revenue")} />
@@ -321,27 +324,27 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
           const rows = report.lowStock!;
           if (!rows.length) return <p className="text-sm text-cream-dim">沒有低於再訂購點的貨。品項要在 ERPNext 設好再訂購點才會列進來。</p>;
           return (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[36rem] text-left text-sm">
-                <thead className="text-cream-dim">
+            <div className="-mx-5 sm:mx-0 sm:overflow-x-auto">
+              <table className="table-stack sm:min-w-[36rem]">
+                <thead>
                   <tr>
-                    <th className="px-2 py-2 font-medium">品項</th>
-                    <th className="px-2 py-2 font-medium">倉庫</th>
-                    <th className="px-2 py-2 font-medium">現有</th>
-                    <th className="px-2 py-2 font-medium">預計</th>
-                    <th className="px-2 py-2 font-medium">再訂購點</th>
-                    <th className="px-2 py-2 font-medium">建議補</th>
+                    <th scope="col">品項</th>
+                    <th scope="col">倉庫</th>
+                    <th scope="col">現有</th>
+                    <th scope="col">預計</th>
+                    <th scope="col">再訂購點</th>
+                    <th scope="col">建議補</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((r) => (
-                    <tr key={`${r.code}-${r.warehouse}`} className="border-t border-[var(--line)]">
-                      <td className="px-2 py-2">{r.href ? <DeskLink href={r.href} className="hover:underline">{r.name}</DeskLink> : r.name}</td>
-                      <td className="px-2 py-2 text-cream-dim">{r.warehouse}</td>
-                      <td className="px-2 py-2">{r.actual}</td>
-                      <td className={`px-2 py-2 ${r.projected <= 0 ? "text-orange" : "text-gold"}`}>{r.projected}</td>
-                      <td className="px-2 py-2">{r.reorderLevel}</td>
-                      <td className="px-2 py-2">{r.reorderQty || "—"}</td>
+                    <tr key={`${r.code}-${r.warehouse}`}>
+                      <td data-primary="">{r.href ? <DeskLink href={r.href} className="hover:underline">{r.name}</DeskLink> : r.name}</td>
+                      <td data-label="倉庫" className="text-cream-dim">{r.warehouse}</td>
+                      <td data-label="現有">{r.actual}</td>
+                      <td data-label="預計" className={`font-medium ${r.projected <= 0 ? "text-danger" : "text-warn"}`}>{r.projected}</td>
+                      <td data-label="再訂購點">{r.reorderLevel}</td>
+                      <td data-label="建議補">{r.reorderQty || "—"}</td>
                     </tr>
                   ))}
                 </tbody>

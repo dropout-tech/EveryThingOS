@@ -61,14 +61,14 @@ export default async function LetterPage() {
 
       {desk ? (
         <section className="space-y-2">
-          <h3 className="text-sm">寫一封</h3>
+          <h2 className="text-sm font-medium">寫一封</h2>
           <LetterComposer groups={data.groups} />
         </section>
       ) : null}
 
       <section className="space-y-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm">最近的信</h3>
+          <h2 className="text-sm font-medium">最近的信</h2>
           {desk ? (
             <a href={`${desk}/app/newsletter/new`} className="text-sm text-cream-dim hover:text-cream" target="_blank" rel="noreferrer">
               用 ERPNext 排版
@@ -95,7 +95,7 @@ export default async function LetterPage() {
       </section>
 
       <section>
-        <h3 className="text-sm">近 30 天</h3>
+        <h2 className="text-sm font-medium">近 30 天</h2>
         <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm">
           {ACTIVITY.map(([key, label]) => (
             <div key={key} className="flex gap-2">
