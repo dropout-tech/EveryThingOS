@@ -70,7 +70,7 @@ dropout-onboard provision dropout-profile.json --site acme.erp.dropout.tw --comp
 - ERPNext：每個 site 在「System Settings → Backups」或 `bench --site <site> backup --with-files`，用內建 S3 備份設定送到 R2。
 - Chatwoot、Vexa 的 Postgres：Coolify 的排程備份送到 R2。
 - 膠水的 D1：`wrangler d1 export`。
-- 每月還原一次到測試站，確認備份能用。
+- 每月還原一次到暫存站，確認備份能用：`dropout-onboard backup verify <site> --apply`（見 [docs/RELIABILITY.md](../docs/RELIABILITY.md)）。
 
 ## 升級
 
