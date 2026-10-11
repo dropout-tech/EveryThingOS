@@ -64,8 +64,8 @@ html[data-style="social"] {
   --os-glass-fill: var(--soc-card);
   --os-well: var(--soc-raised);
   --os-chip: var(--soc-raised);
-  --control-fill: var(--soc-raised);
-  --control-fill-hover: #2a2a2e;
+  --control-fill: #2a2a2e;
+  --control-fill-hover: #36363b;
   --glass-1: rgba(255, 255, 255, 0.05);
   --glass-2: rgba(255, 255, 255, 0.08);
   --glass-3: rgba(255, 255, 255, 0.12);
@@ -83,6 +83,38 @@ html[data-style="social"] {
   --ui-shadow-3: 0 24px 64px rgba(0, 0, 0, 0.65);
   --ui-control: 2.75rem;
   --ui-tabbar: 4.25rem;
+
+  --accent: var(--soc-grad-fallback);
+  --on-accent: #ffffff;
+  --surface-card: var(--soc-card);
+  --surface-card-border: var(--soc-hairline);
+  --surface-raised: var(--soc-card);
+  --surface-hover: var(--glass-2);
+  --surface-blur: 18px;
+  --card-radius: var(--soc-radius-card);
+  --card-shadow: var(--soc-shadow);
+  --control-radius: var(--ui-radius-sm);
+  --btn-radius: var(--ui-radius-pill);
+  --chip-radius: var(--ui-radius-pill);
+  --glass-radius: var(--soc-radius-card);
+  --well-fill: var(--soc-card);
+  --well-border: var(--soc-hairline);
+  --well-radius: var(--soc-radius-card);
+  --nav-bg: var(--soc-bar);
+  --nav-item-radius: var(--ui-radius-pill);
+  --nav-active-bg: var(--soc-grad-fallback) var(--soc-grad-ink);
+  --nav-active-ink: #ffffff;
+  --nav-indicator: transparent;
+  --kpi-value-size: 1.75rem;
+  --avatar-radius: 999px;
+  --avatar-fill: var(--soc-avatar-fill);
+  --overlay: rgba(0, 0, 0, 0.55);
+  --motion-fast: 160ms;
+  --motion-base: 240ms;
+  --motion-ease: var(--soc-ease);
+  --site-sheet-fill: var(--soc-card);
+  --site-sheet-border: var(--soc-hairline);
+  --site-sheet-shadow: var(--soc-shadow);
 }
 
 html[data-style="social"][data-theme="white"] {
@@ -259,7 +291,7 @@ html[data-style="social"] .lens-body > :is(a, div) {
   border-radius: calc(var(--ui-radius-xl) - 2px);
 }
 
-/* ---------- Brand glyph & avatars: gradient story rings ---------- */
+/* ---------- Brand glyph: gradient story ring ---------- */
 
 html[data-style="social"] .brand-glyph {
   border: 2px solid transparent;
@@ -271,58 +303,9 @@ html[data-style="social"] .brand-glyph {
   box-shadow: none;
 }
 
-html[data-style="social"] :is(.avatar, [data-avatar]) {
-  display: inline-grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  overflow: hidden;
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background:
-    linear-gradient(var(--soc-avatar-fill), var(--soc-avatar-fill)) padding-box,
-    var(--soc-ring) border-box;
-  box-shadow: inset 0 0 0 2px var(--soc-card);
-  color: var(--soc-text);
-  font-size: var(--ui-text-sm);
-  font-weight: 700;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-html[data-style="social"] :is(.avatar, [data-avatar]) img {
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  object-fit: cover;
-}
-
-html[data-style="social"] :is(.avatar-sm, [data-avatar="sm"]) {
-  width: 2rem;
-  height: 2rem;
-  font-size: var(--ui-text-xs);
-}
-
-html[data-style="social"] :is(.avatar-lg, [data-avatar="lg"]) {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-width: 3px;
-  font-size: var(--ui-text-lg);
-}
-
-html[data-style="social"] :is(.avatar-stack, .avatar-group) {
-  display: inline-flex;
-}
-
-html[data-style="social"] :is(.avatar-stack, .avatar-group) > * + * {
-  margin-left: -0.6rem;
-}
-
 /* ---------- Pills & CTAs (site pages, empty states) ---------- */
 
 html[data-style="social"][data-theme] .glass-cta {
-  min-height: 2.5rem;
   border: 0;
   background-color: var(--soc-grad-fallback);
   background-image: var(--soc-grad-ink);
@@ -345,7 +328,6 @@ html[data-style="social"][data-theme] .glass-cta:hover {
 }
 
 html[data-style="social"][data-theme] .glass-pill {
-  min-height: 2.5rem;
   border: 1px solid var(--soc-hairline-strong);
   background: var(--control-fill);
   color: var(--soc-text);
@@ -360,6 +342,10 @@ html[data-style="social"][data-theme] .glass-pill {
 
 html[data-style="social"][data-theme] .glass-pill:hover {
   background: var(--control-fill-hover);
+}
+
+html[data-style="social"] :is(a, button, summary):is(.glass-cta, .glass-pill) {
+  min-height: 2.5rem;
 }
 
 html[data-style="social"] :is(.glass-cta, .glass-pill):active {
@@ -522,42 +508,6 @@ html[data-style="social"][data-theme="white"] .bg-white\/10 {
   background-color: var(--glass-1);
 }
 
-/* ---------- Upcoming structure hooks (KPI tiles, page header, palette, grouped nav) ---------- */
-
-html[data-style="social"] :is(.kpi, .kpi-tile, .stat-tile, .metric) {
-  border-radius: var(--soc-radius-card);
-}
-
-html[data-style="social"] :is(.kpi-value, .stat-value, .metric-value, .tabular, [data-numeric]) {
-  font-variant-numeric: tabular-nums;
-}
-
-html[data-style="social"] :is(.kpi-value, .stat-value, .metric-value) {
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-html[data-style="social"] :is(.command-palette, .cmdk, [data-command-palette]) {
-  border: 1px solid var(--soc-hairline);
-  border-radius: var(--ui-radius-lg);
-  background: var(--soc-card);
-  box-shadow: var(--ui-shadow-3);
-}
-
-html[data-style="social"] :is(.command-palette, .cmdk, [data-command-palette]) :is([aria-selected="true"], [data-selected="true"]) {
-  border-radius: var(--ui-radius-sm);
-  background: var(--soc-accent-tint);
-  color: var(--soc-text);
-}
-
-html[data-style="social"] :is(.nav-group-label, .nav-heading, .nav-section-title) {
-  padding: 0 0.75rem;
-  color: var(--soc-dim);
-  font-size: var(--ui-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
 /* ---------- Chat bubbles (conversation & reply surfaces) ---------- */
 
 html[data-style="social"] :is(.bubble, .chat-bubble, [data-bubble]) {
@@ -599,6 +549,193 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
   html[data-style="social"] .skip-link {
     background: var(--soc-text);
     color: var(--soc-bg);
+  }
+
+  /* ---------- People: avatars with story rings ---------- */
+
+  html[data-style="social"] .avatar {
+    overflow: hidden;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--soc-avatar-fill), var(--soc-avatar-fill)) padding-box,
+      var(--soc-ring) border-box;
+    box-shadow: inset 0 0 0 2px var(--soc-card);
+    color: var(--soc-text);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  html[data-style="social"] .avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+
+  html[data-style="social"] .avatar-lg {
+    border-width: 3px;
+  }
+
+  html[data-style="social"] :is(.avatar-stack, .avatar-group) > .avatar + .avatar {
+    margin-left: -0.6rem;
+  }
+
+  /* ---------- Cards, KPI tiles, queues ---------- */
+
+  html[data-style="social"] :is(.card-interactive, a.kpi, a.card) {
+    transition:
+      transform var(--motion-base) var(--soc-ease),
+      box-shadow var(--motion-base) var(--soc-ease),
+      border-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="social"] :is(.card-interactive, a.kpi, a.card):hover {
+    transform: translateY(-2px);
+    border-color: var(--soc-hairline-strong);
+    box-shadow: var(--soc-shadow-hover);
+  }
+
+  html[data-style="social"] :is(.card-interactive, a.kpi, a.card):active {
+    transform: scale(0.98);
+  }
+
+  html[data-style="social"] .kpi {
+    gap: 0.35rem;
+    padding: 1.1rem 1.15rem;
+  }
+
+  html[data-style="social"] .kpi-label {
+    font-weight: 600;
+  }
+
+  html[data-style="social"] .kpi-value {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  html[data-style="social"] :is(.num, .money) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  html[data-style="social"] .next-action {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--soc-card), var(--soc-card)) padding-box,
+      var(--soc-grad-vivid) border-box;
+    box-shadow: var(--soc-shadow), 0 18px 48px -18px var(--soc-glow);
+  }
+
+  html[data-style="social"] .next-action-title {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  html[data-style="social"] .section-title {
+    font-weight: 700;
+  }
+
+  html[data-style="social"] .queue-item {
+    min-height: 3.5rem;
+    transition: background-color var(--motion-fast) ease-out;
+  }
+
+  html[data-style="social"] .queue-item + .queue-item,
+  html[data-style="social"] .queue > li + li {
+    border-top-color: var(--soc-hairline);
+  }
+
+  html[data-style="social"] a.queue-item:hover {
+    background: var(--soc-row-hover);
+  }
+
+  html[data-style="social"] .progress {
+    background: var(--soc-raised);
+  }
+
+  html[data-style="social"] .progress > span {
+    background: var(--soc-grad-vivid);
+  }
+
+  /* ---------- Navigation groups, breadcrumbs, palette, drawer ---------- */
+
+  html[data-style="social"] .nav-group-title {
+    padding: 0 0.9rem 0.3rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  html[data-style="social"] .breadcrumbs [aria-current="page"] {
+    color: var(--soc-accent);
+    font-weight: 600;
+  }
+
+  html[data-style="social"] .kbd {
+    border-color: var(--soc-hairline-strong);
+    border-radius: 8px;
+    background: var(--soc-raised);
+  }
+
+  html[data-style="social"] .cmdk-trigger {
+    border-color: transparent;
+    background: var(--control-fill);
+    transition: transform 120ms ease-out;
+  }
+
+  html[data-style="social"] .cmdk-trigger:active {
+    transform: scale(0.97);
+  }
+
+  html[data-style="social"] .cmdk {
+    border-color: var(--soc-hairline);
+    border-radius: var(--ui-radius-lg);
+    animation: soc-sheet-pop var(--motion-base) var(--soc-ease-pop);
+  }
+
+  html[data-style="social"] .cmdk-input {
+    border-bottom-color: var(--soc-hairline);
+  }
+
+  html[data-style="social"] .cmdk-item {
+    border-radius: var(--ui-radius-pill);
+  }
+
+  html[data-style="social"] .cmdk-item[aria-selected="true"] {
+    background-color: var(--soc-grad-fallback);
+    background-image: var(--soc-grad-ink);
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  html[data-style="social"] .cmdk-item[aria-selected="true"] .cmdk-item-hint {
+    color: #ffffff;
+  }
+
+  html[data-style="social"] .drawer {
+    border-color: var(--soc-hairline);
+  }
+
+  @media (max-width: 639px) {
+    html[data-style="social"] .drawer {
+      border-radius: 28px 28px 0 0;
+    }
+
+    html[data-style="social"] .drawer::before {
+      content: "";
+      display: block;
+      flex-shrink: 0;
+      width: 2.5rem;
+      height: 0.3rem;
+      margin: 0.6rem auto 0;
+      border-radius: 999px;
+      background: var(--soc-hairline-strong);
+    }
+  }
+
+  @keyframes soc-sheet-pop {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.97);
+    }
   }
 
   /* ---------- Buttons ---------- */
@@ -647,7 +784,7 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
   }
 
   html[data-style="social"] .btn-secondary {
-    border-color: transparent;
+    border-color: var(--soc-hairline-strong);
     background: var(--control-fill);
     color: var(--soc-text);
     box-shadow: none;
@@ -670,12 +807,12 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
 
   html[data-style="social"] .btn-danger {
     border-color: transparent;
-    background: color-mix(in srgb, var(--danger) 14%, var(--soc-card));
+    background: color-mix(in srgb, var(--danger) 8%, var(--soc-card));
     color: var(--danger);
   }
 
   html[data-style="social"] .btn-danger:not(:disabled):hover {
-    background: color-mix(in srgb, var(--danger) 22%, var(--soc-card));
+    background: color-mix(in srgb, var(--danger) 14%, var(--soc-card));
   }
 
   html[data-style="social"] .btn-danger-solid,
@@ -1071,14 +1208,19 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
     transition: none !important;
   }
 
-  html[data-style="social"] :is(.btn, .glass-cta, .glass-pill, .nav-link, .tabbar-item, .segmented a, .style-card):active,
-  html[data-style="social"] .glass-lift:hover {
+  html[data-style="social"] :is(.btn, .glass-cta, .glass-pill, .nav-link, .tabbar-item, .segmented a, .style-card, .cmdk-trigger, .card-interactive, a.kpi, a.card):active,
+  html[data-style="social"] :is(.glass-lift, .card-interactive, a.kpi, a.card):hover {
     transform: none !important;
   }
 }
 
 @media (forced-colors: active) {
-  html[data-style="social"] :is(.btn-primary, .glass-cta, .nav-link[aria-current="page"], .segmented a[aria-current="page"], .toast::before, .bubble-out) {
+  html[data-style="social"] :is(.btn-primary, .glass-cta, .nav-link[aria-current="page"], .segmented a[aria-current="page"], .cmdk-item[aria-selected="true"], .bubble-out) {
+    background-image: none;
+    border: 1px solid CanvasText;
+  }
+
+  html[data-style="social"] .toast::before {
     background-image: none;
     border: 1px solid CanvasText;
   }
