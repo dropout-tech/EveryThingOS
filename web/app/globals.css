@@ -497,6 +497,10 @@ html[data-theme="white"] .glass.glass-bar::before {
   border-radius: 10px;
 }
 
+.os-shell [tabindex="-1"]:focus {
+  outline: none;
+}
+
 body:has(.os-shell) .scene-layer::after {
   background: var(--os-veil);
 }

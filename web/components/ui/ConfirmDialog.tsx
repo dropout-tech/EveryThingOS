@@ -1,7 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { buttonClass } from "./Button";
+
+/** Keeps Tab and Shift+Tab inside an open dialog. */
+export function trapTab(event: KeyboardEvent<HTMLElement>) {
+  if (event.key !== "Tab") return;
+  const items = [...event.currentTarget.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input:not([disabled]), select, textarea")];
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 export type ConfirmOptions = {
   title: string;
@@ -49,6 +65,7 @@ export function ConfirmDialog({ options, onClose }: { options: ConfirmOptions | 
         event.preventDefault();
         finish(false);
       }}
+      onKeyDown={trapTab}
       onClick={(event) => {
         if (event.target === ref.current) finish(false);
       }}

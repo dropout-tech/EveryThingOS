@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { trapTab } from "./ui/ConfirmDialog";
 
 type NavItem = { href: string; label: string };
 
@@ -75,6 +76,7 @@ export function TabBar({ items, extras }: { items: NavItem[]; extras?: ReactNode
         className="dialog dialog-sheet"
         aria-label="全部功能"
         onClose={() => setOpen(false)}
+        onKeyDown={trapTab}
         onClick={(event) => {
           if (event.target === sheet.current) sheet.current?.close();
         }}
