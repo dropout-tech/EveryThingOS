@@ -31,7 +31,7 @@ export async function SiteHeader() {
             <span className="hidden sm:inline-flex">
               <AppearanceBar />
             </span>
-            <Link href={chosen ? "/workspace" : "/"} className="hidden text-sm text-cream-dim hover:text-cream sm:inline">
+            <Link href={chosen ? "/workspace" : "/start"} className="hidden text-sm text-cream-dim hover:text-cream sm:inline">
               {chosen ? "回到今天" : "先看示範"}
             </Link>
             <Link href="/consulting#book" className="glass-cta rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap">
@@ -47,7 +47,7 @@ export async function SiteHeader() {
                     {link.label}
                   </Link>
                 ))}
-                <Link href={chosen ? "/workspace" : "/"} className="rounded-xl px-3 py-2.5 hover:bg-white/10">
+                <Link href={chosen ? "/workspace" : "/start"} className="rounded-xl px-3 py-2.5 hover:bg-white/10">
                   {chosen ? "回到今天" : "先看示範"}
                 </Link>
                 <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] px-3 pt-3 pb-1 sm:hidden">

@@ -6,8 +6,9 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { Money } from "./ui/Money";
 import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
-import { formatTwd, makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
+import { makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
 
 type StockBoardProps = {
   packId: string;
@@ -36,9 +37,11 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-cream-dim">
-        低於安全庫存會標「不夠」。點「請購」就去進貨，不必記兩張單。
-        貨值 {formatTwd(inventoryValue)}。
+      <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-cream-dim">
+        <span>
+          貨值 <Money amount={inventoryValue} className="font-medium text-cream" />
+        </span>
+        <span>低於安全量會標「不夠」，按「請購」就去進貨。</span>
       </p>
       <ActionNote>{note}</ActionNote>
       <div className="glass sm:overflow-x-auto">
@@ -49,8 +52,8 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
               <th scope="col">名稱</th>
               <th scope="col">品號</th>
               <th scope="col">倉</th>
-              <th scope="col">現有</th>
-              <th scope="col">安全</th>
+              <th scope="col" className="num">現有</th>
+              <th scope="col" className="num">安全</th>
               {batchOn ? <th scope="col">批號</th> : null}
               <th scope="col">下一步</th>
             </tr>
@@ -63,13 +66,15 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
                   <td data-primary="">{row.name}</td>
                   <td data-label="品號">{row.sku}</td>
                   <td data-label="倉">{row.warehouse}</td>
-                  <td data-label="現有">
+                  <td data-label="現有" className="num">
                     <span className={`inline-flex items-center gap-2 ${low ? "font-medium text-warn" : ""}`}>
                       {row.onHand}
                       {low ? <Badge tone="warn">不夠</Badge> : null}
                     </span>
                   </td>
-                  <td data-label="安全">{row.safety}</td>
+                  <td data-label="安全" className="num">
+                    {row.safety}
+                  </td>
                   {batchOn ? <td data-label="批號">{row.batch ?? "—"}</td> : null}
                   <td data-label="下一步">
                     {deskUrl ? (

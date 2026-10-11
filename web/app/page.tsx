@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { OnboardScreen } from "@/components/OnboardScreen";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ModuleGrid, SiteHero, TrustStrip } from "@/components/SiteSections";
-import { COMMERCIAL } from "@/lib/commercial";
+import { SiteHeader } from "@/components/SiteHeader";
+import { ModuleGrid, SectionTitle, SiteHero, TrustStrip } from "@/components/SiteSections";
+import { StylePicker } from "@/components/StylePicker";
+import { currentStyle } from "@/lib/style-server";
 import { hasChosenIndustry } from "@/lib/workspace";
 
 export const metadata = {
@@ -14,17 +15,28 @@ export const metadata = {
 
 export default async function HomePage({ searchParams }: PageProps<"/">) {
   const setup = (await searchParams).setup;
-  if ((await hasChosenIndustry()) && setup !== "1") {
-    redirect("/workspace");
-  }
+  if (setup === "1") redirect("/start");
+  if (await hasChosenIndustry()) redirect("/workspace");
+  const style = await currentStyle();
+
   return (
     <>
-      <OnboardScreen />
-      <div className="site-scope mx-auto max-w-6xl space-y-14 px-5 pb-10">
-        <p className="scene-type text-center text-sm">
-          第一次來？往下看 {COMMERCIAL.product} 是什麼、多少錢。
-        </p>
-        <SiteHero demoHref="#top" as="h2" />
+      <SiteHeader />
+      <main id="main" className="site-scope mx-auto max-w-6xl space-y-14 px-5 py-8 sm:py-12">
+        <SiteHero />
+        <section className="space-y-5" aria-labelledby="looks">
+          <div id="looks">
+            <SectionTitle kicker="三種樣子" title="選你喜歡的樣子">
+              功能和位置都一樣，只換外觀。現在選，進示範就是這個樣子；之後在「設定」隨時換。
+            </SectionTitle>
+          </div>
+          <StylePicker current={style} variant="cards" />
+          <p>
+            <Link href="/start" className="btn btn-primary">
+              用這個樣子看示範
+            </Link>
+          </p>
+        </section>
         <ModuleGrid />
         <TrustStrip />
         <p className="text-center">
@@ -32,7 +44,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
             看完整介紹、跟鼎新／億看的對照與常見問題
           </Link>
         </p>
-      </div>
+      </main>
       <SiteFooter />
     </>
   );

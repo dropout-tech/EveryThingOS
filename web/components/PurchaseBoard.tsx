@@ -4,9 +4,12 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
+import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { Money } from "./ui/Money";
+import { MoreText } from "./ui/MoreText";
 import { demoKey, useBoardState } from "@/lib/demo-state";
-import { advancePurchase, formatTwd, type PurchaseDoc } from "@/lib/erp";
+import { advancePurchase, type PurchaseDoc } from "@/lib/erp";
 
 type PurchaseBoardProps = {
   packId: string;
@@ -30,11 +33,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-cream-dim">
-        {inventory
-          ? "請購 → 進貨 → 入庫 → 應付。缺貨從倉庫點過來，不必另外找進貨單。"
-          : `這一行沒有倉庫。交給客人的方式是「${fulfillment}」，這裡只記經常費用與外包。`}
-      </p>
+      {inventory ? null : <MoreText className="text-sm text-cream-dim">{`這一行沒有倉庫。交給客人的方式是「${fulfillment}」，這裡只記經常費用與外包。`}</MoreText>}
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
       <div className="glass sm:overflow-x-auto">
@@ -45,7 +44,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
               <th scope="col">對象</th>
               <th scope="col">單號</th>
               <th scope="col">項目</th>
-              <th scope="col">金額</th>
+              <th scope="col" className="num">金額</th>
               <th scope="col">現在</th>
               <th scope="col">下一步</th>
             </tr>
@@ -63,8 +62,12 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
                 <td data-primary="">{row.vendor}</td>
                 <td data-label="單號">{row.no}</td>
                 <td data-label="項目">{row.item}</td>
-                <td data-label="金額">{formatTwd(row.amount)}</td>
-                <td data-label="現在" className="text-cream-dim">{row.status}</td>
+                <td data-label="金額" className="num">
+                  <Money amount={row.amount} />
+                </td>
+                <td data-label="現在">
+                  <Badge tone={row.status.includes("待付款") ? "warn" : row.status.includes("已付款") ? "ok" : "neutral"}>{row.status}</Badge>
+                </td>
                 <td data-label="下一步">
                   {live ? (
                     <span className="flex items-center gap-3">

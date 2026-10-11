@@ -3,10 +3,13 @@
 import { useState, type FormEvent } from "react";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { Badge } from "./ui/Badge";
+import { Button } from "./ui/Button";
 import { useConfirm } from "./ui/ConfirmDialog";
+import { Field } from "./ui/Field";
 import type { Team } from "@/lib/sources/types";
 
 const field = "field";
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function when(value: string | null) {
   return value ? value.slice(0, 16) : "還沒登入過";
@@ -17,6 +20,8 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
   const action = useLiveAction();
   const [invite, setInvite] = useState({ email: "", full_name: "", profile: team.profiles.find((p) => !p.admin)?.name ?? "" });
   const [expiry, setExpiry] = useState(team.security.session_expiry ?? "");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const checkEmail = (value: string) => (!value.trim() ? "請填 Email，邀請信會寄到這裡。" : EMAIL.test(value.trim()) ? null : "Email 看起來不完整，例如 amy@example.tw。");
   const disabled = !live || action.busy;
   const [confirm, confirmDialog] = useConfirm();
 
@@ -25,8 +30,14 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
     action.run("/api/team/enabled", { user: u.email, enabled: !u.enabled }, (r) => String(r.message ?? "已更新"));
   }
 
-  async function submitInvite(event: FormEvent) {
+  async function submitInvite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const problem = checkEmail(invite.email);
+    setEmailError(problem);
+    if (problem) {
+      event.currentTarget.querySelector<HTMLInputElement>("input[name=email]")?.focus();
+      return;
+    }
     const result = await action.run("/api/team/invite", invite, (r) => String(r.message ?? `已邀請 ${invite.email}`));
     if (result?.ok) setInvite((f) => ({ ...f, email: "", full_name: "" }));
   }
@@ -108,18 +119,33 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
         </table>
       </section>
 
-      <form onSubmit={submitInvite} className="glass flex flex-wrap items-end gap-3 p-4">
-        <h2 className="w-full text-sm font-medium">邀請同事</h2>
-        <label className="w-full text-sm sm:w-auto">
-          <span className="field-label">名字</span>
-          <input value={invite.full_name} onChange={(e) => setInvite({ ...invite, full_name: e.target.value })} maxLength={140} className={`${field} sm:w-36`} />
-        </label>
-        <label className="w-full text-sm sm:w-auto">
-          <span className="field-label">Email</span>
-          <input type="email" required value={invite.email} onChange={(e) => setInvite({ ...invite, email: e.target.value })} className={`${field} sm:w-56`} />
-        </label>
-        <label className="w-full text-sm sm:w-auto">
-          <span className="field-label">職務</span>
+      <form id="invite" onSubmit={submitInvite} noValidate aria-labelledby="invite-title" className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-start">
+        <h2 id="invite-title" className="section-title w-full">
+          邀請同事
+        </h2>
+        <Field label="名字" className="sm:w-40">
+          <input value={invite.full_name} onChange={(e) => setInvite({ ...invite, full_name: e.target.value })} maxLength={140} autoComplete="off" enterKeyHint="next" className={field} />
+        </Field>
+        <Field label="Email" className="sm:w-64" error={emailError}>
+          <input
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="off"
+            enterKeyHint="next"
+            required
+            value={invite.email}
+            onChange={(e) => {
+              setInvite({ ...invite, email: e.target.value });
+              if (emailError) setEmailError(checkEmail(e.target.value));
+            }}
+            onBlur={(e) => {
+              if (e.target.value) setEmailError(checkEmail(e.target.value));
+            }}
+            className={field}
+          />
+        </Field>
+        <Field label="職務" className="sm:w-36">
           <select value={invite.profile} onChange={(e) => setInvite({ ...invite, profile: e.target.value })} className={field}>
             {team.profiles.map((p) => (
               <option key={p.name} value={p.name}>
@@ -127,25 +153,34 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
               </option>
             ))}
           </select>
-        </label>
-        <button type="submit" disabled={disabled} aria-busy={action.busy || undefined} className="btn btn-primary">
-          {action.busy ? <span className="spinner" aria-hidden="true" /> : null}
-          {action.busy ? "處理中…" : "邀請"}
-        </button>
-        <p className="w-full text-xs text-cream-dim">對方會收到設定密碼的信。不收人頭費，要幾個帳號就開幾個。</p>
+        </Field>
+        <div className="form-actions sticky-submit sm:pt-[1.35rem]">
+          <Button type="submit" variant="primary" disabled={!live} pending={action.busy} pendingLabel="處理中…" className="w-full sm:w-auto">
+            寄出邀請
+          </Button>
+        </div>
+        <p className="w-full text-xs text-cream-dim">{live ? "對方會收到設定密碼的信。不收人頭費，要幾個帳號就開幾個。" : "練習中不會真的寄出。接上 ERPNext 後就能邀請。"}</p>
       </form>
 
-      <section className="grid gap-3 md:grid-cols-2">
-        {team.profiles.map((p) => (
-          <div key={p.name} className="glass-well p-4 text-sm">
-            <p>{p.name}</p>
-            <p className="mt-1 text-xs text-cream-dim">{p.note || `${p.roles.length} 個 ERPNext 角色`}</p>
-          </div>
-        ))}
-      </section>
+      <details className="disclosure card">
+        <summary className="min-h-10 text-sm">
+          <span aria-hidden className="disclosure-mark">
+            ›
+          </span>
+          每個職務看得到什麼（{team.profiles.length} 種）
+        </summary>
+        <ul className="mt-3 grid gap-2 md:grid-cols-2">
+          {team.profiles.map((p) => (
+            <li key={p.name} className="glass-well p-3 text-sm">
+              <p>{p.name}</p>
+              <p className="mt-1 text-xs text-cream-dim">{p.note || `${p.roles.length} 個 ERPNext 角色`}</p>
+            </li>
+          ))}
+        </ul>
+      </details>
 
       <section className="glass space-y-3 p-5">
-        <h2 className="text-sm font-medium">登入安全</h2>
+        <h2 className="section-title">登入安全</h2>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <button
             type="button"
