@@ -1,0 +1,474 @@
+openapi: 3.1.0
+info:
+  title: DropOut OS Public API
+  version: "1.0.0"
+  summary: 讀寫一家公司的客人、商品、訂單、發票，並接收事件通知。
+  description: |
+    公司由 API 金鑰決定，請求裡不能指定公司。ERPNext 是資料的權威來源。
+    每個回應都帶 X-Request-Id，找 DropOut 時附上。說明與範例見 docs/PUBLIC-API.md。
+servers:
+  - url: https://{glue}/v1
+    variables:
+      glue:
+        default: glue.example.tw
+        description: DropOut 膠水 Worker 的網址
+security:
+  - apiKey: []
+tags:
+  - name: customers
+    description: 客戶（ERPNext Customer）
+  - name: items
+    description: 商品（ERPNext Item）
+  - name: sales-orders
+    description: 訂單（ERPNext Sales Order）
+  - name: invoices
+    description: 銷項發票（ERPNext Sales Invoice）
+  - name: leads
+    description: 潛在客人（ERPNext Lead）
+
+paths:
+  /customers:
+    get:
+      tags: [customers]
+      operationId: listCustomers
+      summary: 客戶
+      description: "需要 read 權限。"
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/order"
+        - $ref: "#/components/parameters/modified_since"
+        - name: q
+          in: query
+          description: 名稱包含（% 與 _ 會被移除）
+          schema: { type: string, minLength: 1, maxLength: 100 }
+        - name: tax_id
+          in: query
+          description: 統一編號
+          schema: { type: string, pattern: "^\\d{8}$" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Page"
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: "#/components/schemas/Customer" } }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/InsufficientScope" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+    post:
+      tags: [customers]
+      operationId: createCustomer
+      summary: 新增客戶
+      description: "需要 write 權限。同統編已有客戶回 409。合約只能看、暫停或解約時回 423。"
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CustomerInput" }
+      responses:
+        "201":
+          description: 已建立
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/Customer" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/InsufficientScope" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rejected" }
+        "423": { $ref: "#/components/responses/Locked" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+
+  /items:
+    get:
+      tags: [items]
+      operationId: listItems
+      summary: 商品
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/order"
+        - $ref: "#/components/parameters/modified_since"
+        - name: q
+          in: query
+          description: 品名包含
+          schema: { type: string, minLength: 1, maxLength: 100 }
+        - name: item_group
+          in: query
+          schema: { type: string, minLength: 1, maxLength: 140 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Page"
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: "#/components/schemas/Item" } }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+
+  /sales-orders:
+    get:
+      tags: [sales-orders]
+      operationId: listSalesOrders
+      summary: 訂單
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/order"
+        - $ref: "#/components/parameters/modified_since"
+        - $ref: "#/components/parameters/customer"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Draft, On Hold, To Deliver and Bill, To Bill, To Deliver, Completed, Cancelled, Closed]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Page"
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: "#/components/schemas/SalesOrder" } }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+
+  /invoices:
+    get:
+      tags: [invoices]
+      operationId: listInvoices
+      summary: 銷項發票
+      parameters:
+        - $ref: "#/components/parameters/limit"
+        - $ref: "#/components/parameters/offset"
+        - $ref: "#/components/parameters/order"
+        - $ref: "#/components/parameters/modified_since"
+        - $ref: "#/components/parameters/customer"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Draft, Return, Credit Note Issued, Submitted, Paid, Partly Paid, Unpaid, Overdue, Cancelled]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Page"
+                  - type: object
+                    properties:
+                      data: { type: array, items: { $ref: "#/components/schemas/Invoice" } }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+
+  /leads:
+    post:
+      tags: [leads]
+      operationId: createLead
+      summary: 新增潛在客人
+      description: "需要 write 權限。同一個 Email 或電話已認識的人回 200 與 existing: true。"
+      parameters:
+        - $ref: "#/components/parameters/idempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LeadInput" }
+      responses:
+        "200":
+          description: 已經認識這個人
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LeadResult" }
+        "201":
+          description: 已建立
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LeadResult" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/InsufficientScope" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rejected" }
+        "423": { $ref: "#/components/responses/Locked" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "502": { $ref: "#/components/responses/Upstream" }
+
+webhooks:
+  event:
+    post:
+      operationId: receiveEvent
+      summary: DropOut 事件通知
+      description: |
+        X-DropOut-Signature: t=<UNIX 秒>,v1=<hex HMAC-SHA256(簽章密鑰, "<t>.<原始 body>")>。
+        請檢查 t 與現在相差不超過 300 秒，並用固定時間比較。回 2xx 算送到；其他狀態、
+        10 秒逾時、3xx 都算失敗並重試，連續 20 次失敗自動停用。
+      parameters:
+        - name: X-DropOut-Signature
+          in: header
+          required: true
+          schema: { type: string, pattern: "^t=\\d+,v1=[0-9a-f]{64}$" }
+        - name: X-DropOut-Event
+          in: header
+          required: true
+          schema: { $ref: "#/components/schemas/EventType" }
+        - name: X-DropOut-Delivery
+          in: header
+          required: true
+          description: 與 body 的 id 相同；重試時不變
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebhookEvent" }
+      responses:
+        "2XX":
+          description: 收到
+
+components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: "dok_live_<48 hex>"
+      description: 老闆在殼的「設定 → 對外 API 與 Webhook」開的金鑰。只出現一次，DropOut 只存雜湊。
+
+  parameters:
+    limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    offset:
+      name: offset
+      in: query
+      schema: { type: integer, minimum: 0, maximum: 10000, default: 0 }
+    order:
+      name: order
+      in: query
+      schema: { type: string, enum: ["-modified", "modified"], default: "-modified" }
+    modified_since:
+      name: modified_since
+      in: query
+      description: ISO 8601；沒寫時區當台灣時間（UTC+8）
+      schema: { type: string, examples: ["2026-10-01T00:00:00+08:00", "2026-10-01"] }
+    customer:
+      name: customer
+      in: query
+      description: 客戶 id（ERPNext Customer name）
+      schema: { type: string, minLength: 1, maxLength: 140 }
+    idempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: 同一把金鑰用過的值再送回 409；ERPNext 沒成功的那次不算用過。
+      schema: { type: string, pattern: "^[A-Za-z0-9_.:-]{8,100}$" }
+
+  headers:
+    RetryAfter:
+      schema: { type: integer, example: 60 }
+
+  responses:
+    InvalidRequest:
+      description: 參數或內容不對
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Unauthorized:
+      description: 沒帶金鑰、金鑰不對或已停用
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    InsufficientScope:
+      description: 金鑰沒有這個權限
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Conflict:
+      description: 已有同樣的資料，或 Idempotency-Key 用過了
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Rejected:
+      description: ERPNext 依規則拒絕
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Locked:
+      description: 合約只能看、暫停或解約，不能寫
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    RateLimited:
+      description: 每把金鑰每分鐘 120 次
+      headers:
+        Retry-After: { $ref: "#/components/headers/RetryAfter" }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Upstream:
+      description: ERPNext 連不到或回應異常
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              enum: [invalid_request, unauthorized, insufficient_scope, not_found, method_not_allowed, conflict, idempotency_key_reused, erpnext_rejected, account_locked, rate_limited, erpnext_unavailable, erpnext_error, not_configured]
+            message: { type: string }
+            request_id: { type: string }
+            field: { type: string, description: "invalid_request 時，出問題的參數或欄位" }
+            existing_id: { type: [string, "null"], description: "conflict 時，已存在的客戶" }
+            stage: { type: string, description: "account_locked 時的合約階段" }
+
+    Page:
+      type: object
+      required: [data, has_more, next_offset]
+      properties:
+        data: { type: array }
+        has_more: { type: boolean }
+        next_offset: { type: [integer, "null"] }
+
+    Customer:
+      type: object
+      properties:
+        id: { type: string }
+        customer_name: { type: string }
+        customer_type: { type: string, enum: [Company, Individual] }
+        customer_group: { type: [string, "null"] }
+        territory: { type: [string, "null"] }
+        tax_id: { type: [string, "null"] }
+        email_id: { type: [string, "null"] }
+        mobile_no: { type: [string, "null"] }
+        disabled: { type: integer, enum: [0, 1] }
+        creation: { type: string, description: "台灣時間 YYYY-MM-DD HH:MM:SS" }
+        modified: { type: string, description: "台灣時間 YYYY-MM-DD HH:MM:SS" }
+
+    CustomerInput:
+      type: object
+      additionalProperties: false
+      required: [customer_name]
+      properties:
+        customer_name: { type: string, minLength: 1, maxLength: 140 }
+        customer_type: { type: string, enum: [Company, Individual], default: Company }
+        tax_id: { type: string, pattern: "^\\d{8}$" }
+        email: { type: string, format: email, maxLength: 140 }
+        phone: { type: string, pattern: "^[0-9+\\-() ]{6,30}$" }
+
+    Item:
+      type: object
+      properties:
+        id: { type: string }
+        item_code: { type: string }
+        item_name: { type: string }
+        item_group: { type: string }
+        stock_uom: { type: string }
+        is_stock_item: { type: integer, enum: [0, 1] }
+        disabled: { type: integer, enum: [0, 1] }
+        description: { type: [string, "null"] }
+        modified: { type: string }
+
+    SalesOrder:
+      type: object
+      properties:
+        id: { type: string }
+        customer: { type: string }
+        customer_name: { type: string }
+        transaction_date: { type: string, format: date }
+        delivery_date: { type: [string, "null"], format: date }
+        grand_total: { type: number }
+        currency: { type: string }
+        status: { type: string }
+        per_delivered: { type: number }
+        per_billed: { type: number }
+        docstatus: { type: integer, enum: [0, 1, 2] }
+        modified: { type: string }
+
+    Invoice:
+      type: object
+      properties:
+        id: { type: string }
+        customer: { type: string }
+        customer_name: { type: string }
+        posting_date: { type: string, format: date }
+        due_date: { type: [string, "null"], format: date }
+        grand_total: { type: number }
+        outstanding_amount: { type: number }
+        currency: { type: string }
+        status: { type: string }
+        is_return: { type: integer, enum: [0, 1] }
+        dropout_einvoice_number: { type: [string, "null"], description: 電子發票號碼 }
+        docstatus: { type: integer, enum: [0, 1, 2] }
+        modified: { type: string }
+
+    LeadInput:
+      type: object
+      additionalProperties: false
+      description: name、email、phone 至少一個
+      anyOf:
+        - required: [name]
+        - required: [email]
+        - required: [phone]
+      properties:
+        name: { type: string, maxLength: 140 }
+        email: { type: string, format: email, maxLength: 140 }
+        phone: { type: string, pattern: "^[0-9+\\-() ]{6,30}$" }
+        company_name: { type: string, maxLength: 140 }
+        notes: { type: string, maxLength: 2000 }
+
+    LeadResult:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [id, party_type, existing]
+          properties:
+            id: { type: string }
+            party_type: { type: string, enum: [Lead, Customer] }
+            existing: { type: boolean }
+
+    EventType:
+      type: string
+      enum: [customer.created, lead.created, quote.sent, sales_order.submitted, delivery.submitted, invoice.submitted, payment.received, ping]
+
+    WebhookEvent:
+      type: object
+      required: [id, type, created_at, data]
+      properties:
+        id: { type: string, description: "用來去重；重試時不變" }
+        type: { $ref: "#/components/schemas/EventType" }
+        created_at: { type: string, format: date-time }
+        data:
+          type: object
+          properties:
+            doctype: { type: [string, "null"] }
+            id: { type: [string, "null"] }
+            party_type: { type: [string, "null"] }
+            party: { type: [string, "null"] }
+            amount: { type: number }
+            currency: { type: string }
+            is_return: { type: integer }
+            customer_name: { type: string }
+            lead_name: { type: string }

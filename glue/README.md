@@ -16,6 +16,9 @@
 | `GET /shell/tenant?host=` | 殼依網址查公司：ERPNext 網址與 OAuth client、Chatwoot 帳戶、合約狀態（不回 ERPNext 金鑰） | `SHELL_TOKEN` |
 | `/admin/accounts`、`/admin/accounts/:site`（`PUT`、`/renew`、`/state`） | 公司合約：試用、續約、暫停、解約、網址；每次變更記進歷史（`x-actor`） | `ADMIN_TOKEN` |
 | `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access；`SHELL_TOKEN` 只能看自己那家的死信與會議、關掉某場會議的機器人、重送自己那家的死信 |
+| `GET /v1/customers`、`/v1/items`、`/v1/sales-orders`、`/v1/invoices`；`POST /v1/customers`、`/v1/leads` | 對外 API：公司從金鑰判斷，欄位與篩選是固定清單，合約只能看時寫入回 423；每把金鑰每分鐘 120 次（`API_LIMIT`）。見 `docs/PUBLIC-API.md` | `Authorization: Bearer dok_live_…`（D1 只存 SHA-256） |
+| `/admin/tenants/:site/api-keys`、`/admin/tenants/:site/webhooks` | 開／停用 API 金鑰；Webhook 新增、停用、刪除、送測試、送出紀錄 | `ADMIN_TOKEN`；`SHELL_TOKEN` 只能管殼代表的那一家 |
+| 佇列 `webhook` 工作 | 每筆 ERPNext 事件順便發給有訂的 Webhook：`X-DropOut-Signature` 簽章、10 秒逾時、不跟轉址、送前再查 DNS；失敗照下面規則重試，連續 20 次失敗自動停用 | |
 | 排程每天 02:00（台灣） | 把合約狀態推給各家 ERPNext（`dropout_core.account.set_status`，只能看時 ERPNext 後台也擋寫入）、寄續約提醒、收各家用量（`dropout_core.team.usage`）、清 180 天前的去重紀錄 | |
 
 失敗規則：5xx／網路錯誤依 30、60、120 秒重試；4xx 或第 4 次仍失敗 → 寫進死信（D1）並在 ERPNext 標示（例：電子發票「失敗」）。Worker 本身崩潰的訊息由 Queues 內建死信佇列接住。
@@ -39,13 +42,15 @@ cp .dev.vars.example .dev.vars && npm run db:migrate:local && npm run dev
 npx wrangler d1 create dropout-glue        # 把 database_id 填進 wrangler.jsonc
 npx wrangler queues create dropout-jobs
 npx wrangler queues create dropout-jobs-dlq
-npm run db:migrate
+npm run db:migrate                         # 含 0005：API 金鑰、Webhook
 npx wrangler secret put TENANT_KEY         # openssl rand -base64 32
 npx wrangler secret put ADMIN_TOKEN
 npx wrangler secret put SHELL_TOKEN        # 給多公司模式的殼
 npx wrangler secret put RESEND_API_KEY     # 選用：續約提醒寄給客戶；另設 vars PLATFORM_MAIL_FROM、PLATFORM_NOTIFY
 npm run deploy
 ```
+
+對外 API 的速率限制用 Workers Rate Limiting binding（`wrangler.jsonc` 的 `ratelimits`，`namespace_id` 在同一個 Cloudflare 帳號內不重複即可），不用另外建資源。
 
 登記一家公司（導入工具 `dropout-onboard provision` 會自動做）：
 
