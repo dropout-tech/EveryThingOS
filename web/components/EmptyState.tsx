@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonClass } from "./ui/Button";
 
 type Action = { href: string; label: string };
 
@@ -32,12 +33,12 @@ export function EmptyState({
     );
 
   return (
-    <section className={`glass-well ${compact ? "p-4" : "p-6 md:p-8"}`} aria-label={title}>
+    <section className={`empty-state glass-well ${compact ? "p-4" : "p-6 md:p-8"}`} aria-label={title}>
       <p className={compact ? "text-sm" : "text-lg"}>{title}</p>
       {detail ? <p className="mt-1 max-w-xl text-sm text-cream-dim">{detail}</p> : null}
       {action || secondary || help ? (
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-          {action ? link(action, "glass-cta rounded-full px-4 py-2") : null}
+          {action ? link(action, buttonClass({ variant: "primary", size: compact ? "sm" : "md" })) : null}
           {secondary ? link(secondary, "text-cream-dim underline hover:text-cream") : null}
           {help ? (
             <Link href={`/help/${help}`} className="text-cream-dim underline hover:text-cream">
