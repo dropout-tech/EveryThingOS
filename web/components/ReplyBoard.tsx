@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionNote } from "./ActionNote";
+import { Avatar } from "./ui/Avatar";
 import { demoKey, useDemoState } from "@/lib/demo-state";
 import { matchRule, sanitizeImportedHandle, type ReplyComment, type ReplyRule } from "@/lib/reply";
 import type { IndustryPack } from "@/lib/types";
@@ -103,16 +104,23 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
                 const rule = matchRule(comment.text, rules);
                 return (
                   <li key={comment.id} className="glass-chip p-4">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <p className="font-medium">{comment.handle}</p>
-                      <p className="text-xs text-cream-dim">
-                        {comment.channel.toUpperCase()} · {comment.post}
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <Avatar name={comment.handle} />
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <p className="bubble-meta">
+                          <span className="font-medium text-cream">{comment.handle}</span> · {comment.channel.toUpperCase()} · {comment.post}
+                        </p>
+                        <p className="bubble">{comment.text}</p>
+                      </div>
                     </div>
-                    <p className="mt-2 text-cream">「{comment.text}」</p>
-                    <p className="mt-2 text-xs text-cream-dim">
-                      {rule ? `對到「${rule.keyword}」→ 私訊：${rule.dm}` : "沒對到關鍵字"}
-                    </p>
+                    {rule ? (
+                      <div className="mt-2 space-y-1">
+                        <p className="bubble bubble-out">{rule.dm}</p>
+                        <p className="bubble-meta">對到「{rule.keyword}」，會這樣私訊</p>
+                      </div>
+                    ) : (
+                      <p className="bubble-meta mt-2">沒對到關鍵字</p>
+                    )}
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button type="button" className="btn btn-primary btn-sm" onClick={() => onSend(comment)}>
                         送出私訊
@@ -139,10 +147,10 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
           <h2 className="text-lg font-medium">關鍵字 → 私訊</h2>
           <ul className="space-y-2">
             {rules.map((rule) => (
-              <li key={rule.id} className="glass-chip p-3 text-sm">
+              <li key={rule.id} className="glass-chip space-y-1 p-3 text-sm">
                 <p className="font-medium">{rule.keyword}</p>
-                <p className="mt-1 text-cream-dim">{rule.dm}</p>
-                <p className="mt-1 text-xs text-cream-dim">公開回覆：{rule.publicReply}</p>
+                <p className="bubble bubble-out">{rule.dm}</p>
+                <p className="bubble-meta">公開回覆：{rule.publicReply}</p>
               </li>
             ))}
           </ul>
