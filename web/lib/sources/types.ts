@@ -20,6 +20,12 @@ export type SetupStatus = {
   issues: number;
 };
 
+export type Checklist = {
+  steps: { id: string; count: number; done: boolean; applies: boolean }[];
+  done: number;
+  total: number;
+};
+
 export type DeadLetter = { id: number; kind: string; error: string; created_at: string };
 
 export type LetterOverview = {

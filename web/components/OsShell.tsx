@@ -34,6 +34,10 @@ export function OsShell({ industry, shop, children, company, team = false, repor
           <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <h1 className="text-base font-medium">{company ?? industry.nameZh}</h1>
             <div className="flex items-center gap-3">
+              <Link href="/help" className="glass-chip inline-flex items-center gap-1.5 px-3 py-1.5 text-xs" aria-label="說明中心">
+                <span aria-hidden className="font-medium">?</span>
+                說明
+              </Link>
               <AppearanceBar />
               {canReset ? (
                 <Link href="/?setup=1" className="glass-chip px-3 py-1.5 text-xs">

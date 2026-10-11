@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { UpcomingMeetings } from "@/components/UpcomingMeetings";
@@ -35,7 +36,7 @@ export default async function MeetingsPage() {
       <section className="space-y-2">
         <h3 className="text-sm">接下來的會</h3>
         {data.upcoming === null ? (
-          <p className="text-sm text-cream-dim">會議機器人還沒接上。導入工具加上 --vexa-url 與公司行事曆後，這裡會列出接下來的會。</p>
+          <EmptyState compact title="會議機器人還沒接上" detail="導入工具加上 --vexa-url 與公司行事曆後，這裡會列出接下來的會，機器人會自己進會議做紀錄。" help="module-meetings" />
         ) : !data.bot && live ? (
           <p className="text-sm text-cream-dim">這家公司還沒開會議機器人。</p>
         ) : live ? (
@@ -79,7 +80,7 @@ export default async function MeetingsPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-cream-dim">還沒有會議摘要。</p>
+          <EmptyState compact title="還沒有會議摘要" detail="機器人進過一場會之後，重點、決定、待辦會出現在這裡，也會記在與會客人的時間軸上。" help="module-meetings" />
         )}
       </section>
 
