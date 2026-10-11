@@ -8,7 +8,13 @@
   "glue_secret",
   "new_friends_group",
   "customers_group",
-  "auto_merge_verified"
+  "auto_merge_verified",
+  "account_section",
+  "account_stage",
+  "account_locked",
+  "account_ends",
+  "account_message",
+  "account_updated"
  ],
  "fields": [
   {
@@ -39,11 +45,48 @@
    "fieldtype": "Check",
    "label": "Auto-merge Verified Identities",
    "default": "1"
+  },
+  {
+   "fieldname": "account_section",
+   "fieldtype": "Section Break",
+   "label": "DropOut OS 合約",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "account_stage",
+   "fieldtype": "Data",
+   "label": "Stage",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_locked",
+   "fieldtype": "Check",
+   "label": "Read-only (contract)",
+   "read_only": 1,
+   "description": "Set by the DropOut glue. While on, business documents cannot be created or changed."
+  },
+  {
+   "fieldname": "account_ends",
+   "fieldtype": "Date",
+   "label": "Trial / Contract Ends",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_message",
+   "fieldtype": "Small Text",
+   "label": "Notice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_updated",
+   "fieldtype": "Datetime",
+   "label": "Updated",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-11 00:00:00.000000",
+ "modified": "2026-10-11 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "DropOut Core",
  "name": "DropOut Settings",

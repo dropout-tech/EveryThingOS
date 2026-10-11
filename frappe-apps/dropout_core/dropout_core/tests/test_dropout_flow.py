@@ -425,3 +425,53 @@ class TestTeam(FrappeTestCase):
 		u = team.usage()
 		self.assertGreaterEqual(u["users"], 1)
 		self.assertIn("db_mb", u)
+
+
+class TestAccountLock(FrappeTestCase):
+	def setUp(self):
+		from dropout_core.team import ensure_role_profiles
+
+		ensure_role_profiles()
+		for email, profile in (("lock-boss@example.com", "老闆"), ("lock-sales@example.com", "業務")):
+			if not frappe.db.exists("User", email):
+				frappe.get_doc({"doctype": "User", "email": email, "first_name": "lock", "send_welcome_email": 0, "role_profile_name": profile}).insert(ignore_permissions=True)
+
+	def tearDown(self):
+		from dropout_core import account
+
+		frappe.set_user("Administrator")
+		account.set_status("active", 0, "", None)
+
+	def _lead(self):
+		return frappe.get_doc({"doctype": "Lead", "lead_name": f"鎖定測試 {frappe.generate_hash(length=5)}"}).insert()
+
+	def test_locked_site_refuses_business_writes_but_keeps_people_and_settings(self):
+		from dropout_core import account, team
+
+		account.set_status("read_only", 1, "試用已在 2026-10-01 到期。資料都在，可以看和匯出。", "2026-10-01")
+		self.assertTrue(account.status()["locked"])
+		frappe.set_user("lock-sales@example.com")
+		with self.assertRaises(frappe.PermissionError):
+			self._lead()
+		frappe.set_user("lock-boss@example.com")
+		with self.assertRaises(frappe.PermissionError):
+			self._lead()
+		team.set_enabled("lock-sales@example.com", 0)
+		team.set_enabled("lock-sales@example.com", 1)
+		settings = frappe.get_single("DropOut Settings")
+		settings.account_locked = 0
+		settings.save()
+		self.assertTrue(account.status()["locked"])
+		with self.assertRaises(frappe.PermissionError):
+			account.set_status("active", 0)
+		frappe.set_user("Administrator")
+		self._lead()
+
+	def test_unlock_restores_writes(self):
+		from dropout_core import account
+
+		account.set_status("suspended", 1, "帳號暫停", None)
+		account.set_status("active", 0, "", "2027-10-11")
+		frappe.set_user("lock-sales@example.com")
+		self.assertTrue(self._lead().name)
+		self.assertEqual(account.status()["ends"], "2027-10-11")
