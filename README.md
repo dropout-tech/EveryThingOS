@@ -1,6 +1,6 @@
 # DropOut OS（EveryThingOS）
 
-琢奧科技的中小企業作業系統。**CRM、ERP、魅力圈、清庫、短網址、官網、社群回覆**同一登入、同一主檔、同一套 DropOut 皮。
+琢奧科技的中小企業作業系統。**CRM、ERP、人事薪資、老闆報表、對外 API、魅力圈、清庫、短網址、官網、社群回覆**同一登入、同一主檔、同一套 DropOut 皮。
 
 進銷存與財務對齊**鼎新 A1／億看 ECOUNT** 的範圍（報價到收款、採購、庫存、帳齡、傳票、營業稅、電子發票適配），畫面改成「下一步是什麼」，而不是先背程式名稱。
 
@@ -46,10 +46,16 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
 | 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）**、**fleet（一次很多家、續約、暫停）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
 | CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑 |
+| 人事薪資：請假、核准、打卡、薪資（勞健保、勞退、扣繳費率可改） | `frappe-apps/dropout_hr_tw`、`web/app/workspace/hr` | 用 Frappe HRMS v15；費率每年要對勞保局、健保署公告（[docs/HR.md](docs/HR.md)） |
+| 老闆報表：營收、毛利、帳齡、前十大客人、成交漏斗、缺貨；手機可安裝（PWA） | `web/app/workspace/reports`、`dropout_core/reports.py` | 數字直接用 ERPNext 原生報表（[docs/REPORTS.md](docs/REPORTS.md)） |
+| 年費自動帳單：到期前 60 天開帳單、綠界線上付款、付款即續約、開電子發票；客戶健康度 | `glue/src/billing.ts`、`glue/src/health.ts`、`/platform` | 要設綠界金鑰並跑測試環境（[docs/BILLING.md](docs/BILLING.md)） |
+| 對外 API 與 Webhook：每家公司自己的金鑰、`/v1` 客人／商品／訂單／發票、事件推播 | `glue/src/publicApi.ts`、`glue/src/webhooks.ts`、`/workspace/settings/api` | [docs/PUBLIC-API.md](docs/PUBLIC-API.md)、[docs/openapi.yaml](docs/openapi.yaml) |
+| 可靠性：`/health`、每 5 分鐘監看各家站台、事故通知、公開 `/status`、備份還原演練 `backup verify` | `glue/src/monitor.ts`、`web/app/status`、`toolkit` | 目標與上線清單見 [docs/RELIABILITY.md](docs/RELIABILITY.md) |
+| 信任文件：服務條款、隱私權政策、資料處理附約、SLA、資安說明 | `web/app/{terms,privacy,dpa,sla,security}` | **草稿**，公司資料待填、簽約前請律師審閱（[docs/TRUST.md](docs/TRUST.md)） |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
 
-下一動：在 Cloudflare 帳號建 D1 與 Queues、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
+下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 Cloudflare 帳號建 D1 與 Queues、套用 `glue/migrations` 0001–0005、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 
 ## 開源組裝與套皮
 
@@ -61,6 +67,12 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 - 大整合（重複造輪子檢查、會議紀錄機器人、Cloudflare 部署）：[docs/PLATFORM-INTEGRATION.md](docs/PLATFORM-INTEGRATION.md)
 - 官網商店與導入工具：[docs/ONBOARDING-TOOLKIT.md](docs/ONBOARDING-TOOLKIT.md)
 - 很多家公司一起用（容量、費用、權限、續約）：[docs/SAAS-OPERATIONS.md](docs/SAAS-OPERATIONS.md)
+- 可靠性與上線清單：[docs/RELIABILITY.md](docs/RELIABILITY.md)
+- 年費帳單與客戶健康度：[docs/BILLING.md](docs/BILLING.md)
+- 對外 API 與 Webhook：[docs/PUBLIC-API.md](docs/PUBLIC-API.md)
+- 人事薪資：[docs/HR.md](docs/HR.md)
+- 老闆報表與手機安裝：[docs/REPORTS.md](docs/REPORTS.md)
+- 信任文件（條款、隱私、SLA）：[docs/TRUST.md](docs/TRUST.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）
