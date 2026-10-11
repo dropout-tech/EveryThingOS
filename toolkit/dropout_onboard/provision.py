@@ -75,6 +75,8 @@ class Provisioner:
 			Step("設定精靈", lambda: self.execute("dropout_core.provisioning.complete_setup", company_name=company, company_abbr=a.abbr or abbr_for(company), admin_email=a.admin_email), f"公司「{company}」、台灣、新台幣、Asia/Taipei"),
 			Step("同步帳號", self._integration_user, "建 glue 使用者與 API key"),
 		]
+		if a.shell_url:
+			steps.append(Step("殼登入", self._shell_login, f"ERPNext OAuth Client「DropOut OS」，轉回 {a.shell_url}/api/auth/callback"))
 		if a.glue_url:
 			steps.append(Step("登記到膠水", self._register_glue, f"PUT {a.glue_url}/admin/tenants/{a.site}；ERPNext Webhook 指向膠水"))
 		if a.chatwoot_url and a.chatwoot_platform_token and p["chat"]:
@@ -97,6 +99,10 @@ class Provisioner:
 				self.save()
 		if not apply:
 			self.out("（預演。加 --apply 才會真的執行）")
+		else:
+			self.out("殼（DropOut OS）要設定的環境變數：")
+			for key, value in self.shell_env().items():
+				self.out(f"  {key}={value}")
 		return self.state
 
 	def _new_site(self):
@@ -115,6 +121,24 @@ class Provisioner:
 		self.state["erpnext_key"], self.state["erpnext_secret"] = keys["api_key"], keys["api_secret"]
 		self.save()
 		return keys
+
+	def _shell_login(self):
+		client = self.execute("dropout_core.provisioning.create_oauth_client", redirect_uri=f"{self.a.shell_url.rstrip('/')}/api/auth/callback")
+		self.state["shell_oauth_client_id"] = client["client_id"]
+		self.save()
+		return {"client_id": client["client_id"]}
+
+	def shell_env(self):
+		"""Worker vars and secrets for the DropOut OS shell of this company (`wrangler secret put`)."""
+		env = {"ERPNEXT_URL": self.a.erpnext_url, "ERPNEXT_SITE": self.a.site}
+		if self.state.get("shell_oauth_client_id"):
+			env["ERPNEXT_OAUTH_CLIENT_ID"] = self.state["shell_oauth_client_id"]
+			env["SESSION_SECRET"] = "（openssl rand -base64 32）"
+		if self.a.glue_url:
+			env.update({"GLUE_URL": self.a.glue_url, "GLUE_SITE": self.a.site, "GLUE_ADMIN_TOKEN": "（同膠水的 ADMIN_TOKEN）"})
+		if self.state.get("chatwoot_account_id"):
+			env.update({"CHATWOOT_URL": self.a.chatwoot_url, "CHATWOOT_ACCOUNT_ID": str(self.state["chatwoot_account_id"]), "CHATWOOT_PLATFORM_TOKEN": "（Chatwoot Platform App token）"})
+		return {k: v for k, v in env.items() if v}
 
 	def _register_glue(self):
 		self.state.setdefault("erpnext_webhook_secret", secrets.token_urlsafe(32))
@@ -148,6 +172,7 @@ class Provisioner:
 			_http("POST", f"{base}/platform/api/v1/accounts/{self.state['chatwoot_account_id']}/account_users", headers, {"user_id": user["id"], "role": "administrator"})
 			self.state.update({"chatwoot_user_id": user["id"], "chatwoot_user_token": user["access_token"]})
 			self.save()
+		self.execute("dropout_core.provisioning.link_chatwoot_user", email=self.a.admin_email, chatwoot_user_id=self.state["chatwoot_user_id"])
 		if self.a.glue_url and "chatwoot_webhook" not in self.state:
 			hook = _http(
 				"POST",

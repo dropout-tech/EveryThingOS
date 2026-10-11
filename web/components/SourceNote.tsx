@@ -20,6 +20,10 @@ const DENIED_LABEL: Record<string, string> = {
   "Sales Invoice": "銷項發票",
   "Purchase Order": "採購單",
   "Purchase Invoice": "進項發票",
+  groups: "名單",
+  consent: "同意紀錄",
+  newsletters: "電子報",
+  last_30_days: "開信與退訂",
 };
 
 /** Says where the numbers on this page come from. Demo data is always labelled. */

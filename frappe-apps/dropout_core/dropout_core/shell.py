@@ -257,24 +257,38 @@ def people(limit=60):
 @frappe.whitelist()
 def letter():
 	"""Newsletter overview: segments, consent, and recent sends."""
-	groups = frappe.get_list("Email Group", fields=["name", "title", "total_subscribers"], order_by="total_subscribers desc", limit=20)
-	consent = {r.status: r.count for r in frappe.get_list("DropOut Consent", filters={"purpose": "marketing"}, fields=["status", "count(name) as count"], group_by="status")}
-	newsletters = frappe.get_list(
-		"Newsletter",
-		fields=["name", "subject", "email_sent", "schedule_sending", "schedule_send", "total_recipients", "total_views"],
-		order_by="modified desc",
-		limit=10,
-	)
+	s = _Sections()
 	since = add_months(getdate(nowdate()), -1)
-	events = {r.event_type: r.count for r in frappe.get_list("DropOut Event", filters={"event_type": ["in", ["letter_opened", "letter_clicked", "email_bounced", "unsubscribed", "subscribed"]], "occurred_at": [">=", since]}, fields=["event_type", "count(name) as count"], group_by="event_type")}
+	s.run("groups", lambda: frappe.get_list("Email Group", fields=["name", "title", "total_subscribers"], order_by="total_subscribers desc", limit=20), [])
+	s.run("consent", lambda: {r.status: r.count for r in frappe.get_list("DropOut Consent", filters={"purpose": "marketing"}, fields=["status", "count(name) as count"], group_by="status")}, {})
+	s.run(
+		"newsletters",
+		lambda: frappe.get_list("Newsletter", fields=["name", "subject", "email_sent", "schedule_sending", "schedule_send", "total_recipients", "total_views"], order_by="modified desc", limit=10),
+		[],
+	)
+	s.run(
+		"last_30_days",
+		lambda: {
+			r.event_type: r.count
+			for r in frappe.get_list(
+				"DropOut Event",
+				filters={"event_type": ["in", ["letter_opened", "letter_clicked", "email_bounced", "unsubscribed", "subscribed"]], "occurred_at": [">=", since]},
+				fields=["event_type", "count(name) as count"],
+				group_by="event_type",
+			)
+		},
+		{},
+	)
+	o = s.out
 	return {
-		"groups": [{"name": g.name, "title": g.title or g.name, "subscribers": g.total_subscribers, "href": _desk("Email Group", g.name)} for g in groups],
-		"consent": {"granted": consent.get("granted", 0), "pending": consent.get("pending", 0), "withdrawn": consent.get("withdrawn", 0)},
+		"groups": [{"name": g.name, "title": g.title or g.name, "subscribers": g.total_subscribers, "href": _desk("Email Group", g.name)} for g in o["groups"]],
+		"consent": {k: o["consent"].get(k, 0) for k in ("granted", "pending", "withdrawn")},
 		"newsletters": [
-			{"name": n.name, "subject": n.subject, "sent": bool(n.email_sent), "scheduled": n.schedule_send if n.schedule_sending else None, "recipients": n.total_recipients, "views": n.total_views, "href": _desk("Newsletter", n.name)}
-			for n in newsletters
+			{"name": n.name, "subject": n.subject, "sent": bool(n.email_sent), "scheduled": str(n.schedule_send) if n.schedule_sending and n.schedule_send else None, "recipients": n.total_recipients, "views": n.total_views, "href": _desk("Newsletter", n.name)}
+			for n in o["newsletters"]
 		],
-		"last_30_days": events,
+		"last_30_days": o["last_30_days"],
+		"denied": s.denied,
 	}
 
 

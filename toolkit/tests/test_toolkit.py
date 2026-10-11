@@ -146,7 +146,7 @@ class TestProvision(unittest.TestCase):
 	def args(self, **kw):
 		base = dict(
 			profile={"scene": "edu", "modules": ["chat"]}, site="edu.local", company="示範教育", abbr=None, admin_email="a@example.com",
-			admin_password="x", db_root_password="y", bench_dir="/nope", bench="bench", erpnext_url=None, glue_url=None,
+			admin_password="x", db_root_password="y", bench_dir="/nope", bench="bench", erpnext_url=None, shell_url=None, glue_url=None,
 			glue_admin_token=None, mail_from=None, chatwoot_url=None, chatwoot_platform_token=None, vexa_url=None,
 			vexa_admin_token=None, calendars=None, state_dir=tempfile.mkdtemp(),
 		)
@@ -167,10 +167,21 @@ class TestProvision(unittest.TestCase):
 		labels = [
 			s.label
 			for s in provision.Provisioner(
-				self.args(glue_url="https://g", chatwoot_url="https://c", chatwoot_platform_token="t", vexa_url="https://v", vexa_admin_token="t")
+				self.args(shell_url="https://os", glue_url="https://g", chatwoot_url="https://c", chatwoot_platform_token="t", vexa_url="https://v", vexa_admin_token="t")
 			).steps()
 		]
-		self.assertEqual(labels[-3:], ["登記到膠水", "對話帳號", "會議機器人"])
+		self.assertEqual(labels[-4:], ["殼登入", "登記到膠水", "對話帳號", "會議機器人"])
+
+	def test_shell_login_step_prints_shell_env(self):
+		lines = []
+		a = self.args(shell_url="https://acme.os.dropout.tw/", erpnext_url="https://acme.erp")
+		p = provision.Provisioner(a, out=lines.append)
+		p.state["done"] = {"建站": True, "裝 app": True, "設定精靈": True, "同步帳號": True}
+		with mock.patch.object(p, "execute", return_value={"client_id": "cid", "client_secret": "s"}) as execute:
+			p.run(apply=True)
+		execute.assert_called_once_with("dropout_core.provisioning.create_oauth_client", redirect_uri="https://acme.os.dropout.tw/api/auth/callback")
+		self.assertIn("  ERPNEXT_OAUTH_CLIENT_ID=cid", lines)
+		self.assertIn("  ERPNEXT_SITE=edu.local", lines)
 
 	def test_state_file_never_keeps_api_secret_in_results(self):
 		a = self.args()

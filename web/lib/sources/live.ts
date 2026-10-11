@@ -107,6 +107,7 @@ export async function liveLetter(): Promise<LetterOverview> {
     consent: raw.consent,
     newsletters: raw.newsletters.map((n) => ({ ...n, href: deskUrl(n.href, config) })),
     last30Days: raw.last_30_days,
+    denied: raw.denied,
   };
 }
 

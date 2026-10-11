@@ -27,6 +27,7 @@ export type LetterOverview = {
   consent: { granted: number; pending: number; withdrawn: number };
   newsletters: { name: string; subject: string; sent: boolean; scheduled: string | null; recipients: number; views: number; href?: string }[];
   last30Days: Partial<Record<"letter_opened" | "letter_clicked" | "email_bounced" | "unsubscribed" | "subscribed", number>>;
+  denied?: string[];
 };
 
 export type Me = { user: string; fullName: string; company: string; roles: string[]; chatwootUserId?: string };

@@ -60,7 +60,8 @@ export async function getPeople(pack: IndustryPack): Promise<Sourced<Person[]>> 
 export async function getLetter(): Promise<Sourced<LetterOverview | null>> {
   if (!isLive("erpnext")) return { origin: "demo", data: null };
   try {
-    return { origin: "live", system: "erpnext", data: await liveLetter(), deskUrl: liveConfig().erpnext?.url };
+    const letter = await liveLetter();
+    return { origin: "live", system: "erpnext", data: letter, denied: letter.denied, deskUrl: liveConfig().erpnext?.url };
   } catch (error) {
     return failed("erpnext", error);
   }

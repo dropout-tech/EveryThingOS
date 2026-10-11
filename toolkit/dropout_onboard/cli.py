@@ -172,6 +172,7 @@ def build_parser():
 	s.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
 	s.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
 	s.add_argument("--erpnext-url", help="膠水呼叫 ERPNext 用的網址（通常是 Tunnel 網址）")
+	s.add_argument("--shell-url", default=os.environ.get("SHELL_URL"), help="這家公司的 DropOut OS 網址，用來設定 ERPNext 登入")
 	s.add_argument("--glue-url", default=os.environ.get("GLUE_URL"))
 	s.add_argument("--glue-admin-token", default=os.environ.get("GLUE_ADMIN_TOKEN"))
 	s.add_argument("--mail-from")

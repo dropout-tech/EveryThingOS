@@ -242,6 +242,21 @@ class TestShellReadModels(FrappeTestCase):
 		self.assertEqual(set(letter["consent"]), {"granted", "pending", "withdrawn"})
 		self.assertEqual(shell.whoami()["user"], "Administrator")
 
+	def test_oauth_client_and_chatwoot_link(self):
+		from dropout_core.provisioning import create_oauth_client, link_chatwoot_user
+
+		first = create_oauth_client("https://a.example/api/auth/callback", app_name="DropOut OS test")
+		second = create_oauth_client("https://b.example/api/auth/callback", app_name="DropOut OS test")
+		self.assertEqual(first["client_id"], second["client_id"])
+		self.assertEqual(sorted(second["redirect_uris"]), ["https://a.example/api/auth/callback", "https://b.example/api/auth/callback"])
+		self.assertEqual(frappe.db.get_value("OAuth Client", first["client_id"], "skip_authorization"), 1)
+		self.assertTrue(link_chatwoot_user("Administrator", 7)["linked"])
+		from dropout_core import shell
+
+		frappe.clear_document_cache("User", "Administrator")
+		self.assertEqual(shell.whoami()["chatwoot_user_id"], "7")
+		self.assertFalse(link_chatwoot_user("nobody@example.com", 7)["linked"])
+
 	def test_books_lists_denied_sections_for_a_sales_user(self):
 		from dropout_core import shell
 
