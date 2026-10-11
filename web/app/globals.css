@@ -537,7 +537,7 @@ html[data-theme="white"] .glass.glass-bar::before {
 
 .os-shell :focus-visible {
   outline-width: 3px;
-  border-radius: 10px;
+  outline-offset: 2px;
 }
 
 .os-shell [tabindex="-1"]:focus {
@@ -2175,7 +2175,15 @@ html[data-theme="white"] .site-table thead th {
 @media print {
   .scene-layer,
   .site-noprint,
-  .glass-bar {
+  .glass-bar,
+  .glass-nav,
+  .tabbar,
+  .toast-stack,
+  .toast,
+  .cmdk,
+  .drawer,
+  .dialog-sheet,
+  .skip-link {
     display: none !important;
   }
 
