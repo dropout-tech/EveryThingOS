@@ -56,73 +56,75 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
       <ActionOutcomeNote outcome={action.outcome} />
       {confirmDialog}
 
-      <section className="glass sm:overflow-x-auto">
-        <table className="table-stack">
-          <caption className="sr-only">同事</caption>
-          <thead>
-            <tr>
-              <th scope="col">人</th>
-              <th scope="col">職務</th>
-              <th scope="col">最近登入</th>
-              <th scope="col">
-                <span className="sr-only">停用或恢復</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {team.users.map((u) => (
-              <tr key={u.email} className={u.enabled ? "" : "opacity-60"}>
-                <td data-primary="">
-                  <span className="flex items-start gap-3">
-                    <Avatar name={u.full_name || u.email} />
-                    <span className="min-w-0">
-                      {u.href ? (
-                        <a href={u.href} target="_blank" rel="noreferrer" className="underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">
-                          {u.full_name}
-                        </a>
-                      ) : (
-                        u.full_name
-                      )}
-                      <span className="block text-xs font-normal text-cream-dim">{u.email}</span>
-                      {u.enabled ? null : <Badge tone="warn" className="mt-1">已停用</Badge>}
-                    </span>
-                  </span>
-                </td>
-                <td data-label="職務">
-                  <select
-                    aria-label={`${u.full_name} 的職務`}
-                    value={u.profile ?? ""}
-                    disabled={disabled || !u.enabled}
-                    onChange={(e) => action.run("/api/team/profile", { user: u.email, profile: e.target.value }, (r) => String(r.message ?? "已更新"))}
-                    className={`${field} w-auto min-w-28`}
-                  >
-                    {u.profile ? null : <option value="">（自訂角色）</option>}
-                    {team.profiles.map((p) => (
-                      <option key={p.name} value={p.name}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td data-label="最近登入" className="text-cream-dim">{when(u.last_login)}</td>
-                <td className="sm:text-right">
-                  {u.email === team.me ? (
-                    <span className="text-xs text-cream-dim">你自己</span>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => toggleEnabled(u)}
-                      className={`btn btn-sm ${u.enabled ? "btn-danger" : "btn-secondary"}`}
-                    >
-                      {u.enabled ? "停用" : "恢復"}
-                    </button>
-                  )}
-                </td>
+      <section className="glass">
+        <div className="sm:overflow-x-auto">
+          <table className="table-stack">
+            <caption className="sr-only">同事</caption>
+            <thead>
+              <tr>
+                <th scope="col">人</th>
+                <th scope="col">職務</th>
+                <th scope="col">最近登入</th>
+                <th scope="col">
+                  <span className="sr-only">停用或恢復</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {team.users.map((u) => (
+                <tr key={u.email} className={u.enabled ? "" : "opacity-60"}>
+                  <td data-primary="">
+                    <span className="flex items-start gap-3">
+                      <Avatar name={u.full_name || u.email} />
+                      <span className="min-w-0">
+                        {u.href ? (
+                          <a href={u.href} target="_blank" rel="noreferrer" className="underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">
+                            {u.full_name}
+                          </a>
+                        ) : (
+                          u.full_name
+                        )}
+                        <span className="block text-xs font-normal text-cream-dim">{u.email}</span>
+                        {u.enabled ? null : <Badge tone="warn" className="mt-1">已停用</Badge>}
+                      </span>
+                    </span>
+                  </td>
+                  <td data-label="職務">
+                    <select
+                      aria-label={`${u.full_name} 的職務`}
+                      value={u.profile ?? ""}
+                      disabled={disabled || !u.enabled}
+                      onChange={(e) => action.run("/api/team/profile", { user: u.email, profile: e.target.value }, (r) => String(r.message ?? "已更新"))}
+                      className={`${field} w-auto min-w-28`}
+                    >
+                      {u.profile ? null : <option value="">（自訂角色）</option>}
+                      {team.profiles.map((p) => (
+                        <option key={p.name} value={p.name}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td data-label="最近登入" className="text-cream-dim">{when(u.last_login)}</td>
+                  <td className="sm:text-right">
+                    {u.email === team.me ? (
+                      <span className="text-xs text-cream-dim">你自己</span>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => toggleEnabled(u)}
+                        className={`btn btn-sm ${u.enabled ? "btn-danger" : "btn-secondary"}`}
+                      >
+                        {u.enabled ? "停用" : "恢復"}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <form id="invite" onSubmit={submitInvite} noValidate aria-labelledby="invite-title" className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-start">

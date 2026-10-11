@@ -36,58 +36,60 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
       {inventory ? null : <MoreText className="text-sm text-cream-dim">{`這一行沒有倉庫。交給客人的方式是「${fulfillment}」，這裡只記經常費用與外包。`}</MoreText>}
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
-      <div className="glass sm:overflow-x-auto">
-        <table className="table-stack sm:min-w-[40rem]">
-          <caption className="sr-only">進貨單</caption>
-          <thead className="bg-ink-2">
-            <tr>
-              <th scope="col">對象</th>
-              <th scope="col">單號</th>
-              <th scope="col">項目</th>
-              <th scope="col" className="num" data-numeric="">金額</th>
-              <th scope="col">現在</th>
-              <th scope="col">下一步</th>
-            </tr>
-          </thead>
-          <tbody>
-            {live && !rows.length ? (
+      <div className="glass">
+        <div className="sm:overflow-x-auto">
+          <table className="table-stack sm:min-w-[40rem]">
+            <caption className="sr-only">進貨單</caption>
+            <thead className="bg-ink-2">
               <tr>
-                <td colSpan={6} className="py-6 text-center text-cream-dim">
-                  沒有待到貨或待付款的單
-                </td>
+                <th scope="col">對象</th>
+                <th scope="col">單號</th>
+                <th scope="col">項目</th>
+                <th scope="col" className="num" data-numeric="">金額</th>
+                <th scope="col">現在</th>
+                <th scope="col">下一步</th>
               </tr>
-            ) : null}
-            {rows.map((row) => (
-              <tr key={row.no}>
-                <td data-primary="">{row.vendor}</td>
-                <td data-label="單號">{row.no}</td>
-                <td data-label="項目">{row.item}</td>
-                <td data-label="金額" className="num" data-numeric="">
-                  <Money amount={row.amount} />
-                </td>
-                <td data-label="現在">
-                  <Badge tone={row.status.includes("待付款") ? "warn" : row.status.includes("已付款") ? "ok" : "neutral"}>{row.status}</Badge>
-                </td>
-                <td data-label="下一步">
-                  {live ? (
-                    <span className="flex items-center gap-3">
-                      <AdvanceButton doctype={row.doctype} name={row.no} label={row.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "secondary", size: "sm" })} />
-                      <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
-                        打開
-                      </DeskLink>
-                    </span>
-                  ) : row.next === "完成" ? (
-                    <span className="text-cream-dim">完成</span>
-                  ) : (
-                    <button type="button" onClick={() => onAdvance(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
-                      {row.next}
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {live && !rows.length ? (
+                <tr>
+                  <td colSpan={6} className="py-6 text-center text-cream-dim">
+                    沒有待到貨或待付款的單
+                  </td>
+                </tr>
+              ) : null}
+              {rows.map((row) => (
+                <tr key={row.no}>
+                  <td data-primary="">{row.vendor}</td>
+                  <td data-label="單號">{row.no}</td>
+                  <td data-label="項目">{row.item}</td>
+                  <td data-label="金額" className="num" data-numeric="">
+                    <Money amount={row.amount} />
+                  </td>
+                  <td data-label="現在">
+                    <Badge tone={row.status.includes("待付款") ? "warn" : row.status.includes("已付款") ? "ok" : "neutral"}>{row.status}</Badge>
+                  </td>
+                  <td data-label="下一步">
+                    {live ? (
+                      <span className="flex items-center gap-3">
+                        <AdvanceButton doctype={row.doctype} name={row.no} label={row.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "secondary", size: "sm" })} />
+                        <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
+                          打開
+                        </DeskLink>
+                      </span>
+                    ) : row.next === "完成" ? (
+                      <span className="text-cream-dim">完成</span>
+                    ) : (
+                      <button type="button" onClick={() => onAdvance(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
+                        {row.next}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
