@@ -135,7 +135,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
         ) : null}
         <div className="flex flex-wrap gap-2 border-t border-[var(--line)] pt-5">
           {account?.profile ? null : (
-            <Link href="/?setup=1" className={buttonClass({ variant: "secondary", size: "sm" })}>
+            <Link href="/start" className={buttonClass({ variant: "secondary", size: "sm" })}>
               重設現場與功能
             </Link>
           )}
