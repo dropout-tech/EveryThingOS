@@ -9,10 +9,10 @@ const LABELS: Record<string, string> = {
 };
 
 const GROUPS: { id: string; title?: string; hrefs: string[] }[] = [
-  { id: "today", hrefs: ["/workspace"] },
-  { id: "people", title: "客人", hrefs: ["/workspace/crm", "/workspace/chat", "/workspace/letter", "/workspace/meetings"] },
-  { id: "business", title: "生意", hrefs: ["/workspace/erp/sales", "/workspace/erp/stock", "/workspace/erp/purchase", "/workspace/erp/finance"] },
-  { id: "company", title: "公司", hrefs: ["/workspace/reports", "/workspace/hr", "/workspace/team", "/workspace/website"] },
+  { id: "today", hrefs: ["/workspace", "/workspace/ask"] },
+  { id: "people", title: "客人", hrefs: ["/workspace/crm", "/workspace/chat", "/workspace/letter", "/workspace/meetings", "/workspace/portal"] },
+  { id: "business", title: "生意", hrefs: ["/workspace/erp/sales", "/workspace/erp/stock", "/workspace/erp/purchase", "/workspace/erp/finance", "/workspace/projects"] },
+  { id: "company", title: "公司", hrefs: ["/workspace/reports", "/workspace/approvals", "/workspace/automations", "/workspace/hr", "/workspace/team", "/workspace/website"] },
   { id: "settings", hrefs: ["/workspace/settings"] },
 ];
 
@@ -45,7 +45,7 @@ export function isActive(path: string, href: string, match?: string) {
 /** Phone tab bar: 今天, the first people page, 生意 (its own sub-tabs cover 銷售／庫存／採購／收錢), then one more. */
 export function tabItems(sections: NavSection[]): NavItem[] {
   const find = (id: string) => sections.find((section) => section.id === id)?.items ?? [];
-  const today = find("today");
+  const today = find("today").slice(0, 1);
   const people = find("people")[0];
   const business = find("business")[0];
   const flat = sections.flatMap((section) => section.items);
@@ -58,6 +58,12 @@ export function tabItems(sections: NavSection[]): NavItem[] {
 
 const TRAIL: Record<string, { label: string; parent?: string }> = {
   "/workspace": { label: "今天" },
+  "/workspace/ask": { label: "問助理", parent: "/workspace" },
+  "/workspace/projects": { label: "專案", parent: "/workspace" },
+  "/workspace/approvals": { label: "簽核與報帳", parent: "/workspace" },
+  "/workspace/portal": { label: "客戶入口", parent: "/workspace" },
+  "/workspace/automations": { label: "自動化", parent: "/workspace" },
+  "/workspace/settings/import": { label: "匯入資料", parent: "/workspace/settings" },
   "/workspace/crm": { label: "客人", parent: "/workspace" },
   "/workspace/chat": { label: "對話", parent: "/workspace" },
   "/workspace/letter": { label: "電子報", parent: "/workspace" },

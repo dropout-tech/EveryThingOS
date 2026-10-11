@@ -13,7 +13,11 @@ export type FeatureId =
   | "chat"
   | "meetings"
   | "website"
-  | "hr";
+  | "hr"
+  | "projects"
+  | "approvals"
+  | "portal"
+  | "automations";
 
 export type ShopSize = "solo" | "small" | "mid" | "large";
 
@@ -48,6 +52,10 @@ export const FEATURES: { id: FeatureId; label: string; hint: string }[] = [
   { id: "meetings", label: "會議紀錄", hint: "機器人自己進 Zoom／Meet" },
   { id: "website", label: "官網", hint: "客人看得到的頁" },
   { id: "hr", label: "人事", hint: "請假、打卡、薪資" },
+  { id: "projects", label: "專案與工時", hint: "案子賺不賺、誰花了幾小時" },
+  { id: "approvals", label: "簽核與報帳", hint: "手機上核准、拍收據報帳" },
+  { id: "portal", label: "客戶入口", hint: "客人線上看報價、簽名、付款" },
+  { id: "automations", label: "自動化", hint: "逾期提醒、低庫存請購自己跑" },
 ];
 
 export const SIZES: { id: ShopSize; label: string; hint: string }[] = [
@@ -108,11 +116,15 @@ export function recommendModules(sceneId: string, size: ShopSize, picked: Featur
   if ((sceneId === "retail" || sceneId === "make" || sceneId === "food") && size !== "solo") {
     set.add("stock");
   }
+  if (sceneId === "service" || sceneId === "build") set.add("projects");
+  if (set.has("sales")) set.add("portal");
   if (size === "solo") {
     set.delete("website");
   } else {
     set.add("hr");
+    set.add("approvals");
   }
+  if (size === "mid" || size === "large") set.add("automations");
   if (size === "large" && (sceneId === "retail" || sceneId === "stay" || sceneId === "edu")) {
     set.add("website");
   }
@@ -167,7 +179,7 @@ export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
         inventory: mods.has("stock"),
         manufacturing: shop.scene === "make" && shop.size !== "solo",
         pos: shop.scene === "retail" || shop.scene === "food",
-        projects: shop.scene === "build" || shop.scene === "service",
+        projects: mods.has("projects") || shop.scene === "build" || shop.scene === "service",
         batch: shop.scene === "make" || shop.scene === "food" || shop.scene === "farm",
       },
     },
@@ -196,6 +208,14 @@ export function moduleHref(id: FeatureId): string {
       return "/workspace/website";
     case "hr":
       return "/workspace/hr";
+    case "projects":
+      return "/workspace/projects";
+    case "approvals":
+      return "/workspace/approvals";
+    case "portal":
+      return "/workspace/portal";
+    case "automations":
+      return "/workspace/automations";
   }
 }
 
@@ -211,8 +231,15 @@ export function navItemsForShop(shop: ShopProfile, { team = false, reports = fal
     meetings: "會議",
     website: "官網",
     hr: "人事",
+    projects: "專案",
+    approvals: "簽核",
+    portal: "客戶入口",
+    automations: "自動化",
   };
-  const items = [{ href: "/workspace", label: "今天" }];
+  const items = [
+    { href: "/workspace", label: "今天" },
+    { href: "/workspace/ask", label: "問助理" },
+  ];
   for (const id of FEATURES.map((item) => item.id)) {
     if (shop.modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
   }
@@ -223,7 +250,7 @@ export function navItemsForShop(shop: ShopProfile, { team = false, reports = fal
 }
 
 export function hrefAllowed(href: string, shop: ShopProfile): boolean {
-  if (href === "/workspace" || href.startsWith("/workspace/settings") || href.startsWith("/workspace/erp/compare")) {
+  if (href === "/workspace" || href.startsWith("/workspace/ask") || href.startsWith("/workspace/settings") || href.startsWith("/workspace/erp/compare")) {
     return true;
   }
   if (href.startsWith("/workspace/erp") && !href.includes("/stock") && !href.includes("/purchase") && !href.includes("/sales") && !href.includes("/finance")) {
