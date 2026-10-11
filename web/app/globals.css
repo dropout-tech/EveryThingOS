@@ -1934,6 +1934,117 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 }
 
+/* 匯入資料精靈 (/workspace/settings/import) */
+@layer components {
+  .import-steps {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--chip-radius);
+    background: var(--surface-scrim);
+    scrollbar-width: none;
+  }
+
+  .import-steps > li {
+    flex: 1 0 auto;
+  }
+
+  .import-step {
+    display: inline-flex;
+    width: 100%;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0 0.75rem;
+    border-radius: var(--ui-radius-pill);
+    color: var(--cream-dim);
+    font-size: var(--ui-text-sm);
+    white-space: nowrap;
+  }
+
+  .import-step:not(:disabled):hover {
+    color: var(--cream);
+  }
+
+  .import-step:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .import-step[data-done] {
+    color: var(--cream);
+  }
+
+  .import-step[aria-current="step"] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+    opacity: 1;
+  }
+
+  .import-step-no {
+    display: inline-flex;
+    width: 1.375rem;
+    height: 1.375rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    border-radius: var(--ui-radius-pill);
+    font-size: var(--ui-text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .import-kind[aria-pressed="true"] {
+    border-color: var(--cream);
+  }
+
+  .import-drop {
+    padding: 1rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+  }
+
+  .import-drop input[type="file"]::file-selector-button {
+    margin-right: 0.75rem;
+    min-height: var(--ui-control);
+    padding: 0 1rem;
+    border: 1px solid var(--field-border);
+    border-radius: var(--btn-radius);
+    background: var(--control-fill);
+    color: var(--cream);
+    cursor: pointer;
+  }
+
+  .segmented .import-filter {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 0.9rem;
+    border-radius: var(--ui-radius-pill);
+    color: var(--cream-dim);
+    font-size: var(--ui-text-sm);
+  }
+
+  .segmented .import-filter[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+
+  @media (pointer: coarse) {
+    .import-step,
+    .segmented .import-filter {
+      min-height: var(--ui-tap);
+    }
+  }
+}
+
 /* === Site pages (官網、法律、狀態、登入、營運後台) — owned by the site workstream; tokens above are untouched === */
 
 @layer components {
