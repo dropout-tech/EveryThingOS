@@ -227,6 +227,15 @@ class TestShell(FrappeTestCase):
 		frappe.set_user("Guest")
 		self.assertRaises(frappe.PermissionError, shell.today)
 
+	def test_cannot_approve_own_leave(self):
+		day = add_days(nowdate(), 9)
+		own = frappe.get_doc(
+			{"doctype": "Leave Application", "employee": self.approver_emp, "leave_type": "事假", "from_date": day, "to_date": day, "company": company(), "leave_approver": self.approver, "status": "Open"}
+		).insert(ignore_permissions=True)
+		frappe.set_user(self.approver)
+		self.assertNotIn(own.name, [a["name"] for a in shell.today()["approvals"]])
+		self.assertRaises(frappe.PermissionError, shell.decide_leave, own.name, "approve")
+
 	def test_check_in_for_myself(self):
 		frappe.db.delete("Employee Checkin", {"employee": self.staff_emp})
 		frappe.set_user(self.staff)
