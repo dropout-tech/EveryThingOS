@@ -199,7 +199,7 @@ export function moduleHref(id: FeatureId): string {
   }
 }
 
-export function navItemsForShop(shop: ShopProfile, { team = false } = {}): { href: string; label: string }[] {
+export function navItemsForShop(shop: ShopProfile, { team = false, reports = false } = {}): { href: string; label: string }[] {
   const labels: Record<FeatureId, string> = {
     crm: "客人",
     sales: "生意",
@@ -216,6 +216,7 @@ export function navItemsForShop(shop: ShopProfile, { team = false } = {}): { hre
   for (const id of FEATURES.map((item) => item.id)) {
     if (shop.modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
   }
+  if (reports) items.push({ href: "/workspace/reports", label: "報表" });
   if (team) items.push({ href: "/workspace/team", label: "團隊" });
   items.push({ href: "/workspace/settings", label: "設定" });
   return items;
