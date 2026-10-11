@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useFluidStyle } from "./useFluidStyle";
 
 const LITE_QUERY = "(pointer: coarse), (prefers-reduced-transparency: reduce), (max-width: 767px)";
 const STILL_QUERY = "(prefers-reduced-motion: reduce)";
@@ -11,7 +12,10 @@ const RIPPLE_TARGETS = ".btn-primary, .glass-cta, .segmented a";
  * a lite flag for phones and slow machines, and the ripple on primary actions. Everything else is CSS.
  */
 export function FluidMotion() {
+  const fluid = useFluidStyle();
+
   useEffect(() => {
+    if (!fluid) return;
     const root = document.documentElement;
     const still = window.matchMedia(STILL_QUERY);
     const liteQuery = window.matchMedia(LITE_QUERY);
@@ -44,7 +48,7 @@ export function FluidMotion() {
     }
 
     function onPointerDown(event: PointerEvent) {
-      if (event.button !== 0 || still.matches || root.dataset.style !== "fluid") return;
+      if (event.button !== 0 || still.matches) return;
       const target = (event.target as Element | null)?.closest?.(RIPPLE_TARGETS);
       if (!(target instanceof HTMLElement) || target.matches(":disabled, [aria-disabled='true']")) return;
       const rect = target.getBoundingClientRect();
@@ -84,7 +88,7 @@ export function FluidMotion() {
       root.removeAttribute("data-fluid-paused");
       root.style.removeProperty("--fluid-depth");
     };
-  }, []);
+  }, [fluid]);
 
   return null;
 }

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { useFluidStyle } from "./styles/fluid/useFluidStyle";
 
 export function OceanColumn() {
+  const fluid = useFluidStyle();
+
   useEffect(() => {
     const root = document.documentElement;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!fluid || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let frame = 0;
 
     function write() {
@@ -29,8 +32,9 @@ export function OceanColumn() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (frame) window.cancelAnimationFrame(frame);
+      root.style.removeProperty("--ocean-y");
     };
-  }, []);
+  }, [fluid]);
 
   return null;
 }

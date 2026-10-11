@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { useFluidStyle } from "./styles/fluid/useFluidStyle";
 
 type LensProps = {
   children: ReactNode;
@@ -53,7 +54,10 @@ function subscribeLite(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 
-/** Phones, slow machines and reduced-motion users get the frosted film without displacement or elastic follow. */
+/**
+ * Phones, slow machines and reduced-motion users get the frosted film without displacement or elastic follow.
+ * Other styles get nothing at all: no edge map, no pointer listeners.
+ */
 function useLiteGlass() {
   return useSyncExternalStore(
     subscribeLite,
@@ -69,7 +73,8 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
   const [map, setMap] = useState("");
   const [scale, setScale] = useState(36);
   const [shift, setShift] = useState({ x: 0, y: 0, sx: 1, sy: 1, px: 28, py: 18 });
-  const lite = useLiteGlass();
+  const fluid = useFluidStyle();
+  const lite = useLiteGlass() || !fluid;
 
   useEffect(() => {
     const node = root.current;
