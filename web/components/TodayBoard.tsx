@@ -92,8 +92,12 @@ export function TodayList({ books, allowed }: { books: Books; allowed: string[] 
       {waiting.length ? (
         <section aria-labelledby="waiting-title">
           <div className="section-head">
-            <h2 id="waiting-title" className="section-title scene-type">
+            <h2 id="waiting-title" className="section-title scene-type flex items-center gap-2">
               等你處理
+              <span className="badge-count">
+                {waiting.length}
+                <span className="sr-only"> 件</span>
+              </span>
             </h2>
             <p className="text-xs text-cream-dim scene-type">照急的排</p>
           </div>

@@ -164,12 +164,12 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
           <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>
-            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+            <h2 className="flex items-center justify-between gap-2 text-sm font-medium">
               <span>
               {column.plain}
               <span className="ml-1 text-xs font-normal text-cream-dim">{column.formal}</span>
               </span>
-              <span className="text-xs text-cream-dim">{column.docs.length}</span>
+              <span className="badge-count">{column.docs.length}</span>
             </h2>
             <ul className="mt-3 space-y-2">
               {column.docs.length ? (

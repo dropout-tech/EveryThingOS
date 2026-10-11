@@ -112,9 +112,9 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
-            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+            <h2 className="flex items-center justify-between gap-2 text-sm font-medium">
               <span>{live ? stageLabel(column.stage) : column.stage}</span>
-              <span className="text-xs font-normal text-cream-dim">{column.cards.length}</span>
+              <span className="badge-count">{column.cards.length}</span>
             </h2>
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
