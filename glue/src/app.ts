@@ -2,6 +2,7 @@ import { addYears, lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDa
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
+import { errorText, log } from "./log";
 import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { ecpayVerify, newebpayDecode } from "./pay";
@@ -468,6 +469,7 @@ export async function consume(batch: MessageBatch<Job>, env: Env, app: App = def
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
       if (!isRetryable(e) || msg.attempts >= MAX_ATTEMPTS) {
+        log("error", "job.dead_letter", { site: msg.body.site, kind: msg.body.kind, attempts: msg.attempts, error: errorText(e) });
         await d.store.addDeadLetter(msg.body.site, msg.body.kind, JSON.stringify(msg.body), error);
         await onGiveUp(msg.body, error, d);
         msg.ack();
