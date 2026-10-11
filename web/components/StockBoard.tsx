@@ -7,7 +7,7 @@ import { DeskLink } from "./DeskLink";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import { Money } from "./ui/Money";
-import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
+import { demoKey, peekDemoState, useDemoState, writeDemoState } from "@/lib/demo-state";
 import { makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
 
 type StockBoardProps = {
@@ -19,9 +19,14 @@ type StockBoardProps = {
   deskUrl?: string;
 };
 
-export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, deskUrl }: StockBoardProps) {
+const NONE: StockRow[] = [];
+
+export function StockBoard({ packId, inventoryValue, batchOn, stock: books, purchases, deskUrl }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
+  // 示範模式：匯入資料精靈放進來的商品（還沒有庫存）接在後面。
+  const [imported] = useDemoState(demoKey("stock-imported", packId), NONE);
+  const stock = deskUrl ? books : [...books, ...imported.filter((row) => !books.some((b) => b.sku === row.sku))];
 
   function requestBuy(row: StockRow) {
     const existing = peekDemoState<PurchaseDoc[]>(demoKey("purchases", packId), purchases);
