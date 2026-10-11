@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-from dropout_onboard import checks, convert, fleet, plan as plan_mod
+from dropout_onboard import backup, checks, convert, fleet, plan as plan_mod
 from dropout_onboard.bootstrap import Bootstrap
 from dropout_onboard.provision import Provisioner
 
@@ -227,6 +227,19 @@ def build_parser():
 		f.add_argument("--reason")
 		_glue_args(f)
 		f.set_defaults(fn=lambda a: fleet.change(a))
+
+	s = sub.add_parser("backup", help="備份：還原演練")
+	bs = s.add_subparsers(dest="backup_cmd", required=True)
+	b = bs.add_parser("verify", help="把最新備份還原到暫存站、比對單據筆數與資料檢查、刪掉暫存站、寫報告（預設只預演）")
+	b.add_argument("site")
+	b.add_argument("--backup", help="指定 *-database.sql.gz（例：從 R2 下載的）；不填就用 sites/<site>/private/backups 裡最新的")
+	b.add_argument("--with-files", action="store_true", help="連附件（public、private files）一起還原，比較慢")
+	b.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
+	b.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
+	b.add_argument("--db-root-password", default=os.environ.get("DB_ROOT_PASSWORD", ""))
+	b.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
+	b.add_argument("--apply", action="store_true")
+	b.set_defaults(fn=backup.cmd_verify)
 	return p
 
 
