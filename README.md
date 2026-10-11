@@ -4,27 +4,33 @@
 
 進銷存與財務對齊**鼎新 A1／億看 ECOUNT** 的範圍（報價到收款、採購、庫存、帳齡、傳票、營業稅、電子發票適配），畫面改成「下一步是什麼」，而不是先背程式名稱。
 
-- **一百個產業包**可切換，滿足一百種現場情境
+- **現場＋功能＋規模** 組出要開的模組，不是硬切一百種行業
 - **每年 NT$100,000（未稅）**，含系統、不含模組加購
-- **免費顧問導入**：選定產業包、改流程與 Dashboard、帶你們跑完一筆真實生意
+- **免費顧問導入**：打開對的功能、搬資料、帶你們跑完一筆真實生意
 
 ## 現在就可以看的畫面
 
-產品外殼在 `web/`（Next.js）。風景當背景，介面是少數幾塊可折射的玻璃，不是滿版方格。進站右下角會出現創業一句，不擋住操作。每天路徑是 **回覆 → 客人 → 生意 → 收錢**。
+產品外殼在 `web/`（Next.js）。背景是一條從海面到海底的連續風景。主卡片是邊緣會折射的玻璃（位移圖 + 色散 + 滑鼠彈性），參考 [liquid-glass-react](https://github.com/rdev/liquid-glass-react)。識別是玻璃水滴加漣漪。
+
+打開先問三件事：現場像什麼、幾個人、要開哪些功能。不是硬選一百種行業。選完進「今天」：一件事、一個人、一個按鈕。
 
 ```bash
 cd web && npm install && npm run dev
 ```
 
-- `/` 產品主張
-- `/industries` 100 個產業包
+Cloudflare Workers（OpenNext）：
+
+```bash
+cd web && npm run preview   # 本機用 Workers 執行環境跑一次
+cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_API_TOKEN 與 CLOUDFLARE_ACCOUNT_ID
+```
+
+- `/` 現場 → 規模 → 功能。選過的人會直接進今天（`/?setup=1` 重設）
 - `/pricing` 一年十萬
-- `/consulting` 免費導入步驟
-- `/saas` 取代哪些雲端工具
-- `/workspace` 今天：先做一件大事，數字一條，四步路徑
-- `/workspace/erp` 生意：銷售流水、採購、倉庫（服務業會藏）、帳款與稅
-- `/workspace/erp/compare` 與 `/saas`：和鼎新 A1、億看 ECOUNT 一項一項對
-- `/workspace/reply` 社群回覆：OpenReply 風格的留言轉私訊（示範配對，Meta 還沒接）
+- `/consulting` 免費導入
+- `/industries` 一百個產業包（給想對照的人，不是進站必經）
+- `/workspace` 今天這一件
+- `/workspace/erp/sales` 生意：同一張單往下走
 
 工作區裡點「下一步」會在這個瀏覽器走動，用來證明比 A1／億看直觀。**正式過帳還沒接到 ERPNext**，畫面上有這句說明。
 
@@ -32,23 +38,25 @@ cd web && npm install && npm run dev
 
 | 項目 | 狀態 |
 | --- | --- |
-| 產品殼、100 產業包、A1 下一步操作、黑白、海山湖風景、Liquid Glass、激勵句、OpenReply 示範回覆 | 可看 |
-| ERPNext 過帳、主檔權威 | 未接 |
-| Keycloak 登入 | 未接 |
-| Mautic／Postal 魅力圈寄信 | 未接 |
-| Reacher 清庫、Shlink 短網址 | 未接 |
-| OpenReply Meta webhook | 未接 |
+| 產品殼、現場／規模／功能 onboarding、今天一件事、A1 下一步、黑白、海面到海底、邊緣折射玻璃、社群回覆示範 | 可看 |
+| ERPNext 過帳、主檔權威、登入 | 未接 |
+| Chatwoot 對話（LINE、IG、FB、官網） | 未接 |
+| 電子報（ERPNext Email Campaign + 寄信服務） | 未接 |
+| Vexa 會議紀錄機器人 | 未接 |
+| 殼搬上 Cloudflare、系統間同步 | 未接 |
 | 電子發票加值中心 | 適配尚未接 |
 | 公開預覽網址 | https://dropout-os.vercel.app （production 追 GitHub `main`） |
 
-下一動仍是把示範站接到可複製的 ERPNext site。
+下一動：殼搬上 Cloudflare 並拆出示範／真實資料來源層，再接可複製的 ERPNext site。
 
 ## 開源組裝與套皮
 
-架構仍是 ERPNext + Mautic + Reacher + Shlink + OpenReply + Keycloak + Activepieces。員工看不到原廠皮。
+第二版架構：Cloudflare（殼、同步、檔案、交易信、AI）＋ 一台主機（ERPNext、Chatwoot、Vexa，Coolify 管理）。Mautic、OpenReply、Shlink、Keycloak 為選配。員工看不到原廠皮。
 
 - 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)
+- 對話、電子報、客人、生意四系統規劃：[docs/FOUR-SYSTEMS-PLAN.md](docs/FOUR-SYSTEMS-PLAN.md)
+- 大整合（重複造輪子檢查、會議紀錄機器人、Cloudflare 部署）：[docs/PLATFORM-INTEGRATION.md](docs/PLATFORM-INTEGRATION.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）

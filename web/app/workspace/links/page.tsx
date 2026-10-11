@@ -9,12 +9,12 @@ export default async function LinksPage() {
 
   return (
     <ModuleFrame
-      kicker="DropOut Links"
-      title={`${pack.nameZh} 的通道`}
-      hint="官網、IG、LINE、QR 共用 Shlink。信件內文連結仍由 Mautic 追蹤，不套兩層。"
+      kicker="短網址"
+      title={`${pack.nameZh} 對外怎麼連`}
+      hint="官網、IG、LINE、名片 QR 用同一套短網址。信件裡的連結另外算點擊，不會算兩次。"
     >
       <DataTable
-        columns={["短碼", "目的", "點擊", "utm_source"]}
+        columns={["短碼", "連到哪", "點了幾次", "從哪來"]}
         rows={links.map((link) => [link.code, link.dest, String(link.clicks), link.source])}
       />
     </ModuleFrame>

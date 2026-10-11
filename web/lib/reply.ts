@@ -36,7 +36,7 @@ export function seedReplyRules(pack: IndustryPack): ReplyRule[] {
       keyword: "LINK",
       channel: "ig",
       publicReply: "連結在私訊",
-      dm: "官網與報名走品牌短網址 do-ig（Shlink），不要在留言貼長網址。",
+      dm: "官網與報名用短網址，不要在留言貼一長串網址。",
     },
     {
       id: "r-join",

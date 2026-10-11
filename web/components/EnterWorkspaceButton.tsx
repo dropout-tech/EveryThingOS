@@ -11,7 +11,7 @@ export function EnterWorkspaceButton({ industryId, label }: { industryId: string
     <button
       type="button"
       disabled={pending}
-      className="rounded-full bg-teal px-5 py-3 font-medium text-ink disabled:opacity-60"
+      className="glass-cta rounded-full px-5 py-3 font-medium disabled:opacity-60"
       onClick={() => {
         start(async () => {
           await fetch("/api/industry", {
@@ -24,7 +24,7 @@ export function EnterWorkspaceButton({ industryId, label }: { industryId: string
         });
       }}
     >
-      {pending ? "載入產業包…" : label}
+      {pending ? "打開中…" : label}
     </button>
   );
 }

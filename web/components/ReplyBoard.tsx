@@ -33,7 +33,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
   function onSend(comment: ReplyComment) {
     const rule = matchRule(comment.text, rules);
     if (!rule) {
-      setNote(`「${comment.text}」沒有命中關鍵字。加一條規則，或略過這則。OpenReply 也是這樣擋亂槍。`);
+      setNote(`「${comment.text}」沒對到關鍵字。加一組，或略過這則。沒有關鍵字就不要洗私訊。`);
       return;
     }
     setInbox((current) =>
@@ -42,7 +42,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
       ),
     );
     setNote(
-      `示範：對 ${comment.handle} 送出私訊「${rule.dm}」。公開回覆「${rule.publicReply}」。Meta webhook 還沒接上，正式站會由 OpenReply 打 Graph API。`,
+      `已在這台電腦對 ${comment.handle} 寫好私訊「${rule.dm}」，公開回覆「${rule.publicReply}」。還沒真的傳到 Instagram。`,
     );
   }
 
@@ -50,7 +50,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
     setInbox((current) =>
       current.map((item) => (item.id === comment.id ? { ...item, status: "skipped" } : item)),
     );
-    setNote(`${comment.handle} 已略過。沒有關鍵字就不要洗私訊，這是 ManyChat 最常被關掉的原因。`);
+    setNote(`${comment.handle} 已略過。沒有關鍵字就不要洗私訊，客人會把你關掉。`);
   }
 
   function onLead(comment: ReplyComment) {
@@ -68,11 +68,11 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
     const nextKeyword = keyword.trim();
     const nextDm = dm.trim();
     if (!nextKeyword || !nextDm) {
-      setNote("關鍵字和私訊內容都要填。不要做空規則。");
+      setNote("關鍵字和私訊內容都要填。不要存空白的。");
       return;
     }
     if (rules.some((rule) => rule.keyword.toLowerCase() === nextKeyword.toLowerCase())) {
-      setNote(`「${nextKeyword}」已經有了。改現有規則，不要重複。`);
+      setNote(`「${nextKeyword}」已經有了。改現有的，不要重複。`);
       return;
     }
     const rule: ReplyRule = {
@@ -92,7 +92,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
     <div className="space-y-4">
       <ActionNote>{note}</ActionNote>
       <p className="glass-chip px-4 py-3 text-sm text-cream-dim">
-        底層是 <span className="text-cream">OpenReply</span>（MIT）。命中才私訊。Meta webhook 還沒接。
+        留言出現關鍵字才私訊。現在按送出，還不會真的傳到 Instagram。
       </p>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
         <section className="glass p-4">
@@ -111,7 +111,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
                     </div>
                     <p className="mt-2 text-cream">「{comment.text}」</p>
                     <p className="mt-2 text-xs text-cream-dim">
-                      {rule ? `命中「${rule.keyword}」→ 私訊：${rule.dm}` : "沒有命中規則"}
+                      {rule ? `對到「${rule.keyword}」→ 私訊：${rule.dm}` : "沒對到關鍵字"}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button type="button" className="glass-cta rounded-full px-3 py-1.5 text-xs" onClick={() => onSend(comment)}>
@@ -132,7 +132,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
             <p className="glass-chip p-4 text-sm text-cream-dim">這一輪留言都處理完了。</p>
           )}
           {sent.length ? (
-            <p className="text-xs text-cream-dim">已送出 {sent.length} 則示範私訊。正式站由 OpenReply 寫 Meta 對話，再經事件進 CRM。</p>
+            <p className="text-xs text-cream-dim">已寫好 {sent.length} 則私訊。接上 Instagram 後，同一套動作會真的送出，並進客人。</p>
           ) : null}
         </section>
         <aside className="glass space-y-3 p-4">
@@ -153,7 +153,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
               onAddRule();
             }}
           >
-            <p className="text-sm">加一條規則</p>
+            <p className="text-sm">加一組關鍵字</p>
             <label className="block text-xs text-cream-dim">
               關鍵字
               <input
@@ -185,10 +185,10 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
               />
             </label>
             <button type="submit" className="glass-cta rounded-full px-4 py-2 text-sm">
-              存規則
+              存起來
             </button>
             {preview ? (
-              <p className="text-xs text-cream-dim">預覽命中：{preview.keyword}</p>
+              <p className="text-xs text-cream-dim">這則會用關鍵字「{preview.keyword}」</p>
             ) : null}
           </form>
         </aside>

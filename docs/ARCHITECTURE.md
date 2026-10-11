@@ -1,8 +1,8 @@
 # EveryThingOS 架構
 
-狀態：產品外殼與 100 產業包已落地（`web/`），開源後端組裝依分期進行  
+狀態：第二版。產品外殼已落地（`web/`）；後端依第 11 節分期接上。第 0.3 節是第二輪決策，未被推翻前以它為準  
 商業：每年 NT$100,000 未稅，免費顧問導入，全模組套琢奧識別  
-對象：要把 CRM、ERP、魅力圈漏斗、名單清庫、網址追蹤編成**可賣給各產業的一套作業系統**的決策者與實作者
+對象：要把對話、電子報、客人、生意、會議紀錄編成**登入一次就能做完所有事、可賣給各產業的一套作業系統**的決策者與實作者
 
 ---
 
@@ -52,9 +52,9 @@
 
 1. **現場語言**：員工看到「客人在問／答應要了／請他付錢」，括號才寫會計名詞。不必先背「銷貨單」「收款單」。
 2. **一張單一個下一步**：點按鈕，同一張單往前走。不要為了出貨再開一個程式。
-3. **今天三件事**：老闆打開工作區就看到催收、缺料、待上傳發票，而不是報表中心。
+3. **今天三件事**：老闆先選行業。打開工作區看到的是這一行動現場最痛的事，以及這一行動自己的步驟，而不是別人的催收與發票。
 4. **用不到的藏起來**：服務業產業包關掉倉庫；書店看不到效期；買賣業看不到 30 段工單。
-5. **四支柱還在**：A1 的掌客雲、億看幾乎沒有的魅力圈／清庫／短網址，這裡內建。
+5. **一張客人卡片**：A1、億看都沒有的對話、電子報、會議紀錄，全部回到同一個客人
 
 產品殼 `web/app/workspace/erp/*` 用示範帳簿證明這套操作。**過帳權威仍是 ERPNext**；殼還沒接 live site 時，畫面上必須寫清楚，不可假裝已經過帳。
 
@@ -62,126 +62,103 @@
 
 ---
 
-## 1. 產品定位
+## 0.3 第二輪決策（大整合後）
 
-EveryThingOS 是中小企業的作業系統：員工只登入一次，客戶只有一份主檔；行銷、訂單、庫存、收款是同一生命週期上可開關的模組。底下用開源系統分工，上面用**可設定的工作區**感覺成一套。
+依 [PLATFORM-INTEGRATION.md](PLATFORM-INTEGRATION.md) 的重複造輪子檢查與查證。每題的理由與替代方案寫在那份文件；這裡只記結果。
 
-它不是再寫一個巨石應用。它是：
+| # | 決定 | 取代 |
+| --- | --- | --- |
+| P1 | 殼是**薄殼**：今天、客人卡片、一鍵下一步、全域搜尋；深度操作跳進原系統 | 殼重做每個系統的畫面 |
+| P2 | 系統間同步用 Cloudflare Workers + Queues + Workflows | Activepieces |
+| P3 | 電子報用 ERPNext Email Campaign；寄送、開信、點擊、退信走外部寄信服務；需要計分時才加 Mautic | 每家公司一套 Mautic + Postal |
+| P4 | ERPNext 當登入中心；Chatwoot 經 Platform API 一次性登入網址；Cloudflare Access 擋管理後台 | Keycloak |
+| P5 | 會議紀錄用 Vexa：接行事曆，自己進 Zoom／Google Meet／Teams | 新增 |
+| P6 | Cloudflare 當前門與膠水，一台主機跑有狀態系統，Tunnel 相連 | 未定 |
+| P7 | 清庫用雙重確認訂閱 + 退信停寄 | Reacher |
+| P8 | 留言轉私訊先用 Meta Business Suite 內建 | OpenReply 必裝 |
+| P9 | 主機用 Coolify 管理 | 手寫 Compose |
+| P10 | 電子發票用 paid-tw/einvoice（MIT） | 自寫適配器 |
 
-- **核心系統紀錄**：ERPNext／Frappe（人、貨、帳、流程、工作區）
-- **成長引擎**：Mautic（魅力圈、序列、計分）
-- **通道衛生**：Reacher（清庫）+ Shlink（短網址／UTM）
-- **通道適配器**：官網（Frappe Builder）、Email（Postal）、社群留言轉私訊（OpenReply）、之後 LINE／收件匣（Chatwoot）
-- **身分與膠水**：Keycloak + Activepieces
-- **產品殼**：模組目錄、產業包開關、租戶工作區（極薄；第一期可用 Frappe Workspace 充當）
-
-要比 Odoo「更好」的地方，不是先做更多產業模組，而是：
-
-1. **沒有 Community／Enterprise 功能牆**（會計、工作區、流程、自訂欄位都在開源裡）
-2. **魅力圈、清庫、連結歸因是一等支柱**，不是 ERP 旁邊再外掛一套 HubSpot
-3. **每家公司可改主畫面與流程**，不必買 Studio
-4. **台灣通道**（官網、社群、LINE、電子發票）以適配器進核心事件，而不是歐美 Email-only 的複製
-
-Odoo 仍是體驗對標，不是預設內核。內核預設 ERPNext，理由見開源盤點：社群版就能做完整會計與自訂，才賣得動「全開源」。
+第 0 節五題的答案不變；第二輪只換「用什麼做」，不換「要做什麼」。
 
 ---
 
-## 2. 平台核 × 四支柱 × 產業包
+## 0.4 第三輪決策：示範公司與選型原則
 
-廣度靠分層，不靠第一天安裝五十個模組。
+### 示範公司（三家，各一個 ERPNext site）
 
-```mermaid
-flowchart TB
-  subgraph shell [每家公司可設定]
-    WS[工作區 / Dashboard]
-    WF[業務流程引擎]
-    PK[產業包開關]
-  end
-  subgraph pillars [四支柱模組]
-    CRM[CRM]
-    ERP[ERP]
-    FUN[魅力圈]
-    HYG[通道衛生]
-  end
-  subgraph kernel [平台核]
-    Party[Party 主檔]
-    Item[商品與價格]
-    Event[事件與歸因]
-    Consent[同意與個資]
-    Chan[通道適配器]
-  end
-  WS --> pillars
-  WF --> pillars
-  PK --> pillars
-  pillars --> kernel
-```
+| 示範公司 | 殼的現場 | 第一個產業包 | ERPNext 原生能力 | 驗證什麼 |
+| --- | --- | --- | --- | --- |
+| 製造業 | `make` 製造／加工 | 輕製造：BOM、工單、批次／序號 | Manufacturing、Stock | 接單 → 生產 → 出貨 → 發票；缺料進「今天」 |
+| 顧問業 | `service` 接案／專業 | 接案／專業服務：專案、工時、里程碑請款 | Projects、Timesheet | 會議紀錄 → 報價 → 里程碑請款；無庫存節點可跳過 |
+| 教育服務業 | `edu` 教課／教室 | 教育培訓：期班、座位、教材交付 | 先用商品＋專案表達期班；是否加 Frappe Education app 依下方原則判斷 | 電子報招生 → 報名 → 開課（`fulfilled`）→ 續報 |
+
+三家同時存在，等於從第一天就驗證「一公司一站」與「開新公司一個指令」，而不是只為一家公司調好。
+
+### 選型原則：相容性最高、治標也治本
+
+之後每個選擇都先過這三關，過不了就不選：
+
+1. **走上游預設、支援最久的路**：用官方映像檔與官方建議的部署方式；用各專案的穩定分支，不用 beta、不用 develop
+2. **不改上游原始碼**：需要的差異寫成設定、自訂欄位、Frappe 自訂 app 或外部適配器；不 fork、不打補丁，升級才不會卡住
+3. **問題修在根源**：資料錯就修資料與規則，不在畫面上遮；流程不順就改流程定義，不在殼裡繞過
+
+依此原則已定：
+
+| 項目 | 決定 | 理由 |
+| --- | --- | --- |
+| ERPNext 版本 | **v15** | Frappe 官方支援表上，CRM、Helpdesk 的穩定分支都對 v15；Builder、Insights、Education 的相容分支在部署時逐一確認。等周邊 app 的穩定分支都支援 v16 再整體升級 |
+| ERPNext 部署 | 官方 `frappe_docker` 映像檔 | 上游預設路徑 |
+| 殼上 Cloudflare | **OpenNext**，不用 vinext | vinext 目前是 beta，且是重新實作 Next.js API；OpenNext 跑的是正式的 `next build` |
+| Next.js | 維持在 OpenNext 支援的最新修補版 | 目前最低 16.3.8 |
+| 教育 app | 只有在 Frappe Education 的穩定分支支援 v15 時才加；否則用商品＋專案表達期班 | 不為了一個產業包拖住核心版本 |
+| 官網 | Frappe Builder（與 ERPNext 同生態、同帳號） | 相容性最高；之後若要商品目錄與結帳，優先用 ERPNext 同生態的方案，不另接外部電商 |
+
+---
+
+## 1. 產品定位
+
+員工打開一個網址、登入一次，就能回客人訊息、發電子報、跟進客人、走完報價到收款、拿到會議紀錄。底下是開源系統分工，上面是 DropOut 薄殼。
+
+殼只負責兩件事：**下一件事是什麼**、**這個人是誰**。需要完整工具時（回訊息、對帳、改科目），在同一個登入裡打開那個工具的那一頁，套 DropOut 皮。殼不跟原系統比功能多。
+
+要比 Odoo 更好的地方仍是：
+
+1. 沒有社群版／企業版功能牆
+2. 對話、電子報、會議紀錄都回到**同一張客人卡片**，不是 ERP 旁邊再外掛三套工具
+3. 每家公司可改主畫面與流程，不必買 Studio
+4. 台灣通道（LINE、IG、FB、電子發票）是適配器，不是歐美 Email-only 的複製
+
+---
+
+## 2. 員工看到的五個系統
+
+| 員工看到 | 做什麼 | 背後 | 細節 |
+| --- | --- | --- | --- |
+| **對話** | LINE、IG、FB、官網聊天在同一排回 | Chatwoot；留言轉私訊用 Meta 內建，選配 OpenReply | [FOUR-SYSTEMS-PLAN.md](FOUR-SYSTEMS-PLAN.md) §3.1 |
+| **電子報** | 寫一封、挑誰收、看結果 | ERPNext Email Campaign + 外部寄信服務 | 同上 §3.2 |
+| **客人** | 階段看板、客人 360 時間軸 | ERPNext Lead／Customer + 身分表 | 同上 §3.3 |
+| **生意** | 報價 → 訂單 → 出貨 → 發票 → 收錢；進貨、庫存、帳 | ERPNext | 同上 §3.4 |
+| **會議紀錄** | 機器人自己進會議，摘要與待辦回到客人卡片 | Vexa + Workers AI | [PLATFORM-INTEGRATION.md](PLATFORM-INTEGRATION.md) §2 |
+
+官網與落地頁（Frappe Builder）是電子報與對話的入口，跟電子報同一期上線。
 
 ### 2.1 平台核（所有產業都一樣，不可開關掉）
 
-- Party：公司／聯絡人／統編
-- Item：可賣的東西（實體 SKU、課程、專案、訂閱都可以是 Item 的一種）
-- Document：報價／訂單／發票的抽象，實際 DocType 可依產業包展開
-- Event：`touch`、`lead_captured`、`qualified`、`won`、`fulfilled`、`paid`
-- Consent：來源、文案版本、時間
-- Channel adapter：官網、Email、社群短連結、LINE……都只準許寫進 Event + UTM 契約
-- Workspace + Workflow：誰登入看到什麼、一張單怎麼走狀態
+- 客人（Party）：公司／聯絡人／統編，權威在 ERPNext
+- 通道身分（Identity）：LINE、IG、FB、email、官網聊天各自的 ID 對回同一個客人
+- 同意（Consent）：交易通知與行銷分開記，退訂一次關掉所有行銷通道
+- 事件（Event）：`message_received`、`lead_captured`、`subscribed`、`quote_sent`、`won`、`fulfilled`、`invoiced`、`paid`、`letter_clicked`、`meeting_summarized`……
+- 歸因：直接用 ERPNext 交易單據的原生 UTM 欄位
+- 工作區 + 流程：Frappe Workspace + Workflow
 
-### 2.2 四支柱（預設開，公司可關）
+欄位與合併規則見 [FOUR-SYSTEMS-PLAN.md](FOUR-SYSTEMS-PLAN.md) §2。
 
-你點名的四件事仍是產品骨架。少一塊，客戶就會再買雲端工具，資料又裂開。
+### 2.2 產業包（預設全關，賣給誰再開）
 
-| 支柱 | 公司要完成的事 | 建議開源核心 | 可設定什麼 |
-| --- | --- | --- | --- |
-| CRM | 名單、商機、跟進、客戶 360 | ERPNext 客戶／商機（或 Frappe CRM 當前台） | 管道階段、必填欄、派案規則 |
-| ERP | 報價、訂單、庫存、進銷存、會計 | ERPNext | 要不要庫存／批次／BOM、稅表、科目 |
-| 魅力圈 | 官網／落地頁、磁鐵、表單、序列、計分 | Mautic + Frappe Builder | 活動畫布、計分、哪條通道進線 |
-| 通道衛生 | 清庫、短網址、UTM、點擊歸因 | Reacher + Shlink | 擋下規則、品牌網域、活動代碼 |
+產業包只准新增 DocType、工作區、流程範本、報表，不准分叉客人、事件、UTM。
 
-**社群回覆不是第五支柱。** IG／FB 留言轉私訊用 [OpenReply](https://github.com/diwenne/openreply)（MIT）當通道適配器，取代 ManyChat。命中關鍵字才私訊；人仍只存在 ERPNext。沒有關鍵字的閒聊不要洗收件匣。
-
-預設範本閉環（可改、可跳過節點）：
-
-```mermaid
-flowchart LR
-  subgraph attract [魅力圈]
-    Site[官網與內容]
-    Social[社群與廣告]
-    Landing[落地頁與磁鐵]
-    Nurture[序列養成]
-  end
-  subgraph hygiene [通道衛生]
-    Clean[名單清庫]
-    Links[短網址與 UTM]
-  end
-  subgraph crm [CRM]
-    Lead[潛在客戶]
-    Deal[商機跟進]
-  end
-  subgraph erp [ERP]
-    Quote[報價訂單]
-    Stock[履行：出貨或交付]
-    Ledger[應收會計]
-  end
-  Site --> Landing
-  Social --> Links
-  Links --> Landing
-  Landing --> Clean
-  Clean --> Nurture
-  Nurture --> Lead
-  Lead --> Deal
-  Deal --> Quote
-  Quote --> Stock
-  Stock --> Ledger
-  Ledger --> Nurture
-```
-
-教育業可以把「出貨」換成「開課／發教材」；接案可以把「庫存」關掉；零售可以把 POS 產業包打開。**事件名字不變，節點可否跳過是設定。**
-
-### 2.3 產業包（預設全關，賣給誰再開）
-
-產業包只准新增 DocType、工作區、流程範本、報表，不准分叉 Party／Event／UTM。
-
-| 產業包（第二期以後） | 打開後多什麼 |
+| 產業包 | 打開後多什麼 |
 | --- | --- |
 | 零售 | POS、門市倉庫、條碼 |
 | 輕製造 | BOM、工單、批次／序號 |
@@ -189,106 +166,117 @@ flowchart LR
 | 接案／專業服務 | 專案、工時、里程碑請款 |
 | 貿易 | 多單位、到岸成本、櫃號 |
 
-第一期只做「平台核 + 四支柱 + 一個示範公司工作區」。不先做五個產業包。廣度的承諾靠**架構能加包**，不靠第一期做完 Odoo 應用商店。
+教育業把「出貨」換成「開課」，接案把「庫存」關掉；**事件名字不變，節點可否跳過是設定。**
 
 ---
 
 ## 3. 系統邊界
 
-### 算（第一期必須有）
+### 算（對外第一版必須有）
 
-- 單一登入與角色；**每家公司可編工作區／Dashboard**
-- **可設定的業務流程**（至少：潛在客戶、商機、銷售訂單三條）
-- 客戶／公司主檔（含統編欄位）
-- 四支柱預設範本能跑通：官網或落地頁進線 → 清庫 → 培育 → 商機 → 訂單 → 履行 → 應收
-- 每個流程節點可經設定跳過（例如無庫存的服務業）
-- 品牌短網址、UTM、點擊回寫
-- 官網在產品內（Frappe Builder），不是外掛 Wix
-- 事件日誌與同意紀錄
-- 部署模型按「一公司一站」複製得出來
+- 一次登入；每家公司可編工作區與流程
+- 客人主檔（含統編）＋通道身分＋同意＋事件
+- 對話：LINE 官方帳號、IG、FB、官網小工具
+- 電子報：分群、序列、退訂、開信與點擊回寫
+- 生意：報價到收款、進貨、庫存、帳齡、營業稅；電子發票
+- 會議紀錄：自己進 Zoom／Google Meet／Teams
+- 官網與落地頁（Frappe Builder）
+- 一公司一站，開新公司是一個指令
 
-### 不算（第一期禁止做）
+### 不算（對外第一版禁止做）
 
-- 自研檢查器、自研短網址、自研漏斗畫布
-- 一次做完所有產業包（POS、完整 MRP、HR 薪資）
-- 自研流程引擎（用 Frappe Workflow；跨系統才用 Activepieces）
-- 自研儀表板引擎（用 Frappe Workspace／Dashboard）
-- 多租戶計費、應用商店、經銷後台（租戶模型要留，收費以後再做）
-- 把某一產業的欄位寫進核心 Party
-
-LINE 與各社群原生收件匣：第一期先把**短網址 + UTM + 落地頁**做成所有通道的共同入口。**留言轉私訊**用 OpenReply 掛在同一條事件契約上；Chatwoot 接 LINE／IG 收件匣列為緊接其後的通道包，不阻塞核心。
+- 自研 CRM／ERP 資料模型、自研收件匣、自研信件編輯器
+- 自研流程引擎、儀表板引擎、會議機器人、轉文字模型
+- 自架寄信伺服器（Postal）與 SMTP 探測（Reacher）
+- 一次做完所有產業包；HR 薪資與勞健保
+- 多租戶計費、應用商店、經銷後台（租戶模型要留）
+- 把某一產業的欄位寫進核心客人主檔
 
 ---
 
 ## 4. 目標架構
 
-採 **樞紐＋輪輻**。員工進自己公司的工作區；行銷深度操作進 Mautic；訪客看到官網、落地頁、短網址。EveryThingOS 只擁有：**身分、主檔對照、事件、工作區設定、產業包開關**。
-
 ```mermaid
 flowchart TB
-  Admin[公司管理員]
-  User[員工]
-  Visitor[訪客]
-  KC[Keycloak SSO]
-
-  Admin --> KC
-  User --> KC
-  KC --> WS[該公司工作區 Dashboard]
-  WS --> ERP[ERPNext / Frappe<br/>主檔 + 流程 + ERP/CRM]
-  WS --> MA[Mautic<br/>魅力圈大腦]
-  WS --> SL[Shlink]
-  WS --> OR[OpenReply<br/>留言轉私訊]
-  Visitor --> Site[官網 Builder]
-  Visitor --> SL
-  Visitor --> IG[IG／FB 留言]
-  IG --> OR
-  SL --> LP[落地頁]
-  Site --> LP
-  LP --> RH[Reacher]
-  RH --> MA
-  MA --> AP[Activepieces]
-  OR --> AP
-  AP --> ERP
-  ERP --> AP
-  AP --> MA
-  MA --> Postal[Postal]
-  SL --> AP
+  Staff[員工] --> Shell
+  Visitor[訪客與客人] --> Site
+  subgraph cf [Cloudflare]
+    Shell[DropOut 殼 Workers]
+    Access[Access：管理後台]
+    Hooks[Webhook Workers：驗簽]
+    Flow[Queues + Workflows：G1–G10]
+    D1[(D1：冪等鍵、死信)]
+    R2[(R2：檔案、錄音、備份)]
+    Mail[Email Service：交易信]
+    AIGW[AI Gateway → Workers AI]
+    Tunnel[Tunnel]
+  end
+  subgraph host [一台主機，Coolify 管理]
+    ERP[ERPNext 多站<br/>客人、生意、電子報、登入中心]
+    Site[Frappe Builder 官網]
+    CW[Chatwoot 多帳戶<br/>對話]
+    VX[Vexa<br/>會議機器人]
+  end
+  subgraph ext [外部服務]
+    LINE[LINE]
+    Meta[Meta]
+    ESP[寄信服務]
+    Pay[金流]
+    EInv[電子發票加值中心]
+    Meet[Zoom／Meet／Teams]
+  end
+  Shell --> Tunnel
+  Tunnel --> ERP
+  Tunnel --> CW
+  Tunnel --> VX
+  LINE --> CW
+  Meta --> CW
+  LINE --> Hooks
+  Meta --> Hooks
+  ESP --> Hooks
+  Pay --> Hooks
+  Hooks --> Flow
+  Flow --> D1
+  Flow --> Tunnel
+  Flow --> Mail
+  Flow --> EInv
+  ERP --> ESP
+  VX --> Meet
+  VX --> AIGW
+  Flow --> AIGW
+  ERP --> R2
 ```
+
+主機不開任何對外埠。主機掛掉時，殼與 webhook 仍在 Cloudflare 收件排隊，恢復後依冪等鍵補送。
 
 ### 4.1 各層職責
 
 | 層 | 誰負責 | 只做這件事 |
 | --- | --- | --- |
-| 身分 | Keycloak | 登入、realm／客戶對應租戶、角色、MFA |
-| 工作區 | Frappe Workspace | 每家公司、每個角色的主畫面與捷徑 |
-| 流程 | Frappe Workflow | 單據狀態、誰能轉、轉下去觸發什麼 |
-| 系統紀錄 | ERPNext | 人、公司、商品、庫存、訂單、帳 |
-| 漏斗大腦 | Mautic | 訪客、表單、序列、計分、行銷同意 |
-| 官網／頁面 | Frappe Builder | 官方網站與活動落地頁外觀 |
-| 清庫 | Reacher | 這封信能不能碰；不存業務資料 |
-| 連結情報 | Shlink | 短碼、點擊、UTM、QR；官網、社群、LINE 共用 |
-| 社群回覆 | OpenReply | 留言關鍵字、自動私訊、公開回覆；人仍寫回 ERPNext |
-| 投遞 | Postal | 把信送出去，處理退信 |
-| 膠水 | Activepieces | 對照、重試、死信 |
-| 產品殼 | 極薄 | 租戶清單、模組／產業包開關；第一期可用 Frappe 本身 |
+| 殼 | Next.js on Cloudflare Workers（OpenNext） | 今天、客人卡片、下一步、搜尋；不存業務資料 |
+| 登入 | ERPNext（OIDC 提供者） | 帳號、角色、哪家公司 |
+| 管理後台關卡 | Cloudflare Access | 擋 Coolify、ERPNext 系統設定等管理介面 |
+| 系統紀錄 | ERPNext | 客人、身分、同意、事件、商品、庫存、單據、帳、電子報序列 |
+| 對話 | Chatwoot | LINE、IG、FB、官網、Email 收件匣 |
+| 會議 | Vexa | 行事曆排程、進會議、逐字稿 |
+| 官網 | Frappe Builder | 官網與落地頁 |
+| 膠水 | Workers + Queues + Workflows | G1–G10、重試、死信 |
+| AI | AI Gateway → Workers AI | 轉文字、摘要；換模型不改程式 |
+| 檔案 | R2 | 附件、錄音、逐字稿、備份 |
+| 交易信 | Cloudflare Email Service | 出貨、發票、密碼通知 |
+| 電子報寄送 | 外部寄信服務 | 群發、開信、點擊、退信事件 |
+| 主機維運 | Coolify | 部署、TLS、資料庫備份 |
 
-### 4.2 主畫面與流程如何「給公司自己控」
+### 4.2 主畫面與流程給公司自己控
 
-不要替所有客戶選死「住在 ERP」或「住在漏斗」。改成：
+1. 平台提供角色預設工作區：老闆、業務、倉管、行銷、會計
+2. 公司管理員可改：區塊、捷徑、預設篩選
+3. 公司管理員可改：客人階段、訂單狀態機（新增階段、略過出貨）
+4. 跨系統動作（例：收到錢 → 移進老客人分群）是 G 表上的開關，公司可停用
 
-1. 平台提供**角色預設工作區**：老闆、業務、倉管、行銷、會計
-2. 公司管理員可改：區塊、KPI 卡片、捷徑、預設篩選
-3. 公司管理員可改：潛在客戶／商機／訂單的狀態機（新增階段、略過出貨、服務業無庫存）
-4. 行銷模組權限仍可關：倉管不必進 Mautic
-5. 跨系統動作（計分達標 → 建立商機）是 Activepieces 範本，公司可停用或改門檻
+### 4.3 為什麼內核仍是 ERPNext
 
-這就是對標 Odoo Studio 的開源替代，而且第一期用 Frappe 既有能力，不自研。
-
-### 4.3 為什麼內核不是 Odoo
-
-Odoo 的廣度是對標。若把 Odoo Community 當內核，進階會計、Studio、部分行銷會撞上 Enterprise 牆，之後要嘛賣不了「全開源」，要嘛自己重做 Studio。
-
-ERPNext／Frappe 的自訂表單、Workflow、Workspace、會計都在 GPL／MIT 裡，比較符合「賣給所有產業、又全部開源」。Mautic 補的是 Odoo／ERPNext 都偏弱的魅力圈。三者組起來，才有「跟 Odoo 一樣廣、在行銷閉環上更好」的路徑。
+Odoo 社群版已有台灣綠界電子發票模組，這是 Odoo 的加分；但進階會計、Studio 仍在企業版。ERPNext 的會計、自訂表單、Workflow、Workspace 都在開源裡，電子發票用 paid-tw/einvoice 補上，比換內核便宜。
 
 ---
 
@@ -296,143 +284,128 @@ ERPNext／Frappe 的自訂表單、Workflow、Workspace、會計都在 GPL／MIT
 
 | 資料 | 權威系統 | 誰可寫 |
 | --- | --- | --- |
-| 登入、角色、租戶對應 | Keycloak | 僅管理員 |
-| 工作區、流程定義 | ERPNext／Frappe | 公司管理員 |
-| 公司／聯絡人、統編、地址 | ERPNext | 業務在 ERPNext；Mautic 只能建立尚未轉正的潛在客戶 |
-| SKU、庫存、價格、稅 | ERPNext | 僅 ERPNext |
-| 報價、訂單、履行、應收 | ERPNext | 僅 ERPNext |
-| 行銷標籤、計分、畫布狀態、電子信同意 | Mautic | 僅 Mautic |
-| 清庫結果 | Reacher 計算；快取在 Mautic 與 ERPNext | 只有清庫工作流程 |
-| 短碼、目標 URL、點擊 | Shlink | 行銷經 UI／API |
-| 社群留言／自動私訊 | OpenReply 執行；事件寫回 ERPNext | 只有命中規則的 webhook |
-| 歸因（哪次活動帶來哪張訂單） | 事件表（第一期用 ERPNext 自訂 DocType） | 只許膠水寫入 |
-| 官網內容 | Frappe Builder | 行銷／管理員 |
+| 帳號、角色、公司對應 | ERPNext | 公司管理員 |
+| 工作區、流程定義 | ERPNext | 公司管理員 |
+| 客人、統編、地址、通道身分 | ERPNext | 業務；膠水只能建「在問」潛在客人 |
+| 同意（交易與行銷） | ERPNext | 只有膠水依確認信、退訂事件寫入 |
+| 商品、庫存、價格、稅 | ERPNext | 僅 ERPNext |
+| 報價、訂單、履行、發票、收款 | ERPNext | 僅 ERPNext |
+| 電子報分群與序列 | ERPNext | 行銷 |
+| 對話內容 | Chatwoot | 客服；摘要事件寫回 ERPNext |
+| 會議逐字稿 | R2（原檔）＋ ERPNext（摘要、待辦） | 只有膠水 |
+| 歸因 | ERPNext 交易單據 UTM 欄位 | 只有膠水與表單 |
+| 膠水狀態（冪等鍵、死信） | D1 | 只有膠水 |
+| 官網內容 | Frappe Builder | 行銷、管理員 |
 
-對照鍵：`party_id` + 正規化 email；可選手機 E.164。禁止用姓名。email 是否去掉 `+tag` 在第一個示範租戶定案並寫進核。
+對照鍵：`party_id` + 通道身分。禁止用姓名。合併規則見 [FOUR-SYSTEMS-PLAN.md](FOUR-SYSTEMS-PLAN.md) §2.2。
 
 ---
 
-## 6. 四條關鍵資料流
+## 6. 資料流
 
-只允許這四條主幹。新通道先實作成適配器，併進這四條。
+只允許 [FOUR-SYSTEMS-PLAN.md](FOUR-SYSTEMS-PLAN.md) §4 的 G1–G10，再加上會議的兩個事件（`meeting_recorded`、`meeting_summarized`）。新通道先寫成適配器，併進這張表。
 
-### 6.1 進線：任何通道 → 短網址或官網 → 清庫 → CRM
-
-官網、IG、FB、LINE、QR、廣告，對外都先給 Shlink 或官網路徑，UTM 契約相同。表單提交經 Reacher。invalid 不進 CRM；拋棄式可進 CRM 但永不進 Postal；risky 進 CRM 但序列降級。同意文案版本必存。
-
-IG／FB **留言轉私訊**走 OpenReply，不重寫 ManyChat。只有命中關鍵字的留言才私訊；人若轉正，進 ERPNext 客人主檔，不在 OpenReply 另建一份客戶。Meta App Review 與 webhook 是部署條件，產品殼不可假裝已經接通。
-
-### 6.2 養成：計分 → 業務可見
-
-門檻是公司設定，不是寫死。跨門檻後在 ERPNext 建／更新潛在客戶或商機。業務不回 Mautic 當主檔。
-
-### 6.3 變現：商機 → 訂單 → 再行銷
-
-履行動作依流程設定：出貨、開課、交付檔案、標記專案里程碑，都發出同一個 `fulfilled`。金額與稅只存在 ERPNext。
-
-### 6.4 連結與通道
-
-| 場景 | 用誰 |
+| 主幹 | 一句話 |
 | --- | --- |
-| 官網、社群 bio、LINE 選單、名片、QR、廣告 | Shlink |
-| Mautic 信件內文連結 | Mautic 內建追蹤（不要再套 Shlink） |
-| 官網本身的瀏覽 | Builder 站點；活動頁把 UTM 帶進表單隱藏欄 |
-
-UTM 契約：`utm_source`（website／line／ig／fb／email／qr／ads）、`utm_medium`、`utm_campaign`、`utm_content`、隱藏欄 `link_code`。
-
----
-
-## 7. 「一個工具」長什麼樣
-
-對員工：一個網址、一組帳密、一個可被公司改過的主畫面。  
-對訪客：官網與短網址都是同一品牌。  
-對買家（未來）：開一個新站 = 新公司租戶，選產業包，匯入流程範本。
-
-員工面對的「一個工具」現在是 Next.js 產品殼（`web/`，DropOut 皮）。風景背景（海／山／湖）是為了讓 Liquid Glass 有東西可折射，不是業務資料。過帳、主檔、流程的權威仍是之後接上的 ERPNext site。殼先讓顧問與老闆用現場語言走完進銷存與社群回覆；Keycloak + Frappe Workspace 在第 1 期接進去時，殼改成讀同一份主檔，不要再做第二套帳。
+| 進線 | 對話、留言、官網表單 → 找或建客人 → 「今天」出現誰在等 |
+| 養成 | 確認信 → 新朋友分群 → 序列；開信、點擊回到客人卡片 |
+| 變現 | 報價 → 訂單 → 履行 → 發票 → 收錢 → 老客人分群 |
+| 會議 | 行事曆 → 機器人進會 → 摘要與待辦 → 客人卡片與「今天」 |
 
 ---
 
-## 8. 部署：為了以後能賣，第一天就一公司一站
+## 7. 登入：一次就好
 
-Frappe 原生就是 site = 公司。EveryThingOS 對齊這個模型：
+| 系統 | 怎麼做到不用再登入 |
+| --- | --- |
+| 殼 | ERPNext OIDC 登入 |
+| ERPNext 原生頁面 | 同一個 ERPNext 帳號 |
+| Chatwoot | 殼在伺服端呼叫 Chatwoot Platform API 取得該員工的一次性登入網址，再轉過去 |
+| Vexa | 員工不直接登入；殼在伺服端用該公司的 API 金鑰呼叫 |
+| Coolify、系統設定 | Cloudflare Access，只給維運人員 |
 
-- `acme.everythingos.example` → 甲公司
-- `demo.everythingos.example` → 我們自己的示範／自用
-- 共用：Keycloak、Postal、Reacher、Shlink（可用多網域）、Activepieces
-- 每站獨立：ERPNext site、Mautic（第一期可一站一套；賣之前再評估行銷資料隔離等級）
+之後要接客戶自己的 Google Workspace／Microsoft 365 帳號時，再評估 Keycloak 或 Cloudflare Access 當上游登入。
 
-Postal、Reacher 獨立出口 IP。祕密不進 git。個資落地與刪除權在租戶層要有開關。
+---
+
+## 8. 部署：一公司一站
+
+| 元件 | 怎麼分公司 |
+| --- | --- |
+| ERPNext | 一個 bench 多個 site，一家公司一個 site |
+| Chatwoot | 一套安裝，一家公司一個 account |
+| Vexa | 一套安裝，一家公司一把 API 金鑰 |
+| Cloudflare | 一家公司一個子網域；膠水依子網域分租戶 |
+
+開新公司：一個指令建 ERPNext site + Chatwoot account + Vexa 金鑰 + 預設流程 + 產業包。
+
+備份：ERPNext 用內建 S3 備份到 R2（資料庫與檔案）；Chatwoot、Vexa 的資料庫用 Coolify 排程備份到 R2。**每月實際還原一次到測試站**。
 
 ---
 
 ## 9. 安全與失敗
 
-- 表單：伺服端驗證、Reacher、honeypot、速率限制、CSRF
-- Webhook：簽名、時間戳、冪等鍵；死信清單
-- 落地頁禁止任意第三方腳本；廣告像素白名單
-- 角色：會計不能匯出行銷原始名單
-- Reacher 超時標 `unknown`，**不丟表單**，夜間再驗
-- Mautic 掛了：表單降級直寫 ERPNext 潛在客戶
-- Postal 硬退：回寫且停止再寄
+- Webhook：先驗簽（LINE `x-line-signature`、Meta `X-Hub-Signature-256`、金流檢查碼），再驗時間戳，再看冪等鍵
+- 表單：伺服端驗證、honeypot、速率限制、CSRF
+- 對話與信件內容一律當純文字或消毒過的 HTML；連結只允許 `https:`
+- 角色：會計不能匯出行銷名單；客服看不到總帳
+- 祕密只放 Workers secrets 與主機環境變數；不進 git、不到瀏覽器
+- 主機掛：Cloudflare 端收件排隊，殼顯示「暫時讀不到」，不退回示範資料
+- 寄信服務硬退：停寄並回寫客人卡片
+- 會議機器人被拒：「今天」顯示原因，不重試騷擾
 
 ---
 
 ## 10. 授權
 
-若驗證後要賣（盒裝或代管）：
+| 元件 | 授權 | 注意 |
+| --- | --- | --- |
+| ERPNext | GPL-3.0 | 獨立程序 + API，不把原始碼揉進專有單體 |
+| Frappe Framework | MIT | |
+| Frappe Builder、Insights | AGPL-3.0（依各版本 LICENSE） | 修改後對外提供服務要公開修改 |
+| Chatwoot | MIT + 企業版目錄 | 只用社群版功能 |
+| Vexa | Apache-2.0 | |
+| Coolify | Apache-2.0 | |
+| paid-tw/einvoice | MIT | |
+| OpenCC | Apache-2.0 | |
+| OpenReply（選配） | MIT | |
+| Mautic（選配） | GPL-3.0 | |
+| **不用** | n8n（非 OSI）、Odoo 企業版、Attendee（Elastic License 2.0，不允許代管給第三方） | |
 
-- ERPNext／Mautic：GPL-3，獨立程序 + API，不把原始碼揉進專有單體
-- Reacher：AGPL-3，獨立服務
-- Keycloak Apache-2、Shlink MIT、OpenReply MIT、Activepieces CE MIT、Frappe Framework MIT：適合作我們維護的膠水
-- Builder／Frappe CRM 若改程式並提供網路服務，準備公開修改
-- **n8n 不用**（非正式 OSI 開源）
-- **Odoo Enterprise 不用**
+Cloudflare、Meta、LINE、寄信服務、金流、加值中心是外部服務，不是開源；開源的是適配器與資料所有權。
 
 ---
 
 ## 11. 分期（依依賴，不估日曆）
 
-### 第 0 期：決策凍結
+每期驗收都是：**示範公司用設定、不改核心程式，就能跑完自己的一筆生意。**
 
-本文件第 0 節。還可以改，但改了要回頭修邊界。
-
-### 第 1 期：可複製的作業核
-
-Keycloak + 一個 ERPNext site（自用／示範）。能自訂工作區、能改商機／訂單流程、能建主檔與基本進出存與會計。繁中。統編欄位。這期結束時，再開第二個 site 必須是「複製」而不是「再手工裝一次」。
-
-### 第 2 期：官網 + 魅力圈範本
-
-Frappe Builder 官網、Mautic 一條範本序列、Postal。公司可複製這條範本，改信與落地頁。
-
-### 第 3 期：通道衛生
-
-Reacher 進表單；Shlink 成為官網／社群／QR 的共同短網址層；UTM 契約生效。
-
-### 第 4 期：四支柱閉環 + 可跳過節點
-
-計分 → 商機；贏單／履行事件回 Mautic；流程可關庫存節點。到這裡才對外說「一套工具」。
-
-### 第 5 期：通道包與產業包
-
-OpenReply（IG／FB 留言轉私訊）、Chatwoot（LINE／IG／FB 收件匣）、電子發票、金流、第一個產業包（依自用示範公司的真實產業選，而不是一次五包）。OpenReply 與 Chatwoot 不要搶同一則對話：關鍵字自動私訊歸 OpenReply，人工收件匣歸 Chatwoot。
-
-每一期驗收是「示範公司用設定、不改核心程式，就能跑完一筆它自己的生意」。本階段依指示不做自架檢查。
+| 期 | 內容 | 需要的外部條件 | 驗收 |
+| --- | --- | --- | --- |
+| 0 | 決策凍結（第 0、0.3 節）；Next.js 安全更新 | 無 | 決策表無待定項 |
+| 1 | 殼搬上 Cloudflare；`web/lib/sources` 示範／真實切換；`reply`→`chat`、`funnel`→`letter`；示範資料走完四系統七步 | Cloudflare 帳號 | 一個瀏覽器走完七步，每步標示範 |
+| 2 | 主機 + Coolify + Tunnel；ERPNext v15 三站（製造、顧問、教育）；ERPNext 登入；殼的客人與生意讀 ERPNext；備份還原演練 | 主機 | 在殼裡建報價，ERPNext 看得到；拔掉主機殼不壞 |
+| 3 | Chatwoot（官網小工具、LINE、IG、FB）；G1；客人 360；Chatwoot 側欄嵌客人卡片 | LINE 官方帳號、Meta App 審核 | 手機在 LINE 問一句，出現在客人卡片 |
+| 4 | 官網與落地頁；電子報（G3–G8）；會議機器人 | 寄件網域 DNS、寄信服務 | 落地頁訂閱 → 確認信 → 收到電子報 → 點擊回卡片；機器人自己進一場 Meet 並寫回摘要 |
+| 5 | 電子發票、金流（G9、G10）；開新公司指令；三個示範產業包（輕製造、專業服務、教育培訓） | 加值中心、金流合約 | 第二家公司一個指令開好並跑完一筆含發票的生意 |
+| 6（選配） | OpenReply、Mautic、Shlink、Frappe Insights、Keycloak | 依客戶需求 | 單一客戶開關，不影響其他公司 |
 
 ---
 
 ## 12. 明確的非目標
 
 - 第一天就做出比 Odoo 更多的產業模組
-- 自研 Studio／流程引擎／Dashboard 引擎
+- 殼重做 Chatwoot、ERPNext、Mautic 已有的完整畫面
 - 讓業務同時開兩套 CRM
-- 把 HubSpot + SAP 的功能清單當第一期範圍
+- AI 自動回覆客人、自動開單
+- 為了「全部 Cloudflare」放棄 ERPNext 與 Chatwoot
 
 ---
 
-## 13. 五題仍開放微調的部份
+## 13. 仍開放的問題
 
-主方向已定（全產業、自用後再賣、可設定畫面與流程、多通道、彈性閉環）。若要更精準，之後只需補這三個細節（不必再重選架構）：
-
-1. 自用示範公司實際是哪一種生意？（用來選**第一個**產業包，不是用來縮小產品）
-2. 賣的時候比較像「代管雲」還是「給客戶自架盒裝」？（都用一公司一站，只是誰運維）
-3. 官網是行銷落地頁為主，還是也要商品目錄／結帳？（決定 Builder 與 ERPNext 網站／電商模組誰當官網）
+1. 賣的時候是代管雲還是給客戶自架？（都一公司一站，只差誰維運）
+2. 官網要不要商品目錄與結帳？（官網用 Builder 已定；結帳依 0.4 原則選 ERPNext 同生態方案）
+3. 寄信服務選哪一家？（要有開信、點擊、退信事件回報）
+4. Zoom 對網頁版自動加入的條款，正式上線前再確認一次
+5. Meta 內建留言轉私訊夠不夠用？（第一個客戶試跑後決定要不要加 OpenReply）

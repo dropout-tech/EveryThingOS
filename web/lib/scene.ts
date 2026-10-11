@@ -1,10 +1,6 @@
 export const SCENE_COOKIE = "dropout_scene";
 
-export const SCENES = [
-  { id: "ocean", label: "海", file: "/scenes/ocean.jpg" },
-  { id: "mountain", label: "山", file: "/scenes/mountain.jpg" },
-  { id: "lake", label: "湖", file: "/scenes/lake.jpg" },
-] as const;
+export const SCENES = [{ id: "ocean", label: "海", file: "/scenes/ocean-column.jpg" }] as const;
 
 export type UiScene = (typeof SCENES)[number]["id"];
 

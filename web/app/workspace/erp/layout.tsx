@@ -1,21 +1,21 @@
 import { ErpSubnav } from "@/components/ErpSubnav";
-import { ModuleFrame } from "@/components/ModuleFrame";
-import { currentIndustry } from "@/lib/workspace";
+import { currentIndustry, currentShop } from "@/lib/workspace";
 
 export default async function ErpLayout({ children }: LayoutProps<"/workspace/erp">) {
   const pack = await currentIndustry();
+  const shop = await currentShop();
+  const mods = shop?.modules ?? [];
 
   return (
-    <ModuleFrame
-      kicker="DropOut 生意"
-      title="進銷存＋財務，用現場的話說"
-      hint="對齊鼎新 A1 與億看 ECOUNT 的能力：報價到收款、採購到付款、庫存、帳齡、傳票、營業稅與電子發票。差別是先問「下一步做什麼」，而不是先背單據名稱。"
-    >
-      <p className="glass-chip px-4 py-2 text-xs text-cream-dim">
-        示範帳簿。點下一步會在這個瀏覽器走動。正式過帳還沒接到 ERPNext。
-      </p>
-      <ErpSubnav showStock={pack.modules.erp.inventory} />
+    <div className="space-y-5">
+      <p className="text-xs text-cream-dim">練習帳。還沒寫進你們真正的帳本。</p>
+      <ErpSubnav
+        showSales={mods.includes("sales")}
+        showPurchase={mods.includes("purchase")}
+        showStock={pack.modules.erp.inventory}
+        showFinance={mods.includes("finance")}
+      />
       {children}
-    </ModuleFrame>
+    </div>
   );
 }

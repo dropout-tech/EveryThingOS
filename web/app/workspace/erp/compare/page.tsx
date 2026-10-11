@@ -6,7 +6,7 @@ export default function ComparePage() {
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
-        目標等級：鼎新 A1 雲端進銷存＋會計＋電子發票，或億看 ECOUNT 全模組。能力對齊，操作改成現場語言。人事薪資、30 段製程工廠仍用產業包加開，不一次塞給買賣業。
+        對齊鼎新 A1 雲端進銷存、會計、電子發票，或億看那一檔。人事薪資、很深的工廠製程，用對的行業才打開，不會一次塞給買賣的店。
       </p>
       <div className="overflow-x-auto rounded-2xl border border-[var(--line)]">
         <table className="w-full min-w-[56rem] text-left text-sm">

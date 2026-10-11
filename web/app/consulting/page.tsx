@@ -10,10 +10,10 @@ export default function ConsultingPage() {
     <>
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-5 py-14">
-        <p className="display text-xs tracking-[0.22em] text-teal uppercase">Free implementation</p>
+        <p className="display text-xs tracking-[0.22em] text-teal uppercase">免費導入</p>
         <h1 className="mt-3 text-4xl font-medium">顧問去現場，導入不另開帳單</h1>
         <p className="mt-4 text-cream-dim">
-          年費已含導入。我們不另售「導入專案 30 萬」。懂商業的人跟第一線看同一筆資料，打開對的產業包，改你們的例外。
+          年費已含到現場。我們不另售「導入專案 30 萬」。懂生意的人跟第一線看同一筆資料，打開對的行業，改你們真正不一樣的地方。
         </p>
         <ol className="mt-10 space-y-6">
           {CONSULTING_STEPS.map((step) => (
