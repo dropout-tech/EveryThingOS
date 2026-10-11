@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { Avatar } from "./ui/Avatar";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
@@ -99,11 +100,14 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
             <ul className="grid gap-2 md:grid-cols-2">
               {data.onLeave.map((r) => (
                 <li key={`${r.name}-${r.fromDate}`} className="glass-chip flex items-center justify-between gap-3 p-3 text-sm">
-                  <span>
-                    {r.name}
-                    <span className="ml-2 text-cream-dim">
-                      {r.leaveType}
-                      {r.halfDay ? "（半天）" : ""}
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Avatar name={r.name} />
+                    <span className="min-w-0">
+                      {r.name}
+                      <span className="ml-2 text-cream-dim">
+                        {r.leaveType}
+                        {r.halfDay ? "（半天）" : ""}
+                      </span>
                     </span>
                   </span>
                   <span className="text-xs text-cream-dim">
@@ -130,14 +134,17 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
             <ul className="space-y-2">
               {shownApprovals.map((a) => (
                 <li key={a.name} className="glass flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
-                  <div className="min-w-0">
-                    <p>
-                      {a.employee}
-                      <span className="ml-2 text-cream-dim">
-                        {a.leaveType} · {days(a.fromDate, a.toDate)} · {a.days} 天
-                      </span>
-                    </p>
-                    {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
+                  <div className="flex min-w-0 items-start gap-3">
+                    <Avatar name={a.employee} />
+                    <div className="min-w-0">
+                      <p>
+                        {a.employee}
+                        <span className="ml-2 text-cream-dim">
+                          {a.leaveType} · {days(a.fromDate, a.toDate)} · {a.days} 天
+                        </span>
+                      </p>
+                      {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
+                    </div>
                   </div>
                   <span className="flex items-center gap-2">
                     <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-secondary btn-sm">

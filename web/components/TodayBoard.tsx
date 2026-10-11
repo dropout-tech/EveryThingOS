@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar } from "./ui/Avatar";
 import { Badge, type BadgeTone } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import { Money } from "./ui/Money";
@@ -52,14 +53,6 @@ function waitingFrom(books: Books, allowed: string[]): Waiting[] {
     .filter((item) => canOpen(allowed, item.href))
     .sort((a, b) => PRIORITY[a.tone].rank - PRIORITY[b.tone].rank)
     .slice(0, MAX_WAITING);
-}
-
-function Avatar({ name }: { name?: string }) {
-  return (
-    <span className="avatar" aria-hidden="true">
-      {name ? name.slice(0, 1) : "•"}
-    </span>
-  );
 }
 
 function today() {

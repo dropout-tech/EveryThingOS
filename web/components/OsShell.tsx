@@ -5,6 +5,7 @@ import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
 import { CommandPalette, PaletteTrigger } from "./CommandPalette";
 import { SideNav, TabBar } from "./SideNav";
+import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import { navSections } from "@/lib/nav";
@@ -16,6 +17,8 @@ type OsShellProps = {
   shop: ShopProfile;
   children: ReactNode;
   company?: string;
+  /** Signed-in person; practice mode has nobody. */
+  person?: string;
   team?: boolean;
   reports?: boolean;
   /** Contract notice (trial, renewal, read-only). */
@@ -23,7 +26,7 @@ type OsShellProps = {
   canReset?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true }: OsShellProps) {
+export function OsShell({ industry, shop, children, company, person, team = false, reports = false, notice, canReset = true }: OsShellProps) {
   const sections = navSections(navItemsForShop(shop, { team, reports }));
   const reset = canReset ? (
     <Link href="/start" className={buttonClass({ variant: "ghost", size: "sm" })}>
@@ -59,6 +62,15 @@ export function OsShell({ industry, shop, children, company, team = false, repor
                 <AppearanceBar />
               </span>
               <span className="hidden lg:inline-flex">{reset}</span>
+              {person ? (
+                <span className="flex items-center gap-2 text-sm" title={person}>
+                  <Avatar name={person} />
+                  <span className="sr-only xl:not-sr-only xl:max-w-32 xl:truncate">
+                    <span className="sr-only">登入的人：</span>
+                    {person}
+                  </span>
+                </span>
+              ) : null}
             </div>
           </div>
           {notice ? (

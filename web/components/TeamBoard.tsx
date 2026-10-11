@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { useConfirm } from "./ui/ConfirmDialog";
@@ -72,15 +73,20 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
             {team.users.map((u) => (
               <tr key={u.email} className={u.enabled ? "" : "opacity-60"}>
                 <td data-primary="">
-                  {u.href ? (
-                    <a href={u.href} target="_blank" rel="noreferrer" className="hover:text-teal">
-                      {u.full_name}
-                    </a>
-                  ) : (
-                    u.full_name
-                  )}
-                  <span className="block text-xs font-normal text-cream-dim">{u.email}</span>
-                  {u.enabled ? null : <Badge tone="warn" className="mt-1">已停用</Badge>}
+                  <span className="flex items-start gap-3">
+                    <Avatar name={u.full_name || u.email} />
+                    <span className="min-w-0">
+                      {u.href ? (
+                        <a href={u.href} target="_blank" rel="noreferrer" className="underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">
+                          {u.full_name}
+                        </a>
+                      ) : (
+                        u.full_name
+                      )}
+                      <span className="block text-xs font-normal text-cream-dim">{u.email}</span>
+                      {u.enabled ? null : <Badge tone="warn" className="mt-1">已停用</Badge>}
+                    </span>
+                  </span>
                 </td>
                 <td data-label="職務">
                   <select
