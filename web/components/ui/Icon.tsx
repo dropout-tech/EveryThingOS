@@ -17,6 +17,11 @@ const PATHS = {
   globe: `${ring(12, 12, 9)}M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3`,
   settings: `M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1${ring(15, 6.5, 2)}${ring(9, 12, 2)}${ring(17, 17.5, 2)}`,
   more: "M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z",
+  ask: "M11 3.5l1.9 4.6 4.6 1.9-4.6 1.9L11 16.5l-1.9-4.6L4.5 10l4.6-1.9zM18 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z",
+  share: "M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5",
+  briefcase: "M3.5 8h17v12h-17zM9 8V5h6v3M3.5 13h17",
+  approve: `${ring(12, 12, 9)}M8 12.5l2.7 2.7L16 9.5`,
+  bolt: "M13 2.5 5 13.5h6l-1 8 8-11h-6z",
   dot: ring(12, 12, 3),
 } as const;
 
@@ -37,6 +42,11 @@ const BY_HREF: Record<string, IconName> = {
   "/workspace/team": "team",
   "/workspace/website": "globe",
   "/workspace/settings": "settings",
+  "/workspace/ask": "ask",
+  "/workspace/portal": "share",
+  "/workspace/projects": "briefcase",
+  "/workspace/approvals": "approve",
+  "/workspace/automations": "bolt",
 };
 
 export const iconForHref = (href: string): IconName => BY_HREF[href.split("#")[0]] ?? "dot";
