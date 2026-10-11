@@ -94,6 +94,7 @@ jobs:
           for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu; do
             cp -r "$GITHUB_WORKSPACE/frappe-apps/$app" apps/
             ./env/bin/pip install -e "apps/$app"
+            [ -z "$(tail -c1 sites/apps.txt)" ] || echo >> sites/apps.txt
             echo "$app" >> sites/apps.txt
           done
           bench set-config -g redis_cache redis://127.0.0.1:13000
