@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { PRICE_LABEL, PRICE_NOTE, PRICE_YEAR_TWD } from "@/lib/commercial";
 import { listIndustries } from "@/lib/industries";
+import { SLA } from "@/lib/legal";
 
 export const metadata = { title: "一年十萬" };
 
@@ -37,6 +38,16 @@ export default function PricingPage() {
           <p>鼎新 A1 常把進銷存、會計、電子發票拆開月租；億看月費低但畫面密。這裡十萬含到現場帶，功能不另開帳單。</p>
           <p>金流、簡訊、LINE 官方、電子發票是外面的服務，依各家收費；我們幫你們接上，不抽成。</p>
           <p>第二年起同樣 NT$100,000／年，含更新，顧問時數內的流程微調也含。</p>
+          <p>
+            月可用率 {SLA.uptime}、每天備份，沒做到就抵扣費用：
+            <Link href="/sla" className="mx-1 text-teal hover:underline">
+              服務水準
+            </Link>
+            ·
+            <Link href="/security" className="mx-1 text-teal hover:underline">
+              資安說明
+            </Link>
+          </p>
         </section>
       </main>
       <SiteFooter />
