@@ -437,12 +437,20 @@ html[data-style="fluid"][data-theme="white"] .glass.glass-nav::before {
 /* Public pages: thicker glass, a veil over the bright surface, and a soft local scrim behind loose text. */
 html[data-style="fluid"] {
   --glass-fill: rgb(8 16 28 / 0.5);
-  --scene-veil: linear-gradient(180deg, rgb(4 12 22 / 0.46) 0%, rgb(4 12 22 / 0.42) 45%, rgb(4 12 22 / 0.36) 100%);
+  --scene-veil: linear-gradient(180deg, rgb(3 13 28 / 0.64) 0%, rgb(3 13 28 / 0.62) 45%, rgb(3 12 26 / 0.48) 100%);
 }
 
 html[data-style="fluid"][data-theme="white"] {
   --glass-fill: rgb(255 255 255 / 0.62);
-  --scene-veil: linear-gradient(180deg, rgb(255 255 255 / 0.36) 0%, rgb(255 255 255 / 0.3) 45%, rgb(238 241 246 / 0.34) 100%);
+  --scene-veil: linear-gradient(180deg, rgb(255 255 255 / 0.44) 0%, rgb(248 251 255 / 0.46) 45%, rgb(238 243 250 / 0.5) 100%);
+}
+
+html[data-style="fluid"] body:not(:has(.os-shell)) .page-shell {
+  --cream-dim: rgb(247 248 252 / 0.88);
+}
+
+html[data-style="fluid"][data-theme="white"] body:not(:has(.os-shell)) .page-shell {
+  --cream-dim: rgb(17 19 24 / 0.8);
 }
 
 html[data-style="fluid"] body:not(:has(.os-shell)) .glass-well {
