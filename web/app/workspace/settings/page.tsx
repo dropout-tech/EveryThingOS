@@ -11,6 +11,7 @@ import { SetupProgress } from "@/components/SetupProgress";
 import { StylePicker } from "@/components/StylePicker";
 import { currentStyle } from "@/lib/style-server";
 import { workspaceGuide } from "@/lib/guide-server";
+import { formatTwd } from "@/lib/format";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -123,7 +124,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             {invoice ? (
               <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
                 <span>
-                  續約帳單 {invoice.id}：NT${invoice.amount.toLocaleString("en-US")}（含 5% 營業稅）
+                  續約帳單 {invoice.id}：{formatTwd(invoice.amount)}（含 5% 營業稅）
                 </span>
                 <a href={invoice.pay_url} className={buttonClass({ variant: "primary", size: "sm" })}>
                   線上付款

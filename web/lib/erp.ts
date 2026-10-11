@@ -1,3 +1,4 @@
+import { formatTwd } from "./format";
 import { industryTodayJobs } from "./operator-day";
 import { practiceCast } from "./practice";
 import type { IndustryPack } from "./types";
@@ -126,9 +127,7 @@ function pick(seed: number, min: number, max: number) {
   return min + ((seed >>> 0) % span);
 }
 
-export function formatTwd(amount: number) {
-  return `NT$${Math.round(amount).toLocaleString("zh-TW")}`;
-}
+export { formatTwd };
 
 export const SALES_STEP_ORDER: SalesStep[] = ["quote", "order", "fulfill", "invoice", "paid"];
 
