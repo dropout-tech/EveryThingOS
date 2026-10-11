@@ -1,20 +1,37 @@
 import type { ReactNode } from "react";
 
-type ModuleFrameProps = {
+type PageHeaderProps = {
   kicker: string;
   title: string;
   hint?: string;
-  children: ReactNode;
+  /** Status chip next to the title, e.g. `<Badge tone="demo" />`. */
+  badge?: ReactNode;
+  /** The one main thing to do on this page. */
+  action?: ReactNode;
 };
 
-export function ModuleFrame({ kicker, title, hint, children }: ModuleFrameProps) {
+export function PageHeader({ kicker, title, hint, badge, action }: PageHeaderProps) {
+  return (
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+      <div className="min-w-0 max-w-2xl">
+        <p className="kicker scene-type">{kicker}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h1 className="page-title scene-type">{title}</h1>
+          {badge}
+        </div>
+        {hint ? <p className="mt-2 text-sm text-cream-dim">{hint}</p> : null}
+      </div>
+      {action ? <div className="flex shrink-0 flex-wrap gap-2">{action}</div> : null}
+    </header>
+  );
+}
+
+type ModuleFrameProps = PageHeaderProps & { children: ReactNode };
+
+export function ModuleFrame({ children, ...header }: ModuleFrameProps) {
   return (
     <section className="space-y-5">
-      <header>
-        <p className="scene-type display text-xs tracking-[0.22em] uppercase">{kicker}</p>
-        <h2 className="scene-type mt-1 text-2xl font-medium">{title}</h2>
-        {hint ? <p className="mt-2 max-w-2xl text-sm text-cream-dim">{hint}</p> : null}
-      </header>
+      <PageHeader {...header} />
       {children}
     </section>
   );
@@ -28,12 +45,12 @@ export function DataTable({
   rows: string[][];
 }) {
   return (
-    <div className="glass overflow-x-auto">
-      <table className="w-full min-w-[40rem] text-left text-sm">
-        <thead className="bg-ink-2 text-cream-dim">
+    <div className="glass sm:overflow-x-auto">
+      <table className="table-stack sm:min-w-[40rem]">
+        <thead className="bg-ink-2">
           <tr>
             {columns.map((col) => (
-              <th key={col} className="px-4 py-3 font-medium">
+              <th key={col} scope="col">
                 {col}
               </th>
             ))}
@@ -41,9 +58,9 @@ export function DataTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.join("-")} className="border-t border-[var(--line)]">
-              {row.map((cell) => (
-                <td key={cell} className="px-4 py-3">
+            <tr key={row.join("-")}>
+              {row.map((cell, i) => (
+                <td key={`${i}-${cell}`} data-label={columns[i]} data-primary={i === 0 ? "" : undefined}>
                   {cell}
                 </td>
               ))}
