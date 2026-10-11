@@ -105,7 +105,7 @@ html[data-style="social"] {
   --nav-active-bg: var(--soc-grad-fallback) var(--soc-grad-ink);
   --nav-active-ink: #ffffff;
   --nav-indicator: transparent;
-  --kpi-value-size: 1.75rem;
+  --kpi-value-size: 1.375rem;
   --avatar-radius: 999px;
   --avatar-fill: var(--soc-avatar-fill);
   --overlay: rgba(0, 0, 0, 0.55);
@@ -153,6 +153,12 @@ html[data-style="social"][data-theme="white"] {
   --ui-shadow-1: 0 2px 8px rgba(16, 24, 40, 0.08);
   --ui-shadow-2: 0 10px 28px rgba(16, 24, 40, 0.12);
   --ui-shadow-3: 0 24px 60px rgba(16, 24, 40, 0.18);
+}
+
+@media (min-width: 640px) {
+  html[data-style="social"] {
+    --kpi-value-size: 1.75rem;
+  }
 }
 
 /* ---------- Page & backdrop: no ocean, no refraction, no pointer glow ---------- */
