@@ -346,6 +346,30 @@ class TestShellActions(FrappeTestCase):
 		self.assertTrue(second["existing"])
 		self.assertEqual(second["party"], first["party"])
 
+	def test_new_customers_and_leads_emit_events_for_webhooks(self):
+		from dropout_core import actions
+
+		tag = frappe.generate_hash(length=6)
+		customer = make_customer(f"建檔客人 {tag}")
+		self.assertTrue(frappe.db.exists("DropOut Event", {"idempotency_key": f"Customer:{customer}:customer_created"}))
+		lead = actions.create_lead(f"新名單 {tag}", email=f"lead-{tag}@example.com")
+		self.assertTrue(frappe.db.exists("DropOut Event", {"idempotency_key": f"Lead:{lead['party']}:lead_created"}))
+
+	def test_public_api_create_customer(self):
+		from dropout_core import public_api
+
+		tag = frappe.generate_hash(length=6)
+		created = public_api.create_customer(f"API 客人 {tag}", email=f"api-{tag}@Example.com", phone="0912-345-678")
+		self.assertTrue(created["ok"])
+		self.assertEqual(created["customer"]["customer_name"], f"API 客人 {tag}")
+		self.assertTrue(frappe.db.exists("DropOut Identity", {"party": created["customer"]["name"], "channel": "email", "external_id": f"api-{tag}@example.com"}))
+		make_customer(f"有統編 {tag}", tax_id="04595257")
+		conflict = public_api.create_customer("另一家", tax_id="04595257")
+		self.assertTrue(conflict["conflict"])
+		self.assertEqual(frappe.db.get_value("Customer", conflict["customer"], "tax_id"), "04595257")
+		if frappe.db.get_default("country") == "Taiwan":
+			self.assertFalse(public_api.create_customer("壞統編", tax_id="22099132")["ok"])
+
 	def test_newsletter_draft_and_read_models(self):
 		from dropout_core import actions, shell
 

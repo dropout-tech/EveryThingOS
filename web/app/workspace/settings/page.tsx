@@ -29,6 +29,7 @@ const KIND_LABEL: Record<string, string> = {
   meeting_start: "派會議機器人",
   meeting_done: "會議摘要",
   calendar: "讀行事曆",
+  webhook: "對外通知（Webhook）",
 };
 
 const SYNC_NOTICE: Record<string, string> = {
@@ -124,6 +125,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <a href="/api/shop/profile" className="hover:text-cream">
             下載設定檔（給導入工具）
           </a>
+          <Link href="/workspace/settings/api" className="hover:text-cream">
+            對外 API 與 Webhook
+          </Link>
           <Link href="/pricing" className="hover:text-cream">
             {PRICE_LABEL}
           </Link>

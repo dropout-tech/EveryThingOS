@@ -9,6 +9,8 @@ import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { healthResponse, statusResponse, uptime } from "./monitor";
 import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
+import type { ApiStore } from "./apiStore";
+import { apiStoreFor, isIntegrationRoute, manageIntegrations, publicApi } from "./publicApi";
 import { D1Store, type Store, type Tenant } from "./store";
 
 export type Env = BillingEnv & {
@@ -32,6 +34,8 @@ export type Env = BillingEnv & {
   ALERT_WEBHOOK_URL?: string;
   ALERT_WEBHOOK_TOKEN?: string;
   CF_VERSION_METADATA?: WorkerVersionMetadata;
+  /** Workers Rate Limiting binding for /v1, keyed per API key. */
+  API_LIMIT?: RateLimit;
 };
 
 export const MAX_ATTEMPTS = 4;
@@ -52,6 +56,7 @@ export type App = {
   store: (env: Env) => Store;
   fetcher: typeof fetch;
   monitor?: (env: Env) => MonitorStore;
+  api?: (env: Env) => ApiStore;
 };
 
 const defaultApp: App = { store: (env) => new D1Store(env.DB, env.TENANT_KEY), fetcher: (...a) => fetch(...a) };
@@ -64,6 +69,8 @@ function deps(env: Env, app: App): Deps {
     ai: env.AI,
     summaryModel: env.SUMMARY_MODEL ?? "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     aiGateway: env.AI_GATEWAY,
+    api: apiStoreFor(env, app),
+    queue: env.JOBS,
   };
 }
 
@@ -99,6 +106,7 @@ function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
+  if (isIntegrationRoute(parts) && (method === "GET" || method === "POST")) return true;
   return false;
 }
 
@@ -180,6 +188,8 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
 
   const billing: BillingCtx = { env, store, fetcher: app.fetcher, push: (a) => pushStatus(store, app.fetcher, a) };
   if (parts[0] === "billing") return (await billingRoute(req, url, parts, billing)) ?? text("not found", 404);
+
+  if (parts[0] === "v1") return publicApi(req, env, app);
 
   // G1: Chatwoot webhook. CE has no body signature, so the path carries a per-tenant token.
   if (parts[0] === "chatwoot" && req.method === "POST") {
@@ -374,6 +384,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     const actor = (req.headers.get("x-actor") ?? who).slice(0, 120);
     const billed = await billingAdmin(req, url, parts, { ...billing, actor });
     if (billed) return billed;
+    if (isIntegrationRoute(parts)) return manageIntegrations(req, env, app, parts, actor);
     if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
       const now = new Date();
       return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });

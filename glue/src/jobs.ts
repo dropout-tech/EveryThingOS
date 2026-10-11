@@ -2,7 +2,9 @@ import { Chatwoot, ERPNext, UpstreamError, type Fetch } from "./clients";
 import { ECPayInvoice, type EInvoiceProvider, type InvoiceInput } from "./einvoice";
 import { sendConfirmation, type MailEvent, type SendEmail } from "./mail";
 import { summarize, Vexa, type Ai, type MeetingLink } from "./meetings";
+import type { ApiStore } from "./apiStore";
 import type { Store, Tenant } from "./store";
+import { deliver, fanOut, type WebhookJob } from "./webhooks";
 
 export type ErpEvent = {
   name: string;
@@ -23,7 +25,8 @@ export type Job =
   | { kind: "mail"; site: string; event: MailEvent }
   | { kind: "payment"; site: string; gateway: "ecpay" | "newebpay"; trade_no: string; amount: number; gateway_txn?: string; raw?: unknown }
   | { kind: "meeting_start"; site: string; link: MeetingLink; title: string; attendees: string[]; start: string }
-  | { kind: "meeting_done"; site: string; platform: string; meeting_id: string };
+  | { kind: "meeting_done"; site: string; platform: string; meeting_id: string }
+  | WebhookJob;
 
 export type Deps = {
   store: Store;
@@ -33,6 +36,9 @@ export type Deps = {
   summaryModel: string;
   aiGateway?: string;
   einvoice?: (t: Tenant) => EInvoiceProvider | null;
+  /** Outbound webhooks; both unset means the company has none to send. */
+  api?: ApiStore;
+  queue?: { send(job: Job): Promise<unknown> };
 };
 
 export const DO_NOT_PUSH_LABEL = "勿推播";
@@ -44,6 +50,7 @@ function defaultEinvoice(t: Tenant, fetcher: Fetch): EInvoiceProvider | null {
 }
 
 export async function runJob(job: Job, deps: Deps): Promise<unknown> {
+  if (job.kind === "webhook") return deliver(job, deps);
   const tenant = await deps.store.getTenant(job.site);
   if (!tenant) throw new PermanentError(`unknown site ${job.site}`);
   const erp = new ERPNext(tenant, deps.fetcher);
@@ -112,6 +119,7 @@ export async function runJob(job: Job, deps: Deps): Promise<unknown> {
     }
 
     case "erpnext_event":
+      await fanOut(job.site, job.event, deps);
       return handleErpEvent(job.event, tenant, erp, deps);
 
     case "mail": {
