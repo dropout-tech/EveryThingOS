@@ -1,0 +1,2 @@
+TENANT_KEY="<openssl rand -base64 32>"
+ADMIN_TOKEN="dev-admin"

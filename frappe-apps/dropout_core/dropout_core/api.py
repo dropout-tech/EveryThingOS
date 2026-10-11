@@ -425,6 +425,12 @@ def set_einvoice(sales_invoice, status, number=None, error=None):
 def record_meeting(meeting_id, platform, summary, transcript_url=None, party_type=None, party=None, attendees=None, started_at=None):
 	"""Meeting bot: one summary per meeting, attached to the party timeline as a Comment."""
 	_guard()
+	attendees = frappe.parse_json(attendees) if isinstance(attendees, str) else (attendees or [])
+	if not party:
+		for email in attendees:
+			party_type, party = _party_for_email(normalize_email(email)) if normalize_email(email) else (None, None)
+			if party:
+				break
 	name, created = emit(
 		"meeting_summarized",
 		f"meeting:{platform}:{meeting_id}",

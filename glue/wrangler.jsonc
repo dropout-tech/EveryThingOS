@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "dropout-glue",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "dropout-glue", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+  ],
+  "queues": {
+    "producers": [{ "binding": "JOBS", "queue": "dropout-jobs" }],
+    "consumers": [
+      { "queue": "dropout-jobs", "max_batch_size": 10, "max_retries": 5, "dead_letter_queue": "dropout-jobs-dlq" },
+      { "queue": "dropout-jobs-dlq", "max_batch_size": 10 }
+    ]
+  },
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "ai": { "binding": "AI" },
+  "send_email": [{ "name": "EMAIL" }],
+  "vars": {
+    "SUMMARY_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+  }
+  // Secrets (wrangler secret put): TENANT_KEY (base64, 32 bytes), ADMIN_TOKEN, optional TURNSTILE_SECRET, AI_GATEWAY.
+}
