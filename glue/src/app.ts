@@ -1,4 +1,6 @@
 import { lifecycle, mergeAccount, normalizeHost, purgeStatus, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { automationStoreFor, manageAutomations, runAutomations } from "./automations";
+import type { AutomationStore } from "./automation-store";
 import { backupProblem, checkBackups, purgeNotices, type BackupUsage } from "./backups";
 import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
 import { ERPNext } from "./clients";
@@ -58,6 +60,7 @@ export type App = {
   fetcher: typeof fetch;
   monitor?: (env: Env) => MonitorStore;
   api?: (env: Env) => ApiStore;
+  automations?: (env: Env) => AutomationStore;
 };
 
 const defaultApp: App = { store: (env) => new D1Store(env.DB, env.TENANT_KEY), fetcher: (...a) => fetch(...a) };
@@ -72,6 +75,7 @@ function deps(env: Env, app: App): Deps {
     aiGateway: env.AI_GATEWAY,
     api: apiStoreFor(env, app),
     queue: env.JOBS,
+    automations: automationStoreFor(env, app),
   };
 }
 
@@ -108,6 +112,7 @@ function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
   if (isIntegrationRoute(parts) && (method === "GET" || method === "POST")) return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "automations" && ["GET", "PUT", "POST"].includes(method)) return true;
   return false;
 }
 
@@ -389,6 +394,12 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     const billed = await billingAdmin(req, url, parts, { ...billing, actor });
     if (billed) return billed;
     if (isIntegrationRoute(parts)) return manageIntegrations(req, env, app, parts, actor);
+    if (parts[1] === "tenants" && parts[2] && parts[3] === "automations") {
+      const automations = automationStoreFor(env, app);
+      if (!automations) return text("automations not configured", 503);
+      const t = await tenantFor(parts[2]);
+      return manageAutomations(req, parts, { site: parts[2], actor, automations, store, fetcher: app.fetcher, mail: Boolean(env.EMAIL && t?.mail_from) });
+    }
     if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
       const now = new Date();
       return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });
@@ -639,10 +650,18 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
   return { pruned, refreshed, failed, reminded, pushed, billing, backups, purge_due: purgeDue };
 }
 
+/** Rules decide for themselves whether they are due (daily ones once a Taiwan workday, hourly ones every hour). */
+export async function automationTick(env: Env, app: App = defaultApp, now = new Date()) {
+  const automations = automationStoreFor(env, app);
+  if (!automations) return null;
+  return runAutomations({ store: app.store(env), automations, fetcher: app.fetcher, queue: env.JOBS }, now);
+}
+
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */
 export async function scheduled(env: Env, app: App = defaultApp, now = new Date()) {
   const queued = await scheduleMeetings(env, app, now);
   const monitor = await uptime(env, app, now).catch((e) => (log("error", "monitor.failed", { error: errorText(e) }), null));
+  const automations = await automationTick(env, app, now).catch((e) => (log("error", "automations.failed", { error: errorText(e) }), null));
   const isDailySlot = now.getUTCHours() === 18 && now.getUTCMinutes() < 5;
-  return { queued, monitor, daily: isDailySlot ? await daily(env, app, now) : null };
+  return { queued, monitor, automations, daily: isDailySlot ? await daily(env, app, now) : null };
 }
