@@ -34,13 +34,16 @@
 | 載入／出錯 | 各段落的 `loading.tsx`（`<Skeleton>`）與 `error.tsx`（`<ErrorPanel>`） |
 | 分段切換 | `<nav className="segmented">` 加 `aria-current="page"` |
 | 錢 | `<Money amount={n} />`（`lib/format.ts` 的 `formatTwd`：`NT$12,345`、負數 `−NT$12,345` 自動紅色）；磚上用 `formatTwdShort`（`NT$15.5 萬`）。不要自己 `toLocaleString` |
-| 數字欄 | `<th className="num">`、`<td className="num">`：靠右、等寬數字；合計放 `<tfoot>` |
+| 數字欄 | `<th className="num" data-numeric="">`、`<td className="num" data-numeric="">`：靠右、等寬數字；合計放 `<tfoot>`。寬表格捲動放在玻璃裡面一層 `<div className="glass"><div className="sm:overflow-x-auto">` |
 | 頁內區塊 | `<Section id title aside>`：同一種標題大小與間距（`.section-head`、`.section-title`） |
 | 一行說明 | `<MoreText>`：超過一行才出現「看更多」。`PageHeader` 的 `hint`、`Hint` 的內文都已經用它 |
 | 數字磚 | `<ul className="kpi-grid"><li className="kpi">`：`.kpi-label`、`.kpi-value`、`.kpi-note[data-tone]` |
 | 搜尋列表 | `<div className="toolbar"><SearchBox label value onChange /></div>`；Esc 清空 |
 | 看一筆的細節 | `<Drawer open title onClose footer>`：桌機右側、手機底部；Esc 關、焦點回原處 |
-| 頭像 | `<span className="avatar">王</span>`（`.avatar-lg` 大一號） |
+| 頭像 | `<Avatar name="王美玲" />`（`components/ui/Avatar.tsx`）：取姓或英文縮寫，同一個名字永遠同一個顏色（`data-tone` 1–6）；`size="lg"` 大一號；旁邊沒有名字時給 `label` |
+| 小圖示 | `<Icon name="sales" />`（`components/ui/Icon.tsx`）：線條、`currentColor`、讀屏不念；頁面用 `iconForHref(href)` |
+| 對話 | 對方說的 `.bubble`，我們回的 `.bubble bubble-out`，名字與時間 `.bubble-meta` |
+| 數量 | `.badge-count`（欄位、選單）、`.tabbar-badge`（手機底列）；`NavItem.count` 有值就自動顯示 |
 | 跳頁／找事做 | `⌘K`／`Ctrl+K` 或頂列「搜尋」：`CommandPalette`；新的常用動作加在 `lib/nav.ts` 的 `PALETTE_ACTIONS` |
 | 麵包屑 | `PageHeader` 自動依 `lib/nav.ts` 的 `TRAIL` 顯示「今天 / 生意 / 收錢」；新頁面要加一行 |
 | 選單分組 | `lib/nav.ts` 的 `navSections`：今天／客人／生意／公司／設定；手機底列是今天、客人、生意、對話（或報表） |
@@ -83,7 +86,7 @@
 | 卡片內距 | `--card-padding` | 1.25rem |
 | 選單 | `--nav-bg`（手機底列）`--nav-active-bg` `--nav-active-ink` `--nav-indicator`（左側選中條、搜尋選中） | |
 | 數字磚 | `--kpi-value-size` | 1.625rem |
-| 頭像 | `--avatar-fill` | |
+| 頭像 | `--avatar-fill`（沒名字時）`--avatar-tone-1…6`（依名字分色） | 主色混進 `--ink`，深淺都過 4.5:1 |
 | 動態 | `--motion-fast` `--motion-base` `--motion-ease` | 160ms、240ms；「減少動態效果」時自動變 0 |
 | 場景 | `--scene-image` `--scene-veil` `--ocean-y` `--glass-px` `--glass-py` `--type-shadow` | 只有流體藝術用得到 |
 | 尺寸（**不要改小**） | `--ui-tap`（44px）`--ui-control` `--ui-tabbar` `--ui-space-*` `--ui-text-*` | |
@@ -93,11 +96,13 @@
 - 殼：`.scene-layer` `.page-shell` `.os-shell` `.glass` `.glass-hero` `.glass-nav` `.glass-bar` `.glass-well` `.glass-chip` `.glass-pill` `.glass-cta` `.glass-lift` `.lens` `.lens-film` `.brand-glyph` `.display` `.scene-type` `.scrim`
 - 選單：`.nav-group` `.nav-group-title` `.nav-link[aria-current]` `.tabbar` `.tabbar-item` `.tabbar-dot` `.segmented` `.breadcrumbs` `.cmdk-trigger` `.cmdk` `.cmdk-input` `.cmdk-group-title` `.cmdk-item[aria-selected]` `.cmdk-item-hint` `.kbd` `.skip-link` `.site-skip`
 - 頁首：`.page-header` `.page-title` `.page-purpose` `.kicker` `.section-head` `.section-title` `.toolbar` `.search-field`
-- 內容：`.card` `.card-flush` `.card-interactive` `.kpi-grid` `.kpi` `.kpi-label` `.kpi-value` `.kpi-note[data-tone]` `.next-action` `.next-action-title` `.queue` `.queue-item` `.avatar` `.avatar-lg` `.table-stack`（含 `thead` `tfoot`）`.num` `.money[data-tone]` `.progress` `.empty-state` `.hint` `.disclosure` `.disclosure-mark` `.clamp-1` `.more-toggle`
-- 控制項：`.btn` `.btn-primary` `.btn-secondary` `.btn-ghost` `.btn-danger` `.btn-danger-solid` `.btn-sm` `.btn-block` `.field` `.field-label` `.field-hint` `.field-error` `.form-actions` `.sticky-submit` `.theme-toggle` `.style-picker` `.style-card[aria-checked]` `.style-card-swatch`（`[data-style-option]`）
+- 內容：`.card` `.card-flush` `.card-interactive` `.kpi-grid` `.kpi` `.kpi-label` `.kpi-value` `.kpi-note[data-tone]` `.next-action` `.next-action-title` `.queue` `.queue-item` `.avatar` `.avatar-lg` `.avatar[data-tone]` `.bubble` `.bubble-out` `.bubble-meta` `.badge-count` `.tabbar-badge` `.icon` `.hint-icon` `.link-card` `.menu-link` `.table-stack`（含 `thead` `tfoot`）`.num` `[data-numeric]` `.money[data-tone]` `.progress` `.empty-state` `.hint` `.disclosure` `.disclosure-mark` `.clamp-1` `.more-toggle`
+- 控制項：`.btn` `.btn-primary` `.btn-secondary` `.btn-ghost` `.btn-danger` `.btn-danger-solid` `.btn-sm` `.btn-block` `.field` `.field-label` `.field-hint` `.field-error` `.form-actions` `.sticky-submit` `.theme-toggle`（`button[aria-pressed]`）`.style-picker` `.style-card[aria-checked]`（選中時 `::before` 打勾、`::after`「使用中」）`.style-card-swatch`（`[data-style-option]`，各風格自己的檔案畫）
 - 狀態：`.badge` `.badge-demo` `.badge-practice` `.badge-readonly` `.badge-ok` `.badge-warn` `.badge-danger` `.site-chip[data-tone=ok|warn|bad|muted]`
 - 浮層：`.dialog` `.dialog-sheet` `.drawer` `.drawer-head` `.drawer-body` `.toast` `.toast-error` `.toast-stack` `.skeleton` `.spinner`
 - 官網：`.site-scope` `.site-sheet` `.site-field` `.site-chip` `.site-table` `.site-dialog`
+
+瀏覽器頂列顏色（`theme-color`）由 `lib/style.ts` 的 `themeColor(style, theme)` 決定，換風格要一起改那張表。
 
 ### 風格不能做的事
 
