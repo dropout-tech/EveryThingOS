@@ -128,8 +128,11 @@ export function AskBoard({ facts: serverFacts, packId, ai: aiConfigured, initial
   }, [initial]);
 
   useEffect(() => {
-    if (!scrollTo) return;
-    document.getElementById(`ask-${scrollTo}`)?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    const el = scrollTo ? document.getElementById(`ask-${scrollTo}`) : null;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top;
+    if (top >= 96 && top < window.innerHeight * 0.6) return;
+    el.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, [scrollTo]);
 
   async function copy(value: string) {
@@ -184,60 +187,62 @@ export function AskBoard({ facts: serverFacts, packId, ai: aiConfigured, initial
   }
 
   return (
-    <div className="glass space-y-5 p-4 md:p-6">
-      <ActionNote>{note}</ActionNote>
-      <p className="sr-only" aria-live="polite">
-        {latest ? latest.a.text : ""}
-      </p>
+    <div className="space-y-3">
+      <div className="glass space-y-5 p-4 md:p-6">
+        <ActionNote>{note}</ActionNote>
+        <p className="sr-only" aria-live="polite">
+          {latest ? latest.a.text : ""}
+        </p>
 
-      {thread.length ? (
-        <>
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="section-title">對話</h2>
-            <Button variant="ghost" size="sm" onClick={() => setThread([])}>
-              清空
-            </Button>
-          </div>
-          <ol className="space-y-6" aria-label="問過的問題">
-            {answers.map(({ entry, a }) => (
-              <li key={entry.id} id={`ask-${entry.id}`} className="scroll-mt-24 space-y-2">
-                <p className="bubble bubble-out">{entry.question}</p>
-                <AnswerCard
-                  a={a}
-                  entry={entry}
-                  facts={facts}
-                  classifying={pending.includes(entry.id)}
-                  polishing={(i) => pending.includes(`${entry.id}:${i}`)}
-                  ai={aiOn}
-                  onAsk={pick}
-                  onCopy={copy}
-                  onPolish={(i, d) => void polish(entry.id, i, d)}
-                  onRestore={(i) => update(entry.id, (e) => ({ ...e, polished: Object.fromEntries(Object.entries(e.polished ?? {}).filter(([k]) => Number(k) !== i)) }))}
-                />
-              </li>
-            ))}
-          </ol>
-        </>
-      ) : (
-        <div className="space-y-3">
-          <h2 className="section-title">可以這樣問</h2>
-          <div className="flex flex-wrap gap-2">
-            {starters.map((q) => (
-              <Button key={q} variant="secondary" size="sm" onClick={() => pick(q)}>
-                {q}
+        {thread.length ? (
+          <>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="section-title">對話</h2>
+              <Button variant="ghost" size="sm" onClick={() => setThread([])}>
+                清空
               </Button>
-            ))}
+            </div>
+            <ol className="space-y-6" aria-label="問過的問題">
+              {answers.map(({ entry, a }) => (
+                <li key={entry.id} id={`ask-${entry.id}`} className="scroll-mt-24 space-y-2">
+                  <p className="bubble bubble-out">{entry.question}</p>
+                  <AnswerCard
+                    a={a}
+                    entry={entry}
+                    facts={facts}
+                    classifying={pending.includes(entry.id)}
+                    polishing={(i) => pending.includes(`${entry.id}:${i}`)}
+                    ai={aiOn}
+                    onAsk={pick}
+                    onCopy={copy}
+                    onPolish={(i, d) => void polish(entry.id, i, d)}
+                    onRestore={(i) => update(entry.id, (e) => ({ ...e, polished: Object.fromEntries(Object.entries(e.polished ?? {}).filter(([k]) => Number(k) !== i)) }))}
+                  />
+                </li>
+              ))}
+            </ol>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <h2 className="section-title">可以這樣問</h2>
+            <div className="flex flex-wrap gap-2">
+              {starters.map((q) => (
+                <Button key={q} variant="secondary" size="sm" onClick={() => pick(q)}>
+                  {q}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-cream-dim">
+              也可以問某位客人（打名字）、「這週要做什麼」，或說「幫我寫催款訊息」。
+              <Link href="/help/assistant" className="ml-1 underline hover:text-cream">
+                看能問什麼
+              </Link>
+            </p>
           </div>
-          <p className="text-xs text-cream-dim">
-            也可以問某位客人（打名字）、「這週要做什麼」，或說「幫我寫催款訊息」。
-            <Link href="/help/assistant" className="ml-1 underline hover:text-cream">
-              看能問什麼
-            </Link>
-          </p>
-        </div>
-      )}
+        )}
+      </div>
 
-      <form onSubmit={onSubmit} className="sticky-submit space-y-1.5">
+      <form onSubmit={onSubmit} className="sticky-submit space-y-1.5 md:px-1">
         <div className="flex items-end gap-2">
           <Field label="你想知道什麼" className="min-w-0 flex-1">
             <input
