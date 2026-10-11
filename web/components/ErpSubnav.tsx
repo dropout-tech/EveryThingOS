@@ -13,12 +13,12 @@ type ErpSubnavProps = {
   live?: boolean;
 };
 
-const HEADERS: Record<string, { title: string; hint: string }> = {
+const HEADERS: Record<string, { title: string; hint?: string }> = {
   "/workspace/erp/sales": { title: "同一張單往下走", hint: "報價、訂單、出貨、發票、收款排成一列，每張卡只有下一步。" },
-  "/workspace/erp/purchase": { title: "跟廠商進貨", hint: "請購、進貨、入庫、應付在同一條。" },
-  "/workspace/erp/stock": { title: "貨夠不夠", hint: "低於安全庫存的會標出來，點「請購」直接去進貨。" },
-  "/workspace/erp/finance": { title: "誰欠我們、稅多少", hint: "帳齡、損益、自動入帳與電子發票。" },
-  "/workspace/erp/compare": { title: "對照 A1／億看", hint: "同樣的事，在這裡少幾步。" },
+  "/workspace/erp/purchase": { title: "跟廠商進貨" },
+  "/workspace/erp/stock": { title: "貨夠不夠" },
+  "/workspace/erp/finance": { title: "誰欠我們、稅多少" },
+  "/workspace/erp/compare": { title: "對照 A1／億看" },
 };
 
 export function ErpSubnav({ showSales, showPurchase, showStock, showFinance, live = false }: ErpSubnavProps) {

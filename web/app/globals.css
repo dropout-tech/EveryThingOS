@@ -38,7 +38,7 @@ html[data-theme="black"] {
   /* Status colours: each passes 4.5:1 on --surface-scrim and on the workspace veil. */
   --ok: #7fe3b9;
   --warn: #ffc46b;
-  --danger: #ff9a8f;
+  --danger: #ffaca3;
   --focus: #9ad8ff;
   --on-primary: #07080c;
   --primary-fill: rgba(255, 255, 255, 0.9);
@@ -46,8 +46,13 @@ html[data-theme="black"] {
   --field-bg: rgba(6, 10, 16, 0.6);
   --field-border: rgba(255, 255, 255, 0.34);
   --surface-scrim: rgba(7, 11, 18, 0.72);
-  --os-veil: linear-gradient(180deg, rgba(5, 9, 15, 0.7) 0%, rgba(5, 9, 15, 0.5) 38%, rgba(4, 10, 18, 0.58) 100%);
-  --os-glass-fill: rgba(12, 18, 28, 0.4);
+  --os-veil: linear-gradient(180deg, rgba(5, 9, 15, 0.74) 0%, rgba(5, 9, 15, 0.62) 40%, rgba(4, 10, 18, 0.64) 100%);
+  --os-glass-fill: rgba(10, 15, 24, 0.58);
+  --os-cream-dim: rgba(247, 248, 252, 0.82);
+  --os-well: rgba(8, 12, 20, 0.42);
+  --os-chip: rgba(12, 18, 28, 0.5);
+  --control-fill: rgba(10, 15, 24, 0.62);
+  --control-fill-hover: rgba(30, 38, 52, 0.72);
   --glass-1: rgba(255, 255, 255, 0.06);
   --glass-2: rgba(255, 255, 255, 0.1);
   --glass-3: rgba(255, 255, 255, 0.16);
@@ -119,7 +124,12 @@ html[data-theme="white"] {
   --field-border: rgba(17, 19, 24, 0.26);
   --surface-scrim: rgba(246, 248, 251, 0.82);
   --os-veil: linear-gradient(180deg, rgba(244, 247, 250, 0.82) 0%, rgba(244, 247, 250, 0.66) 40%, rgba(236, 242, 247, 0.74) 100%);
-  --os-glass-fill: rgba(255, 255, 255, 0.5);
+  --os-glass-fill: rgba(255, 255, 255, 0.58);
+  --os-cream-dim: rgba(17, 19, 24, 0.74);
+  --os-well: rgba(255, 255, 255, 0.45);
+  --os-chip: rgba(255, 255, 255, 0.62);
+  --control-fill: rgba(255, 255, 255, 0.78);
+  --control-fill-hover: #ffffff;
   --glass-1: rgba(255, 255, 255, 0.3);
   --glass-2: rgba(255, 255, 255, 0.45);
   --glass-3: rgba(255, 255, 255, 0.62);
@@ -494,6 +504,16 @@ body:has(.os-shell) .scene-layer::after {
 .os-shell {
   --glass-fill: var(--os-glass-fill);
   --glass-blur: 6px;
+  --cream-dim: var(--os-cream-dim);
+}
+
+.os-shell .lens-film {
+  background: var(--os-glass-fill);
+}
+
+html[data-theme] .os-shell .glass.glass-nav::before,
+html[data-theme] .os-shell .glass.glass-bar::before {
+  background: var(--surface-scrim);
 }
 
 .os-shell .glass::after,
@@ -502,11 +522,14 @@ body:has(.os-shell) .scene-layer::after {
 }
 
 .os-shell .glass-well {
-  background: var(--glass-1);
+  background: var(--os-well);
+}
+
+.os-shell .glass-chip {
+  background: var(--os-chip);
 }
 
 html[data-theme="white"] .os-shell .glass-well {
-  background: var(--glass-2);
   border-color: rgba(17, 19, 24, 0.1);
 }
 
@@ -611,7 +634,7 @@ html[data-theme="white"] .os-shell .glass-chip {
 
   .btn-secondary {
     border-color: var(--field-border);
-    background: var(--glass-2);
+    background: var(--control-fill);
     color: var(--cream);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
     backdrop-filter: blur(4px) saturate(150%);
@@ -619,7 +642,7 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 
   .btn-secondary:not(:disabled):hover {
-    background: var(--glass-3);
+    background: var(--control-fill-hover);
   }
 
   .btn-ghost {
@@ -1045,8 +1068,8 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 
   .os-shell .theme-toggle button {
-    min-width: 2.5rem;
-    min-height: 2.5rem;
+    min-width: var(--ui-tap);
+    min-height: var(--ui-tap);
   }
 
   .os-shell .glass::before,
