@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { ConfirmAction } from "./ConfirmAction";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import type { GatewayStatus, PlatformInvoice } from "@/lib/platform";
+import { ntd } from "@/lib/platform-ui";
 
-const field = "rounded-lg border border-[var(--line)] bg-ink px-3 py-1.5 text-cream";
+const field = "site-field !mt-0 !w-56 !py-1.5";
 
-const ntd = (n: number) => `NT$${n.toLocaleString("en-US")}`;
-
-const STATUS: Record<PlatformInvoice["status"], string> = { open: "未付", paid: "已付", void: "作廢" };
+const STATUS: Record<PlatformInvoice["status"], { label: string; tone: string }> = { open: { label: "未付", tone: "bad" }, paid: { label: "已付", tone: "ok" }, void: { label: "作廢", tone: "muted" } };
 
 /** One company's renewal invoices: mark paid offline, void, resend the payment link, retry the e-invoice. */
 export function PlatformInvoices({ site, invoices, gateway }: { site: string; invoices: PlatformInvoice[]; gateway: GatewayStatus | null }) {
@@ -19,9 +19,9 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
   const hasOpen = invoices.some((i) => i.status === "open");
 
   return (
-    <section className="glass-well space-y-3 p-5">
+    <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm">帳單</h3>
+        <p className="text-sm text-cream-dim">{invoices.length ? `${invoices.length} 張` : ""}</p>
         {hasOpen ? null : (
           <button type="button" disabled={action.busy} onClick={() => action.run(path, { action: "create", site }, describe)} className="glass-pill px-3 py-1.5 text-xs disabled:opacity-50">
             開這期帳單
@@ -29,16 +29,18 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
         )}
       </div>
       {gateway && gateway.ecpay !== "production" ? (
-        <p className="text-xs text-orange">{gateway.ecpay ? "線上付款接的是綠界測試環境，不會真的扣款。" : "膠水沒有設定綠界，付款連結只會請客戶回信。"}</p>
+        <p className="site-chip" data-tone="warn">{gateway.ecpay ? "線上付款接的是綠界測試環境，不會真的扣款。" : "膠水沒有設定綠界，付款連結只會請客戶回信。"}</p>
       ) : null}
       <ActionOutcomeNote outcome={action.outcome} />
       {invoices.length ? (
         <ul className="space-y-2">
           {invoices.map((inv) => (
-            <li key={inv.id} className="glass-chip space-y-2 p-3 text-sm">
+            <li key={inv.id} className="space-y-2 rounded-2xl border border-[var(--line)] p-3 text-sm">
               <div className="flex flex-wrap items-baseline gap-x-3">
-                <span className={inv.status === "open" ? "text-orange" : inv.status === "void" ? "text-cream-dim line-through" : ""}>{STATUS[inv.status]}</span>
-                <span>{inv.id}</span>
+                <span className="site-chip" data-tone={STATUS[inv.status].tone}>
+                  {STATUS[inv.status].label}
+                </span>
+                <span className={inv.status === "void" ? "text-cream-dim line-through" : "font-medium"}>{inv.id}</span>
                 <span>{ntd(inv.amount)}</span>
                 <span className="text-cream-dim">
                   {inv.buyer_name}
@@ -53,7 +55,7 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
                   {inv.einvoice_number ? (
                     `發票 ${inv.einvoice_number}`
                   ) : inv.einvoice_error ? (
-                    <span className="text-orange">發票沒開成：{inv.einvoice_error}</span>
+                    <span className="site-error">發票沒開成：{inv.einvoice_error}</span>
                   ) : gateway?.einvoice ? (
                     "發票處理中"
                   ) : (
@@ -81,17 +83,16 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
                       複製連結
                     </button>
                   ) : null}
-                  <button
-                    type="button"
+                  <ConfirmAction
+                    label="作廢"
+                    title={`作廢 ${inv.id}？`}
+                    body={`${ntd(inv.amount)}，${inv.buyer_name}。作廢後付款連結失效，客戶付不了這張；要重開請再按「開這期帳單」。`}
+                    confirmLabel="確定作廢"
+                    reason={{ label: "作廢原因（會記在紀錄裡）", placeholder: "例：統編寫錯、不續約", required: true }}
+                    onConfirm={(reason) => action.run(path, { action: "void", id: inv.id, reason }, describe)}
                     disabled={action.busy}
-                    onClick={() => {
-                      const reason = window.prompt(`作廢 ${inv.id}？寫一下原因（例：統編寫錯、不續約）`);
-                      if (reason !== null) action.run(path, { action: "void", id: inv.id, reason }, describe);
-                    }}
-                    className="px-2 py-1.5 text-xs text-orange disabled:opacity-50"
-                  >
-                    作廢
-                  </button>
+                    className="px-2 py-1.5 text-xs underline underline-offset-4 disabled:opacity-50"
+                  />
                 </div>
               ) : null}
               {inv.status === "paid" && !inv.einvoice_number && gateway?.einvoice ? (
@@ -105,6 +106,6 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
       ) : (
         <p className="text-sm text-cream-dim">還沒有帳單。年約到期前 60 天會自動開。</p>
       )}
-    </section>
+    </div>
   );
 }
