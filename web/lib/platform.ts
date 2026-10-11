@@ -89,10 +89,21 @@ export type PlatformAccount = {
   tax_id?: string | null;
   billing_address?: string | null;
   hosts: string[];
-  usage?: Record<string, number | string> | null;
+  usage?: (Record<string, unknown> & { backup?: SiteBackup }) | null;
   usage_at?: string | null;
   created_at: string;
   lifecycle: Lifecycle;
+  cancelled_at?: string | null;
+  purged_at?: string | null;
+  purge?: { due_on: string | null; due: boolean; purged_at: string | null };
+  /** The glue's daily check: no off-site backup in 26 hours, or the upload failed. */
+  backup_problem?: string | null;
+};
+
+export type SiteBackup = {
+  error?: string;
+  local?: { taken_at: string; bytes: number } | null;
+  offsite?: { enabled: boolean; taken_at?: string | null; bytes?: number; error?: string };
 };
 
 export type AccountEvent = { id: number; at: string; actor: string; action: string; detail: string | null };
