@@ -1,4 +1,5 @@
-import { lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { lifecycle, mergeAccount, normalizeHost, purgeStatus, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { backupProblem, checkBackups, purgeNotices, type BackupUsage } from "./backups";
 import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
@@ -6,7 +7,7 @@ import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent
 import { errorText, log } from "./log";
 import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
-import { healthResponse, statusResponse, uptime } from "./monitor";
+import { healthResponse, monitorStore, statusResponse, uptime } from "./monitor";
 import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import type { ApiStore } from "./apiStore";
@@ -111,8 +112,11 @@ function shellMayUse(parts: string[], method: string) {
 }
 
 export function accountView(a: Account, now = new Date()) {
-  return { ...a, lifecycle: lifecycle(a, now) };
+  const backup = a.state === "cancelled" ? null : backupProblem(a.usage?.backup as BackupUsage | undefined, a.created_at, now);
+  return { ...a, lifecycle: lifecycle(a, now), purge: purgeStatus(a, now), backup_problem: backup };
 }
+
+const PURGE_STEPS = { started: "刪除開始", final_backup: "最後備份", dropped: "刪除站台", r2_deleted: "刪除 R2 備份", final_deleted: "刪除最後備份", done: "已刪除" } as const;
 
 /** Tell the company's ERPNext whether to accept business writes, so Desk follows the contract too. */
 async function pushStatus(store: Store, fetcher: typeof fetch, a: Account, now = new Date()) {
@@ -411,6 +415,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     if (parts[1] === "accounts" && parts[2] && parts[3] === "renew" && req.method === "POST") {
       const a = await store.getAccount(parts[2]);
       if (!a) return text("not found", 404);
+      if (a.purged_at) return text("這家的資料已經刪除，不能續約；要回來請重新開站", 409);
       const body = (await req.json().catch(() => ({}))) as { years?: number; until?: string; reference?: string };
       const next = await renewAccount(store, a, body, actor);
       return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
@@ -420,10 +425,33 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       if (!a) return text("not found", 404);
       const body = (await req.json()) as { state?: Account["state"]; reason?: string };
       if (!body.state || !["active", "suspended", "cancelled"].includes(body.state)) return text("state 只能是 active、suspended、cancelled", 400);
+      if (a.purged_at && body.state !== "cancelled") return text("這家的資料已經刪除，不能恢復；要回來請重新開站", 409);
       const next = mergeAccount(a.site, a, { state: body.state, state_reason: body.reason ?? null });
       await store.putAccount(next);
       await store.addAccountEvent(a.site, actor, { active: "恢復", suspended: "暫停", cancelled: "解約" }[body.state], body.reason ?? "");
       return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
+    }
+    // Lifecycle purge, driven step by step by `dropout-onboard fleet purge`; every step lands in the history.
+    if (parts[1] === "accounts" && parts[2] && parts[3] === "purge" && req.method === "POST") {
+      const a = await store.getAccount(parts[2]);
+      if (!a) return text("not found", 404);
+      const body = (await req.json().catch(() => ({}))) as { step?: keyof typeof PURGE_STEPS; detail?: string };
+      const step = body.step && Object.hasOwn(PURGE_STEPS, body.step) ? body.step : null;
+      if (!step) return text(`step 只能是 ${Object.keys(PURGE_STEPS).join("、")}`, 400);
+      const p = purgeStatus(a);
+      if (step === "final_deleted" && !a.purged_at) return text("還沒刪除站台", 409);
+      if (!a.purged_at && !p.due) {
+        return text(a.state !== "cancelled" ? "還沒解約，不能刪除" : `解約還沒滿 90 天，${p.due_on} 起才能刪除`, 409);
+      }
+      let next = a;
+      if (step === "done" && !a.purged_at) {
+        next = { ...a, purged_at: new Date().toISOString(), hosts: [], profile: null, usage: null, updated_at: new Date().toISOString() };
+        await store.putAccount(next);
+        await store.deleteTenant(a.site);
+        await monitorStore(env, app).forget(a.site, next.purged_at!);
+      }
+      await store.addAccountEvent(a.site, actor, PURGE_STEPS[step], (body.detail ?? "").slice(0, 1000));
+      return json({ ok: true, account: accountView(next) });
     }
     if (parts[1] === "tenants" && parts[2] && req.method === "PUT") {
       const t = (await req.json()) as Tenant;
@@ -589,7 +617,9 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
   let reminded = 0;
   let pushed = 0;
   const billing = await billingDaily({ env, store, fetcher: app.fetcher, push: (a) => pushStatus(store, app.fetcher, a, now) }, now);
-  await inChunks(await store.listAccounts(), 5, async (a) => {
+  const accounts = await store.listAccounts();
+  const checked: { account: Account; backup: BackupUsage | undefined }[] = [];
+  await inChunks(accounts, 5, async (a) => {
     if (await sendReminder(env, store, app.fetcher, a, now)) reminded++;
     if (await pushStatus(store, app.fetcher, a, now)) pushed++;
     const t = await store.getTenant(a.site);
@@ -597,13 +627,16 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
     try {
       const usage = await new ERPNext(t, app.fetcher).method<Record<string, unknown>>("dropout_core.team.usage");
       await store.putAccount({ ...a, usage, usage_at: now.toISOString() });
+      checked.push({ account: a, backup: usage.backup as BackupUsage | undefined });
       refreshed++;
     } catch (e) {
       failed++;
       await store.putAccount({ ...a, usage: { ...(a.usage ?? {}), error: (e as Error).message.slice(0, 200) }, usage_at: now.toISOString() });
     }
   });
-  return { pruned, refreshed, failed, reminded, pushed, billing };
+  const backups = await checkBackups(env, app, checked, now).catch((e) => (log("error", "backup_check.failed", { error: errorText(e) }), null));
+  const purgeDue = await purgeNotices(env, app, accounts, now).catch((e) => (log("error", "purge_notice.failed", { error: errorText(e) }), null));
+  return { pruned, refreshed, failed, reminded, pushed, billing, backups, purge_due: purgeDue };
 }
 
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */

@@ -217,3 +217,15 @@ export async function liveHr(): Promise<HrToday> {
     denied: raw.denied,
   };
 }
+
+export type BackupStatus = {
+  checked_at: string;
+  local: { taken_at: string; bytes: number; files: number; encrypted: boolean } | null;
+  offsite: { enabled: boolean; taken_at?: string | null; bytes?: number; sets?: number; error?: string };
+  encrypted: boolean;
+};
+
+/** System Manager only (`dropout_core.backups.status`). */
+export function liveBackup() {
+  return erpMethod<BackupStatus>("dropout_core.backups.status");
+}

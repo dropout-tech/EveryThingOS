@@ -8,6 +8,8 @@ from datetime import datetime
 from unittest import mock
 
 from dropout_onboard import backup, cli
+from dropout_onboard.r2 import R2
+from fakes import R2_ENV, FakeHost, backup_set
 
 SITE = "demo-make.local"
 NOW = datetime(2026, 10, 11, 9, 0, tzinfo=backup.TAIPEI)
@@ -66,7 +68,7 @@ class TestRestoreDrill(unittest.TestCase):
 	def test_finds_the_latest_backup_and_its_files(self):
 		b = backup.latest_backup(self.bench_dir, SITE)
 		self.assertTrue(b["files"]["database"].endswith("20261011_020000-demo-make_local-database.sql.gz"))
-		self.assertEqual(set(b["files"]), {"database", "public", "private"})
+		self.assertEqual(set(b["files"]), {"database", "public", "private", "config"})
 		self.assertEqual(b["taken_at"], datetime(2026, 10, 11, 2, 0, tzinfo=backup.TAIPEI))
 		self.assertIsNone(backup.latest_backup(self.bench_dir, "nobody.local"))
 
@@ -179,6 +181,112 @@ class TestRestoreDrill(unittest.TestCase):
 			a = cli.build_parser().parse_args(["backup", "verify", SITE, "--with-files", "--apply"])
 		self.assertEqual((a.backup_cmd, a.site, a.with_files, a.apply, a.db_root_password), ("verify", SITE, True, True, "from-env"))
 		self.assertIs(a.fn, backup.cmd_verify)
+
+
+class TestDrillFromR2(unittest.TestCase):
+	def setUp(self):
+		self.bench_dir = tempfile.mkdtemp()
+		self.state_dir = tempfile.mkdtemp()
+		os.makedirs(os.path.join(self.bench_dir, "sites", SITE))
+		with open(os.path.join(self.bench_dir, "sites", SITE, "site_config.json"), "w") as fh:
+			json.dump({"db_name": "_live"}, fh)
+		objects = {**backup_set(SITE, "20261010_020000"), **backup_set(SITE, "20261011_020000", encrypted=True), "other.local/20261011_030000/20261011_030000-other_local-database.sql.gz": "no"}
+		self.host = FakeHost(self.bench_dir, summaries={SITE: SOURCE, backup.scratch_name(SITE): RESTORED}, objects=objects)
+		self.env = mock.patch.dict(os.environ, R2_ENV)
+		self.env.start()
+		self.addCleanup(self.env.stop)
+
+	def args(self, **kw):
+		base = dict(site=SITE, backup=None, with_files=True, bench_dir=self.bench_dir, bench="bench", db_root_password="ROOT-PW", state_dir=self.state_dir, apply=False,
+			from_r2=True, backup_bucket="dropout-backups", backup_endpoint="https://acc.r2.cloudflarestorage.com", s3_python=None, encryption_key=None, keep_download=False)
+		base.update(kw)
+		return argparse.Namespace(**base)
+
+	def drill(self, **kw):
+		lines = []
+		return backup.Drill(self.args(**kw), out=lines.append, runner=self.host, now=NOW), lines
+
+	def test_file_names_frappe_writes(self):
+		self.assertEqual(backup.file_kind("20261011_020000-a_b-database-enc.sql.gz"), "database")
+		self.assertEqual(backup.file_kind("20261011_020000-a_b-partial-database.sql.gz"), "database")
+		self.assertEqual(backup.file_kind("20261011_020000-a_b-private-files-enc.tar"), "private")
+		self.assertEqual(backup.file_kind("20261011_020000-a_b-files.tgz"), "public")
+		self.assertEqual(backup.file_kind("20261011_020000-a_b-site_config_backup-enc.json"), "config")
+		self.assertIsNone(backup.file_kind("notes.txt"))
+		sets = backup.remote_sets([{"key": k, "size": 1} for k in self.host.bucket], f"{SITE}/")
+		self.assertEqual([s["stamp"] for s in sets], ["20261010_020000", "20261011_020000"])
+		self.assertEqual(sets[-1]["bytes"], 4)
+
+	def test_dry_run_lists_the_bucket_but_downloads_nothing(self):
+		d, lines = self.drill()
+		self.assertEqual(d.run(apply=False), 0)
+		self.assertEqual([r["op"] for r in self.host.s3], ["list"])
+		self.assertEqual(self.host.s3[0]["prefix"], f"{SITE}/")
+		text = "\n".join(lines)
+		self.assertIn("20261011_020000-demo-make_local-database-enc.sql.gz（7.0 小時前），有加密", text)
+		self.assertEqual(self.host.calls, [])
+		argv, env = self.host.envs[0]
+		self.assertEqual(argv[0], os.path.join(self.bench_dir, "env", "bin", "python"))
+		self.assertEqual((env["BACKUP_SECRET_ACCESS_KEY"], env["BACKUP_BUCKET"]), ("R2-SECRET-xyz", "dropout-backups"))
+		self.assertNotIn("R2-SECRET-xyz", " ".join(argv))
+
+	def test_apply_downloads_restores_with_the_backup_key_and_cleans_up(self):
+		d, lines = self.drill(apply=True)
+		self.assertEqual(d.run(apply=True), 0, "\n".join(lines))
+		got = sorted(os.path.basename(r["key"]) for r in self.host.s3 if r["op"] == "get")
+		self.assertEqual(got, sorted(os.path.basename(k) for k in backup_set(SITE, "20261011_020000", encrypted=True)))
+		restore = next(c for c in self.host.calls if "restore" in c)
+		self.assertIn("r2-downloads", restore[4])
+		self.assertEqual(restore[restore.index("--encryption-key") + 1], "ENC-KEY-777")
+		self.assertFalse(os.path.exists(os.path.join(self.state_dir, "r2-downloads", f"{SITE}-20261011_020000")))
+		drop = self.host.calls[-1]
+		self.assertIn("--archived-sites-path", drop)
+		self.assertFalse(os.path.exists(drop[drop.index("--archived-sites-path") + 1]), "the archived copy of the scratch site must not stay on disk")
+		path = os.path.join(self.state_dir, "restore-drills", os.listdir(os.path.join(self.state_dir, "restore-drills"))[0])
+		with open(path, encoding="utf-8") as fh:
+			text = fh.read()
+		report = json.loads(text)
+		self.assertEqual((report["from"], report["encrypted"], report["passed"]), ("r2", True, True))
+		self.assertIn("download_minutes", report)
+		for secret in ("ROOT-PW", "ENC-KEY-777", "R2-SECRET-xyz"):
+			self.assertNotIn(secret, text)
+			self.assertNotIn(secret, "\n".join(lines))
+
+	def test_encrypted_backup_without_any_key_fails_before_touching_the_bench(self):
+		for k in list(self.host.bucket):
+			if k.endswith("-enc.json"):
+				self.host.bucket[k] = json.dumps({"db_name": "_old"})
+		d, lines = self.drill()
+		self.assertEqual(d.run(apply=True), 1)
+		self.assertEqual(self.host.calls, [])
+		self.assertTrue(any("找不到金鑰" in ln for ln in lines))
+
+	def test_key_from_the_environment_wins(self):
+		d, _ = self.drill(encryption_key="GIVEN-KEY")
+		self.assertEqual(d.run(apply=True), 0)
+		restore = next(c for c in self.host.calls if "restore" in c)
+		self.assertEqual(restore[restore.index("--encryption-key") + 1], "GIVEN-KEY")
+
+	def test_r2_errors_are_reported_without_the_secret(self):
+		self.host.fail = "s3:list"
+		d, lines = self.drill()
+		self.assertEqual(d.run(apply=False), 1)
+		self.assertIn("R2 list 失敗", lines[-1])
+		self.assertNotIn("R2-SECRET-xyz", lines[-1])
+
+	def test_missing_r2_settings_are_named(self):
+		with mock.patch.dict(os.environ, {"BACKUP_SECRET_ACCESS_KEY": ""}):
+			d, lines = self.drill(backup_bucket=None)
+			self.assertEqual(d.run(apply=False), 1)
+		self.assertIn("--backup-bucket", lines[-1])
+		self.assertIn("BACKUP_SECRET_ACCESS_KEY", lines[-1])
+		self.assertEqual(self.host.s3, [])
+
+	def test_cli_parses_from_r2(self):
+		with mock.patch.dict(os.environ, {"BACKUP_BUCKET": "b", "BACKUP_ENDPOINT": "https://e", "BACKUP_ENCRYPTION_KEY": "k"}):
+			a = cli.build_parser().parse_args(["backup", "verify", SITE, "--from-r2", "--with-files"])
+		self.assertEqual((a.from_r2, a.backup_bucket, a.backup_endpoint, a.encryption_key, a.apply), (True, "b", "https://e", "k", False))
+		self.assertIsInstance(R2.from_args(a), R2)
 
 
 if __name__ == "__main__":

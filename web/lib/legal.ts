@@ -28,7 +28,7 @@ export const CONTRACT = {
   noticeDays: 60,
   graceDays: 14,
   exportDays: 90,
-  exportPath: "設定 → 匯出全部資料（下載 ERPNext 備份）",
+  exportPath: "設定 → 下載全部資料（客戶、商品、銷項發票 CSV，或整站 ERPNext 備份）",
 };
 
 const monthFee = Math.round(PRICE_YEAR_TWD / 12);
@@ -79,8 +79,8 @@ const lifecycleTable = {
 
 const dataEnd = [
   `只能看、暫停、解約時，資料都留著，登入、看資料、管人、下載備份照常；只是不能新增或修改業務資料。`,
-  `匯出方式：${CONTRACT.exportPath}。內容是整個站台的資料庫與檔案，可以搬到任何 ERPNext v15。`,
-  `解約生效日起 ${CONTRACT.exportDays} 天內可以登入匯出；第 ${CONTRACT.exportDays + 1} 天起刪除站台，並刪除 R2 上這個站台的所有備份。刪除後無法復原，DropOut 會以 Email 告知刪除完成。`,
+  `匯出方式：${CONTRACT.exportPath}。整站備份是整個站台的資料庫與檔案，可以搬到任何 ERPNext v15。`,
+  `解約生效日起 ${CONTRACT.exportDays} 天內可以登入匯出；第 ${CONTRACT.exportDays + 1} 天起刪除站台，並刪除 R2 上這個站台的所有備份；刪除前留的最後一份備份另外保存 30 天後刪除，只用來處理刪除後 30 天內的爭議。刪除後無法復原，DropOut 會以 Email 告知刪除完成。`,
   "法律要求保存的資料（例如會計憑證），由客戶自己匯出保存。",
 ];
 

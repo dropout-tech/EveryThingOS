@@ -25,6 +25,14 @@ export default async function PlatformAccountPage({ params }: PageProps<"/platfo
           {account.lifecycle.message ? ` · ${account.lifecycle.message}` : ""}
         </p>
         {dead_letters ? <p className="mt-1 text-sm text-orange">{dead_letters} 件同步卡住（客戶在設定頁可以看原因並重送）</p> : null}
+        {account.backup_problem ? <p className="mt-1 text-sm text-orange">備份：{account.backup_problem}</p> : null}
+        {account.purged_at ? (
+          <p className="mt-1 text-sm text-cream-dim">{account.purged_at.slice(0, 10)} 已刪除資料</p>
+        ) : account.purge?.due_on ? (
+          <p className={`mt-1 text-sm ${account.purge.due ? "text-orange" : "text-cream-dim"}`}>
+            {account.purge.due_on} 起可以刪除資料（dropout-onboard fleet purge {account.site}）
+          </p>
+        ) : null}
         {health && health.level !== "gone" ? (
           <p className={`mt-1 text-sm ${health.level === "high" ? "text-orange" : "text-cream-dim"}`}>
             健康 {health.score} · {HEALTH_LABEL[health.level]}
@@ -38,7 +46,7 @@ export default async function PlatformAccountPage({ params }: PageProps<"/platfo
         <h3 className="text-sm">用量</h3>
         {account.usage ? (
           <ul className="grid gap-1 text-sm sm:grid-cols-2">
-            {Object.entries(account.usage).map(([k, v]) => (
+            {Object.entries(account.usage).filter(([k]) => k !== "backup").map(([k, v]) => (
               <li key={k}>
                 <span className="text-cream-dim">{k}</span> {String(v)}
               </li>

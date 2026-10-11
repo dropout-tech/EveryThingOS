@@ -8,6 +8,11 @@ function num(v: unknown) {
   return typeof v === "number" ? v : null;
 }
 
+function backupAge(iso: string, bytes?: number) {
+  const hours = Math.max(0, (Date.now() - new Date(iso).getTime()) / 3_600_000);
+  return `${hours < 1 ? "1 小時內" : `${Math.round(hours)} 小時前`} · ${Math.round((bytes ?? 0) / 1048576)} MB`;
+}
+
 export default async function PlatformPage({ searchParams }: PageProps<"/platform">) {
   const [res, bill] = await Promise.all([glueAdmin<{ today: string; accounts: PlatformAccount[] }>("/admin/accounts"), glueAdmin<BillingSummary>("/admin/billing")]);
   if (!res.operator) return null;
@@ -24,6 +29,8 @@ export default async function PlatformPage({ searchParams }: PageProps<"/platfor
   const seats = accounts.reduce((n, a) => n + (num(a.usage?.users) ?? 0), 0);
   const highRisk = accounts.filter((a) => health(a)?.level === "high").length;
   const unpaid = Object.values(billing?.accounts ?? {}).filter((x) => x.open).length;
+  const purgeDue = accounts.filter((a) => a.purge?.due);
+  const staleBackups = accounts.filter((a) => a.backup_problem).length;
 
   return (
     <div className="space-y-5">
@@ -46,6 +53,7 @@ export default async function PlatformPage({ searchParams }: PageProps<"/platfor
       </section>
       <p className="flex flex-wrap gap-x-4 text-xs text-cream-dim">
         <span>今天 {today}（台灣）。用量每天凌晨兩點更新。</span>
+        {staleBackups ? <span className="text-orange">{staleBackups} 家備份有問題（看「最近備份」欄）</span> : null}
         <span>
           排序：
           {byEnds ? <Link href="/platform" className="underline hover:text-cream">高風險在前</Link> : "高風險在前"}
@@ -61,11 +69,27 @@ export default async function PlatformPage({ searchParams }: PageProps<"/platfor
           <span className="text-orange">讀不到帳單與健康度：{bill.text || bill.status}</span>
         )}
       </p>
+      {purgeDue.length ? (
+        <section className="glass-well space-y-2 p-5">
+          <h3 className="text-sm">解約滿 90 天，待刪除</h3>
+          <p className="text-xs text-cream-dim">系統不會自動刪。確認客戶已經拿到資料後，在主機上跑 dropout-onboard fleet purge &lt;site&gt;（先預演，再加 --apply）。</p>
+          <ul className="space-y-1 text-sm">
+            {purgeDue.map((a) => (
+              <li key={a.site}>
+                <Link href={`/platform/${encodeURIComponent(a.site)}`} className="hover:text-teal">
+                  {a.company}
+                </Link>
+                <span className="text-cream-dim">（{a.site}）解約 {a.cancelled_at?.slice(0, 10) ?? "—"}，{a.purge?.due_on} 起可刪</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <section className="glass overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="text-xs text-cream-dim">
             <tr>
-              {["公司", "健康", "狀態", "到期", "帳單", "帳號／30 天活躍", "本月發票", "資料量", "網址"].map((h) => (
+              {["公司", "健康", "狀態", "到期", "帳單", "帳號／30 天活躍", "本月發票", "資料量", "最近備份", "網址"].map((h) => (
                 <th key={h} className="px-4 py-3 font-normal">
                   {h}
                 </th>
@@ -107,6 +131,10 @@ export default async function PlatformPage({ searchParams }: PageProps<"/platfor
                   </td>
                   <td className="px-4 py-3">{num(a.usage?.invoices_this_month) ?? "—"}</td>
                   <td className="px-4 py-3">{num(a.usage?.db_mb) !== null ? `${Math.round((num(a.usage?.db_mb) ?? 0) + (num(a.usage?.files_mb) ?? 0))} MB` : typeof a.usage?.error === "string" ? <span className="text-orange">讀不到</span> : "—"}</td>
+                  <td className="max-w-56 px-4 py-3">
+                    {a.usage?.backup?.offsite?.taken_at ? backupAge(a.usage.backup.offsite.taken_at, a.usage.backup.offsite.bytes) : "—"}
+                    {a.backup_problem ? <span className="block text-xs text-orange">{a.backup_problem}</span> : null}
+                  </td>
                   <td className="px-4 py-3 text-xs text-cream-dim">{a.hosts.join("、") || "—"}</td>
                 </tr>
               );

@@ -1,0 +1,112 @@
+# External watchdog: checks the glue and the shell from outside Cloudflare, so
+# an outage of the glue itself (and of its 5-minute monitor) still gets noticed.
+#
+# Repository variables (Settings → Secrets and variables → Actions → Variables):
+#   UPTIME_GLUE_URL   e.g. https://glue.dropout.tw      → /health and /status
+#   UPTIME_SHELL_URL  e.g. https://demo.os.dropout.tw   → /api/health and /status
+# Optional repository secret ALERT_WEBHOOK_URL (Slack, Discord, Google Chat or any
+# JSON endpoint): one message when it breaks and one when it recovers. Without it,
+# the failed run is the alert (GitHub emails on failed scheduled runs).
+# With neither variable set the job does nothing.
+
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+    inputs:
+      test_alert:
+        description: Send a test message to ALERT_WEBHOOK_URL
+        type: boolean
+        default: false
+
+permissions:
+  actions: read
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GLUE_URL: ${{ vars.UPTIME_GLUE_URL }}
+      SHELL_URL: ${{ vars.UPTIME_SHELL_URL }}
+      ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+      TEST_ALERT: ${{ inputs.test_alert && '1' || '' }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Check glue and shell
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ -z "$GLUE_URL" ] && [ -z "$SHELL_URL" ]; then
+            echo "UPTIME_GLUE_URL and UPTIME_SHELL_URL are not set; nothing to check."
+            exit 0
+          fi
+
+          problems=()
+          # get URL JQ_TEST LABEL: retries transient failures, then checks the JSON body.
+          get() {
+            local url="$1" test="$2" label="$3" body code
+            body=$(curl -sS --max-time 15 --retry 2 --retry-delay 10 --retry-all-errors -w '\n%{http_code}' "$url" 2>&1) || true
+            code=${body##*$'\n'}
+            body=${body%$'\n'*}
+            if [ "$code" != "200" ]; then
+              problems+=("$label：HTTP ${code:-連不上} ${body:0:120}")
+              return
+            fi
+            if [ -n "$test" ] && ! jq -e "$test" >/dev/null 2>&1 <<<"$body"; then
+              problems+=("$label：回應不是預期的內容 ${body:0:120}")
+              return
+            fi
+            echo "ok  $label"
+          }
+
+          if [ -n "$GLUE_URL" ]; then
+            g="${GLUE_URL%/}"
+            get "$g/health" '.ok == true' "膠水 /health"
+            # components.glue turns "degraded" when no check is recent: the 5-minute cron has stopped.
+            get "$g/status" '.components.glue == "up" and .status != "down"' "膠水 /status（排程與整體狀態）"
+          fi
+          if [ -n "$SHELL_URL" ]; then
+            s="${SHELL_URL%/}"
+            get "$s/api/health" '.ok == true' "殼 /api/health"
+            get "$s/status" '' "殼 /status 頁"
+          fi
+
+          previous=$(gh run list --workflow uptime.yml --status completed --limit 1 --json conclusion --jq '.[0].conclusion // ""' 2>/dev/null || echo "")
+
+          notify() {
+            [ -n "$ALERT_WEBHOOK_URL" ] || return 0
+            case "$ALERT_WEBHOOK_URL" in https://*) ;; *) echo "ALERT_WEBHOOK_URL must be https"; return 0 ;; esac
+            local host body
+            host=$(sed -E 's#^https://([^/:]+).*#\1#' <<<"$ALERT_WEBHOOK_URL")
+            case "$host" in
+              hooks.slack.com|chat.googleapis.com) body=$(jq -n --arg t "$1" '{text: $t}') ;;
+              discord.com|*.discord.com|discordapp.com|*.discordapp.com) body=$(jq -n --arg t "$1" '{content: $t}') ;;
+              *) body=$(jq -n --arg t "$1" '{text: $t, content: $t, message: $t}') ;;
+            esac
+            curl -sS --max-time 15 -o /dev/null -w 'webhook %{http_code}\n' -H 'content-type: application/json' -d "$body" "$ALERT_WEBHOOK_URL" || echo "webhook not sent"
+          }
+
+          if [ -n "$TEST_ALERT" ]; then
+            notify "[DropOut OS 外部監看] 測試訊息，收到代表通知設定正確。$RUN_URL"
+          fi
+
+          if [ ${#problems[@]} -gt 0 ]; then
+            text=$(printf '%s\n' "[DropOut OS 外部監看] 有 ${#problems[@]} 項連不上" "${problems[@]}" "$RUN_URL")
+            echo "$text"
+            # One message per outage: skip it while the previous run already failed.
+            [ "$previous" = "failure" ] || notify "${text:0:1900}"
+            exit 1
+          fi
+          if [ "$previous" = "failure" ]; then
+            notify "[DropOut OS 外部監看] 恢復：膠水與殼都正常了。$RUN_URL"
+          fi
+          echo "All checks passed."
