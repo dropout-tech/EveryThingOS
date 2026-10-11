@@ -112,7 +112,8 @@
 | 殼上 Cloudflare | **OpenNext**，不用 vinext | vinext 目前是 beta，且是重新實作 Next.js API；OpenNext 跑的是正式的 `next build` |
 | Next.js | 維持在 OpenNext 支援的最新修補版 | 目前最低 16.3.8 |
 | 教育 app | 只有在 Frappe Education 的穩定分支支援 v15 時才加；否則用商品＋專案表達期班 | 不為了一個產業包拖住核心版本 |
-| 官網 | Frappe Builder（與 ERPNext 同生態、同帳號） | 相容性最高；之後若要商品目錄與結帳，優先用 ERPNext 同生態的方案，不另接外部電商 |
+| 官網 | Frappe Builder 做頁面；Frappe Webshop 做商品目錄與結帳；台灣金流用自訂 app `dropout_pay_tw` 接 Frappe Payments | 商品、庫存、訂單直接是 ERPNext 主檔，不另接外部電商、不用同步；細節見 `ONBOARDING-TOOLKIT.md` |
+| 導入 | Frappe 自訂 app（fixtures）＋產業包 app＋官方 Data Import | 新公司全靠設定與指令開好；見 `ONBOARDING-TOOLKIT.md` |
 
 ---
 
@@ -180,7 +181,8 @@
 - 電子報：分群、序列、退訂、開信與點擊回寫
 - 生意：報價到收款、進貨、庫存、帳齡、營業稅；電子發票
 - 會議紀錄：自己進 Zoom／Google Meet／Teams
-- 官網與落地頁（Frappe Builder）
+- 官網與落地頁（Frappe Builder）；商品目錄、購物車、結帳（Frappe Webshop）
+- 導入工具組：開站指令、搬家範本、檢查報表、導入引導
 - 一公司一站，開新公司是一個指令
 
 ### 不算（對外第一版禁止做）
@@ -259,7 +261,7 @@ flowchart TB
 | 系統紀錄 | ERPNext | 客人、身分、同意、事件、商品、庫存、單據、帳、電子報序列 |
 | 對話 | Chatwoot | LINE、IG、FB、官網、Email 收件匣 |
 | 會議 | Vexa | 行事曆排程、進會議、逐字稿 |
-| 官網 | Frappe Builder | 官網與落地頁 |
+| 官網 | Frappe Builder + Webshop | 官網、落地頁、商品目錄、結帳 |
 | 膠水 | Workers + Queues + Workflows | G1–G10、重試、死信 |
 | AI | AI Gateway → Workers AI | 轉文字、摘要；換模型不改程式 |
 | 檔案 | R2 | 附件、錄音、逐字稿、備份 |
@@ -384,10 +386,10 @@ Cloudflare、Meta、LINE、寄信服務、金流、加值中心是外部服務�
 | --- | --- | --- | --- |
 | 0 | 決策凍結（第 0、0.3 節）；Next.js 安全更新 | 無 | 決策表無待定項 |
 | 1 | 殼搬上 Cloudflare；`web/lib/sources` 示範／真實切換；`reply`→`chat`、`funnel`→`letter`；示範資料走完四系統七步 | Cloudflare 帳號 | 一個瀏覽器走完七步，每步標示範 |
-| 2 | 主機 + Coolify + Tunnel；ERPNext v15 三站（製造、顧問、教育）；ERPNext 登入；殼的客人與生意讀 ERPNext；備份還原演練 | 主機 | 在殼裡建報價，ERPNext 看得到；拔掉主機殼不壞 |
+| 2 | 主機 + Coolify + Tunnel；ERPNext v15 三站（製造、顧問、教育）；ERPNext 登入；殼的客人與生意讀 ERPNext；備份還原演練；`dropout_core`、開站指令、搬家範本與檢查報表 | 主機 | 在殼裡建報價，ERPNext 看得到；拔掉主機殼不壞 |
 | 3 | Chatwoot（官網小工具、LINE、IG、FB）；G1；客人 360；Chatwoot 側欄嵌客人卡片 | LINE 官方帳號、Meta App 審核 | 手機在 LINE 問一句，出現在客人卡片 |
-| 4 | 官網與落地頁；電子報（G3–G8）；會議機器人 | 寄件網域 DNS、寄信服務 | 落地頁訂閱 → 確認信 → 收到電子報 → 點擊回卡片；機器人自己進一場 Meet 並寫回摘要 |
-| 5 | 電子發票、金流（G9、G10）；開新公司指令；三個示範產業包（輕製造、專業服務、教育培訓） | 加值中心、金流合約 | 第二家公司一個指令開好並跑完一筆含發票的生意 |
+| 4 | 官網、落地頁、Webshop 商品目錄與登入結帳；電子報（G3–G8）；會議機器人 | 寄件網域 DNS、寄信服務 | 落地頁訂閱 → 確認信 → 收到電子報 → 點擊回卡片；機器人自己進一場 Meet 並寫回摘要 |
+| 5 | 電子發票、台灣金流 `dropout_pay_tw`（G9、G10）；三個示範產業包（製造、顧問、教育）；導入引導進「今天」 | 加值中心、金流合約 | 第二家公司一個指令開好並跑完一筆含發票的生意 |
 | 6（選配） | OpenReply、Mautic、Shlink、Frappe Insights、Keycloak | 依客戶需求 | 單一客戶開關，不影響其他公司 |
 
 ---
@@ -405,7 +407,6 @@ Cloudflare、Meta、LINE、寄信服務、金流、加值中心是外部服務�
 ## 13. 仍開放的問題
 
 1. 賣的時候是代管雲還是給客戶自架？（都一公司一站，只差誰維運）
-2. 官網要不要商品目錄與結帳？（官網用 Builder 已定；結帳依 0.4 原則選 ERPNext 同生態方案）
-3. 寄信服務選哪一家？（要有開信、點擊、退信事件回報）
-4. Zoom 對網頁版自動加入的條款，正式上線前再確認一次
-5. Meta 內建留言轉私訊夠不夠用？（第一個客戶試跑後決定要不要加 OpenReply）
+2. 寄信服務選哪一家？（要有開信、點擊、退信事件回報）
+3. Zoom 對網頁版自動加入的條款，正式上線前再確認一次
+4. Meta 內建留言轉私訊夠不夠用？（第一個客戶試跑後決定要不要加 OpenReply）
