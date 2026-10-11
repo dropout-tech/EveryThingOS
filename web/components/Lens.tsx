@@ -88,7 +88,6 @@ export function Lens({ children, className = "", radius = 40, elasticity = 0.14 
       setScale(Math.round(Math.min(64, Math.max(22, Math.min(rect.width, rect.height) * 0.08))));
     }
 
-    paint();
     const observer = new ResizeObserver(paint);
     observer.observe(node);
     return () => observer.disconnect();
