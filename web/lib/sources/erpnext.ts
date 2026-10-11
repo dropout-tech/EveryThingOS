@@ -1,5 +1,5 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { SESSION_COOKIE, cookieOptions, readSession, seal, type Session } from "../session";
 import { liveConfig, loginRequired, type LiveConfig } from "./config";
 
@@ -51,7 +51,8 @@ async function refresh(config: LiveConfig, session: Session): Promise<Session> {
     expiresAt: Date.now() + (token.expires_in ?? 3600) * 1000,
   };
   try {
-    (await cookies()).set(SESSION_COOKIE, await seal(next, config.sessionSecret!), cookieOptions());
+    const proto = (await headers()).get("x-forwarded-proto")?.split(",")[0].trim();
+    (await cookies()).set(SESSION_COOKIE, await seal(next, config.sessionSecret!), cookieOptions(undefined, proto ? `${proto}:` : undefined));
   } catch {
     /* Server Components cannot set cookies; the refreshed token is still used for this request. */
   }

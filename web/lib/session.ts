@@ -63,8 +63,10 @@ export async function pkceChallenge(verifier: string) {
   return b64url(new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(verifier))));
 }
 
-export function cookieOptions(maxAge = MAX_AGE) {
-  return { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge };
+/** `origin` is the address the person typed; browsers drop Secure cookies on plain-http hosts such as local test hostnames. */
+export function cookieOptions(maxAge = MAX_AGE, origin?: string) {
+  const secure = origin ? origin.startsWith("https:") : process.env.NODE_ENV === "production";
+  return { httpOnly: true, secure, sameSite: "lax" as const, path: "/", maxAge };
 }
 
 export async function readSession(secret: string | undefined, site?: string): Promise<Session | null> {

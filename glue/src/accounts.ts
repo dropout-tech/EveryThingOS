@@ -63,8 +63,9 @@ export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_end
   if (!ends) return { stage: "active", days: null, ends: null, writable: true, bots: true, message: "" };
   const days = Math.floor((endOfDay(ends) - now.getTime()) / DAY);
   if (days >= 0) {
-    if (!paid) return { stage: "trial", days, ends, writable: true, bots: true, message: `試用還有 ${days + 1} 天（到 ${ends}）。` };
-    if (days < NOTICE_DAYS) return { stage: "due_soon", days, ends, writable: true, bots: true, message: `年約 ${ends} 到期，還有 ${days + 1} 天。續約後不會中斷。` };
+    const left = days === 0 ? "今天到期" : `還有 ${days} 天`;
+    if (!paid) return { stage: "trial", days, ends, writable: true, bots: true, message: `試用${left}（到 ${ends}）。` };
+    if (days < NOTICE_DAYS) return { stage: "due_soon", days, ends, writable: true, bots: true, message: `年約 ${ends} 到期，${left}。續約後不會中斷。` };
     return { stage: "active", days, ends, writable: true, bots: true, message: "" };
   }
   const late = -days;

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { here } from "@/lib/auth";
 import { SESSION_COOKIE, unseal, type Session } from "@/lib/session";
 import { liveConfig } from "@/lib/sources/config";
 
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
       body: new URLSearchParams({ token: session.accessToken }),
     }).catch(() => undefined);
   }
-  const response = NextResponse.redirect(new URL("/", request.url), 303);
+  const response = NextResponse.redirect(here("/", request), 303);
   response.cookies.delete(SESSION_COOKIE);
   return response;
 }

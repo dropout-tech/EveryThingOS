@@ -1,5 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
+import { publicOrigin } from "./auth";
 import { fleetMode, liveConfig, writeBlocked } from "./sources/config";
 import { deskUrl, erpPost, SourceError } from "./sources/erpnext";
 
@@ -13,7 +14,7 @@ export type ActionResult = { ok: boolean; message?: string; created?: { doctype:
 export function sameOrigin(request: NextRequest, { json = true } = {}) {
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  const allowed = new Set([request.nextUrl.origin]);
+  const allowed = new Set([request.nextUrl.origin, publicOrigin(request)]);
   if (process.env.SHELL_URL && !fleetMode()) allowed.add(new URL(process.env.SHELL_URL).origin);
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   if (host) allowed.add(`${request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "")}://${host}`);

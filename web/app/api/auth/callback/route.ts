@@ -2,10 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { LOGIN_COOKIE, SESSION_COOKIE, cookieOptions, seal, unseal, type PendingLogin, type Session } from "@/lib/session";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
 import { exchangeToken } from "@/lib/sources/erpnext";
-import { redirectUri } from "@/lib/auth";
+import { here, publicOrigin, redirectUri } from "@/lib/auth";
 
 function fail(request: NextRequest, reason: string) {
-  const url = new URL("/login", request.url);
+  const url = here("/login", request);
   url.searchParams.set("error", reason);
   const response = NextResponse.redirect(url);
   response.cookies.delete(LOGIN_COOKIE);
@@ -14,7 +14,7 @@ function fail(request: NextRequest, reason: string) {
 
 export async function GET(request: NextRequest) {
   const config = await liveConfig();
-  if (!loginRequired(config)) return NextResponse.redirect(new URL("/workspace", request.url));
+  if (!loginRequired(config)) return NextResponse.redirect(here("/workspace", request));
   const params = request.nextUrl.searchParams;
   const pending = await unseal<PendingLogin>(request.cookies.get(LOGIN_COOKIE)?.value, config.sessionSecret!);
   if (!pending || !params.get("state") || params.get("state") !== pending.state) return fail(request, "state");
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
     refreshToken: token.refresh_token,
     expiresAt: Date.now() + (token.expires_in ?? 3600) * 1000,
   };
-  const response = NextResponse.redirect(new URL(pending.next, request.url));
+  const response = NextResponse.redirect(here(pending.next, request));
   response.cookies.delete(LOGIN_COOKIE);
-  response.cookies.set(SESSION_COOKIE, await seal(session, config.sessionSecret!), cookieOptions());
+  response.cookies.set(SESSION_COOKIE, await seal(session, config.sessionSecret!), cookieOptions(undefined, publicOrigin(request)));
   return response;
 }

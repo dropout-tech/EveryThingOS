@@ -332,7 +332,8 @@ describe("accounts", () => {
   const now = new Date("2026-10-11T04:00:00Z");
 
   it("walks trial → due soon → past due → read only, and manual states win", () => {
-    expect(lifecycle({ state: "active", trial_ends: "2026-10-20" }, now)).toMatchObject({ stage: "trial", writable: true });
+    expect(lifecycle({ state: "active", trial_ends: "2026-10-20" }, now)).toMatchObject({ stage: "trial", writable: true, message: "試用還有 9 天（到 2026-10-20）。" });
+    expect(lifecycle({ state: "active", trial_ends: "2026-10-11" }, now).message).toBe("試用今天到期（到 2026-10-11）。");
     expect(lifecycle({ state: "active", renews_on: "2027-10-10" }, now)).toMatchObject({ stage: "active", message: "" });
     expect(lifecycle({ state: "active", renews_on: "2026-11-30" }, now)).toMatchObject({ stage: "due_soon", writable: true });
     expect(lifecycle({ state: "active", renews_on: "2026-10-11" }, now).stage).toBe("due_soon");

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { here } from "@/lib/auth";
 import { sameOrigin } from "@/lib/actions";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
 import { liveMe } from "@/lib/sources/live";
@@ -7,7 +8,7 @@ import { liveMe } from "@/lib/sources/live";
 export async function POST(request: NextRequest) {
   const config = await liveConfig();
   const glue = config.glue;
-  const back = (state: string) => NextResponse.redirect(new URL(`/workspace/settings?sync=${state}#sync`, request.url), 303);
+  const back = (state: string) => NextResponse.redirect(here(`/workspace/settings?sync=${state}#sync`, request), 303);
   if (!glue) return back("not-connected");
   if (!sameOrigin(request, { json: false })) return back("denied");
   if (loginRequired(config)) {
