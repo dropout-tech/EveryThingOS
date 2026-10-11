@@ -1934,6 +1934,41 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 }
 
+/* 問助理 (components/AskBoard.tsx) */
+@layer components {
+  .ask-answer {
+    padding-left: 0.875rem;
+    border-left: 2px solid var(--line);
+  }
+
+  .ask-rows > li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .ask-chip {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    padding: 0.25rem 0.875rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--chip-radius);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    text-align: left;
+    transition: background-color var(--motion-fast) ease-out;
+  }
+
+  .ask-chip:hover {
+    background: var(--surface-hover);
+  }
+}
+
+@media (pointer: coarse) {
+  .os-shell .ask-chip {
+    min-height: var(--ui-tap);
+  }
+}
+
 /* === Site pages (官網、法律、狀態、登入、營運後台) — owned by the site workstream; tokens above are untouched === */
 
 @layer components {

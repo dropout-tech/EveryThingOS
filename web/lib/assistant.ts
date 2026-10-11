@@ -796,6 +796,10 @@ function customerFacts(f: AssistantFacts, name: string) {
   return { person, aging, docs, rank, topRow: rank >= 0 && top ? top[rank] : undefined, bills };
 }
 
+/** Same words as the 客人 page uses for ERPNext Lead statuses. */
+const LEAD_STAGE: Record<string, string> = { Lead: "新名單", Open: "跟進中", Replied: "已回覆", Interested: "有興趣", Opportunity: "有機會", Quotation: "已報價", "Lost Quotation": "報價沒成" };
+const stageName = (stage: string) => LEAD_STAGE[stage] ?? stage;
+
 const STEP_LABEL: Record<SalesDoc["step"], string> = { quote: "報價等回覆", order: "訂單還沒交", fulfill: "做完待開發票", invoice: "待收款", paid: "已收款" };
 
 function customer(ctx: Ctx): Answer {
@@ -809,7 +813,7 @@ function customer(ctx: Ctx): Answer {
   const parts: string[] = [];
   const figures: Figure[] = [];
   const unseen: string[] = [];
-  if (c.person) parts.push(`在「${c.person.stage}」${c.person.channel ? `，從 ${c.person.channel} 來` : ""}`);
+  if (c.person) parts.push(`在「${stageName(c.person.stage)}」${c.person.channel ? `，從 ${c.person.channel} 來` : ""}`);
   if (c.aging && owed(c.aging) > 0) {
     parts.push(`欠我們 ${fmt(owed(c.aging))}${late(c.aging) ? `，逾期 ${fmt(late(c.aging))}` : "，還沒到期"}`);
     figures.push({ label: "欠我們", amount: owed(c.aging) }, { label: "已經逾期", amount: late(c.aging), tone: late(c.aging) ? "warn" : "ok" });
@@ -963,8 +967,8 @@ function leads({ f }: Ctx): Answer {
   if (!list.length) return base("leads", { text: "沒有還在跟的詢問。", source: src, link, follow: keep(["最大的客人是誰？"], f) });
   const hottest = f.mode === "demo" ? [...list].sort((a, b) => b.score - a.score)[0] : list[0];
   return base("leads", {
-    text: `${list.length} 位還在跟。${f.mode === "demo" ? "最有機會的" : "最近有動的"}是 ${hottest.name}（${hottest.stage}${hottest.channel ? `，從 ${hottest.channel} 來` : ""}）。`,
-    rows: list.slice(0, 6).map((x) => ({ label: x.name, detail: [x.stage, x.channel].filter(Boolean).join(" · "), href: x.href })),
+    text: `${list.length} 位還在跟。${f.mode === "demo" ? "最有機會的" : "最近有動的"}是 ${hottest.name}（${stageName(hottest.stage)}${hottest.channel ? `，從 ${hottest.channel} 來` : ""}）。`,
+    rows: list.slice(0, 6).map((x) => ({ label: x.name, detail: [stageName(x.stage), x.channel].filter(Boolean).join(" · "), href: x.href })),
     source: src,
     link,
     follow: keep([`${hottest.name} 最近怎樣？`, "哪張報價卡住最久？"], f),
