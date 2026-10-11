@@ -8,7 +8,7 @@ import unittest
 from contextlib import redirect_stdout
 from unittest import mock
 
-from dropout_onboard import bootstrap, checks, cli, convert, fleet, plan, provision
+from dropout_onboard import bootstrap, checks, cli, convert, fleet, plan, provision, taiwan
 
 EXAMPLES = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "examples")
 
@@ -125,6 +125,31 @@ class TestChecks(unittest.TestCase):
 		self.assertIn("數量不是數字", problems)
 		self.assertIn("商品主檔裡沒有這個料號", problems)
 		self.assertIn("同一個倉庫重複出現", problems)
+
+
+class TestSharedRules(unittest.TestCase):
+	"""tests/fixtures/import_rules.json is also run against web/lib/importer.ts, so the CLI and the web import wizard agree."""
+
+	def setUp(self):
+		with open(os.path.join(HERE, "tests", "fixtures", "import_rules.json"), encoding="utf-8") as fh:
+			self.rules = json.load(fh)
+
+	def test_tax_id(self):
+		for case in self.rules["tax_id"]:
+			self.assertEqual(taiwan.is_valid_tax_id(case["value"]), case["valid"], case["value"])
+
+	def test_phone_email_number(self):
+		for case in self.rules["phone"]:
+			self.assertEqual(taiwan.normalize_phone(case["value"]), case["e164"], case["value"])
+		for case in self.rules["email"]:
+			self.assertEqual(taiwan.normalize_email(case["value"]), case["normalized"], case["value"])
+		for case in self.rules["number"]:
+			self.assertEqual(convert._transform(case["value"], "number"), case["clean"], case["value"])
+
+	def test_2023_rule_accepts_sums_divisible_by_five(self):
+		self.assertTrue(taiwan.is_valid_tax_id("10047514"))
+		self.assertTrue(taiwan.is_valid_tax_id("10324679"))
+		self.assertFalse(taiwan.is_valid_tax_id("10047515"))
 
 
 class TestCli(unittest.TestCase):
