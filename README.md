@@ -18,6 +18,13 @@
 cd web && npm install && npm run dev
 ```
 
+Cloudflare Workers（OpenNext）：
+
+```bash
+cd web && npm run preview   # 本機用 Workers 執行環境跑一次
+cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_API_TOKEN 與 CLOUDFLARE_ACCOUNT_ID
+```
+
 - `/` 現場 → 規模 → 功能。選過的人會直接進今天（`/?setup=1` 重設）
 - `/pricing` 一年十萬
 - `/consulting` 免費導入
