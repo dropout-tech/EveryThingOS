@@ -534,6 +534,10 @@ html[data-theme="white"] .site-error {
   opacity: 0.55;
 }
 
+.site-chip-icon::before {
+  display: none;
+}
+
 .site-chip[data-tone="ok"] {
   color: #8ff0c4;
   border-color: rgba(143, 240, 196, 0.4);
