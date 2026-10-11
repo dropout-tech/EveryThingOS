@@ -257,6 +257,9 @@ def usage():
 	month_start = getdate().replace(day=1)
 	staff = frappe.get_all("User", filters=_staff_filters(), fields=["enabled", "last_active"])
 	active_cutoff = add_days(now_datetime(), -30)
+	week_cutoff = add_days(now_datetime(), -7)
+	today = getdate()
+	last_active = max((u.last_active for u in staff if u.last_active), default=None)
 	db_bytes = frappe.db.sql(
 		"select coalesce(sum(data_length + index_length), 0) from information_schema.tables where table_schema = %s",
 		frappe.conf.db_name,
@@ -265,7 +268,11 @@ def usage():
 	return {
 		"users": sum(cint(u.enabled) for u in staff),
 		"active_users_30d": sum(1 for u in staff if cint(u.enabled) and u.last_active and u.last_active >= active_cutoff),
+		"active_users_7d": sum(1 for u in staff if cint(u.enabled) and u.last_active and u.last_active >= week_cutoff),
+		"last_active": str(last_active) if last_active else None,
 		"invoices_this_month": frappe.db.count("Sales Invoice", {"docstatus": 1, "posting_date": (">=", month_start)}),
+		"invoices_30d": frappe.db.count("Sales Invoice", {"docstatus": 1, "posting_date": (">", add_days(today, -30))}),
+		"invoices_prev_30d": frappe.db.count("Sales Invoice", {"docstatus": 1, "posting_date": ("between", [add_days(today, -60), add_days(today, -30)])}),
 		"orders_this_month": frappe.db.count("Sales Order", {"docstatus": 1, "transaction_date": (">=", month_start)}),
 		"emails_this_month": get_emails_sent_this_month(),
 		"db_mb": round(float(db_bytes) / 1048576, 1),

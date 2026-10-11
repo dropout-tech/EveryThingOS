@@ -86,6 +86,8 @@ export type PlatformAccount = {
   trial_ends?: string | null;
   renews_on?: string | null;
   contact_email?: string | null;
+  tax_id?: string | null;
+  billing_address?: string | null;
   hosts: string[];
   usage?: Record<string, number | string> | null;
   usage_at?: string | null;
@@ -94,6 +96,44 @@ export type PlatformAccount = {
 };
 
 export type AccountEvent = { id: number; at: string; actor: string; action: string; detail: string | null };
+
+export type HealthLevel = "high" | "watch" | "ok" | "gone";
+
+export type Health = { score: number; level: HealthLevel; reasons: string[] };
+
+export const HEALTH_LABEL: Record<HealthLevel, string> = { high: "高風險", watch: "注意", ok: "健康", gone: "已解約" };
+
+export type GatewayStatus = { ecpay: "production" | "staging" | null; einvoice: "production" | "staging" | null };
+
+export type PlatformInvoice = {
+  id: string;
+  site: string;
+  period: string;
+  buyer_name: string;
+  buyer_tax_id: string | null;
+  net: number;
+  tax: number;
+  amount: number;
+  status: "open" | "paid" | "void";
+  created_at: string;
+  paid_at: string | null;
+  paid_via: "ecpay" | "offline" | null;
+  trade_no: string | null;
+  reference: string | null;
+  renewed_until: string | null;
+  void_reason: string | null;
+  einvoice_number: string | null;
+  einvoice_error: string | null;
+  pay_url: string | null;
+};
+
+export type BillingSummary = {
+  gateway: GatewayStatus;
+  price: { net: number; tax: number; amount: number };
+  accounts: Record<string, { health: Health; open: { id: string; amount: number; created_at: string } | null; einvoice_failed: boolean }>;
+};
+
+export const ntd = (n: number) => `NT$${n.toLocaleString("en-US")}`;
 
 export const STAGE_LABEL: Record<Stage, string> = {
   trial: "試用",

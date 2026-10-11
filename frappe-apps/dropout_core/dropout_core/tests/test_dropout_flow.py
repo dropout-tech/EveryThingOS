@@ -429,6 +429,8 @@ class TestTeam(FrappeTestCase):
 		u = team.usage()
 		self.assertGreaterEqual(u["users"], 1)
 		self.assertIn("db_mb", u)
+		for key in ("active_users_7d", "last_active", "invoices_30d", "invoices_prev_30d"):
+			self.assertIn(key, u)
 
 
 class TestAccountLock(FrappeTestCase):

@@ -5,7 +5,7 @@ import { glueAdmin, platformOperator, type PlatformAccount } from "@/lib/platfor
 type Body =
   | { action: "renew"; years?: number; reference?: string }
   | { action: "state"; state: "active" | "suspended" | "cancelled"; reason?: string }
-  | { action: "update"; company?: string; contact_email?: string; hosts?: string[]; trial_ends?: string | null; renews_on?: string | null };
+  | { action: "update"; company?: string; contact_email?: string; tax_id?: string | null; billing_address?: string | null; hosts?: string[]; trial_ends?: string | null; renews_on?: string | null };
 
 /** DropOut staff only: renew, suspend/resume/cancel, or edit one company's account. */
 export async function POST(request: NextRequest, { params }: RouteContext<"/api/platform/accounts/[site]">) {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
         ? await glueAdmin<{ account: PlatformAccount; erpnext?: boolean }>(`${path}/state`, { method: "POST", body: { state: body.state, reason: body.reason } })
         : await glueAdmin<{ account: PlatformAccount; erpnext?: boolean }>(path, {
             method: "PUT",
-            body: { company: body.company, contact_email: body.contact_email, hosts: body.hosts, trial_ends: body.trial_ends, renews_on: body.renews_on },
+            body: { company: body.company, contact_email: body.contact_email, tax_id: body.tax_id, billing_address: body.billing_address, hosts: body.hosts, trial_ends: body.trial_ends, renews_on: body.renews_on },
           });
   if (!res.ok || !res.data) return refuse(res.text || `回應 ${res.status}`, res.status === 409 ? 409 : 502);
   const a = res.data.account;

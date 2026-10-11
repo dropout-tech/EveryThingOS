@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ADMIN_ROLE } from "@/lib/access";
+import { openInvoice } from "@/lib/billing";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { PRICE_LABEL } from "@/lib/commercial";
 import { SetupProgress } from "@/components/SetupProgress";
@@ -43,6 +45,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   const [setup, dead, me, config] = await Promise.all([getSetup(), getDeadLetters(), getMe(), liveConfig()]);
   const live = Object.fromEntries(await Promise.all(SYSTEMS.map(async ([id]) => [id, await isLive(id)] as const))) as Record<SystemId, boolean>;
   const account = config.tenant;
+  const invoice = account && me.origin === "live" && me.data?.roles.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
   const exportUrl = deskUrl("/app/backups", config);
   const { sync } = await searchParams;
   const notice = typeof sync === "string" ? SYNC_NOTICE[sync] : null;
@@ -95,6 +98,16 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
               {account.company} · 年約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
             </p>
             {account.lifecycle.message ? <p className="mt-1 text-sm text-cream-dim">{account.lifecycle.message}</p> : null}
+            {invoice ? (
+              <p className="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                <span>
+                  續約帳單 {invoice.id}：NT${invoice.amount.toLocaleString("en-US")}（含 5% 營業稅）
+                </span>
+                <a href={invoice.pay_url} className="glass-cta rounded-full px-4 py-1.5 text-sm">
+                  線上付款
+                </a>
+              </p>
+            ) : null}
           </div>
         ) : null}
         <p className="flex flex-wrap gap-4 text-sm text-cream-dim">

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { OsShell } from "@/components/OsShell";
 import { OnboardScreen } from "@/components/OnboardScreen";
-import { canManageTeam, featuresFor } from "@/lib/access";
+import { ADMIN_ROLE, canManageTeam, featuresFor } from "@/lib/access";
+import { openInvoice } from "@/lib/billing";
 import { readSession } from "@/lib/session";
 import { getMe } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -33,7 +34,8 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
     roles = me.origin === "live" && me.data ? me.data.roles : [];
   }
   const life = config.tenant?.lifecycle;
-  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due" } : null;
+  const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
+  const notice = life?.message ? { message: life.message, urgent: !life.writable || life.stage === "past_due", payUrl: invoice?.pay_url } : null;
 
   return (
     <OsShell

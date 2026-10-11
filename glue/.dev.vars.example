@@ -1,2 +1,10 @@
 TENANT_KEY="<openssl rand -base64 32>"
 ADMIN_TOKEN="dev-admin"
+# DropOut's own renewal billing (docs/BILLING.md). These are ECPay's public staging values.
+# BILLING_ECPAY_MERCHANT_ID="3002607"
+# BILLING_ECPAY_HASH_KEY="pwFHCqoQZGmho4w6"
+# BILLING_ECPAY_HASH_IV="EkRm7iFT261dpevs"
+# BILLING_EINVOICE_MERCHANT_ID="2000132"
+# BILLING_EINVOICE_HASH_KEY="ejCk326UnaZWKisg"
+# BILLING_EINVOICE_HASH_IV="q9jcZX8Ib9LM8wYk"
+# GLUE_PUBLIC_URL="https://<your tunnel>"

@@ -1,4 +1,5 @@
-import { addYears, lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { lifecycle, mergeAccount, normalizeHost, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
 import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
@@ -10,7 +11,7 @@ import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import { D1Store, type Store, type Tenant } from "./store";
 
-export type Env = {
+export type Env = BillingEnv & {
   DB: D1Database;
   JOBS: Queue<Job>;
   EMAIL?: SendEmail;
@@ -97,6 +98,7 @@ function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && !parts[4] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
   return false;
 }
 
@@ -118,7 +120,7 @@ async function pushStatus(store: Store, fetcher: typeof fetch, a: Account, now =
 }
 
 async function sendReminder(env: Env, store: Store, fetcher: typeof fetch, a: Account, now: Date) {
-  const r = reminderFor(a, now);
+  const r = reminderFor(a, now, await openPayUrl(env, store, a.site));
   if (!r || !(await store.claim(r.key))) return false;
   const sentTo: string[] = [];
   if (env.RESEND_API_KEY && env.PLATFORM_MAIL_FROM && a.contact_email) {
@@ -175,6 +177,9 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     if (site && !caller(req, env)) return text("forbidden", 403);
     return statusResponse(env, app, site);
   }
+
+  const billing: BillingCtx = { env, store, fetcher: app.fetcher, push: (a) => pushStatus(store, app.fetcher, a) };
+  if (parts[0] === "billing") return (await billingRoute(req, url, parts, billing)) ?? text("not found", 404);
 
   // G1: Chatwoot webhook. CE has no body signature, so the path carries a per-tenant token.
   if (parts[0] === "chatwoot" && req.method === "POST") {
@@ -367,6 +372,8 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     const who = caller(req, env);
     if (!who || (who === "shell" && !shellMayUse(parts, req.method))) return text("forbidden", 403);
     const actor = (req.headers.get("x-actor") ?? who).slice(0, 120);
+    const billed = await billingAdmin(req, url, parts, { ...billing, actor });
+    if (billed) return billed;
     if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
       const now = new Date();
       return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });
@@ -394,12 +401,7 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       const a = await store.getAccount(parts[2]);
       if (!a) return text("not found", 404);
       const body = (await req.json().catch(() => ({}))) as { years?: number; until?: string; reference?: string };
-      const today = taiwanDate();
-      const from = a.renews_on && a.renews_on > today ? a.renews_on : today;
-      const until = body.until && /^\d{4}-\d{2}-\d{2}$/.test(body.until) ? body.until : addYears(from, Math.min(Math.max(Number(body.years ?? 1), 1), 5));
-      const next = mergeAccount(a.site, a, { renews_on: until, state: "active", state_reason: null });
-      await store.putAccount(next);
-      await store.addAccountEvent(a.site, actor, "續約", `${a.renews_on ?? "（試用）"} → ${until}${body.reference ? `；${body.reference}` : ""}`);
+      const next = await renewAccount(store, a, body, actor);
       return json({ ok: true, account: accountView(next), erpnext: await pushStatus(store, app.fetcher, next) });
     }
     if (parts[1] === "accounts" && parts[2] && parts[3] === "state" && req.method === "POST") {
@@ -575,6 +577,7 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
   let failed = 0;
   let reminded = 0;
   let pushed = 0;
+  const billing = await billingDaily({ env, store, fetcher: app.fetcher, push: (a) => pushStatus(store, app.fetcher, a, now) }, now);
   await inChunks(await store.listAccounts(), 5, async (a) => {
     if (await sendReminder(env, store, app.fetcher, a, now)) reminded++;
     if (await pushStatus(store, app.fetcher, a, now)) pushed++;
@@ -589,7 +592,7 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
       await store.putAccount({ ...a, usage: { ...(a.usage ?? {}), error: (e as Error).message.slice(0, 200) }, usage_at: now.toISOString() });
     }
   });
-  return { pruned, refreshed, failed, reminded, pushed };
+  return { pruned, refreshed, failed, reminded, pushed, billing };
 }
 
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */
