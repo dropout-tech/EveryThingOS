@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { OsShell } from "@/components/OsShell";
 import { OnboardScreen } from "@/components/OnboardScreen";
-import { canManageTeam, featuresFor } from "@/lib/access";
+import { canManageTeam, canSeeReports, featuresFor } from "@/lib/access";
 import { readSession } from "@/lib/session";
 import { getMe } from "@/lib/sources";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -41,6 +41,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       shop={{ ...shop, modules: featuresFor(shop.modules, roles) }}
       company={config.tenant?.company}
       team={canManageTeam(roles)}
+      reports={canSeeReports(roles)}
       notice={notice}
       canReset={!config.tenant?.profile}
     >

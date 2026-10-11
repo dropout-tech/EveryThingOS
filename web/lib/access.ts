@@ -28,3 +28,10 @@ export function featuresFor(modules: FeatureId[], roles: string[] | null): Featu
 export function canManageTeam(roles: string[] | null) {
   return roles === null || roles.includes(ADMIN_ROLE);
 }
+
+/** 老闆、主管、會計. Same list as `dropout_core.reports.REPORT_ROLES`, which is what actually decides. */
+export const REPORT_ROLES = [ADMIN_ROLE, "Accounts Manager", "Sales Manager"];
+
+export function canSeeReports(roles: string[] | null) {
+  return roles === null || REPORT_ROLES.some((role) => roles.includes(role));
+}

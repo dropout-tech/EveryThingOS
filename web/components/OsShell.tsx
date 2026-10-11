@@ -12,13 +12,14 @@ type OsShellProps = {
   children: ReactNode;
   company?: string;
   team?: boolean;
+  reports?: boolean;
   /** Contract notice (trial, renewal, read-only). */
   notice?: { message: string; urgent: boolean } | null;
   canReset?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, notice, canReset = true }: OsShellProps) {
-  const items = navItemsForShop(shop, { team });
+export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true }: OsShellProps) {
+  const items = navItemsForShop(shop, { team, reports });
 
   return (
     <div className="flex min-h-screen text-cream">
