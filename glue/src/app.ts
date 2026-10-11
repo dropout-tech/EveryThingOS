@@ -1,4 +1,5 @@
 import { lifecycle, mergeAccount, normalizeHost, purgeStatus, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { assist } from "./assist";
 import { backupProblem, checkBackups, purgeNotices, type BackupUsage } from "./backups";
 import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
 import { ERPNext } from "./clients";
@@ -24,6 +25,8 @@ export type Env = BillingEnv & {
   /** Held by the shell: tenant lookup and per-company read/replay, never tenant secrets. */
   SHELL_TOKEN?: string;
   SUMMARY_MODEL?: string;
+  /** Model for 問助理's question sorting and draft polishing; defaults to SUMMARY_MODEL. */
+  ASSIST_MODEL?: string;
   AI_GATEWAY?: string;
   TURNSTILE_SECRET?: string;
   /** Renewal reminders to each company's contact. Cloudflare's EMAIL binding only reaches verified addresses, so customers go through Resend. */
@@ -107,6 +110,7 @@ function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "assist" && !parts[4] && method === "POST") return true;
   if (isIntegrationRoute(parts) && (method === "GET" || method === "POST")) return true;
   return false;
 }
@@ -466,6 +470,10 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       const email = (url.searchParams.get("email") ?? "").toLowerCase();
       if (!t || !email) return text("not found", 404);
       return json({ url: `${url.origin}/unsubscribe/${encodeURIComponent(t.site)}?email=${encodeURIComponent(email)}&sig=${await unsubscribeSignature(t.unsubscribe_secret, email)}` });
+    }
+    if (parts[1] === "tenants" && parts[2] && parts[3] === "assist" && !parts[4] && req.method === "POST") {
+      if (!(await tenantFor(parts[2]))) return text("not found", 404);
+      return assist(req, env);
     }
     if (parts[1] === "tenants" && parts[3] === "meetings" && !parts[4] && req.method === "GET") {
       const t = await tenantFor(parts[2]);
