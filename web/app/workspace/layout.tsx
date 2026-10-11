@@ -31,11 +31,15 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
 
   let roles: string[] | null = null;
   let guide = { scope: guideScope(null), role: null as string | null };
+  let person: string | undefined;
   if (personal) {
     const me = await getMe();
     if (me.origin === "error" && me.kind === "login") redirect("/login");
     roles = me.origin === "live" && me.data ? me.data.roles : [];
-    if (me.origin === "live" && me.data) guide = { scope: guideScope(me.data.user), role: roleFor(me.data.profile, roles) };
+    if (me.origin === "live" && me.data) {
+      guide = { scope: guideScope(me.data.user), role: roleFor(me.data.profile, roles) };
+      person = me.data.fullName || me.data.user;
+    }
   }
   const life = config.tenant?.lifecycle;
   const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
@@ -46,6 +50,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       industry={industry}
       shop={{ ...shop, modules: featuresFor(shop.modules, roles) }}
       company={config.tenant?.company}
+      person={person}
       team={canManageTeam(roles)}
       reports={canSeeReports(roles)}
       notice={notice}

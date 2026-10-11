@@ -5,8 +5,10 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
+import { Avatar } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { Drawer } from "./ui/Drawer";
 import { Field } from "./ui/Field";
 import { Money } from "./ui/Money";
 import { SearchBox } from "./ui/SearchBox";
@@ -39,6 +41,8 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
   const [touched, setTouched] = useState(false);
   const [fresh, setFresh] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [openNo, setOpenNo] = useState<string | null>(null);
+  const opened = docs.find((doc) => doc.no === openNo) ?? null;
 
   useEffect(() => {
     if (live) return;
@@ -164,12 +168,12 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
           <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>
-            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+            <h2 className="flex items-center justify-between gap-2 text-sm font-medium">
               <span>
               {column.plain}
               <span className="ml-1 text-xs font-normal text-cream-dim">{column.formal}</span>
               </span>
-              <span className="text-xs text-cream-dim">{column.docs.length}</span>
+              <span className="badge-count">{column.docs.length}</span>
             </h2>
             <ul className="mt-3 space-y-2">
               {column.docs.length ? (
@@ -179,7 +183,10 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                       {doc.no}
                       {fresh === doc.no ? <Badge tone="ok">剛開好</Badge> : null}
                     </p>
-                    <p className="mt-1">{doc.party}</p>
+                    <button type="button" className="mt-1 flex w-full items-center gap-2 text-left" aria-haspopup="dialog" onClick={() => setOpenNo(doc.no)}>
+                      <Avatar name={doc.party} />
+                      <span className="min-w-0 truncate underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">{doc.party}</span>
+                    </button>
                     <p className="text-sm text-cream-dim">
                       {doc.item} × {doc.qty}
                     </p>
@@ -218,6 +225,73 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           </section>
         ))}
       </div>
+      <Drawer
+        open={Boolean(opened)}
+        title={opened?.party ?? ""}
+        onClose={() => setOpenNo(null)}
+        footer={
+          opened ? (
+            live ? (
+              <>
+                {opened.next !== "完成" ? (
+                  <AdvanceButton doctype={opened.doctype} name={opened.no} label={opened.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "primary" })} />
+                ) : null}
+                <DeskLink href={opened.href} className={buttonClass({ variant: "secondary" })}>
+                  在 ERPNext 打開
+                </DeskLink>
+              </>
+            ) : opened.next !== "完成" ? (
+              <button
+                type="button"
+                className={buttonClass({ variant: "primary" })}
+                onClick={() => {
+                  onAdvance(opened);
+                  setOpenNo(null);
+                }}
+              >
+                {opened.next}
+              </button>
+            ) : null
+          ) : null
+        }
+      >
+        {opened ? (
+          <dl>
+            <dt>單號</dt>
+            <dd>{opened.no}</dd>
+            <dt>現在在</dt>
+            <dd>{columns.find((column) => column.id === opened.step)?.plain}</dd>
+            <dt>賣什麼</dt>
+            <dd>
+              {opened.item} × <span className="num">{opened.qty}</span>
+            </dd>
+            <dt>未稅</dt>
+            <dd>
+              <Money amount={opened.amount} />
+            </dd>
+            <dt>稅</dt>
+            <dd>
+              <Money amount={opened.tax} />
+            </dd>
+            <dt>含稅</dt>
+            <dd className="font-medium">
+              <Money amount={opened.amount + opened.tax} />
+            </dd>
+            {opened.invoiceNo ? (
+              <>
+                <dt>發票</dt>
+                <dd>{opened.invoiceNo}</dd>
+              </>
+            ) : null}
+            {opened.overdueDays ? (
+              <>
+                <dt>逾期</dt>
+                <dd className="text-warn">{opened.overdueDays} 天</dd>
+              </>
+            ) : null}
+          </dl>
+        ) : null}
+      </Drawer>
     </div>
   );
 }

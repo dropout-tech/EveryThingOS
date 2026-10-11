@@ -67,76 +67,78 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
         </li>
       </ul>
       <Section id="aging" title="誰欠我們（帳齡）" aside="超過 60 天標橘、90 天標紅">
-        <div className="glass sm:overflow-x-auto">
-          <table className="table-stack sm:min-w-[40rem]">
-            <thead className="bg-ink-2">
-              <tr>
-                <th scope="col">客戶</th>
-                <th scope="col" className="num">未到期</th>
-                <th scope="col" className="num">30 天</th>
-                <th scope="col" className="num">60 天</th>
-                <th scope="col" className="num">90 天＋</th>
-                <th scope="col" className="num">下一步</th>
-              </tr>
-            </thead>
-            <tbody>
-              {live && !aging.length ? (
+        <div className="glass">
+          <div className="sm:overflow-x-auto">
+            <table className="table-stack sm:min-w-[40rem]">
+              <thead className="bg-ink-2">
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-cream-dim">
-                    沒有人欠款
-                  </td>
+                  <th scope="col">客戶</th>
+                  <th scope="col" className="num" data-numeric="">未到期</th>
+                  <th scope="col" className="num" data-numeric="">30 天</th>
+                  <th scope="col" className="num" data-numeric="">60 天</th>
+                  <th scope="col" className="num" data-numeric="">90 天＋</th>
+                  <th scope="col" className="text-right">下一步</th>
                 </tr>
+              </thead>
+              <tbody>
+                {live && !aging.length ? (
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-cream-dim">
+                      沒有人欠款
+                    </td>
+                  </tr>
+                ) : null}
+                {aging.map((row) => (
+                  <tr key={row.party}>
+                    <td data-primary="">{row.party}</td>
+                    <td data-label="未到期" className="num" data-numeric="">
+                      <Money amount={row.current} />
+                    </td>
+                    <td data-label="30 天" className="num" data-numeric="">
+                      <Money amount={row.d30} />
+                    </td>
+                    <td data-label="60 天" className="num" data-numeric="">
+                      <Money amount={row.d60} tone={row.d60 ? "warn" : "none"} className={row.d60 ? "font-medium" : ""} />
+                    </td>
+                    <td data-label="90 天＋" className="num" data-numeric="">
+                      <Money amount={row.d90} tone={row.d90 ? "danger" : "none"} className={row.d90 ? "font-medium" : ""} />
+                    </td>
+                    <td data-label="下一步" className="sm:text-right">
+                      {live ? (
+                        <DeskLink href={row.href} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
+                          {row.d90 || row.d60 ? "催收" : "對帳"}
+                        </DeskLink>
+                      ) : (
+                        <button type="button" onClick={() => onCollect(row)} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
+                          {row.d90 || row.d60 ? "催收並入帳" : "對帳"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {aging.length > 1 ? (
+                <tfoot>
+                  <tr>
+                    <td data-primary="">合計</td>
+                    <td data-label="未到期" className="num" data-numeric="">
+                      <Money amount={sum("current")} />
+                    </td>
+                    <td data-label="30 天" className="num" data-numeric="">
+                      <Money amount={sum("d30")} />
+                    </td>
+                    <td data-label="60 天" className="num" data-numeric="">
+                      <Money amount={sum("d60")} />
+                    </td>
+                    <td data-label="90 天＋" className="num" data-numeric="">
+                      <Money amount={sum("d90")} />
+                    </td>
+                    <td aria-hidden="true" />
+                  </tr>
+                </tfoot>
               ) : null}
-              {aging.map((row) => (
-                <tr key={row.party}>
-                  <td data-primary="">{row.party}</td>
-                  <td data-label="未到期" className="num">
-                    <Money amount={row.current} />
-                  </td>
-                  <td data-label="30 天" className="num">
-                    <Money amount={row.d30} />
-                  </td>
-                  <td data-label="60 天" className="num">
-                    <Money amount={row.d60} tone={row.d60 ? "warn" : "none"} className={row.d60 ? "font-medium" : ""} />
-                  </td>
-                  <td data-label="90 天＋" className="num">
-                    <Money amount={row.d90} tone={row.d90 ? "danger" : "none"} className={row.d90 ? "font-medium" : ""} />
-                  </td>
-                  <td data-label="下一步" className="num">
-                    {live ? (
-                      <DeskLink href={row.href} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
-                        {row.d90 || row.d60 ? "催收" : "對帳"}
-                      </DeskLink>
-                    ) : (
-                      <button type="button" onClick={() => onCollect(row)} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
-                        {row.d90 || row.d60 ? "催收並入帳" : "對帳"}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            {aging.length > 1 ? (
-              <tfoot>
-                <tr>
-                  <td data-primary="">合計</td>
-                  <td data-label="未到期" className="num">
-                    <Money amount={sum("current")} />
-                  </td>
-                  <td data-label="30 天" className="num">
-                    <Money amount={sum("d30")} />
-                  </td>
-                  <td data-label="60 天" className="num">
-                    <Money amount={sum("d60")} />
-                  </td>
-                  <td data-label="90 天＋" className="num">
-                    <Money amount={sum("d90")} />
-                  </td>
-                  <td aria-hidden="true" />
-                </tr>
-              </tfoot>
-            ) : null}
-          </table>
+            </table>
+          </div>
         </div>
       </Section>
       <section className="grid gap-4 lg:grid-cols-2">

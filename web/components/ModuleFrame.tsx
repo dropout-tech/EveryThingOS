@@ -65,29 +65,31 @@ export function DataTable({
   rows: string[][];
 }) {
   return (
-    <div className="glass sm:overflow-x-auto">
-      <table className="table-stack sm:min-w-[40rem]">
-        <thead className="bg-ink-2">
-          <tr>
-            {columns.map((col) => (
-              <th key={col} scope="col">
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.join("-")}>
-              {row.map((cell, i) => (
-                <td key={`${i}-${cell}`} data-label={columns[i]} data-primary={i === 0 ? "" : undefined}>
-                  {cell}
-                </td>
+    <div className="glass">
+      <div className="sm:overflow-x-auto">
+        <table className="table-stack sm:min-w-[40rem]">
+          <thead className="bg-ink-2">
+            <tr>
+              {columns.map((col) => (
+                <th key={col} scope="col">
+                  {col}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.join("-")}>
+                {row.map((cell, i) => (
+                  <td key={`${i}-${cell}`} data-label={columns[i]} data-primary={i === 0 ? "" : undefined}>
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

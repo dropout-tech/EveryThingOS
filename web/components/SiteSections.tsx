@@ -164,7 +164,7 @@ export function TrustStrip() {
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRUST_LINKS.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} className="site-sheet block h-full p-4 hover:bg-white/10">
+            <Link href={t.href} className="site-sheet link-card block h-full p-4">
               <span className="font-medium">{t.label} →</span>
               <span className="mt-1 block text-sm text-cream-dim">{t.detail}</span>
             </Link>

@@ -65,7 +65,7 @@ export function Hint({ id, help, className = "" }: { id: HintId; help?: string; 
       onKeyDown={onKeyDown}
       className={`hint glass-well relative flex max-w-xl items-start gap-3 p-4 text-sm motion-safe:transition motion-safe:duration-300 starting:translate-y-1 starting:opacity-0 ${className}`}
     >
-      <span aria-hidden className="glass-cta mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-xs">
+      <span aria-hidden className="hint-icon mt-0.5">
         ?
       </span>
       <div className="min-w-0 flex-1">

@@ -6,6 +6,7 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
+import { Avatar } from "./ui/Avatar";
 import { buttonClass } from "./ui/Button";
 import { Drawer } from "./ui/Drawer";
 import { SearchBox } from "./ui/SearchBox";
@@ -111,9 +112,9 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
-            <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
+            <h2 className="flex items-center justify-between gap-2 text-sm font-medium">
               <span>{live ? stageLabel(column.stage) : column.stage}</span>
-              <span className="text-xs font-normal text-cream-dim">{column.cards.length}</span>
+              <span className="badge-count">{column.cards.length}</span>
             </h2>
             <ul className="mt-3 space-y-2">
               {column.cards.length ? (
@@ -123,9 +124,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                   return (
                     <li key={lead.href ?? lead.name} className="glass-chip p-3">
                       <button type="button" className="flex w-full items-center gap-2 text-left" aria-haspopup="dialog" onClick={() => setOpenName(lead.name)}>
-                        <span className="avatar" aria-hidden="true">
-                          {lead.name.slice(0, 1)}
-                        </span>
+                        <Avatar name={lead.name} />
                         <span className="min-w-0">
                           <span className="block truncate underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">{lead.name}</span>
                           <span className="block text-xs text-cream-dim">{lead.channel}</span>

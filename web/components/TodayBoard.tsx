@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar } from "./ui/Avatar";
 import { Badge, type BadgeTone } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import { Money } from "./ui/Money";
@@ -54,14 +55,6 @@ function waitingFrom(books: Books, allowed: string[]): Waiting[] {
     .slice(0, MAX_WAITING);
 }
 
-function Avatar({ name }: { name?: string }) {
-  return (
-    <span className="avatar" aria-hidden="true">
-      {name ? name.slice(0, 1) : "•"}
-    </span>
-  );
-}
-
 function today() {
   return new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", month: "long", day: "numeric", weekday: "short" }).format(new Date());
 }
@@ -99,8 +92,12 @@ export function TodayList({ books, allowed }: { books: Books; allowed: string[] 
       {waiting.length ? (
         <section aria-labelledby="waiting-title">
           <div className="section-head">
-            <h2 id="waiting-title" className="section-title scene-type">
+            <h2 id="waiting-title" className="section-title scene-type flex items-center gap-2">
               等你處理
+              <span className="badge-count">
+                {waiting.length}
+                <span className="sr-only"> 件</span>
+              </span>
             </h2>
             <p className="text-xs text-cream-dim scene-type">照急的排</p>
           </div>
