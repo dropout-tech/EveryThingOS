@@ -1312,6 +1312,14 @@ html[data-theme="white"] .os-shell .glass-chip {
     color: var(--cream-dim);
   }
 
+  .kpi-note[data-tone="warn"] {
+    color: var(--warn);
+  }
+
+  .kpi-note[data-tone="danger"] {
+    color: var(--danger);
+  }
+
   .kpi[data-tone="warn"] .kpi-value {
     color: var(--warn);
   }
