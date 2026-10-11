@@ -98,7 +98,7 @@ export const PALETTE_ACTIONS: PaletteAction[] = [
   { href: "/workspace/erp/finance#aging", label: "看誰欠我們", keywords: "應收 帳齡 催收 逾期 欠款", needs: "/workspace/erp/finance" },
   { href: "/workspace/erp/stock", label: "看哪些貨快不夠", keywords: "庫存 補貨 請購 安全存量", needs: "/workspace/erp/stock" },
   { href: "/workspace/erp/purchase", label: "跟廠商進貨", keywords: "採購 進貨 廠商 付款", needs: "/workspace/erp/purchase" },
-  { href: "/workspace/hr#leave", label: "請假", keywords: "請假 休假 特休 hr", needs: "/workspace/hr" },
+  { href: "/workspace/hr#leave", label: "核准假單、看誰請假", keywords: "請假 休假 特休 假單 核准 hr", needs: "/workspace/hr" },
   { href: "/workspace/hr", label: "打卡", keywords: "打卡 上班 下班 出勤", needs: "/workspace/hr" },
   { href: "/workspace/team#invite", label: "邀請同事", keywords: "邀請 同事 帳號 員工 權限", needs: "/workspace/team" },
   { href: "/workspace/letter", label: "寫一封電子報", keywords: "電子報 寄信 名單 行銷", needs: "/workspace/letter" },
