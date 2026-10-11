@@ -9,6 +9,7 @@ DropOut OS 對 ERPNext v15 的所有差異都在這幾個 Frappe app 裡，不�
 | `dropout_pack_make` | 製造業：原料到模具治具的料號群組、經銷與 OEM 客群、打樣流程、詢價到下單 | erpnext、dropout_core |
 | `dropout_pack_service` | 顧問業：顧問方案、工作坊、時數、顧問專案範本、初談到簽約 | erpnext、dropout_core |
 | `dropout_pack_edu` | 教育服務業：課程、期班、教材、學員與家長客群、開班範本、詢問到續報 | erpnext、dropout_core |
+| `dropout_hr_tw` | 人事薪資：台灣薪資元件、勞健保勞退費率與分級表、假別、職務「人資」、殼的人事頁 API（見 `docs/HR.md`） | erpnext、hrms、dropout_core |
 
 ## 安裝
 
@@ -18,8 +19,9 @@ DropOut OS 對 ERPNext v15 的所有差異都在這幾個 Frappe app 裡，不�
 cd frappe-bench
 bench get-app payments --branch version-15   # 用到官網結帳或台灣金流才需要
 bench get-app webshop --branch version-15
+bench get-app hrms --branch version-15       # 人事薪資（dropout_hr_tw）才需要
 git clone https://github.com/dropout-tech/EveryThingOS /tmp/everythingos
-for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu; do
+for app in dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu dropout_hr_tw; do
   cp -r /tmp/everythingos/frappe-apps/$app apps/
   ./env/bin/pip install -e apps/$app
   grep -qx $app sites/apps.txt || echo $app >> sites/apps.txt
@@ -27,7 +29,7 @@ done
 bench --site <site> install-app dropout_core
 ```
 
-正式環境用 `deploy/erpnext/Containerfile`，它在官方 `frappe/erpnext:v15` 映像上做同樣的事。
+正式環境用 `deploy/erpnext/Containerfile`，它在官方 `frappe/erpnext:v15` 映像上做同樣的事。HRMS 依上游 `version-15` 分支，從 `deploy/erpnext/apps.json` 裝；`dropout_core` 不依賴 HRMS，沒選人事的公司不用裝。
 
 新公司一律用導入工具開站（`toolkit/`），它會依現場挑產業包，並照「建站 → 裝 app → 設定精靈 → 同步帳號 → 接膠水」的順序執行。
 
@@ -47,4 +49,5 @@ ERPNext v15 內建的 Domain 只有 Manufacturing 與 Retail；`pack.json` 寫�
 bench --site <測試站> set-config allow_tests true
 bench --site <測試站> run-tests --app dropout_core
 bench --site <測試站> run-tests --app dropout_pay_tw
+bench --site <測試站> run-tests --app dropout_hr_tw
 ```

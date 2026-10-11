@@ -1,4 +1,4 @@
-# ERPNext v15 + Payments + Webshop + the DropOut apps.
+# ERPNext v15 + Payments + Webshop + HRMS + the DropOut apps.
 #
 # Same two stages as frappe_docker's images/layered/Containerfile (frappe/build
 # to assemble the bench, frappe/base to run it). Upstream apps come from
@@ -13,7 +13,7 @@ FROM frappe/build:${FRAPPE_BRANCH} AS builder
 
 ARG FRAPPE_BRANCH=version-15
 ARG FRAPPE_PATH=https://github.com/frappe/frappe
-ARG DROPOUT_APPS="dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu"
+ARG DROPOUT_APPS="dropout_core dropout_pay_tw dropout_pack_make dropout_pack_service dropout_pack_edu dropout_hr_tw"
 
 USER frappe
 COPY --chown=frappe:frappe deploy/erpnext/apps.json /opt/frappe/apps.json
