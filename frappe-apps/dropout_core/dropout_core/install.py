@@ -103,6 +103,10 @@ def ensure_setup():
 			settings.set(fieldname, title)
 	settings.flags.ignore_permissions = True
 	settings.save()
+
+	from dropout_core.team import ensure_role_profiles
+
+	ensure_role_profiles()
 	frappe.db.commit()
 
 

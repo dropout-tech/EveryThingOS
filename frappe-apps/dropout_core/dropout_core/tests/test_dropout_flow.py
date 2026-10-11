@@ -352,3 +352,76 @@ class TestShellActions(FrappeTestCase):
 		for fn in (shell.catalog, shell.website, shell.meetings, shell.hygiene):
 			fn()
 		self.assertIn(make_item(), [i["item_code"] for i in shell.catalog()["items"]])
+
+
+class TestTeam(FrappeTestCase):
+	def setUp(self):
+		from dropout_core.team import ensure_role_profiles
+
+		ensure_role_profiles()
+		self.boss = self._user("boss-team@example.com", "老闆")
+
+	def tearDown(self):
+		frappe.set_user("Administrator")
+
+	def _user(self, email, profile):
+		if not frappe.db.exists("User", email):
+			frappe.get_doc({"doctype": "User", "email": email, "first_name": email.split("@")[0], "send_welcome_email": 0, "role_profile_name": profile}).insert(ignore_permissions=True)
+		return email
+
+	def test_profiles_and_invite(self):
+		from dropout_core import team
+
+		frappe.set_user(self.boss)
+		data = team.team()
+		names = [p["name"] for p in data["profiles"]]
+		for name in ("老闆", "業務", "倉管", "會計"):
+			self.assertIn(name, names)
+		self.assertNotIn("Administrator", [u["email"] for u in data["users"]])
+		email = f"sales-{frappe.generate_hash(length=6)}@example.com"
+		team.invite(email, "小業", "業務", send_welcome=0)
+		roles = frappe.get_roles(email)
+		self.assertIn("Sales User", roles)
+		self.assertNotIn("System Manager", roles)
+		with self.assertRaises(frappe.ValidationError):
+			team.invite(email, "小業", "業務", send_welcome=0)
+
+	def test_non_admin_cannot_manage(self):
+		from dropout_core import team
+
+		clerk = self._user("clerk-team@example.com", "業務")
+		frappe.set_user(clerk)
+		with self.assertRaises(frappe.PermissionError):
+			team.team()
+		with self.assertRaises(frappe.PermissionError):
+			team.invite("x@example.com", "x", "老闆")
+
+	def test_keeps_one_admin_and_revokes_on_disable(self):
+		from dropout_core import team
+
+		frappe.set_user(self.boss)
+		with self.assertRaises(frappe.ValidationError):
+			team.set_profile(self.boss, "業務")
+		other = self._user(f"staff-{frappe.generate_hash(length=6)}@example.com", "業務")
+		team.set_profile(other, "會計")
+		self.assertIn("Accounts User", frappe.get_roles(other))
+		self.assertNotIn("Sales User", frappe.get_roles(other))
+		team.set_enabled(other, 0)
+		self.assertEqual(frappe.db.get_value("User", other, "enabled"), 0)
+
+	def test_security_and_audit(self):
+		from dropout_core import team
+
+		frappe.set_user(self.boss)
+		out = team.set_security(two_factor=1, two_factor_method="Email", password_policy=1, session_expiry="08:00", lockout_attempts=5)
+		self.assertEqual(out["security"]["enable_two_factor_auth"], 1)
+		self.assertEqual(out["security"]["two_factor_for_everyone"], 1)
+		with self.assertRaises(frappe.ValidationError):
+			team.set_security(session_expiry="forever")
+		team.set_security(two_factor=0)
+		self.assertEqual(frappe.db.get_value("Role", "All", "two_factor_auth"), 0)
+		self.assertIsInstance(team.audit()["rows"], list)
+		frappe.set_user("Administrator")
+		u = team.usage()
+		self.assertGreaterEqual(u["users"], 1)
+		self.assertIn("db_mb", u)

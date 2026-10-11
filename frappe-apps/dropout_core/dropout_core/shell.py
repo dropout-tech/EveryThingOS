@@ -392,6 +392,13 @@ def hygiene(limit=50):
 	return {"rows": rows, "denied": s.denied}
 
 
+SHELL_ROLES = (
+	"System Manager", "Accounts Manager", "Accounts User", "Sales Manager", "Sales User", "Stock Manager", "Stock User",
+	"Item Manager", "Purchase Manager", "Purchase User", "Newsletter Manager", "Website Manager", "Support Team",
+	"DropOut Marketing", "Manufacturing User", "Projects User",
+)
+
+
 @frappe.whitelist()
 def whoami():
 	user = frappe.session.user
@@ -402,6 +409,7 @@ def whoami():
 		"user": user,
 		"full_name": doc.full_name,
 		"company": _company(),
-		"roles": [r for r in frappe.get_roles(user) if r in ("System Manager", "Accounts Manager", "Accounts User", "Sales Manager", "Sales User", "Stock User", "Purchase User", "DropOut Marketing")],
+		"roles": [r for r in frappe.get_roles(user) if r in SHELL_ROLES],
+		"profile": doc.role_profile_name,
 		"chatwoot_user_id": doc.get("dropout_chatwoot_user_id"),
 	}
