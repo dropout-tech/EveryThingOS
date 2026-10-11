@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark } from "./BrandMark";
 import { COMMERCIAL, PRICE_LABEL } from "@/lib/commercial";
+import { LEGAL_LINKS } from "@/lib/legal";
 
 export function SiteFooter() {
   return (
@@ -24,6 +25,13 @@ export function SiteFooter() {
           </a>
         </div>
       </div>
+      <nav className="mx-auto mt-6 flex max-w-6xl flex-wrap gap-x-5 gap-y-2 text-xs">
+        {LEGAL_LINKS.map((link) => (
+          <Link key={link.href} href={link.href} className="hover:text-cream">
+            {link.label}
+          </Link>
+        ))}
+      </nav>
     </footer>
   );
 }
