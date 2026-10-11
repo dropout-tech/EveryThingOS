@@ -17,7 +17,7 @@ import { Money } from "./ui/Money";
 import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
 import type { SalesDoc } from "@/lib/erp";
 import { formatTwd } from "@/lib/format";
-import { HEALTH_LABEL, STATUS_LABEL, TASK_COLUMNS, addDemoLog, addDemoTask, billDemoLogs, demoSalesDoc, formatHours, moveDemoTask, projectMetrics, teamHours, type ProjectTask, type ProjectsData, type TaskStatus, type TimeLog } from "@/lib/projects";
+import { HEALTH_LABEL, STATUS_LABEL, TASK_COLUMNS, addDemoLog, addDemoTask, billDemoLogs, demoSalesDoc, formatHours, moveDemoTask, projectMetrics, shortDate, teamHours, type ProjectTask, type ProjectsData, type TaskStatus, type TimeLog } from "@/lib/projects";
 
 const MOVES: Record<TaskStatus, { to: TaskStatus; label: string }[]> = {
   todo: [
@@ -30,6 +30,8 @@ const MOVES: Record<TaskStatus, { to: TaskStatus; label: string }[]> = {
   ],
   done: [{ to: "doing", label: "重新打開" }],
 };
+
+const LOG_PAGE = 15;
 
 const COLUMN_LABEL = Object.fromEntries(TASK_COLUMNS.map((c) => [c.id, c.label])) as Record<TaskStatus, string>;
 
@@ -46,9 +48,11 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
   const [note, setNote] = useState<string | null>(null);
   const [logOpen, , closeLog] = useLogHash();
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [invoiceKey, setInvoiceKey] = useState(0);
   const [subject, setSubject] = useState("");
   const [subjectError, setSubjectError] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
+  const [shown, setShown] = useState(LOG_PAGE);
   const project = state.projects.find((p) => p.id === id);
 
   if (!project) {
@@ -116,7 +120,7 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
           {project.status !== "active" ? <Badge>{STATUS_LABEL[project.status]}</Badge> : null}
           <span className="text-cream-dim">
             {project.customer ?? "還沒填客人"}
-            {project.due ? ` · 截止 ${project.due}` : ""}
+            {project.due ? ` · 截止 ${shortDate(project.due, data.today)}` : ""}
           </span>
         </div>
         {m.reasons.length ? (
@@ -188,7 +192,10 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => setInvoiceOpen(true)} disabled={!m.unbilledHours} aria-haspopup="dialog">
+          <Button variant="secondary" onClick={() => {
+              setInvoiceKey((k) => k + 1);
+              setInvoiceOpen(true);
+            }} disabled={!m.unbilledHours} aria-haspopup="dialog">
             {m.unbilledHours ? `開成發票（${formatHours(m.unbilledHours)}）` : "沒有要請款的工時"}
           </Button>
           {project.href ? (
@@ -231,7 +238,7 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
                               t.subject
                             )}
                           </p>
-                          {t.due ? <p className={`text-xs ${t.status !== "done" && t.due < data.today ? "text-warn" : "text-cream-dim"}`}>預計 {t.due.slice(5).replace("-", "/")}</p> : null}
+                          {t.due ? <p className={`text-xs ${t.status !== "done" && t.due < data.today ? "text-warn" : "text-cream-dim"}`}>預計 {shortDate(t.due, data.today)}</p> : null}
                           {data.can.tasks ? (
                             <div className="flex flex-wrap gap-2">
                               {MOVES[t.status].map((mv) => (
@@ -328,12 +335,12 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.slice(0, 60).map((l) => {
+                  {logs.slice(0, shown).map((l) => {
                     const s = logState(l);
                     return (
                       <tr key={l.id}>
                         <td data-label="日期" data-primary="">
-                          {l.href ? <DeskLink href={l.href}>{l.date.slice(5).replace("-", "/")}</DeskLink> : l.date.slice(5).replace("-", "/")}
+                          {l.href ? <DeskLink href={l.href}>{shortDate(l.date, data.today)}</DeskLink> : shortDate(l.date, data.today)}
                         </td>
                         <td data-label="誰">{l.person}</td>
                         <td data-label="做什麼">
@@ -353,10 +360,22 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
               </table>
             </div>
           </div>
-          {logs.length > 60 ? (
-            <p className="text-xs text-cream-dim">
-              只列最近 60 筆。{deskUrl ? <DeskLink href={`${deskUrl}/app/timesheet?parent_project=${encodeURIComponent(project.id)}`}>到 ERPNext 看全部</DeskLink> : null}
-            </p>
+          {logs.length > shown ? (
+            <div className="flex flex-wrap items-center gap-3 text-xs text-cream-dim">
+              {shown < 60 ? (
+                <Button size="sm" variant="secondary" onClick={() => setShown((n) => Math.min(60, n + LOG_PAGE))}>
+                  再看 {Math.min(LOG_PAGE, logs.length - shown)} 筆
+                </Button>
+              ) : null}
+              <span>
+                列出 {shown}／{logs.length} 筆。
+                {deskUrl ? (
+                  <DeskLink href={`${deskUrl}/app/timesheet?parent_project=${encodeURIComponent(project.id)}`} className="ml-1 underline underline-offset-2">
+                    到 ERPNext 看全部
+                  </DeskLink>
+                ) : null}
+              </span>
+            </div>
           ) : null}
         </section>
       ) : null}
@@ -384,7 +403,7 @@ export function ProjectDetail({ data, live, demoId, packId, id, deskUrl }: { dat
           setNote(`練習：記好了 ${formatHours(entry.hours)}，沒有送出。`);
         }}
       />
-      <InvoiceDrawer open={invoiceOpen} onClose={() => setInvoiceOpen(false)} project={project} logs={state.logs} services={data.services} live={live} canInvoice={data.can.invoice} action={action} onDemoBill={billDemo} />
+      <InvoiceDrawer key={invoiceKey} open={invoiceOpen} onClose={() => setInvoiceOpen(false)} project={project} logs={state.logs} services={data.services} live={live} canInvoice={data.can.invoice} action={action} onDemoBill={billDemo} />
     </div>
   );
 }

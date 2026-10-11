@@ -10,7 +10,7 @@ import { Badge, type BadgeTone } from "./ui/Badge";
 import { Money } from "./ui/Money";
 import { SearchBox } from "./ui/SearchBox";
 import { formatTwdShort } from "@/lib/format";
-import { HEALTH_LABEL, STATUS_LABEL, addDemoLog, formatHours, projectMetrics, summarize, type Health, type ProjectMetrics, type ProjectsData } from "@/lib/projects";
+import { HEALTH_LABEL, STATUS_LABEL, addDemoLog, formatHours, projectMetrics, shortDate, summarize, type Health, type ProjectMetrics, type ProjectsData } from "@/lib/projects";
 
 export const HEALTH_TONE: Record<Health, BadgeTone> = { ok: "ok", watch: "warn", over: "danger" };
 const HEALTH_RANK: Record<Health, number> = { over: 0, watch: 1, ok: 2 };
@@ -176,16 +176,18 @@ export function ProjectsBoard({ data, live, demoId }: { data: ProjectsData; live
               <tbody>
                 {rows.map(({ p, m }) => (
                   <tr key={p.id}>
-                    <td data-label="專案" data-primary="">
-                      <Link href={`/workspace/projects/${encodeURIComponent(p.id)}`} className="font-medium underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">
-                        {p.name}
-                      </Link>
-                      <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-cream-dim">
-                        <Badge tone={HEALTH_TONE[m.health]}>{HEALTH_LABEL[m.health]}</Badge>
-                        {p.status !== "active" ? <Badge>{STATUS_LABEL[p.status]}</Badge> : null}
-                        {p.customer ?? "還沒填客人"}
-                      </span>
-                      {m.reasons.length ? <span className="mt-1 block text-xs text-cream-dim">{m.reasons[0]}</span> : null}
+                    <td data-primary="">
+                      <div className="min-w-0">
+                        <Link href={`/workspace/projects/${encodeURIComponent(p.id)}`} className="font-medium underline decoration-[color-mix(in_srgb,currentColor_30%,transparent)] underline-offset-4">
+                          {p.name}
+                        </Link>
+                        <span className="mt-1 flex flex-wrap items-center gap-2 text-xs text-cream-dim">
+                          <Badge tone={HEALTH_TONE[m.health]}>{HEALTH_LABEL[m.health]}</Badge>
+                          {p.status !== "active" ? <Badge>{STATUS_LABEL[p.status]}</Badge> : null}
+                          {p.customer ?? "還沒填客人"}
+                        </span>
+                        {m.reasons.length ? <span className="mt-1 block text-xs text-cream-dim">{m.reasons[0]}</span> : null}
+                      </div>
                     </td>
                     <td data-label="進度">
                       <span className="block min-w-24">
@@ -217,7 +219,7 @@ export function ProjectsBoard({ data, live, demoId }: { data: ProjectsData; live
                       <span className={marginTone(m) === "danger" ? "text-danger" : marginTone(m) === "warn" ? "text-warn" : ""}>{m.marginPct === null ? "—" : `${m.marginPct}%`}</span>
                     </td>
                     <td data-label="截止">
-                      {p.due ? <span className={m.overdueDays ? "text-warn" : ""}>{p.due.slice(5).replace("-", "/")}</span> : <span className="text-cream-dim">沒填</span>}
+                      {p.due ? <span className={m.overdueDays ? "text-warn" : ""}>{shortDate(p.due, data.today)}</span> : <span className="text-cream-dim">沒填</span>}
                       {m.overdueDays ? <span className="block text-xs text-warn">過了 {m.overdueDays} 天</span> : null}
                     </td>
                   </tr>

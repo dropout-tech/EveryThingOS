@@ -211,6 +211,11 @@ export function teamHours(logs: TimeLog[]) {
   return [...by.values()].sort((a, b) => b.hours - a.hours);
 }
 
+/** 10/08 this year, 2027/08/08 otherwise. */
+export function shortDate(day: string, today: string) {
+  return day.slice(0, 4) === today.slice(0, 4) ? day.slice(5).replace("-", "/") : day.replace(/-/g, "/");
+}
+
 export function formatHours(hours: number) {
   const rounded = Math.round(hours * 100) / 100;
   return `${Number.isInteger(rounded) ? rounded : rounded.toFixed(2).replace(/0$/, "")} 小時`;

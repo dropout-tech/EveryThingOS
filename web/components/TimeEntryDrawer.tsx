@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import type { useLiveAction } from "./LiveAction";
 import { Button } from "./ui/Button";
 import { Drawer } from "./ui/Drawer";
@@ -26,14 +26,26 @@ type Props = {
 
 /** 記工時. Built for a phone on site: one project, how long, done. The same rules run again on the server. */
 export function TimeEntryDrawer(props: Props) {
+  const formId = useId();
   return (
-    <Drawer open={props.open} title="記工時" onClose={props.onClose}>
-      {props.open ? <TimeEntryForm {...props} /> : null}
+    <Drawer
+      open={props.open}
+      title="記工時"
+      onClose={props.onClose}
+      footer={
+        props.projects.length ? (
+          <Button type="submit" form={formId} variant="primary" block pending={props.action.busy} pendingLabel="記錄中…">
+            記下來
+          </Button>
+        ) : null
+      }
+    >
+      {props.open ? <TimeEntryForm {...props} formId={formId} /> : null}
     </Drawer>
   );
 }
 
-function TimeEntryForm({ onClose, projects, tasks, logs, activities, today, me, defaultProject, live, action, onDemoSave }: Props) {
+function TimeEntryForm({ formId, onClose, projects, tasks, logs, activities, today, me, defaultProject, live, action, onDemoSave }: Props & { formId: string }) {
   const [project, setProject] = useState(defaultProject && projects.some((p) => p.id === defaultProject) ? defaultProject : projects.length === 1 ? projects[0].id : "");
   const [task, setTask] = useState("");
   const [hours, setHours] = useState("");
@@ -87,7 +99,7 @@ function TimeEntryForm({ onClose, projects, tasks, logs, activities, today, me, 
   }
 
   return (
-    <form onSubmit={submit} noValidate aria-label="記工時" className="space-y-4">
+    <form id={formId} onSubmit={submit} noValidate aria-label="記工時" className="space-y-4">
       <Field label="哪個專案" error={errors.project}>
         <select
           name="project"
@@ -202,11 +214,6 @@ function TimeEntryForm({ onClose, projects, tasks, logs, activities, today, me, 
         這段時間可以跟客人請款
       </label>
 
-      <div className="form-actions sticky-submit">
-        <Button type="submit" variant="primary" block pending={action.busy} pendingLabel="記錄中…">
-          記下來
-        </Button>
-      </div>
       {live ? <p className="text-xs text-cream-dim">記好就會送出到 ERPNext 的工時表；記錯了到 ERPNext 取消那張工時表。</p> : null}
     </form>
   );
