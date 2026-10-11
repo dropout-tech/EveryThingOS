@@ -30,6 +30,9 @@ const DENIED_LABEL: Record<string, string> = {
   form_leads: "表單名單",
   bounced: "退信",
   pending: "等確認信",
+  on_leave: "今天誰請假",
+  approvals: "待核准假單",
+  payroll: "薪資",
 };
 
 /** Says where the numbers on this page come from. Demo data is always labelled. */
