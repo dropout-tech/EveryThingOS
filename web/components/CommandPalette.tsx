@@ -10,6 +10,10 @@ type Entry = { id: string; group: string; label: string; hint?: string; keywords
 const OPEN_EVENT = "dropout:palette";
 const noop = () => () => {};
 
+function looksLikeQuestion(text: string) {
+  return /[?？嗎呢]|誰|什麼|多少|哪|幾|怎麼|怎樣|有沒有|夠不夠|是不是|幫我/.test(text) || text.length >= 8;
+}
+
 export function openPalette() {
   window.dispatchEvent(new Event(OPEN_EVENT));
 }
@@ -80,11 +84,18 @@ export function CommandPalette({ sections }: { sections: NavSection[] }) {
     return [...actions, ...pages, ...appearance];
   }, [sections]);
 
+  const canAsk = useMemo(() => sections.some((section) => section.items.some((item) => item.href === "/workspace/ask")), [sections]);
+
   const results = useMemo(() => {
-    const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const text = query.trim();
+    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
     if (!words.length) return entries.filter((entry) => entry.group !== "外觀");
-    return entries.filter((entry) => words.every((word) => entry.keywords.toLowerCase().includes(word)));
-  }, [entries, query]);
+    const found = entries.filter((entry) => words.every((word) => entry.keywords.toLowerCase().includes(word)));
+    if (!canAsk) return found;
+    const question = text.slice(0, 200);
+    const ask: Entry = { id: "ask", group: "問助理", label: `問助理：${question}`, hint: "用你們的帳回答", keywords: "", href: `/workspace/ask?q=${encodeURIComponent(question)}` };
+    return looksLikeQuestion(text) ? [ask, ...found] : [...found, ask];
+  }, [entries, query, canAsk]);
 
   async function run(entry: Entry | undefined) {
     if (!entry) return;
@@ -173,7 +184,7 @@ export function CommandPalette({ sections }: { sections: NavSection[] }) {
           aria-autocomplete="list"
           aria-activedescendant={results[active] ? `${listId}-${active}` : undefined}
           aria-label="要找什麼"
-          placeholder="找頁面或要做的事，例如「報價」「請假」"
+          placeholder="找頁面、要做的事，或直接問「誰欠我們最多？」"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);

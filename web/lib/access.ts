@@ -17,6 +17,11 @@ const FEATURE_ROLES: Record<FeatureId, string[]> = {
   website: ["Website Manager", "Sales Manager"],
   // Everyone clocks in; leave approvals and payroll on the page follow the HRMS roles.
   hr: [],
+  projects: ["Projects User", "Projects Manager"],
+  // Anyone can file an expense; the page shows approvals only to whoever ERPNext lets approve.
+  approvals: [],
+  portal: ["Sales User", "Sales Manager", "Accounts User"],
+  automations: ["Sales Manager", "Accounts Manager"],
 };
 
 export const ADMIN_ROLE = "System Manager";

@@ -1,4 +1,7 @@
 import { lifecycle, mergeAccount, normalizeHost, purgeStatus, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
+import { automationStoreFor, manageAutomations, runAutomations } from "./automations";
+import type { AutomationStore } from "./automation-store";
+import { assist } from "./assist";
 import { backupProblem, checkBackups, purgeNotices, type BackupUsage } from "./backups";
 import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
 import { ERPNext } from "./clients";
@@ -11,6 +14,7 @@ import { healthResponse, monitorStore, statusResponse, uptime } from "./monitor"
 import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import type { ApiStore } from "./apiStore";
+import { isPortalRoute, managePortal, type PortalStore } from "./portal";
 import { apiStoreFor, isIntegrationRoute, manageIntegrations, publicApi } from "./publicApi";
 import { D1Store, type Store, type Tenant } from "./store";
 
@@ -24,6 +28,8 @@ export type Env = BillingEnv & {
   /** Held by the shell: tenant lookup and per-company read/replay, never tenant secrets. */
   SHELL_TOKEN?: string;
   SUMMARY_MODEL?: string;
+  /** Model for 問助理's question sorting and draft polishing; defaults to SUMMARY_MODEL. */
+  ASSIST_MODEL?: string;
   AI_GATEWAY?: string;
   TURNSTILE_SECRET?: string;
   /** Renewal reminders to each company's contact. Cloudflare's EMAIL binding only reaches verified addresses, so customers go through Resend. */
@@ -58,6 +64,8 @@ export type App = {
   fetcher: typeof fetch;
   monitor?: (env: Env) => MonitorStore;
   api?: (env: Env) => ApiStore;
+  automations?: (env: Env) => AutomationStore;
+  portal?: (env: Env) => PortalStore;
 };
 
 const defaultApp: App = { store: (env) => new D1Store(env.DB, env.TENANT_KEY), fetcher: (...a) => fetch(...a) };
@@ -72,6 +80,7 @@ function deps(env: Env, app: App): Deps {
     aiGateway: env.AI_GATEWAY,
     api: apiStoreFor(env, app),
     queue: env.JOBS,
+    automations: automationStoreFor(env, app),
   };
 }
 
@@ -100,14 +109,17 @@ function caller(req: Request, env: Env): "admin" | "shell" | null {
   return null;
 }
 
-/** Admin routes the shell token may also use: one company's own sync and meeting views. */
+/** Admin routes the shell token may also use: one company's own sync, meeting views, integrations and customer-portal links. */
 function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "dead-letters" && !parts[4] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && !parts[4] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "assist" && !parts[4] && method === "POST") return true;
   if (isIntegrationRoute(parts) && (method === "GET" || method === "POST")) return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "automations" && ["GET", "PUT", "POST"].includes(method)) return true;
+  if (isPortalRoute(parts) && (method === "GET" || method === "POST")) return true;
   return false;
 }
 
@@ -389,6 +401,13 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     const billed = await billingAdmin(req, url, parts, { ...billing, actor });
     if (billed) return billed;
     if (isIntegrationRoute(parts)) return manageIntegrations(req, env, app, parts, actor);
+    if (parts[1] === "tenants" && parts[2] && parts[3] === "automations") {
+      const automations = automationStoreFor(env, app);
+      if (!automations) return text("automations not configured", 503);
+      const t = await tenantFor(parts[2]);
+      return manageAutomations(req, parts, { site: parts[2], actor, automations, store, fetcher: app.fetcher, mail: Boolean(env.EMAIL && t?.mail_from) });
+    }
+    if (isPortalRoute(parts)) return managePortal(req, env, app, parts, actor);
     if (parts[1] === "accounts" && !parts[2] && req.method === "GET") {
       const now = new Date();
       return json({ today: taiwanDate(now), accounts: (await store.listAccounts()).map((a) => accountView(a, now)) });
@@ -466,6 +485,10 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       const email = (url.searchParams.get("email") ?? "").toLowerCase();
       if (!t || !email) return text("not found", 404);
       return json({ url: `${url.origin}/unsubscribe/${encodeURIComponent(t.site)}?email=${encodeURIComponent(email)}&sig=${await unsubscribeSignature(t.unsubscribe_secret, email)}` });
+    }
+    if (parts[1] === "tenants" && parts[2] && parts[3] === "assist" && !parts[4] && req.method === "POST") {
+      if (!(await tenantFor(parts[2]))) return text("not found", 404);
+      return assist(req, env);
     }
     if (parts[1] === "tenants" && parts[3] === "meetings" && !parts[4] && req.method === "GET") {
       const t = await tenantFor(parts[2]);
@@ -639,10 +662,18 @@ export async function daily(env: Env, app: App = defaultApp, now = new Date()) {
   return { pruned, refreshed, failed, reminded, pushed, billing, backups, purge_due: purgeDue };
 }
 
+/** Rules decide for themselves whether they are due (daily ones once a Taiwan workday, hourly ones every hour). */
+export async function automationTick(env: Env, app: App = defaultApp, now = new Date()) {
+  const automations = automationStoreFor(env, app);
+  if (!automations) return null;
+  return runAutomations({ store: app.store(env), automations, fetcher: app.fetcher, queue: env.JOBS }, now);
+}
+
 /** Cron runs every 5 minutes; the daily part runs in the 02:00 Taiwan slot. */
 export async function scheduled(env: Env, app: App = defaultApp, now = new Date()) {
   const queued = await scheduleMeetings(env, app, now);
   const monitor = await uptime(env, app, now).catch((e) => (log("error", "monitor.failed", { error: errorText(e) }), null));
+  const automations = await automationTick(env, app, now).catch((e) => (log("error", "automations.failed", { error: errorText(e) }), null));
   const isDailySlot = now.getUTCHours() === 18 && now.getUTCMinutes() < 5;
-  return { queued, monitor, daily: isDailySlot ? await daily(env, app, now) : null };
+  return { queued, monitor, automations, daily: isDailySlot ? await daily(env, app, now) : null };
 }

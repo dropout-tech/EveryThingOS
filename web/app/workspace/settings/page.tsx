@@ -145,6 +145,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
               重設現場與功能
             </Link>
           )}
+          <Link href="/workspace/settings/import" className={buttonClass({ variant: "secondary", size: "sm" })}>
+            匯入客人、供應商、商品（Excel／CSV）
+          </Link>
           {exportUrl ? (
             <a href="#export" className={buttonClass({ variant: "secondary", size: "sm" })}>
               下載全部資料

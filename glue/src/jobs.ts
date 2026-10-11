@@ -3,6 +3,8 @@ import { ECPayInvoice, type EInvoiceProvider, type InvoiceInput } from "./einvoi
 import { sendConfirmation, type MailEvent, type SendEmail } from "./mail";
 import { summarize, Vexa, type Ai, type MeetingLink } from "./meetings";
 import type { ApiStore } from "./apiStore";
+import type { AutomationStore } from "./automation-store";
+import { giveUpAutomation, performAutomation, type AutomationJob } from "./automations";
 import type { Store, Tenant } from "./store";
 import { deliver, fanOut, type WebhookJob } from "./webhooks";
 
@@ -26,7 +28,8 @@ export type Job =
   | { kind: "payment"; site: string; gateway: "ecpay" | "newebpay"; trade_no: string; amount: number; gateway_txn?: string; raw?: unknown }
   | { kind: "meeting_start"; site: string; link: MeetingLink; title: string; attendees: string[]; start: string }
   | { kind: "meeting_done"; site: string; platform: string; meeting_id: string }
-  | WebhookJob;
+  | WebhookJob
+  | AutomationJob;
 
 export type Deps = {
   store: Store;
@@ -39,6 +42,7 @@ export type Deps = {
   /** Outbound webhooks; both unset means the company has none to send. */
   api?: ApiStore;
   queue?: { send(job: Job): Promise<unknown> };
+  automations?: AutomationStore;
 };
 
 export const DO_NOT_PUSH_LABEL = "勿推播";
@@ -140,6 +144,9 @@ export async function runJob(job: Job, deps: Deps): Promise<unknown> {
       return new Vexa(tenant.vexa, deps.fetcher).requestBot(job.link, tenant.vexa.language ?? "zh");
     }
 
+    case "automation":
+      return performAutomation(job, tenant, erp, deps);
+
     case "meeting_done": {
       if (!tenant.vexa || !deps.ai) throw new PermanentError("meeting bot or AI not configured");
       const meeting = await deps.store.getMeeting(job.site, job.platform, job.meeting_id);
@@ -193,6 +200,7 @@ export function isRetryable(e: unknown): boolean {
 
 /** Best-effort side effects when a job is given up on, so people see it in ERPNext too. */
 export async function onGiveUp(job: Job, error: string, deps: Deps) {
+  if (job.kind === "automation") return giveUpAutomation(job, error, deps.automations);
   if (job.kind === "erpnext_event" && job.event.event_type === "invoiced" && job.event.reference_name) {
     const tenant = await deps.store.getTenant(job.site);
     if (tenant) {

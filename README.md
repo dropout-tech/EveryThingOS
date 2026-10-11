@@ -54,11 +54,17 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 導入教學：開站清單（讀真實進度）、第一筆生意練習、各職務第一天指南、頁面提示、空白頁下一步、說明中心 `/help` | `web/app/workspace`、`web/app/help`、`web/lib/help.ts`、`dropout_core.api.setup_checklist` | 顧問導入腳本見 [docs/ONBOARDING-GUIDE.md](docs/ONBOARDING-GUIDE.md) |
 | 介面：設計 token 與共用元件、手機底部選單、載入與錯誤畫面、確認對話框、WCAG AA 對比、減少動態；官網價值主張、免費導入預約表單、SEO（sitemap、OG 圖） | `web/components/ui`、`web/app/globals.css`、`web/app/consulting` | [docs/UI-GUIDE.md](docs/UI-GUIDE.md) |
 | 三種介面風格：現代極簡、流體藝術（預設）、社群媒體，各有黑白兩色；官網首頁、頂部「風格」選單、`/workspace/settings#appearance` 可換，記在 `dropout_style` cookie；⌘K 指令面板、麵包屑、新手開站移到 `/start` | `web/lib/style.ts`、`web/app/styles/{minimal,fluid,social}.css`、`web/components/styles`、`web/components/StylePicker.tsx` | 只換外觀不換功能；新增元件請照 [docs/UI-GUIDE.md](docs/UI-GUIDE.md) 的風格掛勾 |
+| 問助理：用平常講話的方式問帳上的事（誰欠最多、這個月賺多少、什麼快沒貨、今天誰請假），答案附出處、連結與下一步；幫你寫催款、報價追蹤、回覆客人的訊息；⌘K 打問題直接問 | `web/lib/assistant.ts`、`web/app/workspace/ask`、`glue/src/assist.ts` | 數字一律從帳上算；接 glue 的 AI 只用來聽懂問法與潤稿（[docs/ASSISTANT.md](docs/ASSISTANT.md)） |
+| 客戶入口：報價、訂單、發票做成連結用 LINE 傳給客人，客人免註冊看明細、打名字或手寫簽名接受報價、下載 PDF、線上付款或看匯款帳號；看過幾次、簽了沒都看得到，可設期限、隨時撤回 | `web/app/q/[token]`、`web/app/workspace/portal`、`glue` migration 0008、`dropout_core.portal` | 上線前要設 `PORTAL_SECRET`（至少 32 字元）、套用 0008、`bench migrate`（[docs/PORTAL.md](docs/PORTAL.md)） |
+| 簽核與報帳：假單、報帳、大額採購、大折扣報價都在「等我簽」，一鍵核准或退回（要寫原因），小額一次簽完；手機拍收據報帳；側欄顯示待簽數 | `web/app/workspace/approvals`、`dropout_core/approvals.py` | 用 ERPNext Workflow 與 HRMS，門檻可調、預設關閉；報帳要開人事（[docs/APPROVALS.md](docs/APPROVALS.md)） |
+| 專案與工時：每一案的合約、成本、毛利、進度與「順／要注意／超支」；手機記工時；待辦看板；勾選沒請款的工時開成發票草稿 | `web/app/workspace/projects`、`dropout_core/projects.py` | 發票為草稿，由會計在 ERPNext 送出（[docs/PROJECTS.md](docs/PROJECTS.md)） |
+| 自動化與通知鈴：逾期發票、報價沒回、新客人沒人跟、低庫存請購、合約到期、大訂單六條「當…就…」規則，先看今天會碰到誰、可試跑；右上角鈴鐺集中通知 | `web/app/workspace/automations`、`glue/src/automations.ts`、`glue` migration 0007 | 同一件事不重複做；要套用 0007（[docs/AUTOMATIONS.md](docs/AUTOMATIONS.md)） |
+| 匯入資料精靈：從 Excel 貼上或上傳 CSV（UTF-8／Big5）、.xlsx，自動對欄位、檢查統編與 Email／電話、跳過重複，分批寫進 ERPNext，失敗的列可下載改好再匯 | `web/app/workspace/settings/import`、`web/lib/importer.ts` | 規則與導入工具共用測試資料（[docs/IMPORT.md](docs/IMPORT.md)） |
 | 信任文件：服務條款、隱私權政策、資料處理附約、SLA、資安說明 | `web/app/{terms,privacy,dpa,sla,security}` | **草稿**，公司資料待填、簽約前請律師審閱（[docs/TRUST.md](docs/TRUST.md)） |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
 
-下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 Cloudflare 帳號建 D1 與 Queues、套用 `glue/migrations` 0001–0006、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
+下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 Cloudflare 帳號建 D1 與 Queues、套用 `glue/migrations` 0001–0008、在殼設定 `PORTAL_SECRET`、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 
 ## 開源組裝與套皮
 
@@ -78,6 +84,12 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 - 信任文件（條款、隱私、SLA）：[docs/TRUST.md](docs/TRUST.md)
 - 顧問導入腳本：[docs/ONBOARDING-GUIDE.md](docs/ONBOARDING-GUIDE.md)
 - 介面規範：[docs/UI-GUIDE.md](docs/UI-GUIDE.md)
+- 問助理：[docs/ASSISTANT.md](docs/ASSISTANT.md)
+- 客戶入口與線上簽報價：[docs/PORTAL.md](docs/PORTAL.md)
+- 簽核與報帳：[docs/APPROVALS.md](docs/APPROVALS.md)
+- 專案與工時：[docs/PROJECTS.md](docs/PROJECTS.md)
+- 自動化與通知：[docs/AUTOMATIONS.md](docs/AUTOMATIONS.md)
+- 匯入資料：[docs/IMPORT.md](docs/IMPORT.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）

@@ -1392,6 +1392,14 @@ html[data-theme="white"] .os-shell .glass-chip {
     background: var(--accent);
   }
 
+  .progress[data-tone="warn"] > span {
+    background: var(--warn);
+  }
+
+  .progress[data-tone="danger"] > span {
+    background: var(--danger);
+  }
+
   /* Disclosure (details/summary) */
   .disclosure > summary {
     display: flex;
@@ -1840,6 +1848,48 @@ html[data-theme="white"] .os-shell .glass-chip {
   .link-card:hover {
     border-color: color-mix(in srgb, var(--cream) 45%, transparent);
   }
+
+  /* 通知 bell */
+  .notify-bell {
+    position: relative;
+  }
+
+  .notify-bell .badge-count {
+    margin-left: -0.125rem;
+  }
+
+  .notify-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-space-2);
+  }
+
+  .notify-item {
+    display: flex;
+    min-height: var(--ui-tap);
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--surface-card-border);
+    border-radius: var(--control-radius);
+    background: var(--surface-card);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    text-decoration: none;
+  }
+
+  .notify-item:hover {
+    background: var(--surface-hover);
+  }
+
+  .notify-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    margin-top: 0.4rem;
+    border-radius: 999px;
+    background: var(--accent);
+  }
 }
 
 /* Unlayered on purpose: `.glass > *` would otherwise force position: relative, and a clipping parent would trap it. */
@@ -1931,6 +1981,169 @@ html[data-theme="white"] .os-shell .glass-chip {
   .spinner {
     border-right-color: currentColor;
     opacity: 0.6;
+  }
+}
+
+/* 匯入資料精靈 (/workspace/settings/import) */
+@layer components {
+  .import-steps {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--chip-radius);
+    background: var(--surface-scrim);
+    scrollbar-width: none;
+  }
+
+  .import-steps > li {
+    flex: 1 0 auto;
+  }
+
+  .import-step {
+    display: inline-flex;
+    width: 100%;
+    min-height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0 0.75rem;
+    border-radius: var(--ui-radius-pill);
+    color: var(--cream-dim);
+    font-size: var(--ui-text-sm);
+    white-space: nowrap;
+  }
+
+  .import-step:not(:disabled):hover {
+    color: var(--cream);
+  }
+
+  .import-step:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .import-step[data-done] {
+    color: var(--cream);
+  }
+
+  .import-step[aria-current="step"] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+    opacity: 1;
+  }
+
+  .import-step-no {
+    display: inline-flex;
+    width: 1.375rem;
+    height: 1.375rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid currentColor;
+    border-radius: var(--ui-radius-pill);
+    font-size: var(--ui-text-xs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .import-kind[aria-pressed="true"] {
+    border-color: var(--cream);
+  }
+
+  .import-drop {
+    padding: 1rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+  }
+
+  .import-file + label {
+    cursor: pointer;
+  }
+
+  .import-file:focus-visible + label {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .segmented .import-filter {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 0.9rem;
+    border-radius: var(--ui-radius-pill);
+    color: var(--cream-dim);
+    font-size: var(--ui-text-sm);
+  }
+
+  .segmented .import-filter[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+
+  @media (max-width: 639px) {
+    .import-steps > li {
+      flex: 0 0 auto;
+    }
+
+    .import-steps > li:has([aria-current="step"]) {
+      flex: 1 0 auto;
+    }
+
+    .import-step:not([aria-current="step"]) .import-step-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .import-step,
+    .segmented .import-filter {
+      min-height: var(--ui-tap);
+    }
+  }
+}
+
+/* 問助理 (components/AskBoard.tsx) */
+@layer components {
+  .ask-answer {
+    padding-left: 0.875rem;
+    border-left: 2px solid var(--line);
+  }
+
+  .ask-rows > li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .ask-chip {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    padding: 0.25rem 0.875rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--chip-radius);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    text-align: left;
+    transition: background-color var(--motion-fast) ease-out;
+  }
+
+  .ask-chip:hover {
+    background: var(--surface-hover);
+  }
+}
+
+@media (pointer: coarse) {
+  .os-shell .ask-chip {
+    min-height: var(--ui-tap);
   }
 }
 
@@ -2107,6 +2320,171 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 }
 
+/* 客戶入口 (/q/…): the page a customer opens from a shared link. */
+@layer components {
+  .portal-demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--warn);
+    border-radius: var(--card-radius);
+    background: var(--surface-scrim);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+  }
+
+  .portal-logo {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: var(--ui-radius-md);
+    object-fit: contain;
+    background: var(--surface-card);
+  }
+
+  .portal-monogram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-fill);
+    color: var(--on-primary);
+    font-family: var(--font-heading);
+    font-size: var(--ui-text-lg);
+    font-weight: 600;
+  }
+
+  .portal-meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1rem;
+    font-size: var(--ui-text-sm);
+  }
+
+  .portal-meta dt {
+    color: var(--cream-dim);
+  }
+
+  .portal-meta dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .portal-lines {
+    margin-inline: -1.25rem;
+    border-block: 1px solid var(--line);
+  }
+
+  @media (min-width: 768px) {
+    .portal-lines {
+      margin-inline: -1.75rem;
+    }
+
+    .portal-lines .table-stack :is(th, td):first-child {
+      padding-inline-start: 1.75rem;
+    }
+
+    .portal-lines .table-stack :is(th, td):last-child {
+      padding-inline-end: 1.75rem;
+    }
+  }
+
+  .portal-totals {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem 1.5rem;
+    margin-inline-start: auto;
+    max-width: 22rem;
+    font-size: var(--ui-text-sm);
+    text-align: right;
+  }
+
+  .portal-totals dt {
+    color: var(--cream-dim);
+  }
+
+  .portal-totals .portal-grand {
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--line);
+    color: var(--cream);
+    font-size: var(--ui-text-lg);
+    font-weight: 600;
+  }
+
+  .portal-check {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ui-radius-pill);
+    background: var(--ok);
+    color: var(--ink);
+    font-size: var(--ui-text-lg);
+    font-weight: 700;
+  }
+
+  .portal-signature img {
+    width: 100%;
+    max-width: 20rem;
+    aspect-ratio: 5 / 2;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+  }
+
+  /* The saved signature is dark ink on transparent; flip it so it reads on the dark theme. */
+  html[data-theme="black"] .portal-signature img {
+    filter: invert(1);
+  }
+
+  @media print {
+    html[data-theme="black"] .portal-signature img {
+      filter: none;
+    }
+  }
+
+  .signature-pad {
+    position: relative;
+    margin-top: 0.35rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+    color: var(--cream);
+  }
+
+  .signature-pad:focus-within,
+  .signature-pad:hover {
+    border-style: solid;
+  }
+
+  .signature-pad canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 5 / 2;
+    max-height: 14rem;
+    touch-action: none;
+    cursor: crosshair;
+  }
+
+  .signature-pad[data-disabled] canvas {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .signature-pad-hint {
+    position: absolute;
+    inset: auto 1rem 0.75rem;
+    border-top: 1px solid var(--line);
+    padding-top: 0.25rem;
+    color: var(--cream-dim);
+    font-size: var(--ui-text-xs);
+    pointer-events: none;
+  }
+}
+
 @media print {
   .scene-layer,
   .site-noprint,
@@ -2156,5 +2534,186 @@ html[data-theme="white"] .os-shell .glass-chip {
 
   .site-print h2 {
     break-after: avoid;
+  }
+}
+
+@layer components {
+  /* 簽核與報帳 */
+  .approval-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .approval-card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .approval-amount {
+    font-size: var(--ui-text-lg);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .approval-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: 2.75rem;
+  }
+
+  @media (max-width: 639px) {
+    .approval-actions {
+      padding-left: 0;
+    }
+
+    .approval-actions > .btn:not(.btn-sm) {
+      flex: 1 1 0;
+    }
+  }
+
+  .approval-sent {
+    align-items: flex-start;
+    padding-block: 0.75rem;
+  }
+
+  .receipt-thumb {
+    display: block;
+    width: 4rem;
+    height: 4rem;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+    background: var(--surface-scrim);
+  }
+
+  .receipt-thumb:hover {
+    border-color: var(--field-border);
+  }
+
+  .receipt-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .receipt-full {
+    display: block;
+    max-width: 100%;
+    max-height: 70vh;
+    margin-inline: auto;
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-preview {
+    width: 6rem;
+    height: 8rem;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-drop {
+    display: flex;
+    width: 100%;
+    min-height: 7rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px dashed var(--field-border);
+    border-radius: var(--control-radius);
+    background: var(--field-bg);
+    color: var(--cream);
+    text-align: center;
+  }
+
+  .receipt-drop:hover {
+    background: var(--surface-hover);
+  }
+
+  .receipt-sample {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.7rem;
+    background: var(--surface-card);
+  }
+
+  .receipt-sample span {
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--cream-dim);
+    opacity: 0.6;
+  }
+
+  .receipt-sample span:nth-child(2) {
+    width: 70%;
+  }
+
+  .receipt-sample span:nth-child(4) {
+    width: 45%;
+  }
+
+  .receipt-sample-lg {
+    width: 14rem;
+    height: 18rem;
+    margin-inline: auto;
+    gap: 1rem;
+    padding: 2rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--control-radius);
+  }
+
+  .receipt-sample-lg span {
+    height: 4px;
+  }
+
+  .choice-chip {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    padding: 0 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: var(--chip-radius);
+    background: var(--control-fill);
+    color: var(--cream);
+    font-size: var(--ui-text-sm);
+    cursor: pointer;
+  }
+
+  .choice-chip:hover {
+    background: var(--control-fill-hover);
+  }
+
+  .choice-chip:has(input:checked) {
+    border-color: transparent;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 500;
+  }
+
+  .choice-chip:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  @media (pointer: coarse) {
+    .choice-chip {
+      min-height: var(--ui-tap);
+    }
+
+    .receipt-thumb {
+      width: var(--ui-tap);
+      min-width: 4rem;
+    }
   }
 }

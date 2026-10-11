@@ -45,6 +45,72 @@ CUSTOM_FIELDS = {
 			"allow_on_submit": 1,
 		},
 	],
+	"Quotation": [
+		{
+			"fieldname": "dropout_acceptance_section",
+			"fieldtype": "Section Break",
+			"label": "客人線上接受",
+			"insert_after": "terms",
+			"collapsible": 1,
+			"depends_on": "dropout_accepted_at",
+		},
+		{
+			"fieldname": "dropout_accepted_by",
+			"fieldtype": "Data",
+			"label": "接受人（客人輸入的全名）",
+			"insert_after": "dropout_acceptance_section",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"no_copy": 1,
+		},
+		{
+			"fieldname": "dropout_accepted_at",
+			"fieldtype": "Datetime",
+			"label": "接受時間",
+			"insert_after": "dropout_accepted_by",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"no_copy": 1,
+			"in_standard_filter": 1,
+		},
+		{
+			"fieldname": "dropout_signature",
+			"fieldtype": "Attach Image",
+			"label": "手寫簽名",
+			"insert_after": "dropout_accepted_at",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"no_copy": 1,
+		},
+		{
+			"fieldname": "dropout_acceptance_link",
+			"fieldtype": "Data",
+			"label": "分享連結編號",
+			"insert_after": "dropout_signature",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"no_copy": 1,
+		},
+		{
+			"fieldname": "dropout_acceptance_ip",
+			"fieldtype": "Data",
+			"label": "網路位址雜湊",
+			"insert_after": "dropout_acceptance_link",
+			"read_only": 1,
+			"allow_on_submit": 1,
+			"no_copy": 1,
+		},
+		{
+			"fieldname": "dropout_discount_percent",
+			"fieldtype": "Percent",
+			"label": "總折扣（%）",
+			"insert_after": "discount_amount",
+			"read_only": 1,
+			"no_copy": 1,
+			"print_hide": 1,
+			"description": "品項折扣加整張折扣，對照價目表的總價。大折扣核准用。",
+		},
+	],
 	"Payment Request": [
 		{
 			"fieldname": "dropout_trade_no",
@@ -108,6 +174,19 @@ def ensure_setup():
 
 	ensure_role_profiles()
 	frappe.db.commit()
+	_ensure_expense_types()
+
+
+def _ensure_expense_types():
+	"""報帳分類 need a company and its chart of accounts; a fresh site gets them on a later migrate."""
+	from dropout_core.approvals import ensure_expense_types
+
+	try:
+		ensure_expense_types()
+		frappe.db.commit()
+	except Exception:
+		frappe.db.rollback()
+		frappe.log_error(title="DropOut 報帳分類")
 
 
 def configure_glue(url, secret):

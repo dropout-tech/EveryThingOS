@@ -75,6 +75,17 @@ export class ERPNext {
     return (body?.data ?? []) as T[];
   }
 
+  /** Frappe REST insert; the document runs through its normal validation and permissions. */
+  async insert<T = Record<string, unknown>>(doctype: string, doc: Record<string, unknown>): Promise<T> {
+    const body = await call(
+      this.fetcher,
+      `${this.t.erpnext_url}/api/resource/${encodeURIComponent(doctype)}`,
+      { method: "POST", headers: this.headers(), body: JSON.stringify(doc) },
+      `erpnext insert ${doctype}`,
+    );
+    return body?.data as T;
+  }
+
   api<T = unknown>(fn: string, args: Record<string, unknown> = {}) {
     return this.method<T>(`dropout_core.api.${fn}`, args);
   }

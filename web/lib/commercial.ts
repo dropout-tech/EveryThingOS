@@ -37,6 +37,12 @@ export const MODULES: { id: string; name: string; detail: string; status: Module
   { id: "chat", name: "對話", detail: "LINE、IG、FB、官網訊息在同一個收件匣，回完直接轉成客人。", status: "setup", note: "要接你們的 LINE 官方帳號與粉專" },
   { id: "letter", name: "電子報", detail: "寫好就寄，退訂與同意紀錄自動留。退信的名單另外列出來。", status: "ready" },
   { id: "meetings", name: "會議紀錄", detail: "線上會議派機器人記錄、整理摘要，每一場都可以關掉。", status: "pilot" },
+  { id: "assistant", name: "問助理", detail: "用平常講話的方式問「誰欠最多」「這個月賺多少」，數字直接從你們的帳算，附上出處與連結；催款、跟進報價的訊息也幫你寫好。", status: "ready", note: "接 AI 後聽得懂更自由的問法；數字永遠不由 AI 產生" },
+  { id: "portal", name: "客戶入口與線上簽報價", detail: "報價、發票用 LINE 傳一個連結，客人在手機上看、簽名、下載；你這邊看得到誰看過、誰簽了。", status: "ready" },
+  { id: "approvals", name: "簽核與報帳", detail: "請假、請購、折扣、報帳排在同一個「等我簽」，手機一鍵核准；員工拍收據就能報帳。", status: "ready", note: "報帳要開人事模組" },
+  { id: "projects", name: "專案與工時", detail: "每個案子的預算、成本、毛利與進度；記工時，把做完的時數直接開成發票。", status: "ready" },
+  { id: "automations", name: "自動化", detail: "逾期帳款提醒、報價沒回、低庫存請購、合約到期續約，照規則自己跑，同一件事不會重複寄。", status: "ready" },
+  { id: "import", name: "Excel 匯入", detail: "從 Excel 直接貼上客人、供應商、商品，自動對欄位、檢查統編與重複，幾分鐘就是你們自己的資料。", status: "ready" },
   { id: "api", name: "對外 API", detail: "每家公司自己的金鑰，客人、商品、訂單、發票；有事件時推 Webhook。", status: "setup", note: "由顧問幫你們開金鑰" },
 ];
 
@@ -112,6 +118,9 @@ export const SAAS_MATRIX = [
   { category: "客服信箱", tools: ["Zendesk", "Intercom", "Freshdesk"], pillar: "客人" },
   { category: "預約日曆", tools: ["Calendly", "Cal.com 雲端", "預約 LINE"], pillar: "客人" },
   { category: "專案工時", tools: ["Monday.com", "Asana", "Jira"], pillar: "生意" },
+  { category: "線上簽署報價", tools: ["DocuSign", "Adobe Acrobat Sign", "PandaDoc"], pillar: "生意" },
+  { category: "簽核與報帳", tools: ["紙本簽呈", "表單簽核系統", "Expensify"], pillar: "生意" },
+  { category: "自動化串接", tools: ["Zapier", "Make", "IFTTT"], pillar: "生意" },
   { category: "試算表當客戶名單", tools: ["Google 試算表", "Dropbox", "個人碟"], pillar: "客人與檔案" },
   { category: "社群私訊接單", tools: ["ManyChat", "IG 留言轉私訊", "CommentGuard"], pillar: "回覆" },
   { category: "LINE 官方", tools: ["LINE OA 後台", "第三方聊天機器人"], pillar: "擋假信" },
