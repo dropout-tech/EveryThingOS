@@ -1136,8 +1136,13 @@ html[data-theme="white"] .os-shell .glass-chip {
   }
 
   .table-stack th.num,
-  .table-stack td.num {
+  .table-stack td.num,
+  .table-stack [data-numeric] {
     text-align: right;
+  }
+
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
   }
 
   .table-stack tfoot {

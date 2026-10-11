@@ -72,11 +72,11 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
             <thead className="bg-ink-2">
               <tr>
                 <th scope="col">客戶</th>
-                <th scope="col" className="num">未到期</th>
-                <th scope="col" className="num">30 天</th>
-                <th scope="col" className="num">60 天</th>
-                <th scope="col" className="num">90 天＋</th>
-                <th scope="col" className="num">下一步</th>
+                <th scope="col" className="num" data-numeric="">未到期</th>
+                <th scope="col" className="num" data-numeric="">30 天</th>
+                <th scope="col" className="num" data-numeric="">60 天</th>
+                <th scope="col" className="num" data-numeric="">90 天＋</th>
+                <th scope="col" className="text-right">下一步</th>
               </tr>
             </thead>
             <tbody>
@@ -90,19 +90,19 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
               {aging.map((row) => (
                 <tr key={row.party}>
                   <td data-primary="">{row.party}</td>
-                  <td data-label="未到期" className="num">
+                  <td data-label="未到期" className="num" data-numeric="">
                     <Money amount={row.current} />
                   </td>
-                  <td data-label="30 天" className="num">
+                  <td data-label="30 天" className="num" data-numeric="">
                     <Money amount={row.d30} />
                   </td>
-                  <td data-label="60 天" className="num">
+                  <td data-label="60 天" className="num" data-numeric="">
                     <Money amount={row.d60} tone={row.d60 ? "warn" : "none"} className={row.d60 ? "font-medium" : ""} />
                   </td>
-                  <td data-label="90 天＋" className="num">
+                  <td data-label="90 天＋" className="num" data-numeric="">
                     <Money amount={row.d90} tone={row.d90 ? "danger" : "none"} className={row.d90 ? "font-medium" : ""} />
                   </td>
-                  <td data-label="下一步" className="num">
+                  <td data-label="下一步" className="sm:text-right">
                     {live ? (
                       <DeskLink href={row.href} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
                         {row.d90 || row.d60 ? "催收" : "對帳"}
@@ -120,16 +120,16 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
               <tfoot>
                 <tr>
                   <td data-primary="">合計</td>
-                  <td data-label="未到期" className="num">
+                  <td data-label="未到期" className="num" data-numeric="">
                     <Money amount={sum("current")} />
                   </td>
-                  <td data-label="30 天" className="num">
+                  <td data-label="30 天" className="num" data-numeric="">
                     <Money amount={sum("d30")} />
                   </td>
-                  <td data-label="60 天" className="num">
+                  <td data-label="60 天" className="num" data-numeric="">
                     <Money amount={sum("d60")} />
                   </td>
-                  <td data-label="90 天＋" className="num">
+                  <td data-label="90 天＋" className="num" data-numeric="">
                     <Money amount={sum("d90")} />
                   </td>
                   <td aria-hidden="true" />

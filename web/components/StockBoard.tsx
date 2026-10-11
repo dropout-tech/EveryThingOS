@@ -52,8 +52,8 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
               <th scope="col">名稱</th>
               <th scope="col">品號</th>
               <th scope="col">倉</th>
-              <th scope="col" className="num">現有</th>
-              <th scope="col" className="num">安全</th>
+              <th scope="col" className="num" data-numeric="">現有</th>
+              <th scope="col" className="num" data-numeric="">安全</th>
               {batchOn ? <th scope="col">批號</th> : null}
               <th scope="col">下一步</th>
             </tr>
@@ -66,13 +66,13 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
                   <td data-primary="">{row.name}</td>
                   <td data-label="品號">{row.sku}</td>
                   <td data-label="倉">{row.warehouse}</td>
-                  <td data-label="現有" className="num">
+                  <td data-label="現有" className="num" data-numeric="">
                     <span className={`inline-flex items-center gap-2 ${low ? "font-medium text-warn" : ""}`}>
                       {row.onHand}
                       {low ? <Badge tone="warn">不夠</Badge> : null}
                     </span>
                   </td>
-                  <td data-label="安全" className="num">
+                  <td data-label="安全" className="num" data-numeric="">
                     {row.safety}
                   </td>
                   {batchOn ? <td data-label="批號">{row.batch ?? "—"}</td> : null}

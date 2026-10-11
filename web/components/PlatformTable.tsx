@@ -41,15 +41,15 @@ const COMPARE: Record<SortKey, (a: PlatformRow, b: PlatformRow) => number> = {
   data: (a, b) => nums(a.dataMb, b.dataMb),
 };
 
-const COLUMNS: { key: SortKey | null; label: string; className?: string }[] = [
+const COLUMNS: { key: SortKey | null; label: string; numeric?: boolean }[] = [
   { key: "company", label: "公司" },
   { key: "health", label: "健康度" },
   { key: "stage", label: "合約狀態" },
   { key: "ends", label: "到期" },
   { key: "open", label: "帳單" },
-  { key: "users", label: "帳號／30 天活躍", className: "text-right" },
-  { key: "invoices", label: "本月發票", className: "text-right" },
-  { key: "data", label: "資料量", className: "text-right" },
+  { key: "users", label: "帳號／30 天活躍", numeric: true },
+  { key: "invoices", label: "本月發票", numeric: true },
+  { key: "data", label: "資料量", numeric: true },
   { key: null, label: "最近備份" },
   { key: null, label: "網址" },
 ];
@@ -132,7 +132,8 @@ export function PlatformTable({ rows, initialSort = "risk" }: { rows: PlatformRo
                 <th
                   key={c.label}
                   scope="col"
-                  className={`px-4 py-3 font-normal whitespace-nowrap ${c.className ?? ""}`}
+                  className={`px-4 py-3 font-normal whitespace-nowrap ${c.numeric ? "num text-right" : ""}`}
+                  data-numeric={c.numeric ? "" : undefined}
                   aria-sort={c.key && sort.key === c.key ? (sort.desc ? "descending" : "ascending") : undefined}
                 >
                   {c.key ? (
@@ -171,7 +172,7 @@ export function PlatformTable({ rows, initialSort = "risk" }: { rows: PlatformRo
                 <td className="px-4 py-3">
                   <Chip tone={STAGE_TONE[r.stage]}>{STAGE_LABEL[r.stage]}</Chip>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap tabular-nums">{r.ends ?? "—"}</td>
+                <td className="num px-4 py-3 whitespace-nowrap">{r.ends ?? "—"}</td>
                 <td className="px-4 py-3">
                   {r.open !== null ? <Chip tone="bad">未付 {ntd(r.open)}</Chip> : <span className="text-cream-dim">—</span>}
                   {r.einvoiceFailed ? (
@@ -180,11 +181,11 @@ export function PlatformTable({ rows, initialSort = "risk" }: { rows: PlatformRo
                     </span>
                   ) : null}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">
+                <td className="num px-4 py-3 text-right" data-numeric="">
                   {r.users ?? "—"} ／ {r.active ?? "—"}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums">{r.invoices ?? "—"}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{r.dataMb !== null ? `${r.dataMb} MB` : r.usageError ? <Chip tone="warn">讀不到</Chip> : "—"}</td>
+                <td className="num px-4 py-3 text-right" data-numeric="">{r.invoices ?? "—"}</td>
+                <td className="num px-4 py-3 text-right" data-numeric="">{r.dataMb !== null ? `${r.dataMb} MB` : r.usageError ? <Chip tone="warn">讀不到</Chip> : "—"}</td>
                 <td className="max-w-56 px-4 py-3 text-xs">
                   <span className="text-cream-dim">{r.backup ?? "—"}</span>
                   {r.backupProblem ? (

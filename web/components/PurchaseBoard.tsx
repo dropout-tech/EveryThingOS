@@ -44,7 +44,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
               <th scope="col">對象</th>
               <th scope="col">單號</th>
               <th scope="col">項目</th>
-              <th scope="col" className="num">金額</th>
+              <th scope="col" className="num" data-numeric="">金額</th>
               <th scope="col">現在</th>
               <th scope="col">下一步</th>
             </tr>
@@ -62,7 +62,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
                 <td data-primary="">{row.vendor}</td>
                 <td data-label="單號">{row.no}</td>
                 <td data-label="項目">{row.item}</td>
-                <td data-label="金額" className="num">
+                <td data-label="金額" className="num" data-numeric="">
                   <Money amount={row.amount} />
                 </td>
                 <td data-label="現在">
