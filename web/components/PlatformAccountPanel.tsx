@@ -15,6 +15,8 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
   const [form, setForm] = useState({
     company: account.company,
     contact_email: account.contact_email ?? "",
+    tax_id: account.tax_id ?? "",
+    billing_address: account.billing_address ?? "",
     hosts: account.hosts.join(", "),
     trial_ends: account.trial_ends ?? "",
     renews_on: account.renews_on ?? "",
@@ -68,6 +70,8 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
               action: "update",
               company: form.company,
               contact_email: form.contact_email || null,
+              tax_id: form.tax_id.trim() || null,
+              billing_address: form.billing_address.trim() || null,
               hosts: form.hosts.split(/[,\s]+/).filter(Boolean),
               trial_ends: form.trial_ends || null,
               renews_on: form.renews_on || null,
@@ -79,7 +83,9 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
         {(
           [
             ["company", "公司名稱", "text"],
-            ["contact_email", "聯絡人 Email", "email"],
+            ["contact_email", "聯絡人 Email（收帳單與發票）", "email"],
+            ["tax_id", "統編（有填就開三聯式）", "text"],
+            ["billing_address", "發票地址（有統編必填）", "text"],
             ["hosts", "網址（逗號分隔）", "text"],
             ["trial_ends", "試用到", "date"],
             ["renews_on", "年約到", "date"],
