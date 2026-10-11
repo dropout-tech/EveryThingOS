@@ -79,7 +79,7 @@ export default async function LetterPage() {
           {data.newsletters.length ? (
             data.newsletters.map((letter) => (
               <li key={letter.name} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 p-3">
-                <a href={letter.href} target={desk ? "_blank" : undefined} rel="noreferrer">
+                <a href={letter.href} target={desk ? "_blank" : undefined} rel="noreferrer" className="inline-flex min-h-11 items-center font-medium">
                   {letter.subject}
                 </a>
                 <span className="flex items-baseline gap-3 text-xs text-cream-dim">

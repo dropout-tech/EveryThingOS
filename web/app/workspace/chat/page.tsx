@@ -1,5 +1,6 @@
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { ReplyBoard } from "@/components/ReplyBoard";
+import { Badge } from "@/components/ui/Badge";
 import { seedReplyInbox, seedReplyRules } from "@/lib/reply";
 import { isLive } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
@@ -22,7 +23,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
     <ModuleFrame kicker="對話" title="LINE、IG、FB、官網的訊息在同一個收件匣">
       <div className="glass flex flex-wrap items-center justify-between gap-4 p-5">
         <div>
-          <p>{connected ? "收件匣" : "收件匣還沒接上"}</p>
+          <h2 className="font-medium">{connected ? "收件匣" : "收件匣還沒接上"}</h2>
           <p className="mt-1 text-sm text-cream-dim">
             {connected
               ? "每則新對話會自動找到或建立客人，並記在客人的時間軸上。"
@@ -41,8 +42,10 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
         </p>
       ) : null}
       <div className="space-y-2">
-        <p className="text-sm">留言自動轉私訊</p>
-        <p className="text-xs text-cream-dim">示範。這裡按送出不會傳到 Instagram；規則在導入時設在對話系統。</p>
+        <h2 className="flex items-center gap-2 text-sm font-medium">
+          留言自動轉私訊 <Badge tone="demo" />
+        </h2>
+        <p className="text-xs text-cream-dim">這裡按送出不會傳到 Instagram；規則在導入時設在對話系統。</p>
         <ReplyBoard pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
       </div>
     </ModuleFrame>
