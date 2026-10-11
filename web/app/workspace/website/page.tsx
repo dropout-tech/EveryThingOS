@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { formatTwd } from "@/lib/erp";
@@ -108,7 +109,7 @@ export default async function WebsitePage() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-cream-dim">還沒有上架的商品。導入工具的 provision 會把商品上架，也可以在 ERPNext 的 Website Item 勾「發布」。</p>
+          <EmptyState compact title="還沒有上架的商品" detail="導入工具的 provision 會把商品上架，也可以在 ERPNext 的 Website Item 勾「發布」。" help="module-website" />
         )}
       </section>
 

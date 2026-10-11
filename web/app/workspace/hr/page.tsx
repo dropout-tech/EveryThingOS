@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/EmptyState";
+import { Hint } from "@/components/Hint";
 import { HrBoard } from "@/components/HrBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
@@ -37,10 +39,11 @@ export default async function HrPage() {
   if (live && !source.data) {
     return (
       <ModuleFrame kicker="人事" title="這家公司還沒開人事">
-        <div className="glass space-y-2 p-5 text-sm">
-          <p>ERPNext 還沒裝人事模組，所以這裡沒有打卡、請假與薪資。</p>
-          <p className="text-cream-dim">請 DropOut OS 導入顧問在導入工具選「人事」：會裝上 Frappe HRMS 與台灣的薪資元件、勞健保費率和假別。</p>
-        </div>
+        <EmptyState
+          title="ERPNext 還沒裝人事模組，所以這裡沒有打卡、請假與薪資。"
+          detail="請 DropOut OS 導入顧問在導入工具選「人事」：會裝上 Frappe HRMS 與台灣的薪資元件、勞健保費率和假別。"
+          help="module-hr"
+        />
       </ModuleFrame>
     );
   }
@@ -54,6 +57,7 @@ export default async function HrPage() {
       title={manager ? "今天誰在、誰請假" : "打卡"}
       hint={manager ? "打卡、核准假單在這裡做完。員工資料、排班、薪資結構在 ERPNext 人事後台。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
     >
+      <Hint id="hr" help="module-hr" />
       <HrBoard data={data} live={live} />
       <SourceNote source={source} demoText="示範資料。接上 ERPNext 人事後，換成你們的同事、假單與薪資。" />
     </ModuleFrame>

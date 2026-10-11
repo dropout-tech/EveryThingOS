@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { EmptyState } from "./EmptyState";
 import { DOCS_URL, EVENT_LABEL, type Integrations } from "@/lib/integrations";
 
 const field = "mt-1 rounded-lg border border-[var(--line)] bg-ink px-3 py-2 text-cream";
@@ -110,7 +111,7 @@ export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) 
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-cream-dim">還沒有金鑰。</p>
+          <EmptyState compact title="還沒有金鑰" detail="要讓蝦皮、會計師或自己的程式讀寫資料時，在下面開一把，只給它需要的權限。" help="module-api" />
         )}
         <form onSubmit={createKey} className="flex flex-wrap items-end gap-3">
           <label className="text-sm">
@@ -200,7 +201,7 @@ export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) 
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-cream-dim">還沒有 Webhook。</p>
+          <EmptyState compact title="還沒有 Webhook" detail="想在有新訂單、收到錢時通知 LINE 群組或 Zapier，就在下面加一個網址。" help="module-api" />
         )}
         <form onSubmit={createHook} className="space-y-3">
           <div className="flex flex-wrap items-end gap-3">

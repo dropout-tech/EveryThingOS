@@ -1,4 +1,5 @@
 import { FinanceBoard } from "@/components/FinanceBoard";
+import { Hint } from "@/components/Hint";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { getBooks } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
@@ -11,6 +12,7 @@ export default async function FinancePage() {
   if (books.origin === "error") return <SourceFailure source={books} next="/workspace/erp/finance" />;
   return (
     <div className="space-y-4">
+      <Hint id="finance" help="module-finance" />
       <FinanceBoard packId={pack.id} books={books.data} live={books.origin === "live"} />
       <SourceNote source={books} />
     </div>

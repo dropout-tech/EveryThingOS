@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
@@ -77,7 +78,16 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
     <div className="space-y-4">
       {live ? <LiveLeadForm /> : null}
       <ActionNote>{note}</ActionNote>
-      {live && !leads.length ? <p className="text-sm text-cream-dim">還沒有客人。對話、官網表單或匯入後會出現在這裡。</p> : null}
+      {live && !leads.length ? (
+        <EmptyState
+          compact
+          title="還沒有客人"
+          detail="LINE、IG、官網表單來的人會自動出現在這裡；舊客人名單可以一次匯入。"
+          action={{ href: "/help/import-data#customers", label: "匯入客人名單" }}
+          secondary={{ href: "/workspace/chat", label: "接上對話" }}
+          help="module-crm"
+        />
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">

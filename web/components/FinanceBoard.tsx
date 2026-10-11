@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { EmptyState } from "./EmptyState";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { collectOverdue, formatTwd, type AgingRow, type Books } from "@/lib/erp";
 
@@ -117,7 +118,11 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
       <section>
         <h3 className="text-lg">電子發票</h3>
         <ul className="mt-3 space-y-2 text-sm">
-          {live && !invoices.length ? <li className="text-cream-dim">還沒有電子發票</li> : null}
+          {live && !invoices.length ? (
+            <li>
+              <EmptyState compact title="還沒有電子發票" detail="收款前開立發票時，系統會配號並交給加值中心上傳。" action={{ href: "/workspace/erp/sales", label: "到生意開發票" }} help="module-finance" />
+            </li>
+          ) : null}
           {invoices.map((row) => (
             <li key={row.related} className="glass-chip flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <span>

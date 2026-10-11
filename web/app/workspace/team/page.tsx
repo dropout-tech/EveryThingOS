@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/EmptyState";
+import { Hint } from "@/components/Hint";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure } from "@/components/SourceNote";
 import { TeamBoard } from "@/components/TeamBoard";
@@ -52,6 +54,15 @@ export default async function TeamPage() {
 
   return (
     <ModuleFrame kicker="團隊" title="誰能看什麼、做什麼" hint="職務就是 ERPNext 的角色組合；改職務立刻生效，停用的人馬上登出。">
+      <Hint id="team" help="module-team" />
+      {live && team.data && team.data.users.filter((u) => u.enabled && u.email !== team.data?.me).length === 0 ? (
+        <EmptyState
+          compact
+          title="公司裡現在只有你"
+          detail="在下面加同事的 Email、選職務，他會收到設定密碼的信；職務決定他看得到哪些畫面。"
+          help="roles"
+        />
+      ) : null}
       <TeamBoard team={team.data ?? DEMO} live={live} />
       <section className="glass-well space-y-2 p-5">
         <h3 className="text-sm">最近紀錄</h3>
