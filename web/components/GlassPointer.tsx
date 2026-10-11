@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 export function GlassPointer() {
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches) return;
     function onMove(event: PointerEvent) {
       const node = (event.target as Element | null)?.closest?.(".lens, .glass");
       if (!(node instanceof HTMLElement)) return;
