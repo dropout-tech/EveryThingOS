@@ -237,10 +237,20 @@ def build_parser():
 	b.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
 	b.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
 	b.add_argument("--db-root-password", default=os.environ.get("DB_ROOT_PASSWORD", ""))
+	b.add_argument("--from-r2", action="store_true", help="用 R2 裡這個 site 最新的一份（<site>/<時間>/），下載到 state-dir，做完刪掉")
+	_r2_args(b)
+	b.add_argument("--encryption-key", default=os.environ.get("BACKUP_ENCRYPTION_KEY"), help="加密備份的金鑰；不填就從備份裡的 site_config_backup 或正式站的 site_config.json 讀 backup_encryption_key")
+	b.add_argument("--keep-download", action="store_true", help="演練後保留下載的檔案")
 	b.add_argument("--state-dir", default=os.path.expanduser("~/.dropout-onboard"))
 	b.add_argument("--apply", action="store_true")
 	b.set_defaults(fn=backup.cmd_verify)
 	return p
+
+
+def _r2_args(s):
+	s.add_argument("--backup-bucket", default=os.environ.get("BACKUP_BUCKET"), help="R2 bucket；金鑰用環境變數 BACKUP_ACCESS_KEY_ID、BACKUP_SECRET_ACCESS_KEY")
+	s.add_argument("--backup-endpoint", default=os.environ.get("BACKUP_ENDPOINT"), help="例：https://<account>.r2.cloudflarestorage.com")
+	s.add_argument("--s3-python", default=os.environ.get("S3_PYTHON"), help="有 boto3 的 Python，預設 <bench-dir>/env/bin/python")
 
 
 def _glue_args(s):
