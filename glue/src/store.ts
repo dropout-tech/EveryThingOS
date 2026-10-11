@@ -36,6 +36,7 @@ export interface Store {
   /** True the first time a key is seen. */
   claim(key: string): Promise<boolean>;
   release(key: string): Promise<void>;
+  isClaimed(key: string): Promise<boolean>;
   addDeadLetter(site: string, kind: string, body: string, error: string): Promise<void>;
   listDeadLetters(site: string): Promise<DeadLetter[]>;
   takeDeadLetter(id: number): Promise<DeadLetter | null>;
@@ -71,6 +72,10 @@ export class D1Store implements Store {
 
   async release(key: string) {
     await this.db.prepare("DELETE FROM seen WHERE key = ?").bind(key).run();
+  }
+
+  async isClaimed(key: string) {
+    return Boolean(await this.db.prepare("SELECT 1 AS hit FROM seen WHERE key = ?").bind(key).first());
   }
 
   async addDeadLetter(site: string, kind: string, body: string, error: string) {
@@ -128,6 +133,9 @@ export class MemoryStore implements Store {
   }
   async release(key: string) {
     this.seen.delete(key);
+  }
+  async isClaimed(key: string) {
+    return this.seen.has(key);
   }
   async addDeadLetter(site: string, kind: string, body: string, error: string) {
     this.dead.push({ id: this.dead.length + 1, site, kind, body, error, created_at: new Date().toISOString() });

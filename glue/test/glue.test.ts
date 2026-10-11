@@ -297,4 +297,24 @@ describe("meetings", () => {
     expect(write?.body).toMatchObject({ meeting_id: "abc-defg-hij", attendees: ["anan@example.com"] });
     expect(write?.body.summary).toContain("每週產銷會議");
   });
+
+  it("lists upcoming meetings for the shell and skips the ones staff turned off", async () => {
+    const h = harness({ "basic.ics": () => new Response(ics) });
+    vi.useFakeTimers({ now: new Date("2026-10-12T01:00:00Z"), toFake: ["Date"] });
+    try {
+      const get = () => new Request(`https://glue.example/admin/tenants/${tenant.site}/meetings?hours=6`, { headers: { authorization: "Bearer admin" } });
+      const list = (await (await handle(get(), h.env, h.app)).json()) as { meetings: { key: string; title: string; skipped: boolean }[] };
+      expect(list.meetings.map((m) => m.title)).toEqual(["每週產銷會議", "顧問訪談"]);
+      const skip = (key: string, skip: boolean) => handle(post(`/admin/tenants/${tenant.site}/meetings/skip`, { key, skip }, { authorization: "Bearer admin" }), h.env, h.app);
+      expect((await skip("meeting:other.site:x", true)).status).toBe(400);
+      await skip(list.meetings[0].key, true);
+      const again = (await (await handle(get(), h.env, h.app)).json()) as typeof list;
+      expect(again.meetings[0].skipped).toBe(true);
+      expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(0);
+      await skip(list.meetings[0].key, false);
+      expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

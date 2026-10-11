@@ -2,7 +2,7 @@ import { ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
 import { parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
-import { eventsInWindow, type Ai } from "./meetings";
+import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import { D1Store, type Store, type Tenant } from "./store";
 
@@ -288,6 +288,35 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       if (!t || !email) return text("not found", 404);
       return json({ url: `${url.origin}/unsubscribe/${encodeURIComponent(t.site)}?email=${encodeURIComponent(email)}&sig=${await unsubscribeSignature(t.unsubscribe_secret, email)}` });
     }
+    if (parts[1] === "tenants" && parts[3] === "meetings" && !parts[4] && req.method === "GET") {
+      const t = await tenantFor(parts[2]);
+      if (!t) return text("not found", 404);
+      const hours = Math.min(Math.max(Number(url.searchParams.get("hours") ?? 24), 1), 24 * 14);
+      const now = new Date();
+      const { events, failed } = await upcoming(t, app.fetcher, new Date(now.getTime() - 2 * 60000), new Date(now.getTime() + hours * 3600000));
+      const meetings = [];
+      for (const ev of events) {
+        const key = meetingKey(t.site, ev);
+        meetings.push({
+          key,
+          title: ev.summary,
+          start: ev.start.toISOString(),
+          platform: ev.link!.platform,
+          url: ev.link!.url,
+          attendees: ev.attendees,
+          skipped: await store.isClaimed(`skip:${key}`),
+          sent: await store.isClaimed(key),
+        });
+      }
+      return json({ bot: Boolean(t.vexa), calendars: t.calendars?.length ?? 0, failed_calendars: failed, meetings });
+    }
+    if (parts[1] === "tenants" && parts[3] === "meetings" && parts[4] === "skip" && req.method === "POST") {
+      const body = (await req.json()) as { key?: string; skip?: boolean };
+      if (!body.key?.startsWith(`meeting:${parts[2]}:`)) return text("bad key", 400);
+      if (body.skip === false) await store.release(`skip:${body.key}`);
+      else await store.claim(`skip:${body.key}`);
+      return json({ ok: true, key: body.key, skipped: body.skip !== false });
+    }
     if (parts[1] === "dead-letters" && parts[3] === "replay" && req.method === "POST") {
       const row = await store.takeDeadLetter(Number(parts[2]));
       if (!row) return text("not found", 404);
@@ -327,6 +356,24 @@ export async function consumeDeadLetters(batch: MessageBatch<Job>, env: Env, app
   }
 }
 
+export const meetingKey = (site: string, ev: CalendarEvent) => `meeting:${site}:${ev.link!.platform}:${ev.link!.id}:${ev.start.toISOString()}`;
+
+/** Meetings with a Meet/Zoom/Teams link in the tenant's calendars, soonest first. */
+async function upcoming(t: Tenant, fetcher: typeof fetch, from: Date, to: Date) {
+  const events: CalendarEvent[] = [];
+  let failed = 0;
+  for (const ics of t.calendars ?? []) {
+    try {
+      const res = await fetcher(ics);
+      if (!res.ok) throw new PermanentError(`calendar ${res.status}`);
+      events.push(...eventsInWindow(await res.text(), from, to).filter((ev) => ev.link));
+    } catch {
+      failed++;
+    }
+  }
+  return { events: events.sort((a, b) => a.start.getTime() - b.start.getTime()), failed };
+}
+
 /** Every 5 minutes: send the bot to meetings starting in the next 10 minutes. */
 export async function scheduleMeetings(env: Env, app: App = defaultApp, now = new Date()) {
   const store = app.store(env);
@@ -348,11 +395,13 @@ export async function scheduleMeetings(env: Env, app: App = defaultApp, now = ne
       }
       for (const ev of eventsInWindow(body, from, to)) {
         if (!ev.link) continue;
+        const key = meetingKey(site, ev);
+        if (await store.isClaimed(`skip:${key}`)) continue;
         const queuedNow = await enqueue(
           env,
           store,
           { kind: "meeting_start", site, link: ev.link, title: ev.summary, attendees: ev.attendees, start: ev.start.toISOString() },
-          `meeting:${site}:${ev.link.platform}:${ev.link.id}:${ev.start.toISOString()}`,
+          key,
         );
         if (queuedNow) queued++;
       }
