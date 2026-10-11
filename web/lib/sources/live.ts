@@ -14,8 +14,8 @@ type RawBooks = {
   inventory_value: number;
   overdue_ar: number;
   vat_payable: number;
-  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string }[];
-  purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string; doctype: string }[];
+  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; date?: string | null; due?: string | null; href: string; doctype: string }[];
+  purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; due?: string | null; href: string; doctype: string }[];
   stock: { sku: string; name: string; warehouse: string; on_hand: number; safety: number; href: string }[];
   ar_aging: { party: string; current: number; d30: number; d60: number; d90: number; href: string }[];
   journals: { no: string; date: string; memo: string; debit: string; credit: string; amount: number; href: string }[];
@@ -50,10 +50,12 @@ export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, 
       next: nextLabel(d.step, pack),
       overdueDays: d.overdue_days ?? undefined,
       invoiceNo: d.invoice_no ?? undefined,
+      date: d.date ?? undefined,
+      due: d.due ?? undefined,
       href: link(d.href),
       doctype: d.doctype,
     })),
-    purchases: raw.purchases.map((p) => ({ ...p, item: p.item || pack.itemType, href: link(p.href) })),
+    purchases: raw.purchases.map((p) => ({ ...p, item: p.item || pack.itemType, due: p.due ?? undefined, href: link(p.href) })),
     stock,
     arAging: raw.ar_aging.map((r) => ({ ...r, href: link(r.href) })),
     journals: raw.journals.map((j) => ({ ...j, href: link(j.href) })),

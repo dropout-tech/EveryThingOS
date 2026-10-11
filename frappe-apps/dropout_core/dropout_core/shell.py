@@ -36,6 +36,10 @@ def _desk(doctype, name):
 	return f"/app/{frappe.scrub(doctype).replace('_', '-')}/{name}"
 
 
+def _day(value):
+	return str(getdate(value)) if value else None
+
+
 def _readable(doctype, denied, **kwargs):
 	try:
 		return frappe.get_list(doctype, **kwargs)
@@ -51,26 +55,26 @@ def _sales(company, today, denied):
 		"Quotation",
 		denied,
 		filters={"company": company, "docstatus": 1, "status": ["in", ["Open", "Replied"]]},
-		fields=["name", "party_name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty"],
+		fields=["name", "party_name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "transaction_date", "valid_till"],
 		order_by="modified desc",
 		limit=LIMIT,
 	):
-		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "doctype": "Quotation", "href": _desk("Quotation", q.name)})
+		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "date": _day(q.transaction_date), "due": _day(q.valid_till), "doctype": "Quotation", "href": _desk("Quotation", q.name)})
 	for so in _readable(
 		"Sales Order",
 		denied,
 		filters={"company": company, "docstatus": 1, "status": ["in", ["To Deliver and Bill", "To Deliver", "To Bill"]]},
-		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "per_delivered"],
+		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "per_delivered", "transaction_date", "delivery_date"],
 		order_by="modified desc",
 		limit=LIMIT,
 	):
 		step = "fulfill" if flt(so.per_delivered) >= 100 else "order"
-		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "href": _desk("Sales Order", so.name)})
+		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "date": _day(so.transaction_date), "due": _day(so.delivery_date), "doctype": "Sales Order", "href": _desk("Sales Order", so.name)})
 	for si in _readable(
 		"Sales Invoice",
 		denied,
 		filters={"company": company, "docstatus": 1, "is_opening": "No", "posting_date": [">=", add_months(today, -3)]},
-		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "outstanding_amount", "due_date", "dropout_einvoice_number"],
+		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "outstanding_amount", "posting_date", "due_date", "dropout_einvoice_number"],
 		order_by="posting_date desc",
 		limit=LIMIT,
 	):
@@ -86,6 +90,8 @@ def _sales(company, today, denied):
 				"step": "paid" if paid else "invoice",
 				"overdue_days": overdue if overdue > 0 else None,
 				"invoice_no": si.dropout_einvoice_number,
+				"date": _day(si.posting_date),
+				"due": _day(si.due_date),
 				"doctype": "Sales Invoice",
 				"href": _desk("Sales Invoice", si.name),
 			}
@@ -109,11 +115,11 @@ def _purchases(company, denied):
 		"Purchase Invoice",
 		denied,
 		filters={"company": company, "docstatus": 1, "outstanding_amount": [">", 0]},
-		fields=["name", "supplier_name", "outstanding_amount"],
+		fields=["name", "supplier_name", "outstanding_amount", "due_date"],
 		order_by="due_date asc",
 		limit=LIMIT,
 	):
-		rows.append({"no": pi.name, "vendor": pi.supplier_name, "item": "", "amount": pi.outstanding_amount, "status": "待付款", "next": "付款", "doctype": "Purchase Invoice", "href": _desk("Purchase Invoice", pi.name)})
+		rows.append({"no": pi.name, "vendor": pi.supplier_name, "item": "", "amount": pi.outstanding_amount, "status": "待付款", "next": "付款", "due": _day(pi.due_date), "doctype": "Purchase Invoice", "href": _desk("Purchase Invoice", pi.name)})
 	return rows
 
 
