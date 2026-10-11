@@ -9,7 +9,26 @@ pip install -e toolkit            # 或 pip install -e 'toolkit[excel]'
 dropout-onboard --help
 ```
 
+## 一行開站加搬家：`bootstrap`
+
+一個資料夾放 `bootstrap.json`（ShopProfile 加公司名稱）與舊系統匯出檔，一次跑完：開站 → 客人／供應商／商品 → 期初庫存 → 期初應收應付。
+
+```bash
+# 預演：列出每一步與檢查結果
+dropout-onboard bootstrap examples/make --site demo-make.local --admin-email boss@example.tw
+# 真的做；provision 的服務網址參數（--glue-url、--chatwoot-url、--vexa-url…）都可以加
+dropout-onboard bootstrap examples/make --site demo-make.local --admin-email boss@example.tw \
+  --bench-dir ~/frappe-bench --apply
+```
+
+- 檔名決定種類：`customers.csv`、`suppliers.csv`、`items.csv`、`opening_stock.csv`、`opening_receivables.csv`、`opening_payables.csv`；沒有的就跳過。
+- 公司代碼、客戶群組、地區、倉庫、計量單位、開帳日從站台本身的設定讀（`dropout_core.provisioning.import_defaults`），不用手填英文名稱。預演時站台還不存在，用占位值檢查。
+- 進度依檔案內容記在狀態檔，同一份檔案再跑一次會略過；改了檔案才會重匯。
+- 三家示範公司：`examples/make`（琢奧精密製造）、`examples/service`（琢奧管理顧問）、`examples/edu`（琢奧學院）。
+
 ## 流程
+
+下面是 `bootstrap` 拆開的每一步，需要個別控制時用。
 
 1. **在殼裡選現場**：老闆在 DropOut OS 的開始設定選行業、規模、要用的功能，下載 ShopProfile JSON（範例：`examples/profile-service.json`）。
 2. **看方案**：`dropout-onboard plan profile.json` 列出要裝的 app 與搬家順序。官網有勾就加 Payments、Webshop、台灣金流；行業決定產業包。

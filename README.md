@@ -38,16 +38,17 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 
 | 部分 | 位置 | 狀態 |
 | --- | --- | --- |
-| 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、設定 | `web/` | 示範與真實資料都可用；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入 |
-| ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀取 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（19 項測試） |
+| 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、會議、官網、名單健康、設定 | `web/` | 示範與真實資料都可用；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入；殼裡直接開報價、單據下一步、收款、新增客人、寄電子報、關掉某場會議機器人 |
+| ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀寫 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（23 項測試） |
 | 產業包：製造、顧問、教育 | `frappe-apps/dropout_pack_*` | 設定精靈完成後自動套用 |
 | 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
 | 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C） | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
-| 導入工具：plan、provision、convert、check、import | `toolkit/` | 本機開站、搬家、期初庫存跑過 |
+| 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
+| CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑 |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
 
-下一動：在 Cloudflare 帳號建 D1 與 Queues、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用導入工具開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
+下一動：在 Cloudflare 帳號建 D1 與 Queues、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 
 ## 開源組裝與套皮
 

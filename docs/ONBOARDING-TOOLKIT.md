@@ -115,6 +115,7 @@ sequenceDiagram
 | 產業包安裝時就套用 | 設定精靈還沒跑完時先延後，`setup_wizard_complete` 時套用全部已裝的包 | 精靈跑完前沒有「全部商品群組」等根資料 |
 | 開站裝 Builder | 不裝 | 官網在殼與 Webshop；Builder 之後要再評估 |
 | 「同一個帳號登入」 | ERPNext 當 OAuth2 提供者，殼用 PKCE 登入；Chatwoot 以 Platform API 單一登入，`link_chatwoot_user` 對應帳號 | 不另架 Keycloak 也能一次登入 |
+| 開站、轉檔、匯入分開下指令 | 另加 `bootstrap <資料夾>`：一個資料夾放 `bootstrap.json` 與舊檔，一行跑完開站到期初應收應付；公司代碼、倉庫等從站台讀；依檔案內容記進度，重跑略過 | 快速導入；三家示範公司（`toolkit/examples/{make,service,edu}`）都用這一行開出來 |
 
 ---
 

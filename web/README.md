@@ -23,7 +23,10 @@ npm run dev
 | `/workspace/erp/{sales,purchase,stock,finance}` | 生意：同一張單往下走 |
 | `/workspace/crm` | 客人（ERPNext Lead／Customer 與通道身分） |
 | `/workspace/chat` | 對話（Chatwoot：LINE、IG、FB、官網） |
-| `/workspace/letter` | 電子報（ERPNext Email Group、Newsletter、同意紀錄） |
+| `/workspace/letter` | 電子報（ERPNext Email Group、Newsletter、同意紀錄）；寫草稿、寄出 |
+| `/workspace/meetings` | 會議紀錄：接下來的會議（可逐場關掉機器人）與摘要 |
+| `/workspace/website` | 官網：上架商品、網路訂單、表單名單、可貼的詢問表單 |
+| `/workspace/hygiene` | 退信與待確認的行銷同意 |
 | `/workspace/settings` | 連線狀態、登入的人、匯出設定檔、導入進度、同步失敗重送 |
 
 舊路徑 `/workspace/reply`、`/workspace/funnel` 永久轉址到 `chat`、`letter`；舊瀏覽器裡存的功能代號會自動對上新名字。
@@ -35,6 +38,13 @@ npm run dev
 | `GET /api/chat/open` | 以登入者對應的 Chatwoot 使用者單一登入，沒有對應就說明原因 |
 | `GET /api/shop/profile` | 下載 ShopProfile（導入工具 `plan`／`provision` 的輸入） |
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
+| `POST /api/erp/quotation` | 開報價單（`dropout_core.actions.create_quotation`） |
+| `POST /api/erp/advance` | 這張單的下一步：報價→訂單→出貨→發票→收款；採購→收貨→帳單→付款 |
+| `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
+| `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |
+| `POST /api/meetings/skip` | 這場會議不派機器人／恢復 |
+
+寫入的 API 只收同網域送來的 JSON（檢查 `Origin`），權限照 ERPNext：登入模式是那個人自己的權限，固定金鑰模式是整合帳號的權限（例如要寄電子報，整合帳號要有 Newsletter Manager）。ERPNext 拒絕時畫面顯示原因，不會假裝成功。
 
 ## 資料來源：每個系統各自示範或真實
 
