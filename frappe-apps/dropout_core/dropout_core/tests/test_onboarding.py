@@ -58,9 +58,13 @@ class TestChecklist(FrappeTestCase):
 		self.assertTrue(step("einvoice")["done"])
 
 	def test_team_counts_people_besides_the_owner(self):
+		from dropout_core.team import ensure_role_profiles
+
+		ensure_role_profiles()
 		before = step("team")["count"]
 		email = f"checklist-{frappe.generate_hash(length=6)}@example.com"
-		frappe.get_doc({"doctype": "User", "email": email, "first_name": "清單", "send_welcome_email": 0}).insert(ignore_permissions=True)
+		# Invites always carry a job profile; a user with no desk role is a Website User, not staff.
+		frappe.get_doc({"doctype": "User", "email": email, "first_name": "清單", "send_welcome_email": 0, "role_profile_name": "業務"}).insert(ignore_permissions=True)
 		self.assertEqual(step("team")["count"], before + 1)
 		self.assertTrue(step("team")["done"])
 
