@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { glueAdmin, platformOperator, STAGE_LABEL, type PlatformAccount } from "@/lib/platform";
+import { glueAdmin, STAGE_LABEL, type PlatformAccount } from "@/lib/platform";
 import type { Stage } from "@/lib/sources/config";
 
 const ORDER: Stage[] = ["read_only", "past_due", "suspended", "due_soon", "trial", "active", "cancelled"];
@@ -9,8 +9,8 @@ function num(v: unknown) {
 }
 
 export default async function PlatformPage() {
-  const operator = (await platformOperator())!;
-  const res = await glueAdmin<{ today: string; accounts: PlatformAccount[] }>("/admin/accounts", operator);
+  const res = await glueAdmin<{ today: string; accounts: PlatformAccount[] }>("/admin/accounts");
+  if (!res.operator) return null;
   if (!res.ok || !res.data) return <p className="text-orange">讀不到公司清單：{res.text || res.status}</p>;
   const { accounts, today } = res.data;
   const sorted = [...accounts].sort((a, b) => ORDER.indexOf(a.lifecycle.stage) - ORDER.indexOf(b.lifecycle.stage) || (a.lifecycle.ends ?? "9").localeCompare(b.lifecycle.ends ?? "9"));

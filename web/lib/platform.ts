@@ -105,10 +105,17 @@ export const STAGE_LABEL: Record<Stage, string> = {
   cancelled: "已解約",
 };
 
-export async function glueAdmin<T>(path: string, actor: string, init: { method?: string; body?: unknown } = {}): Promise<{ ok: boolean; status: number; data: T | null; text: string }> {
+/**
+ * Calls the glue admin API as the signed-in operator. It checks the operator
+ * itself because Next renders pages in parallel with their layout, so a
+ * layout-level gate does not stop a page from fetching.
+ */
+export async function glueAdmin<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<{ ok: boolean; status: number; data: T | null; text: string; operator: string | null }> {
+  const operator = await platformOperator();
+  if (!operator) return { ok: false, status: 403, data: null, text: "只有 DropOut 營運人員可以看", operator };
   const res = await fetch(`${env("GLUE_URL")!.replace(/\/+$/, "")}${path}`, {
     method: init.method ?? "GET",
-    headers: { authorization: `Bearer ${env("GLUE_ADMIN_TOKEN")}`, "content-type": "application/json", "x-actor": actor },
+    headers: { authorization: `Bearer ${env("GLUE_ADMIN_TOKEN")}`, "content-type": "application/json", "x-actor": operator },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
     cache: "no-store",
     signal: AbortSignal.timeout(20_000),
@@ -120,5 +127,5 @@ export async function glueAdmin<T>(path: string, actor: string, init: { method?:
   } catch {
     /* plain-text error */
   }
-  return { ok: res.ok, status: res.status, data, text };
+  return { ok: res.ok, status: res.status, data, text, operator };
 }

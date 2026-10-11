@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { PlatformAccountPanel } from "@/components/PlatformAccountPanel";
-import { glueAdmin, platformOperator, STAGE_LABEL, type AccountEvent, type PlatformAccount } from "@/lib/platform";
+import { glueAdmin, STAGE_LABEL, type AccountEvent, type PlatformAccount } from "@/lib/platform";
 
 export default async function PlatformAccountPage({ params }: PageProps<"/platform/[site]">) {
-  const operator = (await platformOperator())!;
   const { site } = await params;
-  const res = await glueAdmin<{ account: PlatformAccount; events: AccountEvent[]; dead_letters: number }>(`/admin/accounts/${encodeURIComponent(site)}`, operator);
+  const res = await glueAdmin<{ account: PlatformAccount; events: AccountEvent[]; dead_letters: number }>(`/admin/accounts/${encodeURIComponent(site)}`);
+  if (!res.operator) return null;
   if (res.status === 404) notFound();
   if (!res.ok || !res.data) return <p className="text-orange">讀不到這家公司：{res.text || res.status}</p>;
   const { account, events, dead_letters } = res.data;

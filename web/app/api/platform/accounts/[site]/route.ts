@@ -18,10 +18,10 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
   const path = `/admin/accounts/${encodeURIComponent(site)}`;
   const res =
     body.action === "renew"
-      ? await glueAdmin<{ account: PlatformAccount }>(`${path}/renew`, operator, { method: "POST", body: { years: body.years ?? 1, reference: body.reference } })
+      ? await glueAdmin<{ account: PlatformAccount }>(`${path}/renew`, { method: "POST", body: { years: body.years ?? 1, reference: body.reference } })
       : body.action === "state"
-        ? await glueAdmin<{ account: PlatformAccount }>(`${path}/state`, operator, { method: "POST", body: { state: body.state, reason: body.reason } })
-        : await glueAdmin<{ account: PlatformAccount }>(path, operator, {
+        ? await glueAdmin<{ account: PlatformAccount }>(`${path}/state`, { method: "POST", body: { state: body.state, reason: body.reason } })
+        : await glueAdmin<{ account: PlatformAccount }>(path, {
             method: "PUT",
             body: { company: body.company, contact_email: body.contact_email, hosts: body.hosts, trial_ends: body.trial_ends, renews_on: body.renews_on },
           });
