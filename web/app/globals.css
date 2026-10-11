@@ -951,6 +951,7 @@ html[data-theme="white"] .os-shell .glass-chip {
 
     .table-stack,
     .table-stack tbody,
+    .table-stack tfoot,
     .table-stack tr,
     .table-stack td {
       display: block;
@@ -990,6 +991,14 @@ html[data-theme="white"] .os-shell .glass-chip {
 
     .table-stack td[colspan] {
       justify-content: center;
+    }
+
+    .table-stack td:empty {
+      display: none;
+    }
+
+    .table-stack tfoot tr {
+      padding: 0.5rem 0;
     }
   }
 
@@ -1124,10 +1133,18 @@ html[data-theme="white"] .os-shell .glass-chip {
     text-align: right;
   }
 
-  .table-stack tfoot td {
-    border-top: 2px solid var(--line);
+  .table-stack tfoot {
     font-weight: 500;
-    padding: 0.75rem 1rem;
+  }
+
+  .table-stack tfoot tr {
+    border-top: 2px solid var(--line);
+  }
+
+  @media (min-width: 640px) {
+    .table-stack tfoot td {
+      padding: 0.75rem 1rem;
+    }
   }
 
   /* Surfaces */
