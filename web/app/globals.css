@@ -631,9 +631,13 @@ html[data-theme="white"] .site-table thead th {
     color: #000 !important;
   }
 
-  .site-print :is(h1, h2, h3, p, li, td, th, span, a) {
+  .site-print :is(h1, h2, h3, p, li, td, th, span, a, mark, dt, dd) {
     color: #000 !important;
     text-shadow: none !important;
+  }
+
+  .site-print .site-todo {
+    background: #fff3c4 !important;
   }
 
   .site-print .site-sheet,

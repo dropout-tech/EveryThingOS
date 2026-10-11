@@ -41,7 +41,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
             </span>
           </div>
         </header>
-        <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] print:block">
           <nav aria-label="目錄" className="site-noprint lg:sticky lg:top-24 lg:self-start">
             <details className="site-sheet p-4 lg:hidden">
               <summary className="cursor-pointer text-sm font-medium">目錄（{doc.sections.length} 節）</summary>
