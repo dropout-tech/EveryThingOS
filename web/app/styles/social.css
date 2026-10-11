@@ -1084,9 +1084,8 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
   html[data-style="social"] .tabbar {
     padding: 0.25rem 0.5rem env(safe-area-inset-bottom);
     border-top: 1px solid var(--soc-hairline);
-    background: var(--soc-bar);
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    /* Opaque on purpose: Chrome lets glass-well text bleed through a translucent blurred bar. */
+    background: var(--soc-card);
   }
 
   html[data-style="social"] .tabbar-item {
@@ -1195,8 +1194,7 @@ html[data-style="social"] :is(.bubble-meta, .chat-meta) {
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  html[data-style="social"][data-theme] .glass.glass-bar,
-  html[data-style="social"] .tabbar {
+  html[data-style="social"][data-theme] .glass.glass-bar {
     background: var(--soc-card);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
