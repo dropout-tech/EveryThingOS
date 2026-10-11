@@ -16,6 +16,10 @@ export type Account = {
   usage?: Record<string, unknown> | null;
   usage_at?: string | null;
   hosts: string[];
+  /** Set when the state becomes cancelled, cleared when it comes back; starts the export window. */
+  cancelled_at?: string | null;
+  /** The site and its backups were deleted (`dropout-onboard fleet purge`). The row stays as contract history. */
+  purged_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -128,7 +132,21 @@ export function mergeAccount(site: string, current: Account | null, patch: Parti
     if (patch[key] !== undefined) (next as Record<string, unknown>)[key] = patch[key];
   }
   next.hosts = [...new Set((next.hosts ?? []).map((h) => normalizeHost(h)).filter(Boolean))];
+  next.cancelled_at = next.state !== "cancelled" ? null : base.state === "cancelled" && base.cancelled_at ? base.cancelled_at : stamp;
   return next;
+}
+
+/** Days after cancellation the company can still sign in and export (web/lib/legal.ts CONTRACT.exportDays). */
+export const EXPORT_DAYS = 90;
+
+export type Purge = { due_on: string | null; due: boolean; purged_at: string | null };
+
+/** Cancelled on day 1 means the export window covers days 1–90 and deletion may start on day 91. */
+export function purgeStatus(a: Pick<Account, "state" | "cancelled_at" | "purged_at">, now = new Date()): Purge {
+  const purged_at = a.purged_at ?? null;
+  if (a.state !== "cancelled" || !a.cancelled_at) return { due_on: null, due: false, purged_at };
+  const due_on = addDays(taiwanDate(new Date(a.cancelled_at)), EXPORT_DAYS);
+  return { due_on, due: !purged_at && taiwanDate(now) >= due_on, purged_at };
 }
 
 export function normalizeHost(host: string) {

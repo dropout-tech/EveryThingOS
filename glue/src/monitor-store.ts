@@ -1,4 +1,5 @@
-export type Target = "erpnext" | "shell";
+/** `backup` incidents come from the daily freshness check, not from probes, and never reach the public status page. */
+export type Target = "erpnext" | "shell" | "backup";
 
 /** Latest known state of one probe target. `up` only flips after the confirmation rules in monitor.ts. */
 export type CheckState = {

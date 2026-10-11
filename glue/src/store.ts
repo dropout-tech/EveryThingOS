@@ -72,6 +72,8 @@ const INVOICE_FIELDS = ["buyer_name", "buyer_tax_id", "buyer_email", "buyer_addr
 export interface Store {
   getTenant(site: string): Promise<Tenant | null>;
   putTenant(t: Tenant): Promise<void>;
+  /** Forget a purged company's sealed credentials. */
+  deleteTenant(site: string): Promise<void>;
   listSites(): Promise<string[]>;
   /** True the first time a key is seen. */
   claim(key: string): Promise<boolean>;
@@ -122,6 +124,10 @@ export class D1Store implements Store {
       .prepare("INSERT INTO tenants (site, config, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(site) DO UPDATE SET config = excluded.config, updated_at = excluded.updated_at")
       .bind(t.site, sealed)
       .run();
+  }
+
+  async deleteTenant(site: string) {
+    await this.db.prepare("DELETE FROM tenants WHERE site = ?").bind(site).run();
   }
 
   async listSites() {
@@ -185,14 +191,16 @@ export class D1Store implements Store {
     await this.db.batch([
       this.db
         .prepare(
-          `INSERT INTO accounts (site, company, plan, state, state_reason, trial_ends, renews_on, contact_email, tax_id, billing_address, profile, usage, usage_at, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO accounts (site, company, plan, state, state_reason, trial_ends, renews_on, contact_email, tax_id, billing_address, profile, usage, usage_at, cancelled_at, purged_at, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT(site) DO UPDATE SET company = excluded.company, plan = excluded.plan, state = excluded.state, state_reason = excluded.state_reason,
              trial_ends = excluded.trial_ends, renews_on = excluded.renews_on, contact_email = excluded.contact_email, tax_id = excluded.tax_id,
-             billing_address = excluded.billing_address, profile = excluded.profile, usage = excluded.usage, usage_at = excluded.usage_at, updated_at = excluded.updated_at`,
+             billing_address = excluded.billing_address, profile = excluded.profile, usage = excluded.usage, usage_at = excluded.usage_at,
+             cancelled_at = excluded.cancelled_at, purged_at = excluded.purged_at, updated_at = excluded.updated_at`,
         )
         .bind(a.site, a.company, a.plan, a.state, a.state_reason ?? null, a.trial_ends ?? null, a.renews_on ?? null, a.contact_email ?? null, a.tax_id ?? null,
-          a.billing_address ?? null, a.profile == null ? null : JSON.stringify(a.profile), a.usage == null ? null : JSON.stringify(a.usage), a.usage_at ?? null, a.created_at, a.updated_at),
+          a.billing_address ?? null, a.profile == null ? null : JSON.stringify(a.profile), a.usage == null ? null : JSON.stringify(a.usage), a.usage_at ?? null,
+          a.cancelled_at ?? null, a.purged_at ?? null, a.created_at, a.updated_at),
       this.db.prepare("DELETE FROM hosts WHERE site = ?").bind(a.site),
       ...a.hosts.map((h) => this.db.prepare("INSERT INTO hosts (host, site) VALUES (?, ?)").bind(h, a.site)),
     ]);
@@ -279,6 +287,9 @@ export class MemoryStore implements Store {
   }
   async putTenant(t: Tenant) {
     this.tenants.set(t.site, t);
+  }
+  async deleteTenant(site: string) {
+    this.tenants.delete(site);
   }
   async listSites() {
     return [...this.tenants.keys()].sort();
