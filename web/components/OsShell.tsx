@@ -13,7 +13,7 @@ type OsShellProps = {
   company?: string;
   team?: boolean;
   /** Contract notice (trial, renewal, read-only). */
-  notice?: { message: string; urgent: boolean } | null;
+  notice?: { message: string; urgent: boolean; payUrl?: string } | null;
   canReset?: boolean;
 };
 
@@ -50,6 +50,14 @@ export function OsShell({ industry, shop, children, company, team = false, notic
               <Link href="/workspace/settings#plan" className="underline">
                 看方案
               </Link>
+              {notice.payUrl ? (
+                <>
+                  {" "}
+                  <a href={notice.payUrl} className="glass-cta ml-2 inline-block rounded-full px-3 py-0.5 text-xs">
+                    線上付款
+                  </a>
+                </>
+              ) : null}
             </p>
           ) : null}
         </header>
