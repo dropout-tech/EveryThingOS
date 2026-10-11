@@ -272,6 +272,7 @@ class TestExpenseClaims(FrappeTestCase):
 		f = frappe.get_doc({"doctype": "File", "file_name": "receipt.png", "attached_to_doctype": "Expense Claim", "attached_to_name": name, "is_private": 1, "content": RECEIPT_PNG}).insert()
 		approvals.receipt(f.name)
 		self.assertEqual(frappe.response.filecontent, RECEIPT_PNG)
+		frappe.set_user("Administrator")
 		frappe.set_user(make_user("approvals-other@example.com", "Sales User"))
 		with self.assertRaises(frappe.PermissionError):
 			approvals.receipt(f.name)

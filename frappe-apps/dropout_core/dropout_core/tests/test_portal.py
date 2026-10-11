@@ -180,10 +180,15 @@ class TestAcceptQuotation(FrappeTestCase):
 	def test_integration_only(self):
 		q = make_quotation()
 		frappe.set_user(make_user("portal-sales@example.com", "Sales User"))
-		with self.assertRaises(frappe.PermissionError):
-			portal.accept_quotation(q.name, "王小明", consent=1)
-		with self.assertRaises(frappe.PermissionError):
-			portal.payment_link("x")
+		# frappe.only_for lets everyone through while flags.in_test is set; check the real guard.
+		frappe.flags.in_test = False
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				portal.accept_quotation(q.name, "王小明", consent=1)
+			with self.assertRaises(frappe.PermissionError):
+				portal.payment_link("x")
+		finally:
+			frappe.flags.in_test = True
 
 
 class TestPaymentLink(FrappeTestCase):
