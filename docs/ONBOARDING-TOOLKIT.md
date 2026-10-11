@@ -103,6 +103,19 @@ sequenceDiagram
 - 不改設定精靈：它只跑一次，其餘設定走 fixtures。
 - 不為單一客戶分支程式碼：差異放在產業包或站台設定。
 
+### 2.5 實作現況（與上面規劃不同的地方）
+
+工具在 `toolkit/`（`dropout-onboard` 指令，見 [toolkit/README.md](../toolkit/README.md)），Frappe app 在 `frappe-apps/`。已在本機 ERPNext v15 bench 上跑過開站、搬家與期初庫存。和規劃不同的地方：
+
+| 規劃 | 實作 | 原因 |
+| --- | --- | --- |
+| Module Onboarding fixtures 當導入引導 | `dropout_core` 從資料推算導入進度（有沒有公司、客人、商品、期初、第一張單…），殼的「今天」與設定頁顯示 | 進度看資料本身，不會勾了但沒做；不依賴 Module Onboarding 的 UI |
+| 大量用 `bench data-import` | 一律建 Data Import 文件再執行，失敗訊息整理後回給工具 | 與畫面上的匯入同一條路，留紀錄、可重跑 |
+| 期初庫存走 Data Import | `provisioning.opening_stock` 直接建 Opening Stock 的 Stock Reconciliation，差異科目用公司的暫時開帳科目；同檔重跑會略過 | ERPNext 對 Stock Reconciliation 關閉匯入 |
+| 產業包安裝時就套用 | 設定精靈還沒跑完時先延後，`setup_wizard_complete` 時套用全部已裝的包 | 精靈跑完前沒有「全部商品群組」等根資料 |
+| 開站裝 Builder | 不裝 | 官網在殼與 Webshop；Builder 之後要再評估 |
+| 「同一個帳號登入」 | ERPNext 當 OAuth2 提供者，殼用 PKCE 登入；Chatwoot 以 Platform API 單一登入，`link_chatwoot_user` 對應帳號 | 不另架 Keycloak 也能一次登入 |
+
 ---
 
 ## 3. 放在哪一期

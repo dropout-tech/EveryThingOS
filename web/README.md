@@ -9,12 +9,63 @@ npm run dev
 
 開啟 http://localhost:3000
 
+## 畫面
+
 | 路徑 | 內容 |
 | --- | --- |
-| `/` | 產品主張與四支柱 |
+| `/` | 現場 → 規模 → 功能（`/?setup=1` 重設） |
 | `/industries` | 100 個產業包 |
 | `/pricing` | 年費 |
 | `/consulting` | 免費導入步驟 |
 | `/saas` | 取代哪些雲端工具 |
-| `/workspace` | 套皮 OS（可切產業包、黑白、海山湖） |
-| `/workspace/reply` | 社群回覆（OpenReply 示範，Meta 未接） |
+| `/login` | 用 ERPNext 帳號登入（只有開了登入才會用到） |
+| `/workspace` | 今天這一件；接上 ERPNext 時顯示導入進度 |
+| `/workspace/erp/{sales,purchase,stock,finance}` | 生意：同一張單往下走 |
+| `/workspace/crm` | 客人（ERPNext Lead／Customer 與通道身分） |
+| `/workspace/chat` | 對話（Chatwoot：LINE、IG、FB、官網） |
+| `/workspace/letter` | 電子報（ERPNext Email Group、Newsletter、同意紀錄） |
+| `/workspace/settings` | 連線狀態、登入的人、匯出設定檔、導入進度、同步失敗重送 |
+
+舊路徑 `/workspace/reply`、`/workspace/funnel` 永久轉址到 `chat`、`letter`；舊瀏覽器裡存的功能代號會自動對上新名字。
+
+| API | 用途 |
+| --- | --- |
+| `GET /api/auth/login` → `GET /api/auth/callback` | ERPNext OAuth2（Authorization Code + PKCE S256） |
+| `POST /api/auth/logout` | 撤銷 token、清 session |
+| `GET /api/chat/open` | 以登入者對應的 Chatwoot 使用者單一登入，沒有對應就說明原因 |
+| `GET /api/shop/profile` | 下載 ShopProfile（導入工具 `plan`／`provision` 的輸入） |
+| `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
+
+## 資料來源：每個系統各自示範或真實
+
+不設任何環境變數就是示範模式，每一頁都標「示範資料」。設了哪個系統，那個系統就讀真的；**讀不到時顯示錯誤，不會偷偷退回示範**。沒有權限的區塊會寫出名字，而不是空白。
+
+| 變數 | 系統 | 說明 |
+| --- | --- | --- |
+| `ERPNEXT_URL`、`ERPNEXT_SITE` | ERPNext | 站台網址；多站同機時用 `X-Frappe-Site-Name` 指定 |
+| `ERPNEXT_API_KEY`、`ERPNEXT_API_SECRET` | ERPNext | 固定金鑰模式（見下） |
+| `ERPNEXT_OAUTH_CLIENT_ID`、`ERPNEXT_OAUTH_CLIENT_SECRET` | ERPNext | 登入模式 |
+| `SESSION_SECRET` | 殼 | 32 字元以上；封裝 session cookie（AES-GCM） |
+| `SHELL_URL` | 殼 | 對外網址，用來組 OAuth 回呼 |
+| `GLUE_URL`、`GLUE_ADMIN_TOKEN`、`GLUE_SITE` | 膠水 | 導入進度、同步失敗清單與重送 |
+| `CHATWOOT_URL`、`CHATWOOT_PLATFORM_TOKEN`、`CHATWOOT_ACCOUNT_ID` | Chatwoot | 對話單一登入 |
+
+三種模式：
+
+1. **示範**：什麼都不設。
+2. **固定金鑰**：設 `ERPNEXT_API_KEY`／`SECRET`，所有人用同一個整合帳號讀。**只用在本機或放在 Cloudflare Access 後面**，不要直接公開。
+3. **登入**：設 OAuth 兩個值加 `SESSION_SECRET`。每個人用自己的 ERPNext 帳號登入，權限照 ERPNext 走。OAuth client 用導入工具建立：
+
+```bash
+dropout-onboard provision shop.json --site acme.erp.dropout.tw --company 安安顧問 \
+  --admin-email boss@acme.tw --shell-url https://os.acme.tw --apply
+```
+
+它會呼叫 `dropout_core.provisioning.create_oauth_client`，最後印出要貼進殼的環境變數。
+
+## 部署
+
+```bash
+npm run preview   # 本機用 Workers 執行環境跑一次
+npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_API_TOKEN 與 CLOUDFLARE_ACCOUNT_ID
+```

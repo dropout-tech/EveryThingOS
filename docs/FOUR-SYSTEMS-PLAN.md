@@ -1,6 +1,6 @@
 # 四個系統規劃：對話 × 電子報 × 客人 × 生意
 
-狀態：規劃稿，第 0 節的決策待確認後才動程式  
+狀態：已實作第一版。資料契約（Identity、Consent、Event）在 `frappe-apps/dropout_core`；G1–G10 與會議機器人排程在 `glue/`（Cloudflare Worker）；殼的四個畫面（`/workspace/chat`、`letter`、`crm`、`erp/*`）可各自切示範或真實資料。已在本機 ERPNext v15 與 Worker 本機環境測過，尚未部署到正式主機與 Cloudflare 帳號  
 範圍：Open Chat（對話收件匣）、電子報、CRM、ERP 四個系統，以及把它們串成**同一個客人、同一條生意**的資料迴圈  
 與其他文件的關係：邊界與授權仍以 [ARCHITECTURE.md](ARCHITECTURE.md) 為準；本文件只把這四個系統展開到「員工看到什麼、資料怎麼流、怎麼從示範變真的」
 

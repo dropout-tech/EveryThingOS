@@ -32,22 +32,22 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 - `/workspace` 今天這一件
 - `/workspace/erp/sales` 生意：同一張單往下走
 
-工作區裡點「下一步」會在這個瀏覽器走動，用來證明比 A1／億看直觀。**正式過帳還沒接到 ERPNext**，畫面上有這句說明。
+不設環境變數時是示範模式，每頁都標「示範資料」，點「下一步」只在這個瀏覽器走動。接上 ERPNext 後畫面讀真的單據，動作打開 ERPNext 裡那張單（設定方式見 [web/README.md](web/README.md)）。
 
-## 還沒完整的
+## 各部分在哪、做到哪
 
-| 項目 | 狀態 |
-| --- | --- |
-| 產品殼、現場／規模／功能 onboarding、今天一件事、A1 下一步、黑白、海面到海底、邊緣折射玻璃、社群回覆示範 | 可看 |
-| ERPNext 過帳、主檔權威、登入 | 未接 |
-| Chatwoot 對話（LINE、IG、FB、官網） | 未接 |
-| 電子報（ERPNext Email Campaign + 寄信服務） | 未接 |
-| Vexa 會議紀錄機器人 | 未接 |
-| 殼搬上 Cloudflare、系統間同步 | 未接 |
-| 電子發票加值中心 | 適配尚未接 |
-| 公開預覽網址 | https://dropout-os.vercel.app （production 追 GitHub `main`） |
+| 部分 | 位置 | 狀態 |
+| --- | --- | --- |
+| 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、設定 | `web/` | 示範與真實資料都可用；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入 |
+| ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀取 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（19 項測試） |
+| 產業包：製造、顧問、教育 | `frappe-apps/dropout_pack_*` | 設定精靈完成後自動套用 |
+| 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
+| 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C） | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
+| 導入工具：plan、provision、convert、check、import | `toolkit/` | 本機開站、搬家、期初庫存跑過 |
+| 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
+| 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
 
-下一動：殼搬上 Cloudflare 並拆出示範／真實資料來源層，再接可複製的 ERPNext site。
+下一動：在 Cloudflare 帳號建 D1 與 Queues、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用導入工具開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 
 ## 開源組裝與套皮
 
