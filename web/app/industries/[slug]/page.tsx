@@ -13,7 +13,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const pack = listIndustries().find((item) => item.id === slug);
-  return { title: pack ? pack.nameZh : "產業包" };
+  if (!pack) return { title: "產業包" };
+  return { title: `${pack.nameZh}產業包`, description: `${pack.tagline} DropOut OS 的${pack.nameZh}預設：在賣什麼、怎麼交給客人、每天看哪些數字。`, alternates: { canonical: `/industries/${pack.id}` } };
 }
 
 export default async function IndustryDetailPage({ params }: Props) {
