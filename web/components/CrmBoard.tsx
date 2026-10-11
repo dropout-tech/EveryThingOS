@@ -104,7 +104,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
           compact
           title="還沒有客人"
           detail="LINE、IG、官網表單來的人會自動出現在這裡；舊客人名單可以一次匯入。"
-          action={{ href: "/help/import-data#customers", label: "匯入客人名單" }}
+          action={{ href: "/workspace/settings/import?kind=customers", label: "匯入客人名單" }}
           secondary={{ href: "/workspace/chat", label: "接上對話" }}
           help="module-crm"
         />

@@ -28,8 +28,8 @@ export type ChecklistStep = {
 export const CHECKLIST: ChecklistStep[] = [
   { id: "company", label: "公司資料與統編", why: "報價單、發票、電子發票都會印上公司名稱和統編，先填對，後面就不用一張張改。", cta: "填公司資料", place: "desk:/app/company", help: "start", modules: [] },
   { id: "team", label: "邀請同事", why: "每個人用自己的帳號登入，系統才知道誰做了什麼，也只給他看該看的。", cta: "去邀請", place: "/workspace/team", help: "roles", modules: [] },
-  { id: "customers", label: "匯入客人", why: "客人進來了，報價、對話、電子報才找得到同一個人。", cta: "匯入客人", place: "desk:/app/data-import/new?reference_doctype=Customer", help: "import-data", modules: [] },
-  { id: "items", label: "匯入商品與價格", why: "商品有售價，開報價時選一下就帶出金額和稅。", cta: "匯入商品", place: "desk:/app/data-import/new?reference_doctype=Item", help: "import-data", modules: ["sales", "stock", "purchase", "website"] },
+  { id: "customers", label: "匯入客人", why: "客人進來了，報價、對話、電子報才找得到同一個人。", cta: "匯入客人", place: "/workspace/settings/import?kind=customers", help: "import-wizard", modules: [] },
+  { id: "items", label: "匯入商品與價格", why: "商品有售價，開報價時選一下就帶出金額和稅。", cta: "匯入商品", place: "/workspace/settings/import?kind=items", help: "import-wizard", modules: ["sales", "stock", "purchase", "website"] },
   { id: "first_quotation", label: "開第一張報價", why: "從報價開始，後面的訂單、出貨、發票、收款都是同一張單往下走。", cta: "去開報價", place: "/workspace/erp/sales", help: "module-sales", modules: ["sales"] },
   { id: "first_payment", label: "收到第一筆錢", why: "收款記進去，誰還欠錢、這個月賺多少才算得準。", cta: "去收款", place: "/workspace/erp/sales", help: "module-sales", modules: ["sales", "finance"] },
   { id: "channels", label: "接上 LINE 和對話", why: "LINE、IG、FB、官網的訊息進同一個收件匣，自動對到客人。", cta: "看對話", place: "/workspace/chat", help: "module-chat", modules: ["chat"] },
