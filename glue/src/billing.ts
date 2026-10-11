@@ -187,8 +187,9 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
 
 /**
  * Issue the e-invoice for a paid invoice: B2B with 統編, otherwise B2C to the
- * contact email. Never throws; a failure is written on the invoice and the
- * daily job tries again.
+ * contact email. Buyer details are re-read from the account, so a corrected
+ * 統編 or address applies on retry. A provider failure is written on the
+ * invoice instead of thrown, and the daily job tries again.
  */
 export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Date()): Promise<"issued" | "failed" | "skipped"> {
   if (inv.status !== "paid" || inv.einvoice_number) return "skipped";
@@ -196,6 +197,11 @@ export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Dat
   if (!provider) return "skipped";
   const key = `billing-einvoice:${inv.id}`;
   if (!(await ctx.store.claim(key))) return "skipped";
+  const a = await ctx.store.getAccount(inv.site);
+  if (a) {
+    inv = { ...inv, buyer_name: a.company, buyer_tax_id: a.tax_id || null, buyer_email: a.contact_email || null, buyer_address: a.billing_address || null };
+    await ctx.store.updateInvoice(inv.id, null, { buyer_name: inv.buyer_name, buyer_tax_id: inv.buyer_tax_id, buyer_email: inv.buyer_email, buyer_address: inv.buyer_address });
+  }
   const fail = async (error: string) => {
     await ctx.store.release(key);
     await ctx.store.updateInvoice(inv.id, null, { einvoice_error: error.slice(0, 300), einvoice_at: now.toISOString() });

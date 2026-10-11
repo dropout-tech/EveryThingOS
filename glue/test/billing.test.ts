@@ -246,6 +246,24 @@ describe("online payment", () => {
   });
 });
 
+describe("e-invoice data", () => {
+  it("missing buyer details fail clearly; fixing the account and retrying issues it", async () => {
+    const h = harness();
+    await h.store.putAccount(account({ renews_on: addDays(today, 30), contact_email: null }));
+    await billingDaily(h.ctx);
+    const [inv] = await h.store.listInvoices(SITE);
+    await notify(h, paid((await checkout(h, inv.id)).fields));
+    expect((await h.store.getInvoice(inv.id))!.einvoice_error).toContain("Email");
+    expect(h.calls.some((c) => c.url.endsWith("/B2CInvoice/Issue"))).toBe(false);
+
+    await h.store.putAccount({ ...(await h.store.getAccount(SITE))!, tax_id: "22099131", billing_address: "台中市西屯區" });
+    const res = (await (await handle(call("POST", `/admin/invoices/${inv.id}/einvoice`, "admin"), h.env, h.app)).json()) as any;
+    expect(res).toMatchObject({ ok: true, message: "已開立 AB12345678" });
+    expect((await h.store.getInvoice(inv.id))!).toMatchObject({ buyer_tax_id: "22099131", einvoice_error: null });
+    expect((await handle(call("POST", `/admin/invoices/${inv.id}/einvoice`, "admin"), h.env, h.app)).status).toBe(409);
+  });
+});
+
 describe("operators and the shell", () => {
   it("mark paid offline renews through the same path; void and resend; e-invoice off stays quiet", async () => {
     const h = harness({ einvoice: "off" });
