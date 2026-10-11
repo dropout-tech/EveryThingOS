@@ -322,7 +322,7 @@ W1、W2 不需要任何外部帳號，可以先做。
 | 對話（LINE、IG、FB、官網） | Chatwoot；留言轉私訊用 Meta 內建，選配 OpenReply | 第一期 |
 | 電子報 | ERPNext 內建 → 選配 Mautic | 第一期 |
 | 會議紀錄（自己進 Zoom／Meet） | Vexa | 第一期尾 |
-| 官網、落地頁 | Frappe Builder | 第一期（決策紀錄第 4 題：官網第一期就要在產品裡） |
+| 官網、落地頁、商品目錄、結帳 | Frappe Builder + Webshop；台灣金流 `dropout_pay_tw` | 第一期（頁面、目錄、登入結帳）；台灣金流在第 5 期 |
 | 短網址 | Shlink | 第二期 |
 | 報表 | Frappe Insights | 第二期 |
 | 簽約 | DocuSeal 或 Documenso（皆 AGPL） | 有客戶要求時 |
