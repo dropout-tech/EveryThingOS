@@ -4,7 +4,10 @@ import { BrandMark } from "./BrandMark";
 import { PRICE_LABEL } from "@/lib/commercial";
 import { hasChosenIndustry } from "@/lib/workspace";
 
-const links = [{ href: "/pricing", label: PRICE_LABEL.replace("每年 ", "") }];
+const links = [
+  { href: "/pricing", label: PRICE_LABEL.replace("每年 ", "") },
+  { href: "/help", label: "說明" },
+];
 
 export async function SiteHeader() {
   const chosen = await hasChosenIndustry();
