@@ -8,6 +8,8 @@ import { PRICE_LABEL } from "@/lib/commercial";
 import { RoleGuide } from "@/components/RoleGuide";
 import { SetupChecklist } from "@/components/SetupChecklist";
 import { SetupProgress } from "@/components/SetupProgress";
+import { StylePicker } from "@/components/StylePicker";
+import { currentStyle } from "@/lib/style-server";
 import { workspaceGuide } from "@/lib/guide-server";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
@@ -185,6 +187,12 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           )}
         </section>
       ) : null}
+
+      <section id="appearance" className="glass-well space-y-3 p-5">
+        <h2 className="font-medium">介面風格</h2>
+        <p className="text-sm text-cream-dim">每個人可以選自己看得舒服的樣子；功能和位置都一樣，只換外觀。</p>
+        <StylePicker current={await currentStyle()} variant="cards" />
+      </section>
 
       <section className="space-y-3" aria-label="導入教學">
         <RoleGuide allowed={guide.allowed} variant="settings" />

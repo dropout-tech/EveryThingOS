@@ -5,8 +5,12 @@ import { OceanColumn } from "@/components/OceanColumn";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { COMMERCIAL } from "@/lib/commercial";
 import { currentScene } from "@/lib/scene-server";
+import { currentStyle } from "@/lib/style-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
+import "./styles/minimal.css";
+import "./styles/fluid.css";
+import "./styles/social.css";
 
 const noto = Noto_Sans_TC({
   variable: "--font-noto",
@@ -41,14 +45,18 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#07080c" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [theme, scene] = await Promise.all([currentTheme(), currentScene()]);
+  const [theme, scene, style] = await Promise.all([currentTheme(), currentScene(), currentStyle()]);
 
   return (
-    <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
+    <html lang="zh-TW" data-theme={theme} data-scene={scene} data-style={style} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
         <div className="scene-layer" aria-hidden="true" />
-        <GlassPointer />
-        <OceanColumn />
+        {style === "fluid" ? (
+          <>
+            <GlassPointer />
+            <OceanColumn />
+          </>
+        ) : null}
         <div className="page-shell">{children}</div>
         <ServiceWorker />
       </body>
