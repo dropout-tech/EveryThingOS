@@ -43,6 +43,14 @@ def _emit_for(doc, event_type, party_type, party, payload):
 	)
 
 
+def on_customer_insert(doc, method=None):
+	_emit_for(doc, "customer_created", "Customer", doc.name, {"customer_name": doc.customer_name})
+
+
+def on_lead_insert(doc, method=None):
+	_emit_for(doc, "lead_created", "Lead", doc.name, {"lead_name": doc.lead_name})
+
+
 def on_quotation_submit(doc, method=None):
 	_emit_for(doc, "quote_sent", doc.quotation_to, doc.party_name, {"amount": doc.grand_total, "currency": doc.currency})
 
