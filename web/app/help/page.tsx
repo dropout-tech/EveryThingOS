@@ -28,6 +28,9 @@ export default async function HelpPage({ searchParams }: PageProps<"/help">) {
           <Link href="/help/start" className="glass-well rounded-full px-3 py-1.5">
             第一個小時
           </Link>
+          <Link href="/help/octalysis" className="glass-well rounded-full px-3 py-1.5">
+            畫面為什麼這樣排
+          </Link>
           <Link href="/help/import-data" className="glass-well rounded-full px-3 py-1.5">
             匯入資料
           </Link>

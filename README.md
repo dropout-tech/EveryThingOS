@@ -77,6 +77,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 - 信任文件（條款、隱私、SLA）：[docs/TRUST.md](docs/TRUST.md)
 - 顧問導入腳本：[docs/ONBOARDING-GUIDE.md](docs/ONBOARDING-GUIDE.md)
 - 介面規範：[docs/UI-GUIDE.md](docs/UI-GUIDE.md)
+- 八角框架（畫面為什麼這樣排）：[docs/OCTALYSIS.md](docs/OCTALYSIS.md)
 - 主題檔：[branding/README.md](branding/README.md)
 
 ## 商業條款（寫進產品裡的那一版）

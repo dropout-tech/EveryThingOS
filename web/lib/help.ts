@@ -1,5 +1,6 @@
 import { PRICE_LABEL } from "./commercial";
 import { CHECKLIST, ROLES, ROLE_GUIDES } from "./guide";
+import { OCTALYSIS_DRIVES, OCTALYSIS_RULES } from "./octalysis";
 
 /**
  * 說明中心. Every article lives here, so the help pages, search and the links
@@ -63,7 +64,28 @@ export const HELP: HelpArticle[] = [
       { h: "公司資料與統編" },
       { p: "公司名稱、統編、地址會印在報價單、發票、電子發票上。老闆或導入顧問在 ERPNext 的「Company（公司）」填好統編，開站清單的第一項就會打勾。" },
     ],
-    related: ["checklist", "practice", "first-day", "import-data"],
+    related: ["octalysis", "checklist", "practice", "first-day", "import-data"],
+  },
+  {
+    slug: "octalysis",
+    title: "畫面為什麼這樣排",
+    category: "開始使用",
+    summary: "用八角框架看 DropOut OS：下一件事、做完就看得到、不發點數。",
+    keywords: ["八角", "八角框架", "遊戲化", "octalysis", "驅力", "今天", "下一步", "點數", "周郁凱"],
+    blocks: [
+      { p: "畫面照周郁凱的八角框架來排。那是一套看「人為什麼會把一件事做完」的八個驅力。我們拿它決定每一頁先給什麼，不拿它做打怪升級。" },
+      { p: "意義、成就、按下去就有回饋、這份資料是你的、同事在同一張卡片上，是每天的預設。稀缺、未知、損失只用在真的會發生的事，例如貨不夠、逾期沒付、試用到期。不另外製造倒數或連勝。" },
+      { h: "八個驅力對上現在的畫面" },
+      {
+        table: {
+          head: ["驅力", "你在哪裡看到", "我們不做"],
+          rows: OCTALYSIS_DRIVES.map((drive) => [`${drive.n}. ${drive.name}`, drive.where, drive.refuse]),
+        },
+      },
+      { h: "所以畫面長這樣" },
+      { list: [...OCTALYSIS_RULES] },
+    ],
+    related: ["module-today", "checklist", "first-day"],
   },
   {
     slug: "checklist",
@@ -216,8 +238,9 @@ export const HELP: HelpArticle[] = [
       { p: "「今天」只放卡住的事，最急的排第一（「現在這件」），下面幾件依序排著。點一下就到要處理的那一頁。" },
       { p: "接上 ERPNext 後，會出現在這裡的有：系統之間同步沒送到的資料、沒開成的電子發票、逾期最多的客人、快不夠的貨、等回覆的報價、導入還沒做完的下一步。都沒有就寫「今天沒有卡住的事」。" },
       { p: "最上面的「你每天會用到的三件事」照你的職務排；老闆會再多一份開站清單。兩個都可以收起來，之後在「設定」叫回來。" },
+      { p: "先給一件最急的事，做完才換下一件，是八角框架裡的意義和成就。不記點數、不跟同事比名次。整套排法見[畫面為什麼這樣排](/help/octalysis)。" },
     ],
-    related: ["first-day", "checklist"],
+    related: ["octalysis", "first-day", "checklist"],
   },
   {
     slug: "module-crm",
