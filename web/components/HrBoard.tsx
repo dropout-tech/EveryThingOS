@@ -25,9 +25,28 @@ function nowTime() {
   return new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
 }
 
+function readLocation(): Promise<{ latitude?: number; longitude?: number }> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) return Promise.resolve({});
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => resolve({}), 4_000);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        window.clearTimeout(timer);
+        resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      },
+      () => {
+        window.clearTimeout(timer);
+        resolve({});
+      },
+      { enableHighAccuracy: false, timeout: 4_000, maximumAge: 300_000 },
+    );
+  });
+}
+
 /** `live` false is practice mode: buttons change this screen only and nothing is sent. */
 export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
   const action = useLiveAction();
+  const [locating, setLocating] = useState(false);
   const [logs, setLogs] = useState(data.me.logs);
   const [approvals, setApprovals] = useState(data.approvals);
   const [note, setNote] = useState<string | null>(null);
@@ -37,9 +56,15 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
   const shownApprovals = live ? data.approvals : approvals;
   const next = shownLogs.length ? (shownLogs[shownLogs.length - 1].type === "IN" ? "OUT" : "IN") : "IN";
 
-  function clock(type: "IN" | "OUT") {
+  async function clock(type: "IN" | "OUT") {
     if (live) {
-      action.run("/api/hr/checkin", { log_type: type }, (r) => String(r.message ?? `${LOG_LABEL[type]}打卡完成`));
+      setLocating(true);
+      try {
+        const position = await readLocation();
+        await action.run("/api/hr/checkin", { log_type: type, ...position }, (r) => String(r.message ?? `${LOG_LABEL[type]}打卡完成`));
+      } finally {
+        setLocating(false);
+      }
       return;
     }
     const time = nowTime();
@@ -80,14 +105,15 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
                 <button
                   key={type}
                   type="button"
-                  disabled={action.busy}
+                  disabled={action.busy || locating}
                   onClick={() => clock(type)}
                   className={`btn ${type === next ? "btn-primary" : "btn-secondary"} px-6`}
                 >
-                  {action.busy ? "處理中…" : `${LOG_LABEL[type]}打卡`}
+                  {action.busy || locating ? "處理中…" : `${LOG_LABEL[type]}打卡`}
                 </button>
               ))}
             </div>
+            {live ? <p className="text-xs text-cream-dim">允許定位的話，打卡會記下位置。不允許也能打卡。</p> : null}
           </>
         )}
       </section>

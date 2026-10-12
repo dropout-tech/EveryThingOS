@@ -32,7 +32,7 @@ export const MODULES: { id: string; name: string; detail: string; status: Module
   { id: "crm", name: "CRM 客人", detail: "誰來過、跟到哪、下一步做什麼。同一個 Email 或電話不會建兩次。", status: "ready" },
   { id: "erp", name: "進銷存", detail: "報價、訂單、出貨、採購、進貨、多倉庫存。只顯示這張單的下一步。", status: "ready" },
   { id: "finance", name: "財務", detail: "應收應付帳齡、收付款、傳票、營業稅。", status: "ready", note: "電子發票接綠界，要先申請綠界帳號" },
-  { id: "hr", name: "人事薪資", detail: "請假、核准、打卡、薪資，勞健保與勞退費率可改。", status: "ready", note: "費率每年要對勞保局、健保署公告" },
+  { id: "hr", name: "人事薪資", detail: "請假、核准、打卡、薪資。月中勞保按日，職災與獎金補充保費可設定。", status: "ready", note: "費率每年要對勞保局、健保署公告" },
   { id: "reports", name: "老闆報表", detail: "營收、毛利、帳齡、前十大客人、缺貨。手機可以加到主畫面。", status: "ready" },
   { id: "chat", name: "對話", detail: "LINE、IG、FB、官網訊息在同一個收件匣，回完直接轉成客人。", status: "setup", note: "要接你們的 LINE 官方帳號與粉專" },
   { id: "letter", name: "電子報", detail: "寫好就寄，退訂與同意紀錄自動留。退信的名單另外列出來。", status: "ready" },

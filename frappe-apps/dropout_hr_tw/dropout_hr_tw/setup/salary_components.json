@@ -33,7 +33,17 @@
   "is_tax_applicable": 0,
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "用「額外薪資（Additional Salary）」逐月登打。勞動基準法第24條計算；每月 46 小時內免稅，超過的要併入薪資。"
+  "description": "用「額外薪資（Additional Salary）」逐月登打。系統不從打卡自動算時數；每月 46 小時內免稅，超過的要另外併入薪資。"
+ },
+ {
+  "doctype": "Salary Component",
+  "salary_component": "獎金",
+  "salary_component_abbr": "TW_BONUS",
+  "type": "Earning",
+  "depends_on_payment_days": 0,
+  "is_tax_applicable": 0,
+  "remove_if_zero_valued": 1,
+  "description": "年終、三節、績效等不按月發的獎金，用「額外薪資」登打。固定月薪不要放這裡。"
  },
  {
   "doctype": "Salary Component",
@@ -45,7 +55,7 @@
   "formula": "tw_li_employee",
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "勞保投保薪資 ×（普通事故＋就業保險費率）× 勞工負擔比例。"
+  "description": "勞保投保薪資 ×（普通事故＋就業保險費率）× 勞工負擔比例 × 計費日數 / 30。整月是 30 日。"
  },
  {
   "doctype": "Salary Component",
@@ -57,7 +67,7 @@
   "formula": "tw_hi_employee",
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "健保投保金額 × 費率 × 被保險人負擔比例 ×（本人＋眷屬，眷屬計費有上限）。"
+  "description": "健保投保金額 × 費率 × 被保險人負擔比例 ×（本人＋眷屬）。投保當月收整月，退保當月不收；離職日是月底仍收當月。"
  },
  {
   "doctype": "Salary Component",
@@ -69,7 +79,19 @@
   "formula": "tw_pension_employee",
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "月提繳工資 × 員工資料上的自提比例。"
+  "description": "月提繳工資 × 員工資料上的自提比例，月中到職或離職按勞保同一個 30 日比例。"
+ },
+ {
+  "doctype": "Salary Component",
+  "salary_component": "二代健保補充保費",
+  "salary_component_abbr": "TW_NHI2",
+  "type": "Deduction",
+  "depends_on_payment_days": 0,
+  "amount_based_on_formula": 1,
+  "formula": "tw_supplement_employee",
+  "round_to_the_nearest_integer": 1,
+  "remove_if_zero_valued": 1,
+  "description": "全年累計獎金超過當月健保投保金額四倍的部分，乘補充保險費率。費率空白就不扣。"
  },
  {
   "doctype": "Salary Component",
@@ -78,9 +100,9 @@
   "type": "Deduction",
   "depends_on_payment_days": 0,
   "amount_based_on_formula": 1,
-  "formula": "floor(TW_BASE * tw_tax_rate + 0.5) if tw_tax_threshold and TW_BASE >= tw_tax_threshold else 0",
+  "formula": "(floor(TW_BASE * tw_tax_rate + 0.5) if tw_tax_threshold and TW_BASE >= tw_tax_threshold else 0) + (floor(tw_bonus_amount * tw_tax_rate + 0.5) if tw_bonus_amount else 0)",
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "本薪達每月起扣金額時，按扣繳率扣取。獎金等其他應稅給付要另外調整。"
+  "description": "本薪達到每月起扣金額時按扣繳率扣。獎金另按給付額乘扣繳率，不看起扣金額。加班費與伙食津貼免稅額度不在這裡扣。"
  }
 ]

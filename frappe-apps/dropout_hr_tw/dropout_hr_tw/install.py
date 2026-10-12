@@ -77,11 +77,25 @@ CUSTOM_FIELDS = {
 		_basis("tw_tax_rate", "扣繳率", "tw_basis_column", "Float"),
 		_basis("tw_tax_threshold", "每月起扣金額", "tw_tax_rate"),
 		_basis("tw_meal_cap", "伙食津貼免稅額度", "tw_tax_threshold"),
-		_basis("tw_employer_li", "雇主負擔勞保（估）", "tw_meal_cap"),
-		_basis("tw_employer_hi", "雇主負擔健保（估）", "tw_employer_li"),
+		_basis("tw_insured_days", "勞保計費日數", "tw_meal_cap", "Int"),
+		_basis("tw_employer_li", "雇主負擔勞保", "tw_insured_days"),
+		_basis("tw_employer_hi", "雇主負擔健保", "tw_employer_li"),
 		_basis("tw_employer_pension", "雇主提繳勞退", "tw_employer_hi"),
+		_basis("tw_employer_oc", "雇主負擔職災", "tw_employer_pension"),
+		_basis("tw_bonus_amount", "本期獎金", "tw_employer_oc"),
+		_basis("tw_supplement_base", "補充保費費基", "tw_bonus_amount"),
+		_basis("tw_supplement_employee", "二代健保補充保費", "tw_supplement_base"),
+		{"fieldname": "tw_employer_journal", "fieldtype": "Link", "label": "雇主負擔傳票", "options": "Journal Entry", "insert_after": "tw_supplement_employee", "read_only": 1, "no_copy": 1},
 	],
 }
+
+# Shipped formula. Upgrade only when a site still has the previous text, so a
+# company that rewrote the formula keeps its version.
+PREVIOUS_TAX_FORMULAS = (
+	"floor(TW_BASE * tw_tax_rate + 0.5) if tw_tax_threshold and TW_BASE >= tw_tax_threshold else 0",
+)
+TAX_FORMULA = "(floor(TW_BASE * tw_tax_rate + 0.5) if tw_tax_threshold and TW_BASE >= tw_tax_threshold else 0) + (floor(tw_bonus_amount * tw_tax_rate + 0.5) if tw_bonus_amount else 0)"
+TAX_DESCRIPTION = "本薪達到每月起扣金額時按扣繳率扣。獎金另按給付額乘扣繳率，不看起扣金額。加班費與伙食津貼免稅額度不在這裡扣。"
 
 
 def _load(name):
@@ -118,6 +132,7 @@ def ensure_setup():
 			created["leave_types"].append(row["leave_type_name"])
 	ensure_hr_profile()
 	created["salary_structures"] = ensure_structures()
+	upgrade_formulas()
 	return created
 
 
@@ -165,6 +180,54 @@ def extend_profiles():
 			doc.save(ignore_permissions=True)
 
 
+def upgrade_formulas():
+	"""Point our old withholding formula at base pay plus bonus. Edited formulas stay."""
+	if not frappe.db.exists("Salary Component", "所得稅扣繳"):
+		return
+	current = frappe.db.get_value("Salary Component", "所得稅扣繳", "formula")
+	if current in PREVIOUS_TAX_FORMULAS:
+		frappe.db.set_value("Salary Component", "所得稅扣繳", {"formula": TAX_FORMULA, "description": TAX_DESCRIPTION})
+	for row in frappe.get_all(
+		"Salary Detail",
+		filters={"parenttype": "Salary Structure", "salary_component": "所得稅扣繳", "formula": ("in", PREVIOUS_TAX_FORMULAS)},
+		fields=["name", "parent"],
+	):
+		if not frappe.db.exists("Salary Detail", {"parent": row.parent, "parenttype": "Salary Structure", "salary_component": "獎金"}):
+			continue
+		frappe.db.set_value("Salary Detail", row.name, "formula", TAX_FORMULA)
+
+
+def _structure_row(component):
+	return {
+		"salary_component": component.name,
+		"abbr": component.salary_component_abbr,
+		"amount_based_on_formula": component.amount_based_on_formula,
+		"formula": component.formula,
+		"depends_on_payment_days": component.depends_on_payment_days,
+	}
+
+
+def _append_missing_rows(doc, components):
+	have = {row.salary_component for row in list(doc.earnings) + list(doc.deductions)}
+	added = []
+	for component in components:
+		if component.name in have:
+			continue
+		parentfield = "earnings" if component.type == "Earning" else "deductions"
+		row = doc.append(parentfield, _structure_row(component))
+		added.append(row)
+	if not added:
+		return False
+	if doc.docstatus == 1:
+		for row in added:
+			row.parent = doc.name
+			row.parenttype = "Salary Structure"
+			row.db_insert()
+		return True
+	doc.save(ignore_permissions=True)
+	return True
+
+
 def ensure_structures():
 	"""A draft monthly structure per company with the Taiwan components. HR reviews,
 	submits and assigns it; 加班費 comes in through Additional Salary instead."""
@@ -173,21 +236,19 @@ def ensure_structures():
 	names = [c["salary_component"] for c in _load("salary_components.json")]
 	components = frappe.get_all(
 		"Salary Component",
-		filters={"name": ("in", names), "amount_based_on_formula": 1, "disabled": 0},
-		fields=["name", "type", "salary_component_abbr", "formula", "depends_on_payment_days"],
+		filters={"name": ("in", names), "disabled": 0},
+		fields=["name", "type", "salary_component_abbr", "formula", "depends_on_payment_days", "amount_based_on_formula"],
 	)
 	components.sort(key=lambda c: names.index(c.name))
 	created = []
 	for company, abbr, currency in frappe.get_all("Company", fields=["name", "abbr", "default_currency"], as_list=True):
 		name = f"{STRUCTURE} - {abbr}"
 		if frappe.db.exists("Salary Structure", name):
+			_append_missing_rows(frappe.get_doc("Salary Structure", name), components)
 			continue
 		doc = frappe.get_doc({"doctype": "Salary Structure", "__newname": name, "company": company, "currency": currency or "TWD", "payroll_frequency": "Monthly", "is_active": "Yes"})
-		for c in components:
-			doc.append(
-				"earnings" if c.type == "Earning" else "deductions",
-				{"salary_component": c.name, "abbr": c.salary_component_abbr, "amount_based_on_formula": 1, "formula": c.formula, "depends_on_payment_days": c.depends_on_payment_days},
-			)
+		for component in components:
+			doc.append("earnings" if component.type == "Earning" else "deductions", _structure_row(component))
 		doc.insert(ignore_permissions=True)
 		created.append(doc.name)
 	return created
