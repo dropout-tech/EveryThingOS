@@ -13,7 +13,17 @@ PERCENT_FIELDS = (
 	"health_employer_share",
 	"pension_employer_rate",
 	"pension_voluntary_max",
+	"occupational_accident_rate",
+	"commute_accident_rate",
+	"supplementary_premium_rate",
 	"income_tax_rate",
+)
+
+ACCOUNT_PAIRS = (
+	("li_expense_account", "li_payable_account", "勞保"),
+	("hi_expense_account", "hi_payable_account", "健保"),
+	("pension_expense_account", "pension_payable_account", "勞退"),
+	("oc_expense_account", "oc_payable_account", "職災"),
 )
 RATE_FIELDS = (*PERCENT_FIELDS, "minimum_wage_monthly", "minimum_wage_hourly", "meal_allowance_cap", "health_max_dependents", "health_avg_dependents", "income_tax_threshold")
 
@@ -25,6 +35,9 @@ class TaiwanPayrollSettings(Document):
 		for field in PERCENT_FIELDS:
 			if not 0 <= flt(self.get(field)) <= 100:
 				frappe.throw(_("{0} 要在 0 到 100 之間").format(_(self.meta.get_label(field))))
+		for expense, payable, label in ACCOUNT_PAIRS:
+			if bool(self.get(expense)) != bool(self.get(payable)):
+				frappe.throw(_("{0} 的費用科目和應付科目要一起填，或一起留空").format(label))
 		self.grades.sort(key=lambda row: flt(row.insured_salary))
 		seen = set()
 		for i, row in enumerate(self.grades, 1):
