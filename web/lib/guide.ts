@@ -179,10 +179,10 @@ export function roleFor(profile: string | undefined | null, roles: string[] | nu
 
 /** Small page hints. Ids are part of the remembered key; renaming one shows it again. */
 export const HINTS = {
-  today: { title: "從最上面那件開始", body: "「今天」只放卡住的事，最急的排第一。做完就會換下一件。" },
-  sales: { title: "一張單一個按鈕", body: "報價、訂單、出貨、發票、收款是同一張單往右走。每張卡片只會出現下一步。" },
-  crm: { title: "往右，跟到答應", body: "每一欄是一個階段。同一個 Email 或電話會對到原本那位客人，不會重複建。" },
-  finance: { title: "先看橘色", body: "帳齡超過 60 天的會排在前面。電子發票開好後交給加值中心上傳。" },
+  today: { title: "從最上面那件開始", body: "「今天」只放卡住的事，最急的排第一。生意、客人、倉庫、收錢也是最上面一件。" },
+  sales: { title: "一張單一個按鈕", body: "最上面是現在這件，逾期的先做。下面每張卡片還是只有下一步。" },
+  crm: { title: "往右，跟到答應", body: "最上面是跟得最遠的那位。下面每一欄仍是階段，同一個 Email 或電話不會重複建。" },
+  finance: { title: "先看橘色", body: "最上面是逾期最久的那位。帳齡超過 60 天才算逾期；電子發票開好後交給加值中心上傳。" },
   team: { title: "職務決定看得到什麼", body: "換職務立刻生效；停用的人馬上登出。公司至少要留一位老闆。" },
   letter: { title: "只寄給說好的人", body: "勾同意、又點了確認信的人才會進名單。退訂一次，所有行銷通道一起關。" },
   hr: { title: "上下班各按一次", body: "打卡、核准假單在這裡。員工資料、排班、薪資結構在 ERPNext 人事後台。" },

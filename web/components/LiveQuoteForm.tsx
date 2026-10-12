@@ -10,7 +10,7 @@ type Line = { item_code: string; qty: string; rate: string };
 const field = "field";
 
 /** 開一張報價 straight into ERPNext: pick who, pick what, the price list fills the rest. */
-export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: ReturnType<typeof useLiveAction> }) {
+export function LiveQuoteForm({ catalog, action, emphasis = "primary" }: { catalog: Catalog; action: ReturnType<typeof useLiveAction>; emphasis?: "primary" | "secondary" }) {
   const [party, setParty] = useState("");
   const [lines, setLines] = useState<Line[]>([{ item_code: "", qty: "1", rate: "" }]);
   const price = (code: string) => catalog.items.find((i) => i.item_code === code)?.rate ?? null;
@@ -78,7 +78,7 @@ export function LiveQuoteForm({ catalog, action }: { catalog: Catalog; action: R
         <button type="button" onClick={() => setLines((c) => [...c, { item_code: "", qty: "1", rate: "" }])} className="btn btn-secondary btn-sm">
           再加一項
         </button>
-        <button type="submit" disabled={action.busy} className="btn btn-primary">
+        <button type="submit" disabled={action.busy} className={emphasis === "primary" ? "btn btn-primary" : "btn btn-secondary"}>
           {action.busy ? "開單中…" : "開一張報價"}
         </button>
         <span className="text-xs text-cream-dim">未稅約 {formatTwd(total)}；稅依 ERPNext 的稅別範本計算。</span>

@@ -6,7 +6,7 @@ import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 const field = "field";
 
 /** 新增一個人. Same email or phone as someone already known opens that person instead of making a duplicate. */
-export function LiveLeadForm() {
+export function LiveLeadForm({ emphasis = "primary" }: { emphasis?: "primary" | "secondary" }) {
   const action = useLiveAction();
   const [form, setForm] = useState({ name: "", company_name: "", email: "", phone: "", notes: "" });
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -40,7 +40,7 @@ export function LiveLeadForm() {
           <span className="field-label">怎麼認識的</span>
           <input value={form.notes} onChange={set("notes")} maxLength={500} placeholder="展場、介紹…" className={`${field} sm:w-44`} />
         </label>
-        <button type="submit" disabled={action.busy} className="btn btn-primary">
+        <button type="submit" disabled={action.busy} className={emphasis === "primary" ? "btn btn-primary" : "btn btn-secondary"}>
           {action.busy ? "新增中…" : "新增一個人"}
         </button>
       </div>

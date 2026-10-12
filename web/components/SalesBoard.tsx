@@ -5,6 +5,7 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
+import { NextThing } from "./NextThing";
 import { buttonClass } from "./ui/Button";
 import { Field } from "./ui/Field";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
@@ -15,6 +16,7 @@ import {
   makeQuote,
   type SalesDoc,
 } from "@/lib/erp";
+import { nextSalesDoc, salesPlain } from "@/lib/next-thing";
 import type { Catalog } from "@/lib/sources/types";
 import type { IndustryPack } from "@/lib/types";
 
@@ -49,6 +51,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     writeDemoState(demoKey("inbox", pack.id), [] as SalesDoc[]);
   }, [live, pack.id, initial, setDocs]);
   const columns = useMemo(() => groupSales(docs), [docs]);
+  const focus = nextSalesDoc(docs);
 
   function onAdvance(doc: SalesDoc) {
     if (doc.next === "完成") return;
@@ -81,7 +84,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     <div className="space-y-4">
       {live ? (
         <div className="glass space-y-2 p-4">
-          {catalog ? <LiveQuoteForm catalog={catalog} action={action} /> : null}
+          {catalog ? <LiveQuoteForm catalog={catalog} action={action} emphasis={focus ? "secondary" : "primary"} /> : null}
           <p className="text-xs text-cream-dim">
             報價、轉訂單、出貨、開發票、收款都直接寫進 ERPNext，照你的角色權限。要改細節時{" "}
             <DeskLink href={`${deskUrl}/app/quotation/new`} className="underline underline-offset-2">
@@ -98,7 +101,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
         <Field label="未稅金額" className="sm:w-36" error={formError && party.trim() ? formError : null}>
           <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="28600" className="field" />
         </Field>
-        <button type="submit" className={buttonClass({ variant: "primary" })}>
+        <button type="submit" className={buttonClass({ variant: focus ? "secondary" : "primary" })}>
           開一張報價
         </button>
         <p className="text-xs text-cream-dim sm:basis-full">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
@@ -106,6 +109,21 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
       )}
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
+      {focus ? (
+        <NextThing
+          title={focus.overdueDays ? `${focus.party} 逾期 ${focus.overdueDays} 天` : `${focus.party}：${salesPlain(focus.step)}`}
+          detail={`下一步只做「${focus.next}」。其餘的單在下面，每張還是只有這一個按鈕。`}
+          action={
+            live ? (
+              <AdvanceButton doctype={focus.doctype} name={focus.no} label={focus.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "primary" })} />
+            ) : (
+              <button type="button" onClick={() => onAdvance(focus)} className={buttonClass({ variant: "primary" })}>
+                {focus.next}
+              </button>
+            )
+          }
+        />
+      ) : null}
       <div className="grid gap-3 lg:grid-cols-5">
         {columns.map((column) => (
           <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>

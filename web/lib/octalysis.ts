@@ -24,7 +24,7 @@ export const OCTALYSIS_DRIVES: readonly OctalysisDrive[] = [
     n: 1,
     name: "史詩意義與使命",
     side: "white",
-    where: "「今天」最上面寫誰在等、哪張單卡住。職務三件事與開站清單每一項都先寫為什麼要做。",
+    where: "「今天」、生意、客人、倉庫、收錢的最上面都是「現在這件」：誰在等、哪張單卡住。職務三件事與開站清單每一項都先寫為什麼要做。",
     refuse: "每日金句、虛擬頭銜、公司使命徽章。",
   },
   {
