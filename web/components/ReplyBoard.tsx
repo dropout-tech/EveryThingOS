@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionNote } from "./ActionNote";
+import { NextThing } from "./NextThing";
 import { demoKey, useDemoState } from "@/lib/demo-state";
 import { matchRule, sanitizeImportedHandle, type ReplyComment, type ReplyRule } from "@/lib/reply";
 import type { IndustryPack } from "@/lib/types";
@@ -11,9 +12,11 @@ type ReplyBoardProps = {
   pack: Pick<IndustryPack, "id" | "workflow">;
   initialRules: ReplyRule[];
   initialInbox: ReplyComment[];
+  /** The page already has one primary (the live inbox). This board stays quiet. */
+  quiet?: boolean;
 };
 
-export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps) {
+export function ReplyBoard({ pack, initialRules, initialInbox, quiet = false }: ReplyBoardProps) {
   const router = useRouter();
   const [rules, setRules] = useDemoState(demoKey("reply-rules", pack.id), initialRules);
   const [inbox, setInbox] = useDemoState(demoKey("reply-inbox", pack.id), initialInbox);
@@ -24,6 +27,8 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
 
   const waiting = inbox.filter((item) => item.status === "inbox");
   const sent = inbox.filter((item) => item.status === "sent");
+  const hero = quiet ? null : waiting[0] ?? null;
+  const heroRule = hero ? matchRule(hero.text, rules) : null;
 
   const preview = useMemo(() => {
     const sample = waiting[0]?.text ?? "價格";
@@ -91,6 +96,17 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
   return (
     <div className="space-y-4">
       <ActionNote>{note}</ActionNote>
+      {hero ? (
+        <NextThing
+          title={`${hero.handle} 的留言在等`}
+          detail={heroRule ? `「${hero.text}」。對到「${heroRule.keyword}」，私訊會寫「${heroRule.dm}」。` : `「${hero.text}」。沒對到關鍵字就不要洗私訊，先略過或加一組。`}
+          action={
+            <button type="button" className="btn btn-primary" onClick={() => onSend(hero)}>
+              送出私訊
+            </button>
+          }
+        />
+      ) : null}
       <p className="glass-chip px-4 py-3 text-sm text-cream-dim">
         留言出現關鍵字才私訊。現在按送出，還不會真的傳到 Instagram。
       </p>
@@ -114,7 +130,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
                       {rule ? `對到「${rule.keyword}」→ 私訊：${rule.dm}` : "沒對到關鍵字"}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <button type="button" className="btn btn-primary btn-sm" onClick={() => onSend(comment)}>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSend(comment)}>
                         送出私訊
                       </button>
                       <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSkip(comment)}>
@@ -184,7 +200,7 @@ export function ReplyBoard({ pack, initialRules, initialInbox }: ReplyBoardProps
                 autoComplete="off"
               />
             </label>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className={quiet || hero ? "btn btn-secondary" : "btn btn-primary"}>
               存起來
             </button>
             {preview ? (

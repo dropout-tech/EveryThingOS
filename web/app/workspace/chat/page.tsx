@@ -1,5 +1,6 @@
 import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { NextThing } from "@/components/NextThing";
 import { ReplyBoard } from "@/components/ReplyBoard";
 import { Badge } from "@/components/ui/Badge";
 import { seedReplyInbox, seedReplyRules } from "@/lib/reply";
@@ -23,15 +24,15 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
   return (
     <ModuleFrame kicker="對話" title="LINE、IG、FB、官網的訊息在同一個收件匣">
       {connected ? (
-        <div className="glass flex flex-wrap items-center justify-between gap-4 p-5">
-          <div>
-            <h2 className="font-medium">收件匣</h2>
-            <p className="mt-1 text-sm text-cream-dim">每則新對話會自動找到或建立客人，並記在客人的時間軸上。</p>
-          </div>
-          <a href="/api/chat/open" className="btn btn-primary">
-            打開收件匣
-          </a>
-        </div>
+        <NextThing
+          title="訊息在收件匣"
+          detail="LINE、IG、FB、官網的對話在同一個收件匣。去那裡回，來問的人會記在客人的時間軸上。"
+          action={
+            <a href="/api/chat/open" className="btn btn-primary">
+              去收件匣回訊息
+            </a>
+          }
+        />
       ) : (
         <EmptyState
           title="收件匣還沒接上"
@@ -49,7 +50,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
           留言自動轉私訊 <Badge tone="demo" />
         </h2>
         <p className="text-xs text-cream-dim">這裡按送出不會傳到 Instagram；規則在導入時設在對話系統。</p>
-        <ReplyBoard pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
+        <ReplyBoard quiet={connected} pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
       </div>
     </ModuleFrame>
   );

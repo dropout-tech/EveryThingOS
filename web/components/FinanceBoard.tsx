@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { NextThing } from "./NextThing";
 import { EmptyState } from "./EmptyState";
 import { buttonClass } from "./ui/Button";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { collectOverdue, formatTwd, type AgingRow, type Books } from "@/lib/erp";
+import { nextAging } from "@/lib/next-thing";
 
 type FinanceBoardProps = {
   packId: string;
@@ -18,6 +20,8 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
   const [aging, setAging] = useBoardState(demoKey("aging", packId), books.arAging, live);
   const [invoices, setInvoices] = useBoardState(demoKey("einvoices", packId), books.einvoices, live);
   const [note, setNote] = useState<string | null>(null);
+  const focus = nextAging(aging);
+  const pendingInvoice = invoices.find((row) => row.status !== "已上傳");
 
   function onCollect(row: AgingRow) {
     const result = collectOverdue(row);
@@ -42,6 +46,39 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
         開單就入帳。稅額 5% 已算在單上。電子發票開好後交給加值中心上傳。
       </p>
       <ActionNote>{note}</ActionNote>
+      {focus ? (
+        <NextThing
+          title={`${focus.party} 逾期未付`}
+          detail={`60 天 ${formatTwd(focus.d60)}，90 天以上 ${formatTwd(focus.d90)}。先收這一位，其餘在下面。`}
+          action={
+            live ? (
+              <DeskLink href={focus.href} className={buttonClass({ variant: "primary" })}>
+                催收
+              </DeskLink>
+            ) : (
+              <button type="button" onClick={() => onCollect(focus)} className={buttonClass({ variant: "primary" })}>
+                催收並入帳
+              </button>
+            )
+          }
+        />
+      ) : pendingInvoice ? (
+        <NextThing
+          title={`${pendingInvoice.no} 還沒上傳`}
+          detail="發票已經開了，還沒交給加值中心。帳上的這一步做完，今天就少一件卡住的事。"
+          action={
+            live ? (
+              <DeskLink href={pendingInvoice.href} className={buttonClass({ variant: "primary" })}>
+                打開發票
+              </DeskLink>
+            ) : (
+              <button type="button" onClick={() => onUpload(pendingInvoice.no)} className={buttonClass({ variant: "primary" })}>
+                上傳加值中心
+              </button>
+            )
+          }
+        />
+      ) : null}
       <section>
         <h2 className="text-lg font-medium">誰欠我們（帳齡）</h2>
         <div className="glass mt-3 sm:overflow-x-auto">
@@ -73,11 +110,11 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
                   <td data-label="90 天＋" className={row.d90 ? "font-medium text-danger" : ""}>{formatTwd(row.d90)}</td>
                   <td data-label="下一步">
                     {live ? (
-                      <DeskLink href={row.href} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
+                      <DeskLink href={row.href} className={buttonClass({ variant: "secondary", size: "sm" })}>
                         {row.d90 || row.d60 ? "催收" : "對帳"}
                       </DeskLink>
                     ) : (
-                      <button type="button" onClick={() => onCollect(row)} className={buttonClass({ variant: row.d90 || row.d60 ? "primary" : "secondary", size: "sm" })}>
+                      <button type="button" onClick={() => onCollect(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                         {row.d90 || row.d60 ? "催收並入帳" : "對帳"}
                       </button>
                     )}

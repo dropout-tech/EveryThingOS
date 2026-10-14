@@ -34,6 +34,16 @@
 | 載入／出錯 | 各段落的 `loading.tsx`（`<Skeleton>`）與 `error.tsx`（`<ErrorPanel>`） |
 | 分段切換 | `<nav className="segmented">` 加 `aria-current="page"` |
 
+## 八角（每一頁都要過）
+
+設計全文在 [OCTALYSIS.md](OCTALYSIS.md)，八個驅力在 `web/lib/octalysis.ts`。改工作區畫面時：
+
+- 要：這一頁的下一件事用一句現場的話說完，主按鈕只有一個。
+- 要：做完的回饋講這件事的結果（已出貨、已核准、清單打勾）。
+- 要：警告色只留給真的逾期、不夠、失敗。
+- 不要：點數、徽章、等級、排行榜、連續天數、倒數優惠、隨機獎勵。
+- 不要：為了讓人多打開，製造帳上不存在的緊迫。
+
 ## 要／不要
 
 - 要：一頁只有一個實心主按鈕；其他用 secondary 或 ghost。

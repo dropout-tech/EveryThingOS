@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { NextThing } from "./NextThing";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
 import { formatTwd, makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
+import { nextStock } from "@/lib/next-thing";
 
 type StockBoardProps = {
   packId: string;
@@ -21,6 +23,8 @@ type StockBoardProps = {
 export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, deskUrl }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
+  const focus = nextStock(stock);
+  const others = stock.filter((row) => row.onHand < row.safety).length - (focus ? 1 : 0);
 
   function requestBuy(row: StockRow) {
     const existing = peekDemoState<PurchaseDoc[]>(demoKey("purchases", packId), purchases);
@@ -41,6 +45,23 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
         貨值 {formatTwd(inventoryValue)}。
       </p>
       <ActionNote>{note}</ActionNote>
+      {focus ? (
+        <NextThing
+          title={`${focus.name} 不夠`}
+          detail={`現有 ${focus.onHand}，安全量 ${focus.safety}。請購之後去進貨。${others > 0 ? `下面還有 ${others} 項不夠。` : ""}`}
+          action={
+            deskUrl ? (
+              <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`} className={buttonClass({ variant: "primary" })}>
+                請購
+              </DeskLink>
+            ) : (
+              <button type="button" onClick={() => requestBuy(focus)} className={buttonClass({ variant: "primary" })}>
+                請購
+              </button>
+            )
+          }
+        />
+      ) : null}
       <div className="glass sm:overflow-x-auto">
         <table className="table-stack sm:min-w-[40rem]">
           <caption className="sr-only">庫存</caption>
@@ -74,7 +95,7 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
                   <td data-label="下一步">
                     {deskUrl ? (
                       low ? (
-                        <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`} className={buttonClass({ variant: "primary", size: "sm" })}>
+                        <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`} className={buttonClass({ variant: "secondary", size: "sm" })}>
                           請購
                         </DeskLink>
                       ) : (
@@ -83,7 +104,7 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
                         </DeskLink>
                       )
                     ) : low ? (
-                      <button type="button" onClick={() => requestBuy(row)} className={buttonClass({ variant: "primary", size: "sm" })}>
+                      <button type="button" onClick={() => requestBuy(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                         請購
                       </button>
                     ) : (

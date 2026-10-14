@@ -7,7 +7,7 @@ import { useConfirm } from "./ui/ConfirmDialog";
 const field = "field";
 
 /** 寫一封: plain text in, ERPNext Newsletter out. Sending uses ERPNext's queue, unsubscribe link and Email Group opt-outs. */
-export function LetterComposer({ groups }: { groups: { name: string; title: string; subscribers: number }[] }) {
+export function LetterComposer({ groups, emphasis = "primary" }: { groups: { name: string; title: string; subscribers: number }[]; emphasis?: "primary" | "secondary" }) {
   const action = useLiveAction();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -52,7 +52,7 @@ export function LetterComposer({ groups }: { groups: { name: string; title: stri
         <button type="submit" disabled={action.busy || !picked.length} className="btn btn-secondary">
           存草稿
         </button>
-        <button type="button" disabled={action.busy || !picked.length || !subject || !message} onClick={(e) => submit(e, true)} className="btn btn-primary">
+        <button type="button" disabled={action.busy || !picked.length || !subject || !message} onClick={(e) => submit(e, true)} className={emphasis === "primary" ? "btn btn-primary" : "btn btn-secondary"}>
           {action.busy ? <span className="spinner" aria-hidden="true" /> : null}
           {action.busy ? "處理中…" : "現在寄出"}
         </button>
@@ -64,7 +64,7 @@ export function LetterComposer({ groups }: { groups: { name: string; title: stri
   );
 }
 
-export function SendDraftButton({ name, subject }: { name: string; subject: string }) {
+export function SendDraftButton({ name, subject, variant = "secondary" }: { name: string; subject: string; variant?: "primary" | "secondary" }) {
   const action = useLiveAction();
   const [confirm, confirmDialog] = useConfirm();
   return (
@@ -73,7 +73,7 @@ export function SendDraftButton({ name, subject }: { name: string; subject: stri
         type="button"
         disabled={action.busy}
         aria-busy={action.busy || undefined}
-        className="btn btn-secondary btn-sm"
+        className={variant === "primary" ? "btn btn-primary" : "btn btn-secondary btn-sm"}
         onClick={async () => {
           if (await confirm({ title: `現在寄出「${subject}」？`, body: "寄出後不能收回。退訂的人會自動略過。", confirmLabel: "寄出" }))
             action.run("/api/letter/send", { name }, (r) => `已排入寄送，約 ${r.recipients} 人。`);

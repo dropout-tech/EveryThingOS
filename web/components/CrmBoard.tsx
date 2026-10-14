@@ -4,11 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
+import { NextThing } from "./NextThing";
 import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
 import { buttonClass } from "./ui/Button";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
+import { nextLead } from "@/lib/next-thing";
 import type { IndustryPack } from "@/lib/types";
 
 type Lead = { name: string; stage: string; score: number; channel: string; href?: string };
@@ -70,6 +72,10 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
     window.setTimeout(() => router.push("/workspace/erp/sales"), 700);
   }
 
+  const focus = nextLead(leads, stages);
+  const stageIndex = focus ? stages.indexOf(focus.stage) : -1;
+  const lastFocus = focus != null && stageIndex >= stages.length - 1;
+  const shownStage = (stage: string) => (live ? stageLabel(stage) : stage);
   const columns = stages.map((stage) => ({
     stage,
     cards: leads.filter((lead) => lead.stage === stage),
@@ -77,8 +83,31 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
 
   return (
     <div className="space-y-4">
-      {live ? <LiveLeadForm /> : null}
+      {live ? <LiveLeadForm emphasis={leads.length ? "secondary" : "primary"} /> : null}
       <ActionNote>{note}</ActionNote>
+      {focus ? (
+        <NextThing
+          title={focus.name}
+          detail={
+            live
+              ? `跟到「${shownStage(focus.stage)}」。報價從這個人開，不必再建一次。`
+              : lastFocus
+                ? "已經跟到最後一格。轉成一筆生意後，同一個人進報價，不必重建。"
+                : `還在「${shownStage(focus.stage)}」。下一步是「${shownStage(stages[stageIndex + 1])}」。`
+          }
+          action={
+            live ? (
+              <a href="/workspace/erp/sales" className={buttonClass({ variant: "primary" })}>
+                開報價
+              </a>
+            ) : (
+              <button type="button" onClick={() => onNext(focus)} className={buttonClass({ variant: "primary" })}>
+                {lastFocus ? "轉成一筆生意" : `下一步：${shownStage(stages[stageIndex + 1])}`}
+              </button>
+            )
+          }
+        />
+      ) : null}
       {live && !leads.length ? (
         <EmptyState
           compact
@@ -115,7 +144,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                           </a>
                         </span>
                       ) : (
-                        <button type="button" onClick={() => onNext(lead)} className={buttonClass({ variant: last ? "primary" : "secondary", size: "sm", block: true, className: "mt-2" })}>
+                        <button type="button" onClick={() => onNext(lead)} className={buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" })}>
                           {last ? "轉成一筆生意" : `下一步：${stages[stageIndex + 1]}`}
                         </button>
                       )}

@@ -2,7 +2,7 @@
 
 這份是 DropOut 顧問到一家新公司做免費導入時照著走的腳本：開會要問什麼、要跟老闆拿哪些資料、導入工具怎麼下、上線前檢查什麼、上線後 30／60／90 天回訪看什麼。工具細節在 [toolkit/README.md](../toolkit/README.md)，搬家順序與驗收關卡在 [ONBOARDING-TOOLKIT.md](ONBOARDING-TOOLKIT.md)，健康度算法在 [BILLING.md](BILLING.md#健康度)。
 
-客戶自己看的說明在殼的 `/help`（不用登入），內容來自 `web/lib/help.ts`。現場講解時直接開那幾頁給老闆看，不要另外做簡報。
+客戶自己看的說明在殼的 `/help`（不用登入），內容來自 `web/lib/help.ts`。現場講解時直接開那幾頁給老闆看，不要另外做簡報。老闆問「為什麼不是一排功能圖示」時，打開 `/help/octalysis`：下一件事、做完看得到、不發點數。
 
 ## 0. 出發前
 

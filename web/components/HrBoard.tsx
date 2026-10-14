@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
+import { NextThing } from "./NextThing";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
@@ -36,6 +37,9 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
   const shownLogs = live ? data.me.logs : logs;
   const shownApprovals = live ? data.approvals : approvals;
   const next = shownLogs.length ? (shownLogs[shownLogs.length - 1].type === "IN" ? "OUT" : "IN") : "IN";
+  const firstApproval = denied.has("approvals") ? undefined : shownApprovals[0];
+  const canClock = !(live && !data.me.employee);
+  const clockIsHero = !firstApproval && canClock;
 
   function clock(type: "IN" | "OUT") {
     if (live) {
@@ -63,34 +67,60 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
       <ActionOutcomeNote outcome={action.outcome} />
       {confirmDialog}
 
-      <section className="glass glass-hero space-y-3 p-5 md:p-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-medium">{data.me.name}</h2>
-          <p className="text-xs text-cream-dim">{data.date}</p>
-        </div>
-        {live && !data.me.employee ? (
-          <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。請人資在 ERPNext 的員工資料填上你的使用者帳號，就能在這裡打卡。</p>
-        ) : (
-          <>
-            <p className="text-sm text-cream-dim">
-              {shownLogs.length ? shownLogs.map((l) => `${LOG_LABEL[l.type]} ${l.time}`).join("　") : "今天還沒打卡"}
-            </p>
+      {firstApproval ? (
+        <NextThing
+          title={`${firstApproval.employee}的假單在等你`}
+          detail={`${firstApproval.leaveType} · ${days(firstApproval.fromDate, firstApproval.toDate)} · ${firstApproval.days} 天。${firstApproval.reason ? firstApproval.reason : "核准後才算請假。"}`}
+          action={
+            <button type="button" disabled={action.busy} onClick={() => decide(firstApproval.name, firstApproval.employee, "approve")} className="btn btn-primary">
+              {action.busy ? "處理中…" : "核准"}
+            </button>
+          }
+        />
+      ) : clockIsHero ? (
+        <NextThing
+          title={shownLogs.length ? (next === "OUT" ? "還沒下班打卡" : "下一筆是上班打卡") : "今天還沒打卡"}
+          detail={`${data.me.name}　${data.date}。${shownLogs.length ? shownLogs.map((l) => `${LOG_LABEL[l.type]} ${l.time}`).join("　") : "上下班各按一次。"}`}
+          action={
             <div className="flex flex-wrap gap-2">
               {(["IN", "OUT"] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  disabled={action.busy}
-                  onClick={() => clock(type)}
-                  className={`btn ${type === next ? "btn-primary" : "btn-secondary"} px-6`}
-                >
+                <button key={type} type="button" disabled={action.busy} onClick={() => clock(type)} className={`btn ${type === next ? "btn-primary" : "btn-secondary"} px-6`}>
                   {action.busy ? "處理中…" : `${LOG_LABEL[type]}打卡`}
                 </button>
               ))}
             </div>
-          </>
-        )}
-      </section>
+          }
+        />
+      ) : (
+        <section className="glass space-y-3 p-5">
+          <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。請人資在 ERPNext 的員工資料填上你的使用者帳號，就能在這裡打卡。</p>
+        </section>
+      )}
+
+      {firstApproval ? (
+        <section className="glass space-y-3 p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-lg font-medium">{data.me.name}</h2>
+            <p className="text-xs text-cream-dim">{data.date}</p>
+          </div>
+          {canClock ? (
+            <>
+              <p className="text-sm text-cream-dim">
+                {shownLogs.length ? shownLogs.map((l) => `${LOG_LABEL[l.type]} ${l.time}`).join("　") : "今天還沒打卡"}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(["IN", "OUT"] as const).map((type) => (
+                  <button key={type} type="button" disabled={action.busy} onClick={() => clock(type)} className="btn btn-secondary px-6">
+                    {action.busy ? "處理中…" : `${LOG_LABEL[type]}打卡`}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。請人資在 ERPNext 的員工資料填上你的使用者帳號，就能在這裡打卡。</p>
+          )}
+        </section>
+      ) : null}
 
       {denied.has("on_leave") ? null : (
         <section className="space-y-2">
@@ -140,7 +170,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
                     {a.reason ? <p className="mt-1 text-xs text-cream-dim">{a.reason}</p> : null}
                   </div>
                   <span className="flex items-center gap-2">
-                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-primary btn-sm">
+                    <button type="button" disabled={action.busy} onClick={() => decide(a.name, a.employee, "approve")} className="btn btn-secondary btn-sm">
                       核准
                     </button>
                     <button type="button" disabled={action.busy} onClick={async () => {

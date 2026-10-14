@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { DeskLink } from "./DeskLink";
+import { NextThing } from "./NextThing";
 import { Badge } from "./ui/Badge";
 import { formatTwd } from "@/lib/erp";
+import { nextReport } from "@/lib/next-thing";
 import { REPORT_MONTHS, monthLabel, type OwnerReport, type ReportSection } from "@/lib/reports";
 
 function percent(part: number, whole: number) {
@@ -220,9 +222,21 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
   const marginNow = margin?.[margin.length - 1];
   const aging = report.aging;
   const unavailable = (id: ReportSection) => (report.denied.includes(id) ? "你的角色看不到" : "現在拿不到");
+  const focus = nextReport(report);
 
   return (
     <div className="space-y-5">
+      {focus ? (
+        <NextThing
+          title={focus.title}
+          detail={focus.detail}
+          action={
+            <Link href={focus.href} className="btn btn-primary">
+              {focus.label}
+            </Link>
+          }
+        />
+      ) : null}
       <div className="flex flex-wrap items-center gap-3">
         <nav className="segmented" aria-label="期間">
           {REPORT_MONTHS.map((m) => (

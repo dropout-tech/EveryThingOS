@@ -4,9 +4,11 @@ import { useState } from "react";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
+import { NextThing } from "./NextThing";
 import { buttonClass } from "./ui/Button";
 import { demoKey, useBoardState } from "@/lib/demo-state";
 import { advancePurchase, formatTwd, type PurchaseDoc } from "@/lib/erp";
+import { nextPurchase } from "@/lib/next-thing";
 
 type PurchaseBoardProps = {
   packId: string;
@@ -20,6 +22,7 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
   const [rows, setRows] = useBoardState(demoKey("purchases", packId), initial, live);
   const [note, setNote] = useState<string | null>(null);
   const action = useLiveAction();
+  const focus = nextPurchase(rows);
 
   function onAdvance(row: PurchaseDoc) {
     if (row.next === "完成") return;
@@ -37,6 +40,21 @@ export function PurchaseBoard({ packId, inventory, fulfillment, initial, live = 
       </p>
       <ActionNote>{note}</ActionNote>
       <ActionOutcomeNote outcome={action.outcome} />
+      {focus ? (
+        <NextThing
+          title={`${focus.vendor}：${focus.status}`}
+          detail={`${focus.no}　${focus.item}　${formatTwd(focus.amount)}。下一步只做「${focus.next}」。`}
+          action={
+            live && focus.doctype ? (
+              <AdvanceButton doctype={focus.doctype} name={focus.no} label={focus.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "primary" })} />
+            ) : !live ? (
+              <button type="button" onClick={() => onAdvance(focus)} className={buttonClass({ variant: "primary" })}>
+                {focus.next}
+              </button>
+            ) : null
+          }
+        />
+      ) : null}
       <div className="glass sm:overflow-x-auto">
         <table className="table-stack sm:min-w-[40rem]">
           <caption className="sr-only">進貨單</caption>
