@@ -1,6 +1,6 @@
 # 工作區介面守則
 
-給改 `/workspace/**` 畫面的人。目標：老闆、業務、倉管、會計、人資拿手機站在現場也看得清、按得到、不會按錯。海面到海底的場景與液態玻璃保留，但字永遠比風景重要。
+給改 `/workspace/**` 畫面的人。目標：老闆、業務、倉管、會計、人資拿手機站在現場也看得清、按得到、不會按錯。海面到海底的場景留著。玻璃是透光的液態材質：背後的海要模糊、飽和，上緣有一條高光，不是一塊加深的暗色板。字永遠比風景重要。
 
 ## 代號（`web/app/globals.css`）
 
@@ -12,7 +12,7 @@
 | 主按鈕 | `--primary-fill` `--on-primary` | 實心按鈕，一頁一個 |
 | 輸入框 | `--field-bg` `--field-border` | 所有 input／select／textarea |
 | 底襯 | `--surface-scrim` | 浮在風景上的字、Toast、底部選單、對話框 |
-| 工作區 | `--os-veil` `--os-glass-fill` `--os-well` `--os-chip` `--os-cream-dim` `--control-fill` | 只在 `.os-shell` 裡生效：場景加深、玻璃加厚 |
+| 工作區 | `--os-veil` `--os-glass-fill` `--os-well` `--os-chip` `--os-cream-dim` `--control-fill` | 只在 `.os-shell` 裡生效：場景仍透出，玻璃比官網稍穩 |
 | 玻璃層級 | `--glass-1` `--glass-2` `--glass-3` | 由淡到濃 |
 | 圓角 | `--ui-radius-sm/md/lg/xl/pill`（12／16／24／32／999） | 輸入框 sm、卡片 lg、大卡 xl、按鈕 pill |
 | 間距 | `--ui-space-1…8` | 0.25rem 為一格 |
