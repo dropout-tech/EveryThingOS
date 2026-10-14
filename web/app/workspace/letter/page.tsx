@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { Hint } from "@/components/Hint";
 import { LetterComposer, SendDraftButton } from "@/components/LiveLetter";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { NextThing } from "@/components/NextThing";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
+import { nextLetter } from "@/lib/next-thing";
 import { getLetter } from "@/lib/sources";
 import type { LetterOverview } from "@/lib/sources/types";
 
@@ -34,10 +37,28 @@ export default async function LetterPage() {
   if (source.origin === "error") return <SourceFailure source={source} next="/workspace/letter" />;
   const data = source.data ?? DEMO;
   const desk = source.origin === "live" ? source.deskUrl : undefined;
+  const focus = nextLetter(data.newsletters, data.consent.pending, Boolean(desk));
 
   return (
     <ModuleFrame kicker="電子報" title="只寄給說好的人" hint="勾同意並點確認信的人才會進名單；退訂一次，所有行銷通道一起關。">
       <Hint id="letter" help="module-letter" />
+      {focus?.kind === "draft" ? (
+        <NextThing
+          title={`「${focus.letter.subject}」還沒寄出`}
+          detail="草稿還在。確認名單與內容後再寄，寄出就不能收回。"
+          action={<SendDraftButton name={focus.letter.name} subject={focus.letter.subject} variant="primary" />}
+        />
+      ) : focus?.kind === "pending" ? (
+        <NextThing
+          title={`${focus.count} 人還沒點確認信`}
+          detail="沒點確認信的人不會收到電子報。先看是哪些信箱，不要對沒說好的人寄。"
+          action={
+            <Link href="/workspace/hygiene" className="btn btn-primary">
+              看還沒確認的人
+            </Link>
+          }
+        />
+      ) : null}
       {desk && !data.groups.length ? (
         <EmptyState
           title="還沒有名單"
@@ -73,7 +94,7 @@ export default async function LetterPage() {
       {desk ? (
         <section className="space-y-2">
           <h2 className="text-sm font-medium">寫一封</h2>
-          <LetterComposer groups={data.groups} />
+          <LetterComposer groups={data.groups} emphasis={focus ? "secondary" : "primary"} />
         </section>
       ) : null}
 

@@ -1,9 +1,11 @@
 import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { NextThing } from "@/components/NextThing";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { UpcomingMeetings } from "@/components/UpcomingMeetings";
+import { nextUpcoming } from "@/lib/next-thing";
 import { getMeetings } from "@/lib/sources";
-import type { Meetings } from "@/lib/sources/types";
+import type { Meetings, UpcomingMeeting } from "@/lib/sources/types";
 
 export const metadata = { title: "會議紀錄" };
 
@@ -25,14 +27,45 @@ const DEMO: Meetings = {
   ],
 };
 
+const PLATFORM: Record<UpcomingMeeting["platform"], string> = { google_meet: "Google Meet", zoom: "Zoom", teams: "Teams" };
+
+function when(iso: string) {
+  return new Intl.DateTimeFormat("zh-TW", { timeZone: "Asia/Taipei", month: "numeric", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
+}
+
 export default async function MeetingsPage() {
   const source = await getMeetings();
   if (source.origin === "error") return <SourceFailure source={source} next="/workspace/meetings" />;
   const data = source.data ?? DEMO;
   const live = source.origin === "live";
+  const soon = nextUpcoming(data.upcoming);
+  const remembered = data.summaries.find((row) => row.party);
 
   return (
     <ModuleFrame kicker="會議紀錄" title="會議自己記，摘要進客人" hint="機器人照公司行事曆，開會前自己進 Zoom、Google Meet、Teams；會後整理成重點、決定、待辦，記在與會客人的時間軸上。">
+      {soon ? (
+        <NextThing
+          title={soon.title || "下一場會"}
+          detail={`${when(soon.start)} · ${PLATFORM[soon.platform]}${soon.attendees.length ? ` · ${soon.attendees.length} 人` : ""}。開始前機器人會自己進去記。`}
+          action={
+            soon.url ? (
+              <a href={soon.url} className="btn btn-primary" target="_blank" rel="noreferrer">
+                打開這場會
+              </a>
+            ) : undefined
+          }
+        />
+      ) : remembered?.party ? (
+        <NextThing
+          title={`${remembered.party} 的會已經記完`}
+          detail="摘要在下面。下一步是把決定寫進生意。"
+          action={
+            <a href="/workspace/erp/sales" className="btn btn-primary">
+              到生意
+            </a>
+          }
+        />
+      ) : null}
       <section className="space-y-2">
         <h2 className="text-sm font-medium">接下來的會</h2>
         {data.upcoming === null ? (
