@@ -23,18 +23,19 @@ export type ShopProfile = {
   modules: FeatureId[];
 };
 
+/** Ten beats for one job. Practice walks them one step at a time; the last step becomes a sale. */
 export const SCENES = [
-  { id: "retail", label: "賣東西", group: "零售", stages: ["進貨", "上架", "銷售", "回購"] },
-  { id: "food", label: "做餐飲", group: "餐飲", stages: ["訂位", "出餐", "結帳"] },
-  { id: "edu", label: "教課／教室", group: "教育", stages: ["預約", "上課", "續報"] },
-  { id: "care", label: "診所／美容", group: "健康美容", stages: ["預約", "服務", "回訪"] },
-  { id: "service", label: "接案／專業", group: "專業服務", stages: ["詢問", "交付", "請款"] },
-  { id: "make", label: "製造／加工", group: "製造", stages: ["接單", "生產", "出貨"] },
-  { id: "build", label: "工地／裝潢", group: "營建不動產", stages: ["估價", "施工", "請款"] },
-  { id: "move", label: "運送／倉儲", group: "運輸物流", stages: ["接單", "配送", "對帳"] },
-  { id: "stay", label: "住宿／活動", group: "旅宿活動", stages: ["預訂", "入住", "結帳"] },
-  { id: "farm", label: "產銷／農漁", group: "農林漁牧", stages: ["採收", "出貨", "對帳"] },
-  { id: "other", label: "其他現場", group: "公共與其他", stages: ["詢問", "答應", "收款"] },
+  { id: "retail", label: "賣東西", group: "零售", stages: ["客人進門", "問需求", "對庫存", "開報價", "客人答應", "開單", "撿貨", "結帳", "開發票", "約回購"] },
+  { id: "food", label: "做餐飲", group: "餐飲", stages: ["訂位", "客人到", "點餐", "出餐", "加點", "結帳", "開發票", "收桌", "問下次", "回訪"] },
+  { id: "edu", label: "教課／教室", group: "教育", stages: ["詢問", "約試聽", "試聽", "報名", "收學費", "排課", "上課", "點名", "課後回饋", "續報"] },
+  { id: "care", label: "診所／美容", group: "健康美容", stages: ["預約", "到店", "問診", "服務", "寫紀錄", "結帳", "約回診", "提醒", "回訪", "再約"] },
+  { id: "service", label: "接案／專業", group: "專業服務", stages: ["詢問", "聽需求", "估工時", "報價", "收訂金", "開工", "給草稿", "修改", "交付", "請尾款"] },
+  { id: "make", label: "製造／加工", group: "製造", stages: ["詢價", "看圖", "估料", "報價", "接單", "備料", "生產", "品檢", "出貨", "請款"] },
+  { id: "build", label: "工地／裝潢", group: "營建不動產", stages: ["看現場", "量尺寸", "估價", "收訂金", "備料", "施工", "驗收", "修改", "完工", "請尾款"] },
+  { id: "move", label: "運送／倉儲", group: "運輸物流", stages: ["問路線", "估運費", "接單", "派車", "取貨", "在途", "送達", "簽收", "對帳", "請款"] },
+  { id: "stay", label: "住宿／活動", group: "旅宿活動", stages: ["問日期", "報價", "收訂金", "留房", "入住", "加購", "退房", "結帳", "開發票", "邀再訪"] },
+  { id: "farm", label: "產銷／農漁", group: "農林漁牧", stages: ["問數量", "看產季", "報價", "接單", "採收", "分級", "包裝", "出貨", "對帳", "請款"] },
+  { id: "other", label: "其他現場", group: "公共與其他", stages: ["詢問", "聽完", "定範圍", "報價", "答應", "開工", "做到一半", "交付", "請款", "收款"] },
 ] as const;
 
 export const FEATURES: { id: FeatureId; label: string; hint: string }[] = [

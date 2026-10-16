@@ -35,13 +35,14 @@ export async function currentIndustry(): Promise<IndustryPack> {
 export function demoRecords(pack: IndustryPack) {
   const stages = pack.workflow.stages;
   const people = practiceCast(pack.id);
+  const at = (index: number) => stages[Math.min(index, Math.max(stages.length - 2, 0))] ?? stages[0];
   const leads = [
-    { name: people[0], stage: stages[0], score: 12, channel: "現場" },
-    { name: people[1], stage: stages[1] ?? stages[0], score: 38, channel: "IG" },
-    { name: people[2], stage: stages[Math.min(2, stages.length - 1)], score: 71, channel: "LINE" },
+    { name: people[0], stage: at(0), score: 12, channel: "現場" },
+    { name: people[1], stage: at(2), score: 38, channel: "IG" },
+    { name: people[2], stage: at(4), score: 71, channel: "LINE" },
   ];
   if (stages.length > 3) {
-    leads.push({ name: people[3], stage: stages[stages.length - 1], score: 88, channel: "官網" });
+    leads.push({ name: people[3], stage: at(6), score: 88, channel: "官網" });
   }
   const orders = [
     { no: "SO-10421", party: leads[leads.length - 1]?.name ?? people[0], item: pack.itemType, status: pack.fulfillment, amount: "NT$28,600" },

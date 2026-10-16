@@ -118,6 +118,42 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
           help="module-crm"
         />
       ) : null}
+      {!live && stages.length > 5 ? (
+        <ol className="grid gap-2 sm:grid-cols-2" aria-label="這十步">
+          {stages.map((stage, index) => {
+            const cards = leads.filter((lead) => lead.stage === stage);
+            const current = focus?.stage === stage;
+            return (
+              <li key={stage} className="glass-chip p-3">
+                <p className="text-xs text-cream-dim">
+                  {index + 1} / {stages.length}
+                  {current ? " · 現在" : ""}
+                </p>
+                <p className="font-medium">{stage}</p>
+                {cards.length ? (
+                  <ul className="mt-2 space-y-2">
+                    {cards.map((lead) => {
+                      const at = stages.indexOf(lead.stage);
+                      const last = at >= stages.length - 1;
+                      return (
+                        <li key={lead.name}>
+                          <p className="text-sm">{lead.name}</p>
+                          <p className="text-xs text-cream-dim">{lead.channel}</p>
+                          <button type="button" onClick={() => onNext(lead)} className={buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" })}>
+                            {last ? "轉成一筆生意" : `下一步：${stages[at + 1]}`}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-xs text-cream-dim">還沒到這一步</p>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {columns.map((column) => (
           <section key={column.stage} className="glass-well p-3">
@@ -158,6 +194,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
           </section>
         ))}
       </div>
+      )}
     </div>
   );
 }
