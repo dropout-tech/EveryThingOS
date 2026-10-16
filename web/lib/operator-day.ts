@@ -20,10 +20,10 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
   if (/留言|私訊|回覆|貼文|社群|IG/.test(t)) {
     return { href: "/workspace/chat", hint: "留言轉成對話" };
   }
-  if (/請款|結帳|收款|發票|對帳|訂金|尾款|帳單|押金|報關|沖帳|續約|續報/.test(t)) {
+  if (/請款|結帳|收款|發票|對帳|訂金|尾款|學費|帳單|押金|報關|沖帳|續約|續報/.test(t)) {
     return { href: "/workspace/erp/finance", hint: "收到錢才算完" };
   }
-  if (/進貨|進豆|備料|上架|盤點|庫存|生產|訂貨|效期|BOM|打樣|加工|烘焙|進書|陳列|報廢|分級/.test(t)) {
+  if (/進貨|進豆|備料|估料|上架|盤點|庫存|對庫存|撿貨|生產|訂貨|效期|BOM|打樣|加工|烘焙|進書|陳列|報廢|分級|包裝|採收/.test(t)) {
     return pack.modules.erp.inventory
       ? { href: "/workspace/erp/stock", hint: "貨夠不夠" }
       : { href: "/workspace/erp/purchase", hint: "跟廠商要" };

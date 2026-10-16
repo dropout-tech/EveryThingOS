@@ -25,7 +25,7 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
   return (
     <ModuleFrame
       kicker="客人"
-      title="往右，跟到答應"
+      title="一步一步跟到答應"
     >
       <Hint id="crm" help="module-crm" />
       <CrmBoard

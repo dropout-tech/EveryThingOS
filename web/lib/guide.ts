@@ -181,7 +181,7 @@ export function roleFor(profile: string | undefined | null, roles: string[] | nu
 export const HINTS = {
   today: { title: "從最上面那件開始", body: "「今天」只放卡住的事，最急的排第一。生意、客人、倉庫、收錢也是最上面一件。" },
   sales: { title: "一張單一個按鈕", body: "最上面是現在這件，逾期的先做。下面每張卡片還是只有下一步。" },
-  crm: { title: "往右，跟到答應", body: "最上面是跟得最遠的那位。下面每一欄仍是階段，同一個 Email 或電話不會重複建。" },
+  crm: { title: "一步一步跟到答應", body: "最上面是跟得最遠的那位。這個現場有十步，一次只做下一步。最後一步才轉成一筆生意。" },
   finance: { title: "先看橘色", body: "最上面是逾期最久的那位。帳齡超過 60 天才算逾期；電子發票開好後交給加值中心上傳。" },
   team: { title: "職務決定看得到什麼", body: "換職務立刻生效；停用的人馬上登出。公司至少要留一位老闆。" },
   letter: { title: "只寄給說好的人", body: "最上面是還沒寄出的草稿；沒有草稿，就是還沒點確認信的人。退訂一次，所有行銷通道一起關。" },
