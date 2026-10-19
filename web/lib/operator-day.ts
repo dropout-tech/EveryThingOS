@@ -1,4 +1,4 @@
-import { beatByStep } from "./tw-real";
+import { beatByStep } from "./tw-real/index";
 import type { IndustryPack } from "./types";
 
 export type DayStep = {

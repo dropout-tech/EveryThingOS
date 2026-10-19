@@ -45,7 +45,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
 | 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
 | 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）**、**fleet（一次很多家、續約、暫停）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
-| CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑 |
+| CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑。殼的 `npm test` 鎖住十一個現場的十步（`web/lib/tw-real/scenes.test.ts`），不靠瀏覽器點過就算數 |
 | 人事薪資：請假、核准、打卡、薪資（勞健保、勞退、扣繳費率可改） | `frappe-apps/dropout_hr_tw`、`web/app/workspace/hr` | 用 Frappe HRMS v15；費率每年要對勞保局、健保署公告（[docs/HR.md](docs/HR.md)） |
 | 老闆報表：營收、毛利、帳齡、前十大客人、成交漏斗、缺貨；手機可安裝（PWA） | `web/app/workspace/reports`、`dropout_core/reports.py` | 數字直接用 ERPNext 原生報表（[docs/REPORTS.md](docs/REPORTS.md)） |
 | 年費自動帳單：到期前 60 天開帳單、綠界線上付款、付款即續約、開電子發票；客戶健康度 | `glue/src/billing.ts`、`glue/src/health.ts`、`/platform` | 要設綠界金鑰並跑測試環境（[docs/BILLING.md](docs/BILLING.md)） |

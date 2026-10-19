@@ -11,7 +11,7 @@ import {
   retailScript,
   serviceScript,
   stayScript,
-} from "./tw-real";
+} from "./tw-real/index";
 import type { IndustryPack } from "./types";
 
 export const SHOP_COOKIE = "dropout_shop";
