@@ -1,3 +1,4 @@
+import { beatByStep } from "./tw-real";
 import type { IndustryPack } from "./types";
 
 export type DayStep = {
@@ -16,6 +17,8 @@ export type DayJob = {
 type StageTarget = { href: string; hint: string };
 
 function classifyStage(stage: string, pack: IndustryPack): StageTarget {
+  const beat = beatByStep(pack.workflow.id, stage);
+  if (beat) return { href: beat.href, hint: beat.detail };
   const t = stage;
   if (/留言|私訊|回覆|貼文|社群|IG/.test(t)) {
     return { href: "/workspace/chat", hint: "留言轉成對話" };
@@ -87,13 +90,14 @@ export function industryTodayJobs(
   const stages = pack.workflow.stages;
   const waiting = stages[0] ?? "今天";
   const nextStage = stages[1] ?? waiting;
+  const nextBeat = beatByStep(pack.workflow.id, nextStage);
   const follow = path.find((step) => step.href !== "/workspace/crm");
 
   const home = pack.modules.crm ? "/workspace/crm" : (path[0]?.href ?? "/workspace/erp/finance");
   const jobs: DayJob[] = [
     {
       title: `${money.person} 還停在「${waiting}」`,
-      detail: `下一步是「${nextStage}」。`,
+      detail: nextBeat?.detail ?? `下一步是「${nextStage}」。`,
       href: home,
       tone: "urgent",
     },

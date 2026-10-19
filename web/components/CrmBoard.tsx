@@ -11,6 +11,7 @@ import { buttonClass } from "./ui/Button";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
 import { nextLead } from "@/lib/next-thing";
+import { beatByStep } from "@/lib/tw-real";
 import type { IndustryPack } from "@/lib/types";
 
 type Lead = { name: string; stage: string; score: number; channel: string; href?: string };
@@ -76,6 +77,8 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
   const stageIndex = focus ? stages.indexOf(focus.stage) : -1;
   const lastFocus = focus != null && stageIndex >= stages.length - 1;
   const shownStage = (stage: string) => (live ? stageLabel(stage) : stage);
+  const here = !live && focus ? beatByStep(pack.workflow.id, focus.stage) : undefined;
+  const nextName = focus && !lastFocus ? shownStage(stages[stageIndex + 1]) : "";
   const columns = stages.map((stage) => ({
     stage,
     cards: leads.filter((lead) => lead.stage === stage),
@@ -92,8 +95,10 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
             live
               ? `跟到「${shownStage(focus.stage)}」。報價從這個人開，不必再建一次。`
               : lastFocus
-                ? "已經跟到最後一格。轉成一筆生意後，同一個人進報價，不必重建。"
-                : `還在「${shownStage(focus.stage)}」。下一步是「${shownStage(stages[stageIndex + 1])}」。`
+                ? `${here?.detail ?? "已經跟到最後一步。"}轉成一筆生意後，同一個人進報價。`
+                : here
+                  ? `${here.detail}下一步是「${nextName}」。`
+                  : `還在「${shownStage(focus.stage)}」。下一步是「${nextName}」。`
           }
           action={
             live ? (
@@ -123,6 +128,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
           {stages.map((stage, index) => {
             const cards = leads.filter((lead) => lead.stage === stage);
             const current = focus?.stage === stage;
+            const beat = beatByStep(pack.workflow.id, stage);
             return (
               <li key={stage} className="glass-chip p-3">
                 <p className="text-xs text-cream-dim">
@@ -130,6 +136,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
                   {current ? " · 現在" : ""}
                 </p>
                 <p className="font-medium">{stage}</p>
+                {beat ? <p className="mt-1 text-xs text-cream-dim">{beat.detail}</p> : null}
                 {cards.length ? (
                   <ul className="mt-2 space-y-2">
                     {cards.map((lead) => {
