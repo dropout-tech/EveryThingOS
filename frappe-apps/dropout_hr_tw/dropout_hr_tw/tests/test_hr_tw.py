@@ -1,8 +1,11 @@
+from decimal import Decimal
+
 import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, add_months, get_first_day, getdate, nowdate
 
 from dropout_hr_tw import install, payroll, shell
+from dropout_hr_tw.payroll_calc import money_for_days
 
 HOLIDAYS = "DO HR TW 測試假日"
 STRUCTURE = "DO HR TW 測試薪資"
@@ -113,6 +116,11 @@ class TestSetup(FrappeTestCase):
 		self.assertEqual(frappe.db.get_value("Leave Type", "事假", "is_lwp"), 1)
 		self.assertEqual(frappe.db.get_value("Leave Type", "病假", "fraction_of_daily_salary_per_leave"), 0.5)
 		self.assertTrue(frappe.db.exists("Salary Structure", {"company": company(), "name": ("like", f"{install.STRUCTURE}%")}))
+		template = frappe.db.get_value("Salary Structure", {"company": company(), "name": ("like", f"{install.STRUCTURE}%")})
+		self.assertEqual(frappe.db.count("Salary Detail", {"parent": template, "salary_component": "獎金"}), 1)
+		self.assertEqual(frappe.db.get_value("Salary Component", "所得稅扣繳", "formula"), install.TAX_FORMULA)
+		install.ensure_setup()
+		self.assertEqual(frappe.db.count("Salary Detail", {"parent": template, "salary_component": "獎金"}), 1)
 		roles = set(frappe.get_all("Has Role", filters={"parenttype": "Role Profile", "parent": "人資"}, pluck="role"))
 		self.assertTrue({"HR Manager", "HR User", "Leave Approver", "Employee"} <= roles)
 
@@ -120,6 +128,28 @@ class TestSetup(FrappeTestCase):
 		set_rates(health_rate=5.5)
 		install.seed_settings()
 		self.assertEqual(frappe.db.get_single_value(payroll.SETTINGS, "health_rate"), 5.5)
+
+	def test_tax_formula_upgrades_only_our_previous_text(self):
+		install.ensure_setup()
+		name = "所得稅扣繳"
+		original = frappe.db.get_value("Salary Component", name, "formula")
+		details = frappe.get_all("Salary Detail", filters={"salary_component": name}, fields=["name", "formula"])
+		try:
+			frappe.db.set_value("Salary Component", name, "formula", install.PREVIOUS_TAX_FORMULAS[0])
+			install.upgrade_formulas()
+			self.assertEqual(frappe.db.get_value("Salary Component", name, "formula"), install.TAX_FORMULA)
+			frappe.db.set_value("Salary Component", name, "formula", "TW_BASE")
+			install.upgrade_formulas()
+			self.assertEqual(frappe.db.get_value("Salary Component", name, "formula"), "TW_BASE")
+		finally:
+			frappe.db.set_value("Salary Component", name, "formula", original)
+			for row in details:
+				frappe.db.set_value("Salary Detail", row.name, "formula", row.formula)
+
+	def test_account_pair_must_be_complete(self):
+		account = frappe.get_all("Account", filters={"company": company(), "is_group": 0}, limit=1)[0].name
+		self.assertRaises(frappe.ValidationError, set_rates, li_expense_account=account)
+		frappe.clear_document_cache(payroll.SETTINGS, payroll.SETTINGS)
 
 	def test_verified_is_cleared_when_rates_change(self):
 		set_rates(verified=1)
@@ -136,6 +166,7 @@ class TestPayroll(FrappeTestCase):
 			labor_ordinary_rate=11.5, employment_insurance_rate=1, labor_employee_share=20, labor_employer_share=70,
 			health_rate=5.17, health_employee_share=30, health_max_dependents=3, pension_employer_rate=6, pension_voluntary_max=6,
 			income_tax_rate=5, income_tax_threshold=0, meal_allowance_cap=3000,
+			occupational_accident_rate=0, commute_accident_rate=0, supplementary_premium_rate=0,
 		)
 
 	def test_grade_lookup(self):
@@ -171,6 +202,54 @@ class TestPayroll(FrappeTestCase):
 		doc = slip(emp)
 		self.assertEqual(doc.tw_li_salary, 45800)
 		self.assertEqual(amount(doc, "TW_LI"), payroll.half_up(45800 * 0.115 * 0.2))
+
+	def test_mid_month_join_prorates_labor_not_health(self):
+		start = get_first_day(nowdate())
+		emp = make_employee("月中到職", date_of_joining=add_days(start, 15))
+		assign(emp, 40000)
+		doc = slip(emp)
+		self.assertEqual(doc.tw_insured_days, 15)
+		self.assertEqual(amount(doc, "TW_LI"), money_for_days(40100, Decimal("0.025"), 15))
+		self.assertEqual(amount(doc, "TW_PEN"), 0)
+		self.assertEqual(amount(doc, "TW_HI"), payroll.half_up(40100 * 0.0517 * 0.3))
+		self.assertEqual(doc.tw_hi_persons, 1)
+
+	def test_mid_month_leave_drops_health(self):
+		start = get_first_day(nowdate())
+		emp = make_employee("月中離職", date_of_joining=add_months(start, -8))
+		frappe.db.set_value("Employee", emp, "relieving_date", add_days(start, 9))
+		frappe.clear_document_cache("Employee", emp)
+		assign(emp, 40000)
+		doc = slip(emp)
+		self.assertEqual(doc.tw_insured_days, 10)
+		self.assertEqual(amount(doc, "TW_LI"), money_for_days(40100, Decimal("0.025"), 10))
+		self.assertEqual(amount(doc, "TW_HI"), 0)
+		self.assertEqual(doc.tw_employer_hi, 0)
+
+	def test_occupational_and_bonus_supplement(self):
+		set_rates(occupational_accident_rate=0.2, commute_accident_rate=0.04, supplementary_premium_rate=2.11, income_tax_rate=5, income_tax_threshold=0)
+		emp = make_employee("獎金測試", tw_hi_insured_salary=30300, tw_li_insured_salary=30300)
+		assign(emp, 30300)
+		start = get_first_day(nowdate())
+		frappe.get_doc(
+			{
+				"doctype": "Additional Salary",
+				"naming_series": "HR-ADS-.YY.-.MM.-",
+				"employee": emp,
+				"company": company(),
+				"salary_component": "獎金",
+				"amount": 200000,
+				"payroll_date": start,
+				"currency": frappe.get_cached_value("Company", company(), "default_currency") or "TWD",
+			}
+		).submit()
+		doc = slip(emp)
+		self.assertEqual(doc.tw_employer_oc, money_for_days(30300, Decimal("0.0024"), 30))
+		self.assertEqual(doc.tw_bonus_amount, 200000)
+		self.assertEqual(amount(doc, "TW_BONUS"), 200000)
+		self.assertEqual(doc.tw_supplement_base, 78800)
+		self.assertEqual(amount(doc, "TW_NHI2"), 1663)
+		self.assertEqual(amount(doc, "TW_TAX"), 10000)
 
 
 class TestShell(FrappeTestCase):
