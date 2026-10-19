@@ -1,5 +1,6 @@
-import { EmptyState } from "@/components/EmptyState";
 import { ModuleFrame } from "@/components/ModuleFrame";
+import { ManychatBoard } from "@/components/open-chat/ManychatBoard";
+import { OpenChatDesk } from "@/components/open-chat/OpenChatDesk";
 import { NextThing } from "@/components/NextThing";
 import { ReplyBoard } from "@/components/ReplyBoard";
 import { Badge } from "@/components/ui/Badge";
@@ -26,7 +27,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
       {connected ? (
         <NextThing
           title="訊息在收件匣"
-          detail="LINE、IG、FB、官網的對話在同一個收件匣。去那裡回，來問的人會記在客人的時間軸上。"
+          detail="LINE、IG、FB、官網的對話在同一個收件匣。去那裡回，來問的人會記在客人的時間軸上。誰在等，以收件匣為準。"
           action={
             <a href="/api/chat/open" className="btn btn-primary">
               去收件匣回訊息
@@ -34,11 +35,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
           }
         />
       ) : (
-        <EmptyState
-          title="收件匣還沒接上"
-          detail="接上之後，LINE 官方帳號、IG、FB 粉專與官網對話都進同一個收件匣，來問的人自動變成客人。導入顧問會用導入工具幫你開好。"
-          action={{ href: "/help/module-chat", label: "看要準備什麼" }}
-        />
+        <OpenChatDesk />
       )}
       {note ? (
         <p className="glass-chip px-4 py-2 text-sm" role="status">
@@ -50,7 +47,8 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
           留言自動轉私訊 <Badge tone="demo" />
         </h2>
         <p className="text-xs text-cream-dim">這裡按送出不會傳到 Instagram；規則在導入時設在對話系統。</p>
-        <ReplyBoard quiet={connected} pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
+        <ManychatBoard />
+        <ReplyBoard quiet pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
       </div>
     </ModuleFrame>
   );

@@ -1,0 +1,62 @@
+import type { OpenThread } from "./types";
+
+export const OPEN_THREADS: OpenThread[] = [
+  {
+    id: "line-anan",
+    name: "林安安",
+    handle: "U-line-anan",
+    channel: "line",
+    preview: "這件還有貨嗎",
+    waitedMinutes: 95,
+    stage: "客人在問",
+    bought: "還沒買",
+    owed: "沒有帳",
+    email: "anan@example.com",
+    phone: "0912-000-118",
+  },
+  {
+    id: "ig-guan",
+    name: "陳冠宇",
+    handle: "@guan.yu",
+    channel: "ig",
+    preview: "價格",
+    waitedMinutes: 40,
+    stage: "客人在問",
+    bought: "還沒買",
+    owed: "沒有帳",
+  },
+  {
+    id: "fb-mei",
+    name: "王美玲",
+    handle: "@mei.ling",
+    channel: "fb",
+    preview: "明天可以取嗎",
+    waitedMinutes: 15,
+    stage: "客人在問",
+    bought: "還沒買",
+    owed: "沒有帳",
+  },
+  {
+    id: "web-zhi",
+    name: "黃志明",
+    handle: "web form",
+    channel: "web",
+    preview: "想看報價",
+    waitedMinutes: 6,
+    stage: "客人在問",
+    bought: "還沒買",
+    owed: "沒有帳",
+  },
+];
+
+export function nextThread(threads: OpenThread[]): OpenThread | null {
+  let oldest: OpenThread | null = null;
+  for (const thread of threads) {
+    if (!oldest || thread.waitedMinutes > oldest.waitedMinutes) oldest = thread;
+  }
+  return oldest;
+}
+
+export function sortThreads(threads: OpenThread[]): OpenThread[] {
+  return [...threads].sort((a, b) => b.waitedMinutes - a.waitedMinutes);
+}
