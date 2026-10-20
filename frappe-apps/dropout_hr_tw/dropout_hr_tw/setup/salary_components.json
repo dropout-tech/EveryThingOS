@@ -33,7 +33,7 @@
   "is_tax_applicable": 0,
   "round_to_the_nearest_integer": 1,
   "remove_if_zero_valued": 1,
-  "description": "用「額外薪資（Additional Salary）」逐月登打。系統不從打卡自動算時數；每月 46 小時內免稅，超過的要另外併入薪資。"
+  "description": "用額外薪資逐月登打，不從打卡自動算。平日延長與休息日在勞基法第32條限度內（每月46小時；經工會或勞資會議同意可每月54小時、每三個月138小時）且金額符合第24條者免稅。國定假日、例假、特別休假8小時內另計、不併入。超過的併入薪資。"
  },
  {
   "doctype": "Salary Component",

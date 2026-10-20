@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
@@ -258,6 +259,16 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
           ) : null}
         </section>
       ) : null}
+
+      <section className="glass space-y-2 p-5 text-sm">
+        <h2 className="font-medium">請假與加班的法定基準</h2>
+        <p className="text-cream-dim">
+          婚假 14 日、特休依年資、平日加班前兩小時是時薪的 4/3。加班費不從打卡自動算。勞健保費率每年仍要對公告，空白的項目不扣。
+        </p>
+        <Link href="/help/module-hr" className="text-xs text-cream-dim underline underline-offset-2 hover:text-cream">
+          看請假天數、加班倍數和免稅時數
+        </Link>
+      </section>
     </div>
   );
 }

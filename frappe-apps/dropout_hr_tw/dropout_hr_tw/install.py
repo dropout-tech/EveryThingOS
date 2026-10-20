@@ -9,6 +9,8 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.utils import getdate
 
+from dropout_hr_tw import labor_rules
+
 SETTINGS = "Taiwan Payroll Settings"
 STRUCTURE = "台灣月薪範本"
 
@@ -96,6 +98,9 @@ PREVIOUS_TAX_FORMULAS = (
 )
 TAX_FORMULA = "(floor(TW_BASE * tw_tax_rate + 0.5) if tw_tax_threshold and TW_BASE >= tw_tax_threshold else 0) + (floor(tw_bonus_amount * tw_tax_rate + 0.5) if tw_bonus_amount else 0)"
 TAX_DESCRIPTION = "本薪達到每月起扣金額時按扣繳率扣。獎金另按給付額乘扣繳率，不看起扣金額。加班費與伙食津貼免稅額度不在這裡扣。"
+PREVIOUS_OT_DESCRIPTIONS = (
+	"用「額外薪資（Additional Salary）」逐月登打。系統不從打卡自動算時數；每月 46 小時內免稅，超過的要另外併入薪資。",
+)
 
 
 def _load(name):
@@ -133,6 +138,7 @@ def ensure_setup():
 	ensure_hr_profile()
 	created["salary_structures"] = ensure_structures()
 	upgrade_formulas()
+	created["upgraded"] = upgrade_shipped_text()
 	return created
 
 
@@ -195,6 +201,27 @@ def upgrade_formulas():
 		if not frappe.db.exists("Salary Detail", {"parent": row.parent, "parenttype": "Salary Structure", "salary_component": "獎金"}):
 			continue
 		frappe.db.set_value("Salary Detail", row.name, "formula", TAX_FORMULA)
+
+
+def upgrade_shipped_text():
+	"""舊的法定文字才改。公司改過天數或說明就留著。"""
+	changed = []
+	if frappe.db.exists("Leave Type", "婚假"):
+		current = {
+			"max_leaves_allowed": frappe.db.get_value("Leave Type", "婚假", "max_leaves_allowed"),
+			"description": frappe.db.get_value("Leave Type", "婚假", "description"),
+		}
+		update = labor_rules.leave_field_upgrade("婚假", current)
+		if update:
+			frappe.db.set_value("Leave Type", "婚假", update)
+			changed.append("婚假")
+	if frappe.db.exists("Salary Component", "加班費"):
+		current = frappe.db.get_value("Salary Component", "加班費", "description")
+		if current in PREVIOUS_OT_DESCRIPTIONS:
+			replacement = next(row["description"] for row in _load("salary_components.json") if row["salary_component"] == "加班費")
+			frappe.db.set_value("Salary Component", "加班費", "description", replacement)
+			changed.append("加班費")
+	return changed
 
 
 def _structure_row(component):

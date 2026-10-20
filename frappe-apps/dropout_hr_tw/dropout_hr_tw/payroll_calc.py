@@ -132,6 +132,20 @@ def supplement_premium(ytd_before, this_bonus, insured_salary, rate):
 	return int(base), half_up(base * rate)
 
 
+def employer_supplement(salary_total, insured_total, rate) -> int:
+	"""投保單位的補充保險費。全民健康保險法第34條，費率用第33條的公告比率。
+
+	費基是當月薪資所得總額減受僱者當月投保金額總額。薪資所得總額依施行細則第55條，
+	是所得稅法第14條第1項第3類（所得格式代號 50）。差額不大於 0、或費率空白，就回傳 0。
+	費率不寫死：呼叫端要把核對過的公告比率傳進來。角以下四捨五入一次（施行細則第52條）。
+	"""
+	base = _dec(salary_total) - _dec(insured_total)
+	rate = _dec(rate)
+	if base <= 0 or rate <= 0:
+		return 0
+	return half_up(base * rate)
+
+
 def employer_journal_rows(amounts, accounts):
 	"""雇主負擔的借貸。金額是 0，或兩邊科目都空白，就略過。
 

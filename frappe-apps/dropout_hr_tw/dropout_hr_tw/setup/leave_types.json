@@ -30,9 +30,9 @@
   "doctype": "Leave Type",
   "leave_type_name": "婚假",
   "is_lwp": 0,
-  "max_leaves_allowed": 8,
+  "max_leaves_allowed": 14,
   "include_holiday": 0,
-  "description": "勞工請假規則第2條。8 日，工資照給。"
+  "description": "勞工請假規則第2條，115年10月1日起14日，工資照給。自結婚登記日前10日起3個月內請畢，雇主同意得延到1年。到職前已登記者不適用。第9至14日的工資可向勞動部申請補助，這裡不產生申請檔。"
  },
  {
   "doctype": "Leave Type",
@@ -75,5 +75,27 @@
   "max_leaves_allowed": 7,
   "include_holiday": 0,
   "description": "性別平等工作法第20條。一年 7 日，併入事假，不給工資。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "產檢假",
+  "is_lwp": 0,
+  "max_leaves_allowed": 7,
+  "include_holiday": 0,
+  "description": "性別平等工作法第15條。妊娠期間 7 日，工資照給。第 6、7 日的工資可向勞保局申請補助，這裡不產生申請檔。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "公假",
+  "is_lwp": 0,
+  "include_holiday": 0,
+  "description": "勞工請假規則第8條。依法令應給的公假，工資照給，日數依實際需要。"
+ },
+ {
+  "doctype": "Leave Type",
+  "leave_type_name": "公傷病假",
+  "is_lwp": 0,
+  "include_holiday": 0,
+  "description": "勞工請假規則第6條、勞動基準法第59條。職業災害醫療期間不能工作，雇主補償原領工資；勞保已付的部分可以抵充。這裡不自動扣抵。"
  }
 ]

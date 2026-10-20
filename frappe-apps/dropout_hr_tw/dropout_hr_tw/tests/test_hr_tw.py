@@ -111,8 +111,9 @@ class TestSetup(FrappeTestCase):
 		self.assertEqual(again["salary_components"], [])
 		self.assertEqual(frappe.db.get_value("Leave Type", "事假", "max_leaves_allowed"), 10)
 		self.assertEqual(frappe.db.get_value("Salary Component", "伙食津貼", "formula"), "2400")
-		for name in ("特休", "病假", "事假", "婚假", "喪假", "產假", "陪產假", "生理假", "家庭照顧假"):
+		for name in ("特休", "病假", "事假", "婚假", "喪假", "產假", "陪產假", "生理假", "家庭照顧假", "產檢假", "公假", "公傷病假"):
 			self.assertTrue(frappe.db.exists("Leave Type", name), name)
+		self.assertEqual(frappe.db.get_value("Leave Type", "婚假", "max_leaves_allowed"), 14)
 		self.assertEqual(frappe.db.get_value("Leave Type", "事假", "is_lwp"), 1)
 		self.assertEqual(frappe.db.get_value("Leave Type", "病假", "fraction_of_daily_salary_per_leave"), 0.5)
 		self.assertTrue(frappe.db.exists("Salary Structure", {"company": company(), "name": ("like", f"{install.STRUCTURE}%")}))
