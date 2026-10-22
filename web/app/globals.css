@@ -6,7 +6,7 @@ html[data-theme="black"] {
   --ink: #07080c;
   --ink-2: rgba(18, 20, 28, 0.42);
   --cream: #f7f8fc;
-  --cream-dim: rgba(247, 248, 252, 0.72);
+  --cream-dim: rgba(247, 248, 252, 0.9);
   --teal: #ffffff;
   --teal-deep: #e8e8ee;
   --gold: #d8d8e0;
@@ -14,8 +14,8 @@ html[data-theme="black"] {
   --navy: #12141c;
   --line: rgba(255, 255, 255, 0.28);
   --grid: rgba(255, 255, 255, 0.04);
-  --glass-fill: rgba(255, 255, 255, 0.05);
-  --glass-fill-strong: rgba(255, 255, 255, 0.16);
+  --glass-fill: rgba(8, 14, 22, 0.58);
+  --glass-fill-strong: rgba(8, 12, 20, 0.86);
   --glass-stroke: rgba(255, 255, 255, 0.55);
   --glass-highlight: rgba(255, 255, 255, 0.9);
   --glass-depth: rgba(0, 0, 0, 0.2);
@@ -25,9 +25,9 @@ html[data-theme="black"] {
   --glass-sheet: rgba(12, 16, 24, 0.22);
   --scene-veil: linear-gradient(
     180deg,
-    rgba(6, 10, 16, 0.08) 0%,
-    rgba(6, 10, 16, 0.0) 42%,
-    rgba(4, 12, 22, 0.16) 100%
+    rgba(6, 10, 16, 0.34) 0%,
+    rgba(6, 10, 16, 0.22) 42%,
+    rgba(4, 12, 22, 0.42) 100%
   );
   --scene-image: url("/scenes/ocean-column.jpg");
   --ocean-y: 0%;
@@ -47,11 +47,11 @@ html[data-theme="black"] {
   --field-bg: rgba(6, 10, 16, 0.6);
   --field-border: rgba(255, 255, 255, 0.34);
   --surface-scrim: rgba(7, 11, 18, 0.72);
-  --os-veil: linear-gradient(180deg, rgba(5, 9, 15, 0.42) 0%, rgba(5, 9, 15, 0.24) 46%, rgba(4, 10, 18, 0.48) 100%);
-  --os-glass-fill: rgba(10, 16, 26, 0.46);
-  --os-cream-dim: rgba(247, 248, 252, 0.82);
-  --os-well: rgba(8, 14, 24, 0.18);
-  --os-chip: rgba(255, 255, 255, 0.08);
+  --os-veil: linear-gradient(180deg, rgba(5, 9, 15, 0.58) 0%, rgba(5, 9, 15, 0.4) 46%, rgba(4, 10, 18, 0.64) 100%);
+  --os-glass-fill: rgba(8, 14, 24, 0.74);
+  --os-cream-dim: rgba(247, 248, 252, 0.94);
+  --os-well: rgba(6, 12, 20, 0.62);
+  --os-chip: rgba(6, 12, 20, 0.72);
   --control-fill: rgba(255, 255, 255, 0.1);
   --control-fill-hover: rgba(255, 255, 255, 0.18);
   --glass-1: rgba(255, 255, 255, 0.06);
@@ -88,7 +88,7 @@ html[data-theme="white"] {
   --ink: #eef1f6;
   --ink-2: rgba(255, 255, 255, 0.38);
   --cream: #111318;
-  --cream-dim: rgba(17, 19, 24, 0.64);
+  --cream-dim: rgba(17, 19, 24, 0.82);
   --teal: #111318;
   --teal-deep: #2a2d34;
   --gold: #3a3d45;
@@ -96,25 +96,25 @@ html[data-theme="white"] {
   --navy: #e6e9f0;
   --line: rgba(255, 255, 255, 0.62);
   --grid: rgba(17, 19, 24, 0.04);
-  --glass-fill: rgba(255, 255, 255, 0.16);
-  --glass-fill-strong: rgba(255, 255, 255, 0.34);
+  --glass-fill: rgba(248, 250, 252, 0.78);
+  --glass-fill-strong: rgba(255, 255, 255, 0.92);
   --glass-stroke: rgba(255, 255, 255, 0.86);
   --glass-highlight: rgba(255, 255, 255, 0.95);
   --glass-depth: rgba(20, 40, 64, 0.08);
   --glass-shadow: rgba(20, 32, 48, 0.16);
   --orb-a: rgba(255, 255, 255, 0.55);
   --orb-b: rgba(180, 210, 255, 0.28);
-  --glass-sheet: rgba(255, 255, 255, 0.48);
+  --glass-sheet: rgba(255, 255, 255, 0.82);
   --scene-veil: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.02) 42%,
-    rgba(238, 241, 246, 0.18) 100%
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.22) 42%,
+    rgba(238, 241, 246, 0.48) 100%
   );
   --glass-blur: 32px;
   --type-shadow: 0 1px 2px rgba(255, 255, 255, 0.45), 0 12px 32px rgba(255, 255, 255, 0.22);
 
-  --cream-dim: rgba(17, 19, 24, 0.72);
+  --cream-dim: rgba(17, 19, 24, 0.86);
   --ok: #0b6b44;
   --warn: #8a4600;
   --danger: #b42318;
@@ -122,16 +122,16 @@ html[data-theme="white"] {
   --on-primary: #ffffff;
   --primary-fill: #111318;
   --primary-fill-hover: #2a2d34;
-  --field-bg: rgba(255, 255, 255, 0.78);
+  --field-bg: rgba(255, 255, 255, 0.92);
   --field-border: rgba(17, 19, 24, 0.26);
   --surface-scrim: rgba(246, 248, 251, 0.82);
-  --os-veil: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 46%, rgba(236, 242, 247, 0.34) 100%);
-  --os-glass-fill: rgba(255, 255, 255, 0.36);
-  --os-cream-dim: rgba(17, 19, 24, 0.74);
-  --os-well: rgba(255, 255, 255, 0.22);
-  --os-chip: rgba(255, 255, 255, 0.4);
-  --control-fill: rgba(255, 255, 255, 0.38);
-  --control-fill-hover: rgba(255, 255, 255, 0.62);
+  --os-veil: linear-gradient(180deg, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0.38) 46%, rgba(236, 242, 247, 0.7) 100%);
+  --os-glass-fill: rgba(248, 250, 252, 0.84);
+  --os-cream-dim: rgba(17, 19, 24, 0.88);
+  --os-well: rgba(255, 255, 255, 0.78);
+  --os-chip: rgba(255, 255, 255, 0.88);
+  --control-fill: rgba(255, 255, 255, 0.78);
+  --control-fill-hover: rgba(255, 255, 255, 0.92);
   --glass-1: rgba(255, 255, 255, 0.3);
   --glass-2: rgba(255, 255, 255, 0.45);
   --glass-3: rgba(255, 255, 255, 0.62);
@@ -230,7 +230,7 @@ body {
   border-radius: inherit;
   pointer-events: none;
   z-index: 0;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(8, 16, 28, 0.72);
   backdrop-filter: blur(var(--glass-blur)) saturate(180%);
 }
 
@@ -239,20 +239,11 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background:
-    radial-gradient(
-      520px circle at var(--glass-px) var(--glass-py),
-      rgba(255, 255, 255, 0.46),
-      transparent 44%
-    ),
-    linear-gradient(
-      155deg,
-      rgba(255, 255, 255, 0.34) 0%,
-      rgba(255, 255, 255, 0.05) 34%,
-      transparent 58%
-    );
-  mix-blend-mode: screen;
-  opacity: 0.9;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 14%);
+  mix-blend-mode: soft-light;
+  opacity: 0.8;
+  -webkit-mask-image: linear-gradient(#000 0%, #000 8%, transparent 18%);
+  mask-image: linear-gradient(#000 0%, #000 8%, transparent 18%);
 }
 
 .lens-body {
@@ -261,11 +252,12 @@ body {
 }
 
 html[data-theme="white"] .lens-film {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(248, 250, 252, 0.8);
 }
 
 html[data-theme="white"] .lens-film::after {
-  mix-blend-mode: overlay;
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
 }
 
 .display {
@@ -331,8 +323,8 @@ html[data-theme="white"] .brand-glyph {
   z-index: 0;
   backdrop-filter: blur(var(--glass-blur)) saturate(185%);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 26%),
-    linear-gradient(0deg, var(--glass-depth), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 16%),
+    linear-gradient(0deg, var(--glass-depth), transparent 24%),
     var(--glass-fill);
 }
 
@@ -343,13 +335,11 @@ html[data-theme="white"] .brand-glyph {
   border-radius: inherit;
   pointer-events: none;
   z-index: 1;
-  background:
-    linear-gradient(180deg, var(--glass-highlight), transparent 20%),
-    radial-gradient(80% 36% at var(--glass-px) 0%, rgba(255, 255, 255, 0.55), transparent 72%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 12%);
   mix-blend-mode: soft-light;
-  opacity: 0.9;
-  -webkit-mask-image: linear-gradient(#000 0%, #000 22%, transparent 48%);
-  mask-image: linear-gradient(#000 0%, #000 22%, transparent 48%);
+  opacity: 0.75;
+  -webkit-mask-image: linear-gradient(#000 0%, #000 8%, transparent 16%);
+  mask-image: linear-gradient(#000 0%, #000 8%, transparent 16%);
 }
 
 .glass > * {
@@ -386,8 +376,8 @@ html[data-theme="white"] .brand-glyph {
 }
 
 .glass-well {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(8, 14, 22, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 24px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
   backdrop-filter: blur(18px) saturate(170%);
@@ -396,13 +386,14 @@ html[data-theme="white"] .brand-glyph {
 .glass.glass-nav::before,
 .glass.glass-bar::before {
   backdrop-filter: blur(36px) saturate(180%);
-  background: rgba(8, 14, 22, 0.28);
+  background: rgba(8, 14, 22, 0.72);
 }
 
 .glass-chip {
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(8, 14, 22, 0.7);
+  color: var(--cream);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 18px;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.48),
@@ -417,7 +408,8 @@ html[data-theme="white"] .brand-glyph {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(8, 14, 22, 0.7);
+  color: var(--cream);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     0 8px 20px var(--glass-shadow);
@@ -429,7 +421,7 @@ html[data-theme="white"] .brand-glyph {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.72);
   background: var(--glass-fill-strong);
   color: var(--cream);
   box-shadow:
@@ -443,8 +435,10 @@ html[data-theme="white"] .brand-glyph {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 48%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 42%);
   pointer-events: none;
+  -webkit-mask-image: linear-gradient(#000 0%, transparent 32%);
+  mask-image: linear-gradient(#000 0%, transparent 32%);
 }
 
 .glass-lift {
@@ -478,17 +472,28 @@ html[data-theme="white"] .lens-film::after {
 }
 
 html[data-theme="white"] .glass-well {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(17, 19, 24, 0.12);
 }
 
-html[data-theme="white"] .glass-chip {
-  background: rgba(255, 255, 255, 0.42);
+html[data-theme="white"] .glass-chip,
+html[data-theme="white"] .glass-pill {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--cream);
+  border-color: rgba(17, 19, 24, 0.16);
+}
+
+html[data-theme="white"] .glass-cta {
+  background: rgba(17, 19, 24, 0.92);
+  color: #f7f8fc;
+  border-color: rgba(17, 19, 24, 0.92);
+  --cream: #f7f8fc;
+  --cream-dim: rgba(247, 248, 252, 0.84);
 }
 
 html[data-theme="white"] .glass.glass-nav::before,
 html[data-theme="white"] .glass.glass-bar::before {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.86);
 }
 
 :focus-visible {
@@ -521,18 +526,12 @@ body:has(.os-shell) .scene-layer::after {
 
 html[data-theme="black"] .os-shell .glass.glass-nav::before,
 html[data-theme="black"] .os-shell .glass.glass-bar::before {
-  background: rgba(8, 12, 20, 0.58);
+  background: rgba(8, 12, 20, 0.82);
 }
 
 html[data-theme="white"] .os-shell .glass.glass-nav::before,
 html[data-theme="white"] .os-shell .glass.glass-bar::before {
-  background: rgba(255, 255, 255, 0.52);
-}
-
-html[data-theme="black"] .glass::after,
-html[data-theme="black"] .lens-film::after {
-  mix-blend-mode: screen;
-  opacity: 1;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .os-shell .glass-well {
@@ -548,8 +547,8 @@ html[data-theme="white"] .os-shell .glass-well {
 }
 
 html[data-theme="white"] .os-shell .glass-chip {
-  background: var(--glass-3);
-  border-color: rgba(17, 19, 24, 0.1);
+  background: var(--os-chip);
+  border-color: rgba(17, 19, 24, 0.12);
 }
 
 @layer components {
