@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Lens } from "./Lens";
+import { Button } from "./ui/Button";
 import {
   FEATURES,
   SCENES,
@@ -55,9 +55,8 @@ export function OnboardCard() {
   }
 
   return (
-    <Lens className="w-full" radius={40}>
-      <div className="px-10 py-8 md:px-12 md:py-10">
-        <p className="display text-[11px] tracking-[0.22em] text-cream-dim uppercase">
+    <article className="paper-card w-full px-6 py-8 md:px-10 md:py-10">
+        <p className="text-xs text-cream-dim">
           {STEPS[step]} · {step + 1}/3
         </p>
 
@@ -71,7 +70,8 @@ export function OnboardCard() {
                   <button
                     type="button"
                     onClick={() => chooseScene(item.id)}
-                    className={`glass-chip px-3 py-2 text-sm ${scene === item.id ? "glass-cta text-cream" : ""}`}
+                    className="choice px-3 py-2 text-sm"
+                    aria-pressed={scene === item.id}
                   >
                     {item.label}
                   </button>
@@ -91,7 +91,8 @@ export function OnboardCard() {
                   <button
                     type="button"
                     onClick={() => chooseSize(item.id)}
-                    className={`glass-chip w-full px-4 py-3 text-left ${size === item.id ? "glass-cta text-cream" : ""}`}
+                    className="choice choice-block w-full px-4 py-3 text-left"
+                    aria-pressed={size === item.id}
                   >
                     <span className="block text-base">{item.label}</span>
                     <span className="mt-1 block text-xs text-cream-dim">{item.hint}</span>
@@ -117,9 +118,8 @@ export function OnboardCard() {
                     <button
                       type="button"
                       onClick={() => toggle(item.id)}
-                      className={`glass-chip flex w-full items-center justify-between px-4 py-2.5 text-left text-sm ${
-                        on ? "text-cream" : "text-cream-dim"
-                      }`}
+                      className="choice choice-row px-4 py-2.5 text-sm"
+                      aria-pressed={on}
                     >
                       <span>{item.label}</span>
                       <span className="display text-[11px]">{on ? "開" : "關"}</span>
@@ -132,20 +132,14 @@ export function OnboardCard() {
               <button type="button" className="text-xs text-cream-dim hover:text-cream" onClick={() => setStep(1)}>
                 回上一步
               </button>
-              <button
-                type="button"
-                disabled={pending || picked.length === 0}
-                onClick={submit}
-                className="glass-cta rounded-full px-5 py-2.5 text-sm disabled:opacity-50"
-              >
-                {pending ? "打開中…" : "開始今天"}
-              </button>
+              <Button variant="primary" disabled={pending || picked.length === 0} pending={pending} pendingLabel="打開中…" onClick={submit}>
+                開始今天
+              </Button>
             </div>
           </>
         ) : null}
 
         <p className="mt-6 text-xs text-cream-dim">{PRICE_NOTE}</p>
-      </div>
-    </Lens>
+    </article>
   );
 }

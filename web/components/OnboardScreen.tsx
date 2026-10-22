@@ -5,8 +5,8 @@ import { OnboardCard } from "./OnboardCard";
 
 export function OnboardScreen() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="glass glass-bar sticky top-0 z-40">
+    <div className="onboard-screen flex min-h-screen flex-col">
+      <header className="os-top sticky top-0 z-40">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <BrandMark href="/" />
           <div className="flex items-center gap-3">

@@ -34,14 +34,14 @@ export function OsShell({ industry, shop, children, company, team = false, repor
       <a href="#main" className="skip-link">
         跳到內容
       </a>
-      <aside className="glass glass-nav sticky top-0 hidden h-screen w-56 shrink-0 flex-col md:flex">
-        <div className="border-b border-[var(--line)] px-4 py-4">
+      <aside className="os-rail sticky top-0 hidden h-screen w-56 shrink-0 flex-col md:flex">
+        <div className="border-b border-[var(--paper-line)] px-4 py-4">
           <BrandMark href="/workspace" compact />
         </div>
         <SideNav items={items} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="glass glass-bar sticky top-0 z-30">
+        <header className="os-top sticky top-0 z-30">
           <div className="flex items-center justify-between gap-3 px-4 py-2.5 md:px-8">
             <p className="min-w-0 truncate text-sm font-medium md:text-base" title={company ?? industry.nameZh}>
               <span className="sr-only">公司：</span>
@@ -59,7 +59,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
           {notice ? (
             <div
               role="status"
-              className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[var(--line)] px-4 py-2 text-sm md:px-8 ${notice.urgent ? "text-warn" : "text-cream"}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[var(--paper-line)] px-4 py-2 text-sm md:px-8 ${notice.urgent ? "text-warn" : "text-cream"}`}
             >
               {notice.readOnly ? <Badge tone="readonly" /> : null}
               <span className="min-w-0 flex-1">{notice.message}</span>
@@ -76,7 +76,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
             </div>
           ) : null}
         </header>
-        <main id="main" tabIndex={-1} className="flex-1 p-4 pb-[calc(var(--ui-tabbar)+env(safe-area-inset-bottom)+1.5rem)] outline-none md:p-8 md:pb-10">
+        <main id="main" tabIndex={-1} className="os-sheet flex-1 outline-none">
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
