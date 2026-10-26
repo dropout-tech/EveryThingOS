@@ -34,15 +34,15 @@ export function OsShell({ industry, shop, children, company, team = false, repor
       <a href="#main" className="skip-link">
         跳到內容
       </a>
-      <aside className="os-rail sticky top-0 hidden h-screen w-56 shrink-0 flex-col md:flex">
-        <div className="border-b border-[var(--paper-line)] px-4 py-4">
+      <aside className="os-rail sticky top-0 hidden h-screen w-52 shrink-0 flex-col md:flex">
+        <div className="px-6 pt-8 pb-4">
           <BrandMark href="/workspace" compact />
         </div>
         <SideNav items={items} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="os-top sticky top-0 z-30">
-          <div className="flex items-center justify-between gap-3 px-4 py-2.5 md:px-8">
+          <div className="flex items-center justify-between gap-3 px-5 py-4 md:px-14">
             <p className="min-w-0 truncate text-sm font-medium md:text-base" title={company ?? industry.nameZh}>
               <span className="sr-only">公司：</span>
               {company ?? industry.nameZh}
