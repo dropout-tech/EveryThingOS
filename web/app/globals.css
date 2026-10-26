@@ -702,7 +702,6 @@ html[data-theme="white"] .os-shell .field {
 html[data-theme="white"] .nav-link[aria-current="page"],
 html[data-theme="white"] .tabbar-item[aria-current="page"] {
   background: var(--chip);
-  box-shadow: inset 3px 0 0 var(--cream);
 }
 
 body:has(.onboard-screen) .scene-layer::after,
@@ -1856,3 +1855,83 @@ html[data-theme="white"] .dialog {
   color: #1d1d1f;
   border-color: rgba(0, 0, 0, 0.1);
 }
+
+/* Dashboard: the one place in the workspace that uses framed cards. One accent, for data only. */
+.os-shell {
+  --accent: #0a84ff;
+  --dash-card: #0d0d0f;
+}
+
+html[data-theme="white"] .os-shell {
+  --accent: #0071e3;
+  --dash-card: #fff;
+}
+
+.dash-grid {
+  display: grid;
+  gap: 1rem;
+  grid-auto-flow: row dense;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dash-kpi { grid-column: span 1; }
+.dash-half,
+.dash-full { grid-column: span 2; }
+
+@media (min-width: 1024px) {
+  .dash-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .dash-half { grid-column: span 2; }
+  .dash-full { grid-column: span 4; }
+}
+
+.os-shell .dash-card {
+  background: var(--dash-card);
+  border: 1px solid var(--paper-line);
+  border-radius: 16px;
+  padding: 1.25rem 1.375rem;
+}
+
+.os-shell .dash-number {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 639px) {
+  .os-shell .dash-number { font-size: 1.375rem; }
+}
+
+.os-shell .dash-editor { border-style: dashed; }
+
+.os-shell .dash-chip {
+  border: 1px solid var(--paper-line);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--cream);
+}
+
+.os-shell .dash-chip:hover { border-color: var(--cream-dim); }
+
+.os-shell .dash-tools {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  z-index: 1;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.os-shell .dash-tools button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid var(--paper-line);
+  background: var(--dash-card);
+  color: var(--cream);
+  font-size: 0.875rem;
+}
+
+.os-shell .dash-tools button:disabled { opacity: 0.35; }
