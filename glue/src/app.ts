@@ -16,6 +16,8 @@ import { D1Store, type Store, type Tenant } from "./store";
 
 export type Env = BillingEnv & {
   DB: D1Database;
+  /** dropout-backups: meeting transcripts, D1 exports, and the same bucket ERPNext writes site backups into. */
+  FILES?: R2Bucket;
   JOBS: Queue<Job>;
   EMAIL?: SendEmail;
   AI?: Ai;
@@ -72,6 +74,7 @@ function deps(env: Env, app: App): Deps {
     aiGateway: env.AI_GATEWAY,
     api: apiStoreFor(env, app),
     queue: env.JOBS,
+    files: env.FILES,
   };
 }
 

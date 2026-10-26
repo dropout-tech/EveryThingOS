@@ -277,7 +277,7 @@ flowchart TB
 | 官網 | Frappe Builder + Webshop | 官網、落地頁、商品目錄、結帳 |
 | 膠水 | Workers + Queues + Workflows | G1–G10、重試、死信 |
 | AI | AI Gateway → Workers AI | 轉文字、摘要；換模型不改程式 |
-| 檔案 | R2 | 附件、錄音、逐字稿、備份 |
+| 檔案 | R2 bucket `dropout-backups`（膠水綁定 `FILES`） | 附件、錄音、逐字稿、備份。客人看不到這層 |
 | 交易信 | Cloudflare Email Service | 出貨、發票、密碼通知 |
 | 電子報寄送 | 外部寄信服務 | 群發、開信、點擊、退信事件 |
 | 主機維運 | Coolify | 部署、TLS、資料庫備份 |

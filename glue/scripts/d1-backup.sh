@@ -11,6 +11,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 db="${D1_DATABASE:-dropout-glue}"
+export D1_BACKUP_BUCKET="${D1_BACKUP_BUCKET:-dropout-backups}"
 wr() { npx --no-install wrangler "$@"; }
 need() { [ -n "${!1:-}" ] || { echo "要設定 $1" >&2; exit 2; }; }
 
