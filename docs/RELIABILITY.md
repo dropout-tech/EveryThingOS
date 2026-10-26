@@ -101,16 +101,19 @@
 
 | 資料 | 怎麼備份 | 多久一次 | 放哪 |
 | --- | --- | --- | --- |
-| 每家公司的 ERPNext | ERPNext 內建 S3 備份（`dropout-onboard provision --backup-bucket`），含附件；System Settings 打開「Encrypt Backups」就是 gpg 加密 | 每天 | R2 `<site>/<時間>/` |
+| 每家公司的 ERPNext | ERPNext 內建 S3 備份（`dropout-onboard provision --backup-bucket`），含附件；System Settings 打開「Encrypt Backups」就是 gpg 加密 | 每天 | R2 `dropout-backups` 的 `<site>/<時間>/` |
 | Chatwoot、Vexa 的 Postgres | Coolify 排程備份 | 每天 | R2 |
 | 膠水的 D1（公司、合約、網址、監看） | D1 Time Travel 自動保留 30 天（Workers Paid；免費方案 7 天）；另外每天 `glue/scripts/d1-backup.sh export`（GitHub Actions `d1-backup.yml`，台灣 05:30） | 自動／每天 | Cloudflare／R2 `d1/dropout-glue/<時間>.sql.gz` |
 | 解約公司的最後一份 | `fleet purge` 刪站前做 | 一次 | R2 `purged/<site>/<時間>/`，30 天後刪 |
 
-**R2 bucket 的規則**（建 bucket 時設一次）：
+檔案只放一個 bucket：`dropout-backups`。公司備份在 `<site>/`，解約最後一份在 `purged/`，膠水資料庫匯出在 `d1/`，會議逐字稿原文在 `meetings/<站>/`。膠水 Worker 用綁定 `FILES` 寫逐字稿，不另外拿 S3 金鑰。客人只看到摘要進了會議紀錄。
+
+**R2 bucket 的規則**（建 bucket 時設一次，在 `glue/` 目錄）：
 
 ```bash
-npx wrangler r2 bucket lifecycle add <bucket> purged-final purged/ --expire-days 30   # 最後備份保留 30 天
-npx wrangler r2 bucket lifecycle add <bucket> d1-exports d1/ --expire-days 90         # D1 匯出保留 90 天
+npx wrangler r2 bucket create dropout-backups
+npx wrangler r2 bucket lifecycle add dropout-backups purged-final purged/ --expire-days 30   # 最後備份保留 30 天
+npx wrangler r2 bucket lifecycle add dropout-backups d1-exports d1/ --expire-days 90         # D1 匯出保留 90 天
 ```
 
 每站的每日備份 ERPNext 不會自己刪，數量會一直長；要限制就對整個 bucket 加一條 `--expire-days 30`（**不要**低於 `/legal` 寫的保存天數），或依站加前綴規則。

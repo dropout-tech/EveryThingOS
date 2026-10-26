@@ -9,6 +9,8 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "dropout-glue", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
   ],
+  // One bucket. ERPNext writes <site>/ via S3 keys. This binding writes meetings/ and the D1 export writes d1/.
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "dropout-backups" }],
   "queues": {
     "producers": [{ "binding": "JOBS", "queue": "dropout-jobs" }],
     "consumers": [

@@ -44,7 +44,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 產業包：製造、顧問、教育（含課程 BOM 預先鎖定、虛實履約拆解、WMS 領用耗用／損耗報廢、20 店跨據點庫存與 AI 跨店調撥／補貨建議） | `frappe-apps/dropout_pack_*`、`web/components/CourseBomBoard.tsx`、`web/lib/course-bom.ts` | 設定精靈完成後自動套用；倉庫頁自動試算現有材料夠開幾位學員、已鎖定材料、虛實履約退課成本拆解與跨店調撥建議 |
 | 預約綁定課程 BOM：同一個預約頁貼到 LINE 圖文選單、IG／FB 個人頁或門市平板 | `web/app/book`、`web/app/api/booking`、`web/lib/booking.ts`、`dropout_core.actions.book_course` | 名額從材料庫存算；材料夠就開課程訂單並鎖料，不夠就排候補並標出缺哪項 |
 | 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
-| 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
+| 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；會議逐字稿原文寫進 R2 `dropout-backups`。尚未在帳號上建 D1、Queues、bucket、部署 |
 | 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）**、**fleet（一次很多家、續約、暫停）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
 | CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑。殼的 `npm test` 鎖住十一個現場的十步與 Open Chat |
 | 人事薪資與智慧師資調度（HRM）：師資技能與適教年齡層標籤、跨店支援、「勞動法規先行、AI 建議、主管覆核、異常留痕」排班與衝堂／請假代課檢查、工時異常提醒；薪資／勞健保支援既有系統串接、匯入或必要欄位管理 | `frappe-apps/dropout_hr_tw`、`web/app/workspace/hr`、`web/lib/schedule.ts` | 用 Frappe HRMS v15；每年改的費率要對勞保局、健保署公告，不寫死（[docs/HR.md](docs/HR.md)） |
@@ -58,7 +58,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
 | 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
 
-下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 Cloudflare 帳號建 D1 與 Queues、套用 `glue/migrations` 0001–0006、部署膠水與殼；主機用 `deploy/` 開第一個 ERPNext site，再用 `dropout-onboard bootstrap toolkit/examples/{make,service,edu}` 開三家示範公司。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
+下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 info@dropout.tw 的 Cloudflare 帳號建 D1、Queues 與 R2 bucket `dropout-backups`、套用 `glue/migrations` 0001–0006、部署膠水與殼。公司附件與備份、會議逐字稿、膠水匯出都進這一個 bucket。帳本、庫存、對話索引仍在主機上的 ERPNext 與 Chatwoot。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 
 ## 開源組裝與套皮
 
