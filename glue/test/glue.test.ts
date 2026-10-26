@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { aesCbcEncrypt, hmacSha256, seal, toBase64, toHex, unseal } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt, inclusiveLines } from "../src/einvoice";
-import { addYears, lifecycle, reminderFor, taiwanDate } from "../src/accounts";
+import { addDays, addYears, lifecycle, reminderFor, taiwanDate } from "../src/accounts";
 import { consume, daily, handle, MAX_ATTEMPTS, scheduleMeetings, scheduled, type App, type Env } from "../src/app";
 import { runJob, type Deps, type Job } from "../src/jobs";
 import { unsubscribeSignature, verifySvix } from "../src/mail";
@@ -423,11 +423,12 @@ describe("accounts", () => {
   it("daily pushes the contract status to ERPNext and mails each reminder once; state changes push right away", async () => {
     const h = harness({ "api.resend.com": () => ({ id: "r1" }) });
     Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "DropOut OS <billing@dropout.tw>", PLATFORM_NOTIFY: "ops@dropout.tw" });
-    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
+    const trialEnds = addDays(taiwanDate(), 40);
+    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: trialEnds, contact_email: "boss@make.tw" }), h.env, h.app);
     const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
     expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
 
-    const now = new Date("2026-10-12T18:01:00Z");
+    const now = new Date(new Date(`${trialEnds}T23:59:59+08:00`).getTime() - 7 * 86_400_000 - 3_600_000);
     expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
     expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
     const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));

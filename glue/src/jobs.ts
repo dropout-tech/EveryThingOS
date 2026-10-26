@@ -1,5 +1,6 @@
 import { Chatwoot, ERPNext, UpstreamError, type Fetch } from "./clients";
 import { ECPayInvoice, type EInvoiceProvider, type InvoiceInput } from "./einvoice";
+import { putTranscript } from "./files";
 import { sendConfirmation, type MailEvent, type SendEmail } from "./mail";
 import { summarize, Vexa, type Ai, type MeetingLink } from "./meetings";
 import type { ApiStore } from "./apiStore";
@@ -39,6 +40,8 @@ export type Deps = {
   /** Outbound webhooks; both unset means the company has none to send. */
   api?: ApiStore;
   queue?: { send(job: Job): Promise<unknown> };
+  /** Original meeting transcripts. Absent in tests and until the bucket is bound. */
+  files?: R2Bucket;
 };
 
 export const DO_NOT_PUSH_LABEL = "勿推播";
@@ -145,6 +148,7 @@ export async function runJob(job: Job, deps: Deps): Promise<unknown> {
       const meeting = await deps.store.getMeeting(job.site, job.platform, job.meeting_id);
       const { text } = await new Vexa(tenant.vexa, deps.fetcher).transcript(job.platform, job.meeting_id);
       if (!text.trim()) return { skipped: "empty transcript" };
+      await putTranscript(deps.files, job.site, job.platform, job.meeting_id, text);
       const summary = await summarize(deps.ai, deps.summaryModel, text, deps.aiGateway);
       return erp.api("record_meeting", {
         meeting_id: job.meeting_id,
