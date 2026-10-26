@@ -1935,3 +1935,7 @@ html[data-theme="white"] .os-shell {
 }
 
 .os-shell .dash-tools button:disabled { opacity: 0.35; }
+
+.os-shell .os-top {
+  background: var(--paper);
+}
