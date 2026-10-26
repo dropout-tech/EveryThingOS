@@ -531,7 +531,7 @@ export const HELP: HelpArticle[] = [
     summary: "資料是你們的：整站備份、清單匯出 Excel、API。",
     keywords: ["匯出", "備份", "下載", "excel", "資料", "解約", "搬走"],
     blocks: [
-      { list: ["整站備份：「設定 → 匯出全部資料」打開 ERPNext 的備份下載（資料庫與檔案）。要有 ERPNext 的 System Manager 權限。", "某一種資料：在 ERPNext 打開那個清單或報表，從選單匯出 Excel／CSV；報表頁每一段都有「在 ERPNext 打開」。", "給別的系統持續讀：用[對外 API](/help/module-api)。", "「設定 → 下載設定檔」是你們選的現場與功能，給導入工具用，不含客人與帳。"] },
+      { list: ["整站備份：「設定 → 匯出全部資料」打開 ERPNext 的備份下載（資料庫與檔案）。要有 ERPNext 的 System Manager 權限。", "某一種資料：在 ERPNext 打開那個清單或報表，從選單匯出 Excel／CSV；儀表板每一張卡片都有「在 ERPNext 打開」。", "給別的系統持續讀：用[對外 API](/help/module-api)。", "「設定 → 下載設定檔」是你們選的現場與功能，給導入工具用，不含客人與帳。"] },
       { p: "合約變成只能看、暫停或解約時，資料都還在，一樣可以看和匯出。誰匯出了資料會記在「團隊」的最近紀錄。" },
       { p: "每天會自動備份；DropOut 每月會實際還原一次到測試站，確認備份真的能用。" },
     ],

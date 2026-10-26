@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Dashboard } from "./Dashboard";
 import { DeskLink } from "./DeskLink";
 import { NextThing } from "./NextThing";
 import { Badge } from "./ui/Badge";
 import { formatTwd } from "@/lib/erp";
+import type { WidgetId } from "@/lib/dashboard";
 import { nextReport } from "@/lib/next-thing";
 import { REPORT_MONTHS, monthLabel, type OwnerReport, type ReportSection } from "@/lib/reports";
 
@@ -14,9 +16,9 @@ function percent(part: number, whole: number) {
 function Section({ id, title, hint, report, children }: { id: ReportSection; title: string; hint?: string; report: OwnerReport; children: () => ReactNode }) {
   const link = report.links?.[id];
   return (
-    <section className="glass space-y-3 p-5" aria-labelledby={`report-${id}`}>
+    <section className="dash-card h-full space-y-4" aria-labelledby={`report-${id}`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={`report-${id}`} className="text-lg font-medium">
+        <h2 id={`report-${id}`} className="text-base font-semibold">
           {title}
         </h2>
         {link ? (
@@ -25,7 +27,7 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
           </DeskLink>
         ) : null}
       </div>
-      {hint ? <p className="text-xs text-cream-dim">{hint}</p> : null}
+      {hint ? <p className="-mt-2 text-xs text-cream-dim">{hint}</p> : null}
       {report.denied.includes(id) ? (
         <p className="text-sm text-cream-dim">你的 ERPNext 角色看不到這一段。需要的話，請老闆到「團隊」調整職務。</p>
       ) : report.failed.includes(id) ? (
@@ -49,11 +51,11 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="glass-chip p-4">
-      <p className="text-sm text-cream-dim">{label}</p>
-      <p className="display mt-2 text-2xl">{value}</p>
-      {sub ? <p className="mt-1 text-xs text-cream-dim">{sub}</p> : null}
-    </div>
+    <section className="dash-card h-full">
+      <h2 className="text-sm text-cream-dim">{label}</h2>
+      <p className="dash-number mt-3">{value}</p>
+      {sub ? <p className="mt-2 text-xs text-cream-dim">{sub}</p> : null}
+    </section>
   );
 }
 
@@ -84,7 +86,7 @@ function MonthBars({ rows, label }: { rows: { month: string; value: number }[]; 
         {rows.map((r, i) => {
           const h = (Math.max(0, r.value) / max) * 38;
           return (
-            <rect key={r.month} x={i * w + w * 0.18} y={40 - h} width={w * 0.64} height={h} fill="var(--teal)" opacity={i === rows.length - 1 ? 0.95 : 0.5}>
+            <rect key={r.month} x={i * w + w * 0.18} y={40 - h} width={w * 0.64} height={h} fill="var(--accent)" opacity={i === rows.length - 1 ? 0.95 : 0.5}>
               <title>{`${monthLabel(r.month)} ${formatTwd(r.value)}`}</title>
             </rect>
           );
@@ -117,9 +119,9 @@ function PercentLine({ rows, label }: { rows: { month: string; percent: number |
           .filter((s) => s.length)
           .map((s) =>
             s.length === 1 ? (
-              <line key={s[0]} x1={Number(s[0].split(",")[0]) - w * 0.2} x2={Number(s[0].split(",")[0]) + w * 0.2} y1={s[0].split(",")[1]} y2={s[0].split(",")[1]} stroke="var(--teal)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+              <line key={s[0]} x1={Number(s[0].split(",")[0]) - w * 0.2} x2={Number(s[0].split(",")[0]) + w * 0.2} y1={s[0].split(",")[1]} y2={s[0].split(",")[1]} stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
             ) : (
-              <polyline key={s.join(" ")} points={s.join(" ")} fill="none" stroke="var(--teal)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <polyline key={s.join(" ")} points={s.join(" ")} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             ),
           )}
         <line x1="0" x2="100" y1="40" y2="40" stroke="var(--line)" vectorEffect="non-scaling-stroke" />
@@ -164,8 +166,8 @@ function Numbers({ head, rows }: { head: string[]; rows: (string | number)[][] }
 function HBar({ value, max }: { value: number; max: number }) {
   return (
     <svg viewBox="0 0 100 4" preserveAspectRatio="none" className="h-2 w-full" aria-hidden="true">
-      <rect x="0" y="0" width="100" height="4" fill="var(--line)" opacity="0.35" />
-      <rect x="0" y="0" width={max ? (Math.max(0, value) / max) * 100 : 0} height="4" fill="var(--teal)" opacity="0.8" />
+      <rect x="0" y="0" width="100" height="4" fill="var(--line)" />
+      <rect x="0" y="0" width={max ? (Math.max(0, value) / max) * 100 : 0} height="4" fill="var(--accent)" opacity="0.8" />
     </svg>
   );
 }
@@ -187,14 +189,14 @@ function AgingBar({ aging }: { aging: NonNullable<OwnerReport["aging"]> }) {
       <svg viewBox="0 0 100 6" preserveAspectRatio="none" className="h-4 w-full" role="img" aria-label={`應收合計 ${formatTwd(aging.total)}：${parts.map((p) => `${p.label} ${formatTwd(p.value)}`).join("，")}。`}>
         <rect x="0" y="0" width="100" height="6" fill="var(--line)" opacity="0.25" />
         {parts.map((p, i) => (
-          <rect key={p.key} x={starts[i]} y="0" width={widths[i]} height="6" fill="var(--teal)" opacity={p.opacity} />
+          <rect key={p.key} x={starts[i]} y="0" width={widths[i]} height="6" fill="var(--accent)" opacity={p.opacity} />
         ))}
       </svg>
       <dl className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
         {parts.map((p) => (
           <div key={p.key} className="flex items-start gap-2">
             <svg viewBox="0 0 10 10" className="mt-1 h-3 w-3 shrink-0" aria-hidden="true">
-              <rect width="10" height="10" fill="var(--teal)" opacity={p.opacity} />
+              <rect width="10" height="10" fill="var(--accent)" opacity={p.opacity} />
             </svg>
             <div>
               <dt className="text-cream-dim">{p.label}</dt>
@@ -224,38 +226,12 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
   const unavailable = (id: ReportSection) => (report.denied.includes(id) ? "你的角色看不到" : "現在拿不到");
   const focus = nextReport(report);
 
-  return (
-    <div className="space-y-5">
-      {focus ? (
-        <NextThing
-          title={focus.title}
-          detail={focus.detail}
-          action={
-            <Link href={focus.href} className="btn btn-primary">
-              {focus.label}
-            </Link>
-          }
-        />
-      ) : null}
-      <div className="flex flex-wrap items-center gap-3">
-        <nav className="segmented" aria-label="期間">
-          {REPORT_MONTHS.map((m) => (
-            <Link key={m} href={`/workspace/reports?months=${m}`} aria-current={m === report.months ? "page" : undefined}>
-              近 {m} 個月
-            </Link>
-          ))}
-        </nav>
-        <span className="text-xs text-cream-dim">算到 {report.asOf}</span>
-        {demo ? <Badge tone="demo" /> : null}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="本月營收（未稅）" value={thisMonth ? formatTwd(thisMonth.amount) : "—"} sub={thisMonth ? (lastMonth ? `上個月整月 ${formatTwd(lastMonth.amount)}` : undefined) : unavailable("revenue")} />
-        <Kpi label={`近 ${report.months} 個月營收`} value={revenue ? formatTwd(revenue.reduce((n, r) => n + r.amount, 0)) : "—"} sub={revenue ? "已扣掉退貨" : unavailable("revenue")} />
-        <Kpi label="本月毛利率" value={marginNow?.percent != null ? `${marginNow.percent}%` : "—"} sub={marginNow ? `毛利 ${formatTwd(marginNow.profit)}` : margin ? undefined : unavailable("margin")} />
-        <Kpi label="還沒收到的錢" value={aging ? formatTwd(aging.total) : "—"} sub={aging ? `超過 60 天 ${formatTwd(aging.d61_90 + aging.d90plus)}` : unavailable("aging")} />
-      </div>
-
+  const tiles: Record<WidgetId, ReactNode> = {
+    kpiRevenue: <Kpi label="本月營收（未稅）" value={thisMonth ? formatTwd(thisMonth.amount) : "—"} sub={thisMonth ? (lastMonth ? `上個月整月 ${formatTwd(lastMonth.amount)}` : undefined) : unavailable("revenue")} />,
+    kpiPeriod: <Kpi label={`近 ${report.months} 個月營收`} value={revenue ? formatTwd(revenue.reduce((n, r) => n + r.amount, 0)) : "—"} sub={revenue ? "已扣掉退貨" : unavailable("revenue")} />,
+    kpiMargin: <Kpi label="本月毛利率" value={marginNow?.percent != null ? `${marginNow.percent}%` : "—"} sub={marginNow ? `毛利 ${formatTwd(marginNow.profit)}` : margin ? undefined : unavailable("margin")} />,
+    kpiReceivable: <Kpi label="還沒收到的錢" value={aging ? formatTwd(aging.total) : "—"} sub={aging ? `超過 60 天 ${formatTwd(aging.d61_90 + aging.d90plus)}` : unavailable("aging")} />,
+    revenue: (
       <Section id="revenue" title="每月營收" hint="已送出的銷項發票，未稅，扣掉退貨（折讓單）。" report={report}>
         {() => (
           <>
@@ -264,7 +240,8 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
           </>
         )}
       </Section>
-
+    ),
+    margin: (
       <Section id="margin" title="毛利" hint="照 ERPNext 毛利報表算：營收減掉出貨當下的成本。服務類沒有成本的品項，毛利等於營收。" report={report}>
         {() => (
           <>
@@ -273,13 +250,14 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
           </>
         )}
       </Section>
-
+    ),
+    aging: (
       <Section id="aging" title="誰欠我們多久（帳齡）" hint="照 ERPNext 應收帳款報表，從付款到期日算起。" report={report}>
         {() => (aging!.total ? <AgingBar aging={aging!} /> : <p className="text-sm text-cream-dim">沒有人欠款。</p>)}
       </Section>
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Section id="topCustomers" title="前十大客人" hint={`近 ${report.months} 個月的銷項發票，未稅，扣掉退貨。`} report={report}>
+    ),
+    topCustomers: (
+      <Section id="topCustomers" title="前十大客人" hint={`近 ${report.months} 個月的銷項發票，未稅，扣掉退貨。`} report={report}>
           {() => {
             const rows = report.topCustomers!;
             if (!rows.length) return <p className="text-sm text-cream-dim">這段期間還沒有開發票。</p>;
@@ -304,8 +282,9 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
             );
           }}
         </Section>
-
-        <Section id="pipeline" title="從詢問到成交" hint={`近 ${report.pipelineDays} 天新開的單數。每一步各自計數，不是同一批人一路追。`} report={report}>
+    ),
+    pipeline: (
+      <Section id="pipeline" title="從詢問到成交" hint={`近 ${report.pipelineDays} 天新開的單數。每一步各自計數，不是同一批人一路追。`} report={report}>
           {() => {
             const p = report.pipeline!;
             const max = Math.max(1, ...PIPELINE_STEPS.map((s) => p[s.key] ?? 0));
@@ -331,8 +310,8 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
             );
           }}
         </Section>
-      </div>
-
+    ),
+    lowStock: (
       <Section id="lowStock" title="快不夠的貨" hint="跟 ERPNext 自動補貨同一個算法：預計數量（現有＋已訂未到－已接單未出）低於再訂購點。" report={report}>
         {() => {
           const rows = report.lowStock!;
@@ -367,6 +346,38 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
           );
         }}
       </Section>
+    ),
+  };
+
+  return (
+    <div className="space-y-6">
+      {focus ? (
+        <NextThing
+          title={focus.title}
+          detail={focus.detail}
+          action={
+            <Link href={focus.href} className="btn btn-primary">
+              {focus.label}
+            </Link>
+          }
+        />
+      ) : null}
+      <Dashboard
+        tiles={tiles}
+        toolbar={
+          <>
+            <nav className="segmented" aria-label="期間">
+              {REPORT_MONTHS.map((m) => (
+                <Link key={m} href={`/workspace/reports?months=${m}`} aria-current={m === report.months ? "page" : undefined}>
+                  近 {m} 個月
+                </Link>
+              ))}
+            </nav>
+            <span className="text-xs text-cream-dim">算到 {report.asOf}</span>
+            {demo ? <Badge tone="demo" /> : null}
+          </>
+        }
+      />
     </div>
   );
 }

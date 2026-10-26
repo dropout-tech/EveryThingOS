@@ -85,7 +85,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     who: "全部都能看、能做，也能管人和安全設定",
     three: [
       { title: "打開「今天」看卡住的事", detail: "誰逾期沒付、什麼貨快不夠、哪張報價在等，最急的排第一。", href: "/workspace" },
-      { title: "看「報表」", detail: "本月營收、毛利、誰欠錢、前十大客人，手機也能看。", href: "/workspace/reports" },
+      { title: "看「儀表板」", detail: "本月營收、毛利、誰欠錢、前十大客人，手機也能看。", href: "/workspace/reports" },
       { title: "管「團隊」", detail: "邀請同事、換職務、停用離職的人，停用馬上登出。", href: "/workspace/team" },
     ],
   },
@@ -94,7 +94,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     who: "全部都能看、能做，但不能管人和安全設定",
     three: [
       { title: "推「生意」裡卡住的單", detail: "每張單只有一個下一步按鈕：轉訂單、出貨、開發票、收款。", href: "/workspace/erp/sales" },
-      { title: "看「報表」", detail: "成交漏斗、帳齡、快不夠的貨，一頁看完。", href: "/workspace/reports" },
+      { title: "看「儀表板」", detail: "成交漏斗、帳齡、快不夠的貨，一頁看完。", href: "/workspace/reports" },
       { title: "核准假單", detail: "有開人事的公司，等你核准的假單在「人事」。", href: "/workspace/hr" },
     ],
   },
@@ -131,7 +131,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "看「收錢」的帳齡", detail: "誰欠多久一眼看完，逾期的排前面。", href: "/workspace/erp/finance" },
       { title: "在「生意」開發票、記收款", detail: "同一張單按「開立發票」「記入已收」，開單就入帳。", href: "/workspace/erp/sales" },
-      { title: "對「報表」的營收和毛利", detail: "數字直接用 ERPNext 原生報表，要明細就點「在 ERPNext 打開」。", href: "/workspace/reports" },
+      { title: "對「儀表板」的營收和毛利", detail: "數字直接用 ERPNext 原生報表，要明細就點「在 ERPNext 打開」。", href: "/workspace/reports" },
     ],
   },
   客服: {

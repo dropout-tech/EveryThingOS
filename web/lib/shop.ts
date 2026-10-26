@@ -234,7 +234,7 @@ export function navItemsForShop(shop: ShopProfile, { team = false, reports = fal
   for (const id of FEATURES.map((item) => item.id)) {
     if (shop.modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
   }
-  if (reports) items.push({ href: "/workspace/reports", label: "報表" });
+  if (reports) items.push({ href: "/workspace/reports", label: "儀表板" });
   if (team) items.push({ href: "/workspace/team", label: "團隊" });
   items.push({ href: "/workspace/settings", label: "設定" });
   return items;
