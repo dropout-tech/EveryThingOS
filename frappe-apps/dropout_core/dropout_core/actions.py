@@ -334,3 +334,94 @@ def record_stock_movement(kind, item_code, qty, from_warehouse, to_warehouse=Non
 		"message": _("已登記{0}：{1} × {2}").format(label, item_code, amount_qty),
 		"created": {"doctype": "Stock Entry", "name": se.name, "href": _desk("Stock Entry", se.name)},
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def book_course(course_code, branch, date, slot, seats, parent_name, phone, channel="官網", line_id=None, note=None):
+	"""One booking from the website, a LINE rich menu, an IG/FB profile link or the counter.
+
+	Creates (or reuses, by phone) the Customer and one Sales Order for the course. When every
+	bundle material has enough free stock the order is submitted, so ERPNext reserves the packed
+	items; otherwise it stays a draft and the booking is a waitlist entry naming the short material."""
+	if not ({"System Manager", "Sales Manager", "Sales User"} & set(frappe.get_roles())):
+		raise frappe.PermissionError(_("只有門市或業務人員可以收預約"))
+	from dropout_core.api import _add_identity, _find_identity
+
+	code = (course_code or "").strip()[:60]
+	if not frappe.db.exists("Product Bundle", code):
+		frappe.throw(_("這堂課還沒設定課程 BOM"))
+	qty = cint(seats)
+	if qty < 1 or qty > 10:
+		frappe.throw(_("一次可預約 1–10 位"))
+	mobile = normalize_phone(phone)
+	if not mobile:
+		frappe.throw(_("請留可以聯絡的手機"))
+	who = (parent_name or "").strip()[:140] or mobile
+	label = f"{(channel or '官網')[:12]} 預約｜{(branch or '')[:40]}｜{date} {(slot or '')[:20]}"
+
+	warehouse = None
+	for name in (branch, f"{branch}倉") if branch else ():
+		warehouse = frappe.db.get_value("Warehouse", {"warehouse_name": name, "is_group": 0}, "name")
+		if warehouse:
+			break
+	shortages = []
+	for b in frappe.get_all("Product Bundle Item", filters={"parent": code}, fields=["item_code", "qty"]):
+		need = flt(b.qty) * qty
+		bin_filters = {"item_code": b.item_code}
+		if warehouse:
+			bin_filters["warehouse"] = warehouse
+		free = sum(flt(r.actual_qty) - flt(r.reserved_qty) for r in frappe.get_all("Bin", filters=bin_filters, fields=["actual_qty", "reserved_qty"]))
+		if free < need:
+			shortages.append((b.item_code, need - free))
+
+	try:
+		ident, _ext = _find_identity("phone", mobile)
+		customer = None
+		if ident:
+			party_type, party = frappe.db.get_value("DropOut Identity", ident, ["party_type", "party"])
+			customer = party if party_type == "Customer" else None
+		if not customer:
+			c = frappe.new_doc("Customer")
+			c.customer_name = who
+			c.customer_type = "Individual"
+			c.mobile_no = mobile
+			c.insert()
+			customer = c.name
+			_add_identity("Customer", customer, "phone", mobile, verified=0)
+		if line_id:
+			ident_line, _x = _find_identity("line", line_id)
+			if not ident_line:
+				_add_identity("Customer", customer, "line", line_id.strip()[:40], verified=0)
+
+		so = frappe.new_doc("Sales Order")
+		so.customer = customer
+		so.company = _company()
+		so.transaction_date = nowdate()
+		so.delivery_date = date
+		so.po_no = label[:140]
+		if warehouse:
+			so.set_warehouse = warehouse
+		so.append("items", {"item_code": code, "qty": qty, "delivery_date": date, "warehouse": warehouse})
+		so.insert()
+		if not shortages:
+			so.submit()
+	except frappe.PermissionError:
+		raise
+	except frappe.ValidationError as e:
+		return _refused(e)
+
+	so.add_comment("Comment", "；".join(x for x in (label, f"LINE：{line_id}" if line_id else "", note or "") if x))
+	if shortages:
+		short = "、".join(f"{sku} 缺 {flt(n, 2)}" for sku, n in shortages)
+		return {
+			"ok": True,
+			"status": "waitlist",
+			"message": _("材料不夠，先排候補（{0}）。補到料後在 ERPNext 送出這張訂單就會鎖料。").format(short),
+			"created": {"doctype": "Sales Order", "name": so.name, "href": _desk("Sales Order", so.name)},
+		}
+	return {
+		"ok": True,
+		"status": "locked",
+		"message": _("已保留 {0} 位，材料包已隨訂單鎖定").format(qty),
+		"created": {"doctype": "Sales Order", "name": so.name, "href": _desk("Sales Order", so.name)},
+	}

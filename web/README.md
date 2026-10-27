@@ -44,6 +44,7 @@ npm run dev
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
 | `POST /api/erp/quotation` | 開報價單（`dropout_core.actions.create_quotation`） |
 | `POST /api/erp/course-bom` | 新增／更新課程 BOM（`dropout_core.actions.upsert_course_bom`，對應 ERPNext `Product Bundle`） |
+| `POST /api/booking` | 客人預約課程（公開頁 `/book?from=line|ig|fb|counter`）。ERPNext 用 API key 接上時呼叫 `dropout_core.actions.book_course`：材料夠就送出課程訂單、ERPNext 隨單保留材料包；不夠就留草稿當候補。只能員工登入時改走系統同步表單成待確認名單；都沒接是練習模式 |
 | `POST /api/erp/stock-movement` | 登記 WMS 上課領用耗用、教學損耗／報廢與跨店調撥（`dropout_core.actions.record_stock_movement`，對應 ERPNext `Stock Entry`） |
 | `POST /api/erp/advance` | 這張單的下一步：報價→訂單→出貨→發票→收款；採購→收貨→帳單→付款 |
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |

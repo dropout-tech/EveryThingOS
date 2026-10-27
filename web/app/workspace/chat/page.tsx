@@ -1,3 +1,4 @@
+import { BookingLinks } from "@/components/BookingLinks";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { ManychatBoard } from "@/components/open-chat/ManychatBoard";
 import { InboxOnly, LiveQueue } from "@/components/open-chat/LiveQueue";
@@ -48,6 +49,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
           {note}
         </p>
       ) : null}
+      <BookingLinks />
       <div className="space-y-2">
         <h2 className="flex items-center gap-2 text-sm font-medium">
           留言自動轉私訊 <Badge tone="demo" />

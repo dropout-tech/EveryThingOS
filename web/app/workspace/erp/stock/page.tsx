@@ -1,3 +1,4 @@
+import { BookingLinks } from "@/components/BookingLinks";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { StockBoard } from "@/components/StockBoard";
 import { getBooks } from "@/lib/sources";
@@ -33,6 +34,7 @@ export default async function StockPage() {
         live={books.origin === "live"}
         deskUrl={books.origin === "live" ? books.deskUrl : undefined}
       />
+      {books.data.courseBoms?.length ? <BookingLinks /> : null}
       <SourceNote source={books} />
     </div>
   );
