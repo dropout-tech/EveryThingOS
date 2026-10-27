@@ -3,7 +3,9 @@ import { BookingForm, type BookableCourse } from "@/components/BookingForm";
 import { seatsLabel, type BookingChannel } from "@/lib/booking";
 import { evaluateCourseBom } from "@/lib/course-bom";
 import { getBooks } from "@/lib/sources";
-import { currentIndustry } from "@/lib/workspace";
+import { DEFAULT_BRAND } from "@/lib/brand";
+import { liveConfig } from "@/lib/sources/config";
+import { currentIndustry, currentShop } from "@/lib/workspace";
 
 export const metadata = { title: "預約課程", robots: { index: false } };
 
@@ -19,7 +21,8 @@ function branchName(warehouse: string) {
  */
 export default async function BookPage({ searchParams }: PageProps<"/book">) {
   await connection();
-  const pack = await currentIndustry();
+  const [pack, shop, config] = await Promise.all([currentIndustry(), currentShop(), liveConfig()]);
+  const storeName = shop?.name ?? config.tenant?.company ?? pack.nameZh;
   const { from } = await searchParams;
   const channel = (typeof from === "string" && FROM[from]) || "官網";
   const books = await getBooks(pack);
@@ -32,10 +35,11 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
   const branches = [...new Set((data?.stock ?? []).map((s) => branchName(s.warehouse)).filter(Boolean))];
 
   return (
+    <div className="brand-page min-h-screen" data-brand={shop?.brand ?? DEFAULT_BRAND}>
     <main id="main" className="site-scope mx-auto max-w-2xl px-5 py-10 sm:py-14">
       <header className="site-sheet p-6 sm:p-8">
-        <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">線上預約</p>
-        <h1 className="mt-3 text-3xl font-medium">{pack.nameZh}</h1>
+        <p className="kicker">線上預約</p>
+        <h1 className="mt-3 text-3xl font-medium">{storeName}</h1>
         <p className="mt-3 text-cream-dim">選課程、分店和時間。頁上顯示「可預約」時，名額和材料包都已經確認夠用。</p>
       </header>
       <div className="mt-6">
@@ -46,5 +50,6 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
         )}
       </div>
     </main>
+    </div>
   );
 }

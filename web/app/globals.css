@@ -1,12 +1,19 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "jf open huninn";
+  src: url("/fonts/jf-openhuninn-2.1.woff2") format("woff2");
+  font-display: swap;
+}
+
 /* ------------------------------------------------------------------
    EveryThingOS — one neutral canvas, white (or graphite) cards,
    hairline borders, one teal accent from the 琢奧 palette.
    ------------------------------------------------------------------ */
 
 :root,
-html[data-theme="white"] {
+html[data-theme="white"],
+html[data-theme="white"] [data-brand="everythingos"] {
   color-scheme: light;
   --canvas: #f7f7f8;
   --surface: #ffffff;
@@ -33,7 +40,8 @@ html[data-theme="white"] {
   --backdrop: rgba(16, 16, 20, 0.36);
 }
 
-html[data-theme="black"] {
+html[data-theme="black"],
+html[data-theme="black"] [data-brand="everythingos"] {
   color-scheme: dark;
   --canvas: #0b0b0c;
   --surface: #141416;
@@ -60,7 +68,77 @@ html[data-theme="black"] {
   --backdrop: rgba(0, 0, 0, 0.6);
 }
 
-:root {
+/* Store look: 米特製造所 — cream paper, navy ink, teal, round type. */
+html[data-theme="white"] [data-brand="meetplus"],
+:root:not([data-theme="black"]) [data-brand="meetplus"] {
+  --canvas: #fffbef;
+  --surface: #ffffff;
+  --surface-2: #fdf5e1;
+  --surface-3: #f6ead0;
+  --border: #ecdfc2;
+  --border-strong: #dccca6;
+  --text: #123f59;
+  --text-2: #24526d;
+  --muted: #5a7686;
+  --accent: #1597a0;
+  --accent-hover: #0f7f87;
+  --accent-soft: rgba(28, 179, 187, 0.12);
+  --accent-ring: rgba(28, 179, 187, 0.3);
+  --on-accent: #ffffff;
+  --warn: #a35f00;
+  --shadow-sm: 0 1px 0 rgba(18, 63, 89, 0.06);
+  --rail-bg: #fffdf6;
+  --glyph-bg: #123f59;
+  --glyph-fg: #fffbef;
+}
+
+html[data-theme="black"] [data-brand="meetplus"] {
+  --canvas: #0b2131;
+  --surface: #11304a;
+  --surface-2: #16395a;
+  --surface-3: #1d4466;
+  --border: #224a6a;
+  --border-strong: #2f5b7e;
+  --text: #fffbef;
+  --text-2: #f1e9d4;
+  --muted: #b5c3c9;
+  --accent: #3fc6cd;
+  --accent-hover: #67d6dc;
+  --accent-soft: rgba(63, 198, 205, 0.14);
+  --accent-ring: rgba(63, 198, 205, 0.34);
+  --on-accent: #062a33;
+  --warn: #f5c82f;
+  --glyph-bg: #f5c82f;
+  --glyph-fg: #123f59;
+}
+
+[data-brand="meetplus"] {
+  --brand-font: "jf open huninn", "jf open 粉圓 2.1";
+}
+
+[data-brand="everythingos"] {
+  --brand-font: initial;
+  --rail-bg: initial;
+  --glyph-bg: initial;
+  --glyph-fg: initial;
+}
+
+[data-brand] {
+  font-family: var(--brand-font, var(--font-sans)), "Noto Sans TC", system-ui, sans-serif;
+}
+
+[data-brand] .display,
+[data-brand] .kicker {
+  font-family: var(--brand-font, var(--font-display)), var(--font-sans), sans-serif;
+}
+
+.brand-page {
+  background: var(--canvas);
+  color: var(--text);
+}
+
+:root,
+[data-brand] {
   /* Legacy names used by component utilities (text-cream, bg-ink-2, border-[var(--line)] …). */
   --ink: var(--canvas);
   --ink-2: var(--surface-2);
@@ -142,6 +220,11 @@ button {
   color-scheme: inherit;
 }
 
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -180,8 +263,8 @@ button {
   width: 2rem;
   height: 2rem;
   border-radius: 9px;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--glyph-bg, var(--accent));
+  color: var(--glyph-fg, var(--on-accent));
 }
 
 .brand-glyph-compact {
@@ -339,7 +422,7 @@ summary.glass-pill:hover {
 
 .os-rail {
   border-right: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--rail-bg, var(--surface));
 }
 
 .os-top {

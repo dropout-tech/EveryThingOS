@@ -6,6 +6,7 @@ import { BrandMark } from "./BrandMark";
 import { SideNav, TabBar } from "./SideNav";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { DEFAULT_BRAND } from "@/lib/brand";
 import { navItemsForShop, type ShopProfile } from "@/lib/shop";
 import type { IndustryPack } from "@/lib/types";
 
@@ -23,6 +24,7 @@ type OsShellProps = {
 
 export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true }: OsShellProps) {
   const items = navItemsForShop(shop, { team, reports });
+  const name = shop.name ?? company ?? industry.nameZh;
   const reset = canReset ? (
     <Link href="/?setup=1" className={buttonClass({ variant: "ghost", size: "sm" })}>
       重設現場
@@ -30,7 +32,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
   ) : null;
 
   return (
-    <div className="os-shell flex min-h-screen text-cream">
+    <div className="os-shell flex min-h-screen text-cream" data-brand={shop.brand ?? DEFAULT_BRAND}>
       <a href="#main" className="skip-link">
         跳到內容
       </a>
@@ -44,12 +46,12 @@ export function OsShell({ industry, shop, children, company, team = false, repor
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="os-top sticky top-0 z-30">
           <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-10">
-            <p className="flex min-w-0 items-center gap-2.5 text-sm font-semibold" title={company ?? industry.nameZh}>
+            <p className="flex min-w-0 items-center gap-2.5 text-sm font-semibold" title={name}>
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-teal text-xs font-semibold text-ink" aria-hidden="true">
-                {(company ?? industry.nameZh).slice(0, 1)}
+                {name.slice(0, 1)}
               </span>
               <span className="sr-only">公司：</span>
-              <span className="truncate">{company ?? industry.nameZh}</span>
+              <span className="truncate">{name}</span>
             </p>
             <div className="flex shrink-0 items-center gap-1.5">
               <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>

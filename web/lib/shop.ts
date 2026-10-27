@@ -1,3 +1,4 @@
+import { readLook, type BrandId } from "./brand";
 import { getIndustry, listIndustries } from "./industries";
 import {
   buildScript,
@@ -34,6 +35,9 @@ export type ShopProfile = {
   scene: string;
   size: ShopSize;
   modules: FeatureId[];
+  brand?: BrandId;
+  /** Display name for the top bar and booking page. */
+  name?: string;
 };
 
 function stageNames(script: { beats: readonly { step: string }[] }) {
@@ -146,7 +150,7 @@ export function parseShop(raw: string | undefined | null): ShopProfile | null {
     const modules = Array.isArray(value.modules)
       ? [...new Set(value.modules.map((id) => LEGACY_FEATURES[id as string] ?? id))].filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId))
       : defaultsForScene(scene);
-    return { scene, size, modules: modules.length ? modules : defaultsForScene(scene) };
+    return { scene, size, modules: modules.length ? modules : defaultsForScene(scene), ...readLook(value) };
   } catch {
     return null;
   }
