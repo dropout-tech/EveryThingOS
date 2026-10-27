@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_TC, Outfit } from "next/font/google";
-import { GlassPointer } from "@/components/GlassPointer";
-import { OceanColumn } from "@/components/OceanColumn";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { COMMERCIAL } from "@/lib/commercial";
-import { currentScene } from "@/lib/scene-server";
 import { currentTheme } from "@/lib/theme-server";
 import "./globals.css";
 
@@ -38,17 +35,19 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
-export const viewport: Viewport = { themeColor: "#07080c" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0c" },
+  ],
+};
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [theme, scene] = await Promise.all([currentTheme(), currentScene()]);
+  const theme = await currentTheme();
 
   return (
-    <html lang="zh-TW" data-theme={theme} data-scene={scene} className={`${noto.variable} ${outfit.variable} h-full`}>
+    <html lang="zh-TW" data-theme={theme} className={`${noto.variable} ${outfit.variable} h-full`}>
       <body className="min-h-full antialiased">
-        <div className="scene-layer" aria-hidden="true" />
-        <GlassPointer />
-        <OceanColumn />
         <div className="page-shell">{children}</div>
         <ServiceWorker />
       </body>

@@ -8,7 +8,7 @@ export function OnboardScreen() {
     <div className="onboard-screen flex min-h-screen flex-col">
       <header className="os-top sticky top-0 z-40">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-          <BrandMark href="/" />
+          <BrandMark href="/" compact />
           <div className="flex items-center gap-3">
             <Link href="/pricing" className="hidden text-sm text-cream-dim hover:text-cream sm:inline">
               NT$100,000
@@ -17,7 +17,7 @@ export function OnboardScreen() {
           </div>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-xl flex-1 items-center px-5 py-20">
+      <main className="mx-auto flex w-full max-w-xl flex-1 items-center px-5 py-12 md:py-20">
         <OnboardCard />
       </main>
     </div>

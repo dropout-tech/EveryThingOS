@@ -76,7 +76,7 @@ export function HelpBlocks({ blocks }: { blocks: HelpBlock[] }) {
                 </thead>
                 <tbody>
                   {block.table.rows.map((row) => (
-                    <tr key={row.join("|")} className="border-t border-white/10">
+                    <tr key={row.join("|")} className="border-t border-[var(--line)]">
                       {row.map((cell, c) => (
                         <td key={c} className="px-4 py-2.5 align-top text-cream-dim">
                           <HelpInline text={cell} />

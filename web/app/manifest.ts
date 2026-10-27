@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/workspace",
     scope: "/",
     display: "standalone",
-    background_color: "#07080c",
-    theme_color: "#07080c",
+    background_color: "#f7f7f8",
+    theme_color: "#f7f7f8",
     categories: ["business", "productivity"],
     icons: [
       { src: "/brand/dropout-app-icon.png", sizes: "512x512", type: "image/png", purpose: "any" },

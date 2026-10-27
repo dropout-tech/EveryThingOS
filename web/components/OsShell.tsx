@@ -34,20 +34,24 @@ export function OsShell({ industry, shop, children, company, team = false, repor
       <a href="#main" className="skip-link">
         跳到內容
       </a>
-      <aside className="os-rail sticky top-0 hidden h-screen w-52 shrink-0 flex-col md:flex">
-        <div className="px-6 pt-8 pb-4">
+      <aside className="os-rail sticky top-0 hidden h-screen w-60 shrink-0 flex-col md:flex">
+        <div className="flex h-14 items-center px-5">
           <BrandMark href="/workspace" compact />
         </div>
+        <p className="nav-section">工作</p>
         <SideNav items={items} />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="os-top sticky top-0 z-30">
-          <div className="flex items-center justify-between gap-3 px-5 py-4 md:px-14">
-            <p className="min-w-0 truncate text-sm font-medium md:text-base" title={company ?? industry.nameZh}>
+          <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-10">
+            <p className="flex min-w-0 items-center gap-2.5 text-sm font-semibold" title={company ?? industry.nameZh}>
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-teal text-xs font-semibold text-ink" aria-hidden="true">
+                {(company ?? industry.nameZh).slice(0, 1)}
+              </span>
               <span className="sr-only">公司：</span>
-              {company ?? industry.nameZh}
+              <span className="truncate">{company ?? industry.nameZh}</span>
             </p>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
               <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 <span aria-hidden className="font-medium">?</span>
                 說明
@@ -59,7 +63,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
           {notice ? (
             <div
               role="status"
-              className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[var(--paper-line)] px-4 py-2 text-sm md:px-8 ${notice.urgent ? "text-warn" : "text-cream"}`}
+              className={`flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-[var(--line)] px-4 py-2 text-sm md:px-10 ${notice.urgent ? "text-warn" : "text-cream"}`}
             >
               {notice.readOnly ? <Badge tone="readonly" /> : null}
               <span className="min-w-0 flex-1">{notice.message}</span>

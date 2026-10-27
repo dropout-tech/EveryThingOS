@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { NavIcon } from "./NavIcon";
 import { trapTab } from "./ui/ConfirmDialog";
 
 type NavItem = { href: string; label: string };
@@ -17,7 +18,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
   const path = usePathname();
 
   return (
-    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3 text-sm" aria-label="工作選單">
+    <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-4" aria-label="工作選單">
       {items.map((item) => (
         <Link
           key={item.href}
@@ -25,6 +26,7 @@ export function SideNav({ items }: { items: NavItem[] }) {
           aria-current={isActive(path, item.href) ? "page" : undefined}
           className={`nav-link ${item.href === "/workspace/settings" ? "mt-auto" : ""}`}
         >
+          <NavIcon href={item.href} />
           {item.label}
         </Link>
       ))}
@@ -52,7 +54,7 @@ export function TabBar({ items, extras }: { items: NavItem[]; extras?: ReactNode
       <nav className="tabbar" aria-label="常用">
         {main.map((item) => (
           <Link key={item.href} href={item.href} aria-current={isActive(path, item.href) ? "page" : undefined} className="tabbar-item">
-            <span className="tabbar-dot" aria-hidden="true" />
+            <NavIcon href={item.href} />
             {item.label}
           </Link>
         ))}
@@ -67,7 +69,7 @@ export function TabBar({ items, extras }: { items: NavItem[]; extras?: ReactNode
             setOpen(true);
           }}
         >
-          <span className="tabbar-dot" aria-hidden="true" />
+          <NavIcon href="more" />
           更多
         </button>
       </nav>
@@ -92,7 +94,8 @@ export function TabBar({ items, extras }: { items: NavItem[]; extras?: ReactNode
             <ul className="grid grid-cols-2 gap-2">
               {rest.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} aria-current={isActive(path, item.href) ? "page" : undefined} className="nav-link glass-chip justify-center">
+                  <Link href={item.href} aria-current={isActive(path, item.href) ? "page" : undefined} className="nav-link glass-chip">
+                    <NavIcon href={item.href} />
                     {item.label}
                   </Link>
                 </li>

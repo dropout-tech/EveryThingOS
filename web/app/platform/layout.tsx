@@ -19,8 +19,8 @@ export default async function PlatformLayout({ children }: LayoutProps<"/platfor
     );
   }
   return (
-    <div className="site-scope min-h-screen bg-ink/80 text-cream">
-      <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-ink/90 backdrop-blur">
+    <div className="site-scope min-h-screen bg-ink text-cream">
+      <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-ink/85 backdrop-blur">
         <div className="mx-auto flex max-w-[96rem] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
           <div className="flex items-center gap-4">
             <BrandMark href="/platform" compact />

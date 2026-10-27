@@ -88,7 +88,7 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
         <button
           key={group}
           type="button"
-          className="rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm hover:bg-white/16"
+          className="rounded-full border border-[var(--line)] bg-navy px-3 py-1.5 text-sm hover:bg-ink-2"
           onClick={() => {
             setQuery(group);
             inputRef.current?.focus();
@@ -116,7 +116,7 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
                       disabled={pending}
                       onClick={() => pick(item.id)}
                       className={`flex w-full flex-col rounded-2xl px-3 py-2 text-left ${
-                        active ? "glass-cta" : "hover:bg-white/10"
+                        active ? "glass-cta" : "hover:bg-ink-2"
                       }`}
                     >
                       <span className="font-medium">{item.nameZh}</span>
