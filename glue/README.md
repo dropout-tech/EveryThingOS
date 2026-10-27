@@ -22,7 +22,8 @@
 | `POST /billing/ecpay` | 綠界付款通知 → 帳單標已付、續約一年、開電子發票 | CheckMacValue、MerchantID、金額、交易編號 |
 | `/admin/billing`、`/admin/accounts/:site/invoices`、`/admin/invoices/:id/(paid\|void\|resend\|einvoice)` | 營運後台：健康度、帳單、線下收款、作廢、重寄連結、重開發票 | `ADMIN_TOKEN` |
 | `GET /admin/tenants/:site/billing` | 殼拿自己那家未付的帳單與付款連結 | `SHELL_TOKEN` 也可以 |
-| `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access；`SHELL_TOKEN` 只能看自己那家的死信與會議、關掉某場會議的機器人、重送自己那家的死信 |
+| `GET /admin/tenants/:site/chat/waiting` | 殼的對話頁：那家 Chatwoot 開啟中的對話（最多 4 頁），只回名字、通道、時間，不回訊息內容與聯絡方式；沒設 Chatwoot 回 `enabled: false` | `SHELL_TOKEN` 也可以 |
+| `/admin/*` | 登記公司、看死信、重送 | `ADMIN_TOKEN`，前面再加 Cloudflare Access；`SHELL_TOKEN` 只能看自己那家的死信、會議與等回的對話、關掉某場會議的機器人、重送自己那家的死信 |
 | `GET /v1/customers`、`/v1/items`、`/v1/sales-orders`、`/v1/invoices`；`POST /v1/customers`、`/v1/leads` | 對外 API：公司從金鑰判斷，欄位與篩選是固定清單，合約只能看時寫入回 423；每把金鑰每分鐘 120 次（`API_LIMIT`）。見 `docs/PUBLIC-API.md` | `Authorization: Bearer dok_live_…`（D1 只存 SHA-256） |
 | `/admin/tenants/:site/api-keys`、`/admin/tenants/:site/webhooks` | 開／停用 API 金鑰；Webhook 新增、停用、刪除、送測試、送出紀錄 | `ADMIN_TOKEN`；`SHELL_TOKEN` 只能管殼代表的那一家 |
 | 佇列 `webhook` 工作 | 每筆 ERPNext 事件順便發給有訂的 Webhook：`X-DropOut-Signature` 簽章、10 秒逾時、不跟轉址、送前再查 DNS；失敗照下面規則重試，連續 20 次失敗自動停用 | |

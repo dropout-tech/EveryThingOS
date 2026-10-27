@@ -86,7 +86,7 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
               <th scope="col" className="px-5 py-3 font-normal">要做的事</th>
               <th scope="col" className="px-5 py-3 font-normal">鼎新 A1</th>
               <th scope="col" className="px-5 py-3 font-normal">億看</th>
-              <th scope="col" className="px-5 py-3 font-normal text-cream">DropOut OS</th>
+              <th scope="col" className="px-5 py-3 font-normal text-cream">EveryThingOS</th>
               {full ? <th scope="col" className="px-5 py-3 font-normal">為什麼更好用</th> : null}
             </tr>
           </thead>
@@ -163,7 +163,7 @@ export function TrustStrip() {
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TRUST_LINKS.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} className="site-sheet block h-full p-4 hover:bg-white/10">
+            <Link href={t.href} className="site-sheet block h-full p-4 hover:bg-ink-2">
               <span className="font-medium">{t.label} →</span>
               <span className="mt-1 block text-sm text-cream-dim">{t.detail}</span>
             </Link>

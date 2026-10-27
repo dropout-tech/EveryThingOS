@@ -1,7 +1,7 @@
 [project]
 name = "dropout_pack_service"
 authors = [{ name = "DropOut Tech", email = "info@dropout.tw" }]
-description = "DropOut OS industry pack: 顧問業"
+description = "EveryThingOS industry pack: 顧問業"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

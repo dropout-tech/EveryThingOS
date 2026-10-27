@@ -4,19 +4,21 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ActionNote } from "./ActionNote";
 import { NextThing } from "./NextThing";
-import { demoKey, useDemoState } from "@/lib/demo-state";
+import { demoKey, peekDemoState, useDemoState, writeDemoState } from "@/lib/demo-state";
+import { makeQuote } from "@/lib/erp";
 import { matchRule, sanitizeImportedHandle, type ReplyComment, type ReplyRule } from "@/lib/reply";
 import type { IndustryPack } from "@/lib/types";
 
 type ReplyBoardProps = {
-  pack: Pick<IndustryPack, "id" | "workflow">;
+  pack: Pick<IndustryPack, "id" | "workflow" | "itemType" | "fulfillment" | "modules">;
   initialRules: ReplyRule[];
   initialInbox: ReplyComment[];
   /** The page already has one primary (the live inbox). This board stays quiet. */
   quiet?: boolean;
+  commentToOrder?: boolean;
 };
 
-export function ReplyBoard({ pack, initialRules, initialInbox, quiet = false }: ReplyBoardProps) {
+export function ReplyBoard({ pack, initialRules, initialInbox, quiet = false, commentToOrder = false }: ReplyBoardProps) {
   const router = useRouter();
   const [rules, setRules] = useDemoState(demoKey("reply-rules", pack.id), initialRules);
   const [inbox, setInbox] = useDemoState(demoKey("reply-inbox", pack.id), initialInbox);
@@ -46,8 +48,11 @@ export function ReplyBoard({ pack, initialRules, initialInbox, quiet = false }: 
         item.id === comment.id ? { ...item, status: "sent", matched: rule.keyword } : item,
       ),
     );
+    const key = demoKey("timeline", pack.id);
+    const prev = peekDemoState<{ party: string; text: string }[]>(key, []);
+    writeDemoState(key, [{ party: comment.handle, text: rule.publicReply }, ...prev].slice(0, 20));
     setNote(
-      `已在這台電腦對 ${comment.handle} 寫好私訊「${rule.dm}」，公開回覆「${rule.publicReply}」。還沒真的傳到 Instagram。`,
+      `已在這台電腦對 ${comment.handle} 寫好私訊「${rule.dm}」，公開回覆「${rule.publicReply}」。留在練習，客人頁看得到今天回過。還沒真的傳到 Instagram，規則也還沒在上面跑。`,
     );
   }
 
@@ -65,7 +70,15 @@ export function ReplyBoard({ pack, initialRules, initialInbox, quiet = false }: 
       return;
     }
     const stage = pack.workflow.stages[0];
-    setNote(`${handle} 進了客人看板「${stage}」。同一個人，不必再從 IG 手動複製。`);
+    if (commentToOrder) {
+      const quote = makeQuote({ party: handle, item: comment.text.slice(0, 40), amount: 1, pack, taxable: false, invoiceable: false });
+      if (quote) {
+        const inboxKey = demoKey("inbox", pack.id);
+        const existing = peekDemoState<typeof quote[]>(inboxKey, []);
+        writeDemoState(inboxKey, [quote, ...existing]);
+      }
+    }
+    setNote(`${handle} 進了客人看板「${stage}」。${commentToOrder ? "這則留言也成了一張未稅單。" : "同一個人，不必再從 IG 手動複製。"}`);
     router.push(`/workspace/crm?from=${encodeURIComponent(handle)}`);
   }
 

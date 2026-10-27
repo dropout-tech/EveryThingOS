@@ -91,7 +91,7 @@ dropout-onboard fleet purge-sweep --glue-url https://glue.dropout.tw --apply    
 
 下面是 `bootstrap` 拆開的每一步，需要個別控制時用。
 
-1. **在殼裡選現場**：老闆在 DropOut OS 的開始設定選行業、規模、要用的功能，下載 ShopProfile JSON（範例：`examples/profile-service.json`）。
+1. **在殼裡選現場**：老闆在 EveryThingOS 的開始設定選行業、規模、要用的功能，下載 ShopProfile JSON（範例：`examples/profile-service.json`）。
 2. **看方案**：`dropout-onboard plan profile.json` 列出要裝的 app 與搬家順序。官網有勾就加 Payments、Webshop、台灣金流；行業決定產業包。
 3. **開站**：先預演，看清楚每一步再加 `--apply`。
 
@@ -130,7 +130,7 @@ dropout-onboard fleet purge-sweep --glue-url https://glue.dropout.tw --apply    
 
    `import` 與 `opening-balances` 要在 bench 所在的機器上跑（`--bench-dir`，預設 `/home/frappe/frappe-bench`）。
 
-5. **驗收**：在 ERPNext 打開「DropOut Import Check」報表，再看 DropOut OS 的「今天」導入進度；每一項都由實際資料判斷，不能手動打勾。
+5. **驗收**：在 ERPNext 打開「DropOut Import Check」報表，再看 EveryThingOS 的「今天」導入進度；每一項都由實際資料判斷，不能手動打勾。
 
 ## 欄位對照
 

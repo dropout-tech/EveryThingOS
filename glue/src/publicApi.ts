@@ -79,7 +79,7 @@ function respond(requestId: string, data: unknown, status = 200, headers: Record
 function errorResponse(requestId: string, e: ApiError) {
   const headers: Record<string, string> = {};
   if (e.status === 429) headers["retry-after"] = String(Math.ceil(RATE_WINDOW_MS / 1000));
-  if (e.status === 401) headers["www-authenticate"] = 'Bearer realm="DropOut OS"';
+  if (e.status === 401) headers["www-authenticate"] = 'Bearer realm="EveryThingOS"';
   if (e.status === 405 && typeof e.extra.allow === "string") headers.allow = e.extra.allow;
   const { allow: _allow, ...extra } = e.extra;
   return respond(requestId, { error: { code: e.code, message: e.message, request_id: requestId, ...extra } }, e.status, headers);

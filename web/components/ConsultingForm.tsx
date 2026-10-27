@@ -197,7 +197,7 @@ export function ConsultingForm({ demo, turnstileSiteKey, email }: { demo: boolea
         <button type="submit" disabled={busy} aria-busy={busy} className="glass-cta rounded-full px-6 py-3 font-medium disabled:opacity-60">
           {busy ? "送出中…" : "送出，等顧問聯絡"}
         </button>
-        <a href={`mailto:${email}?subject=${encodeURIComponent("DropOut OS 免費導入")}`} className="text-sm text-cream-dim underline underline-offset-4 hover:text-cream">
+        <a href={`mailto:${email}?subject=${encodeURIComponent("EveryThingOS 免費導入")}`} className="text-sm text-cream-dim underline underline-offset-4 hover:text-cream">
           不想填表？直接寫信
         </a>
       </div>

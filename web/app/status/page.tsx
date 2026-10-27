@@ -7,7 +7,7 @@ import { SLA } from "@/lib/legal";
 import { pageMeta } from "@/lib/seo";
 import { platformStatus, type Level, type StatusIncident, type StatusTarget } from "@/lib/status";
 
-export const metadata = pageMeta("/status", "系統狀態", "DropOut OS 現在是否正常：畫面、系統同步、ERPNext，近 30 天可用率與近 14 天事故。每 5 分鐘檢查一次。");
+export const metadata = pageMeta("/status", "系統狀態", "EveryThingOS 現在是否正常：畫面、系統同步、ERPNext，近 30 天可用率與近 14 天事故。每 5 分鐘檢查一次。");
 
 const LEVEL: Record<Level, { label: string; tone: string }> = {
   up: { label: "正常", tone: "ok" },
@@ -25,7 +25,7 @@ const OVERALL: Record<Level, string> = {
   unknown: "還沒有監看資料",
 };
 
-const TARGET: Record<StatusTarget, string> = { erpnext: "ERPNext（單據與帳）", shell: "DropOut OS 畫面" };
+const TARGET: Record<StatusTarget, string> = { erpnext: "ERPNext（單據與帳）", shell: "EveryThingOS 畫面" };
 
 const taipei = (iso: string) =>
   new Date(iso).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
@@ -110,7 +110,7 @@ export default async function StatusPage() {
             {origin === "demo"
               ? "這是示範資料。接上監看後，這裡顯示真的檢查結果。"
               : origin === "error"
-                ? `${message}。這一頁打得開，代表 DropOut OS 畫面正常；其他部分等狀態服務回來再看。`
+                ? `${message}。這一頁打得開，代表 EveryThingOS 畫面正常；其他部分等狀態服務回來再看。`
                 : `每 5 分鐘檢查一次${data.checked_at ? `，最後檢查 ${taipei(data.checked_at)}（台灣時間）` : ""}。`}
           </p>
         </section>
@@ -120,7 +120,7 @@ export default async function StatusPage() {
             各部分
           </h2>
           <ul className="mt-2 divide-y divide-[var(--line)]">
-            <Row name="DropOut OS 畫面" note="登入、今天、生意、客人等頁面" level={data.components.shell} />
+            <Row name="EveryThingOS 畫面" note="登入、今天、生意、客人等頁面" level={data.components.shell} />
             <Row name="系統同步" note="LINE／官網表單進客人、金流通知、電子發票、會議紀錄" level={data.components.glue} />
             <Row name="ERPNext" note="所有公司的單據與帳" level={data.components.erpnext} />
           </ul>
@@ -143,7 +143,7 @@ export default async function StatusPage() {
               這個網址的公司
             </h2>
             <ul className="mt-2 divide-y divide-[var(--line)]">
-              <Row name="DropOut OS 畫面" level={site.components.shell} />
+              <Row name="EveryThingOS 畫面" level={site.components.shell} />
               <Row name="ERPNext" level={site.components.erpnext} />
             </ul>
             <p className="mt-4 text-sm text-cream-dim">
@@ -165,7 +165,7 @@ export default async function StatusPage() {
           <p>「連不上」的定義：連續兩次檢查（10 分鐘內）都沒有回應。只影響部分公司時顯示「部分受影響」。</p>
           <p>
             遇到問題請寫信到{" "}
-            <a href={`mailto:${COMMERCIAL.email}?subject=${encodeURIComponent("DropOut OS 服務問題")}`} className="underline underline-offset-4 hover:text-cream">
+            <a href={`mailto:${COMMERCIAL.email}?subject=${encodeURIComponent("EveryThingOS 服務問題")}`} className="underline underline-offset-4 hover:text-cream">
               {COMMERCIAL.email}
             </a>
             ，{SLA.hours}回覆；嚴重事故 {SLA.severeResponse}內回應。也可以先看

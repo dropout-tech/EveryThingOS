@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { liveConfig } from "./sources/config";
+import type { HygieneRow } from "./sources/types";
 import { DEFAULT_INDUSTRY_ID, getIndustry } from "./industries";
 import { practiceCast } from "./practice";
 import { SHOP_COOKIE, applyShop, parseShop, shopFromPack, type ShopProfile } from "./shop";
@@ -55,7 +56,7 @@ export function demoRecords(pack: IndustryPack) {
     { code: "do-line", dest: "LINE 選單", clicks: 891, source: "line" },
     { code: "do-qr", dest: "名片 QR", clicks: 77, source: "qr" },
   ];
-  const hygiene = [
+  const hygiene: HygieneRow[] = [
     { email: "owner@example.com", result: "可用", action: "進客人，之後可以寄信" },
     { email: "info@example.com", result: "不穩", action: "進客人，先不要狂寄" },
     { email: "temp@mailinator.com", result: "假的", action: "擋下，不寄信" },

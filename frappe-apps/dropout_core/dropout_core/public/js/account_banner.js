@@ -1,4 +1,4 @@
-// Shows the DropOut OS contract notice (trial ending, read-only, suspended) at the top of Desk.
+// Shows the EveryThingOS contract notice (trial ending, read-only, suspended) at the top of Desk.
 $(document).on("startup", () => {
 	const account = frappe.boot.dropout_account;
 	if (!account || !account.message) return;

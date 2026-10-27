@@ -321,6 +321,32 @@ describe("meetings", () => {
   });
 });
 
+describe("chat waiting queue", () => {
+  const conv = (id: number) => ({ id, status: "open", waiting_since: 1_700_000_000, meta: { sender: { name: `客人${id}`, email: "a@b.c", phone_number: "+886" }, channel: "Channel::Line" }, messages: [{ message_type: 0, created_at: 1_700_000_000, content: "我的地址" }] });
+  const get = (token = "shell") => new Request(`https://glue.example/admin/tenants/${tenant.site}/chat/waiting`, { headers: { authorization: `Bearer ${token}` } });
+
+  it("reads open conversations page by page for the shell and drops message text and contact details", async () => {
+    const page = (payload: unknown[]) => () => ({ data: { meta: { all_count: 3 }, payload } });
+    const h = harness({ "page=1": page([conv(1), conv(2)]), "page=2": page([conv(3)]), "page=3": page([]) });
+    const res = await handle(get(), h.env, h.app);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { enabled: boolean; total: number; conversations: any[] };
+    expect(body).toMatchObject({ enabled: true, total: 3 });
+    expect(body.conversations.map((c) => c.id)).toEqual([1, 2, 3]);
+    expect(JSON.stringify(body)).not.toMatch(/地址|a@b\.c|\+886/);
+    expect(h.calls.map((c) => c.url)).toEqual([1, 2, 3].map((n) => `https://chat.example/api/v1/accounts/3/conversations?status=open&assignee_type=all&page=${n}`));
+    expect((await handle(get("nope"), h.env, h.app)).status).toBe(403);
+  });
+
+  it("says when the company has no inbox and when the inbox does not answer", async () => {
+    const h = harness();
+    h.store.tenants.set(tenant.site, { ...tenant, chatwoot_token: undefined });
+    expect(await (await handle(get(), h.env, h.app)).json()).toEqual({ enabled: false, total: null, conversations: [] });
+    const down = harness({ "/conversations?": () => new Response("boom", { status: 500 }) });
+    expect((await handle(get(), down.env, down.app)).status).toBe(502);
+  });
+});
+
 const req = (method: string, path: string, token: string, body?: unknown) =>
   new Request(`https://glue.example${path}`, {
     method,
@@ -412,7 +438,7 @@ describe("accounts", () => {
   it("reminds on set days before and after the end date", () => {
     const a = { site: "s", company: "安安", plan: "annual", state: "active" as const, hosts: [], created_at: "", updated_at: "" };
     const at = (d: string) => new Date(`${d}T18:01:00Z`);
-    expect(reminderFor({ ...a, trial_ends: "2026-10-20" }, at("2026-10-12"))).toMatchObject({ key: "remind:s:trial:2026-10-20:7", subject: "DropOut OS 試用還有 7 天（安安）" });
+    expect(reminderFor({ ...a, trial_ends: "2026-10-20" }, at("2026-10-12"))).toMatchObject({ key: "remind:s:trial:2026-10-20:7", subject: "EveryThingOS 試用還有 7 天（安安）" });
     expect(reminderFor({ ...a, trial_ends: "2026-10-21" }, at("2026-10-12"))).toBeNull();
     expect(reminderFor({ ...a, renews_on: "2026-11-12" }, at("2026-10-12"))!.key).toBe("remind:s:due_soon:2026-11-12:30");
     expect(reminderFor({ ...a, renews_on: "2026-10-12" }, at("2026-10-12"))!.subject).toContain("寬限期");
@@ -422,24 +448,29 @@ describe("accounts", () => {
 
   it("daily pushes the contract status to ERPNext and mails each reminder once; state changes push right away", async () => {
     const h = harness({ "api.resend.com": () => ({ id: "r1" }) });
-    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "DropOut OS <billing@dropout.tw>", PLATFORM_NOTIFY: "ops@dropout.tw" });
-    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
-    const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
-    expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
-
+    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "EveryThingOS <billing@dropout.tw>", PLATFORM_NOTIFY: "ops@dropout.tw" });
     const now = new Date("2026-10-12T18:01:00Z");
-    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
-    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
-    const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));
-    expect(mail).toHaveLength(1);
-    expect(mail[0].body).toMatchObject({ to: ["boss@make.tw"], subject: "DropOut OS 試用還有 7 天（琢奧精密製造）", reply_to: "ops@dropout.tw" });
-    expect(h.emails.at(-1)).toMatchObject({ to: "ops@dropout.tw" });
-    const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
-    expect(detail.events[0]).toMatchObject({ action: "提醒", actor: "排程" });
+    vi.useFakeTimers({ now, toFake: ["Date"] });
+    try {
+      await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
+      const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
+      expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
 
-    const res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "測試" }), h.env, h.app);
-    expect(((await res.json()) as any).erpnext).toBe(true);
-    expect(pushes().at(-1)!.body).toMatchObject({ stage: "suspended", locked: 1 });
+      expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
+      expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
+      const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));
+      expect(mail).toHaveLength(1);
+      expect(mail[0].body).toMatchObject({ to: ["boss@make.tw"], subject: "EveryThingOS 試用還有 7 天（琢奧精密製造）", reply_to: "ops@dropout.tw" });
+      expect(h.emails.at(-1)).toMatchObject({ to: "ops@dropout.tw" });
+      const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
+      expect(detail.events[0]).toMatchObject({ action: "提醒", actor: "排程" });
+
+      const res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "測試" }), h.env, h.app);
+      expect(((await res.json()) as any).erpnext).toBe(true);
+      expect(pushes().at(-1)!.body).toMatchObject({ stage: "suspended", locked: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

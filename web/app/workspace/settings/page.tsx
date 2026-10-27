@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ADMIN_ROLE } from "@/lib/access";
 import { openInvoice } from "@/lib/billing";
+import { LookForm } from "@/components/LookForm";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { Badge } from "@/components/ui/Badge";
 import { buttonClass } from "@/components/ui/Button";
+import { DEFAULT_BRAND } from "@/lib/brand";
 import { PRICE_LABEL } from "@/lib/commercial";
 import { RoleGuide } from "@/components/RoleGuide";
 import { SetupChecklist } from "@/components/SetupChecklist";
@@ -74,7 +76,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   const size = SIZES.find((item) => item.id === shop?.size);
 
   return (
-    <ModuleFrame kicker="設定" title={pack.nameZh}>
+    <ModuleFrame kicker="設定" title={shop?.name ?? account?.company ?? pack.nameZh}>
       <div className="glass glass-hero space-y-5 p-6 md:p-8">
         <div>
           <p className="text-sm text-cream-dim">現場</p>
@@ -165,6 +167,8 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           ) : null}
         </div>
       </div>
+
+      <LookForm brand={shop?.brand ?? DEFAULT_BRAND} name={shop?.name ?? ""} locked={Boolean(account?.profile)} />
 
       {exportUrl ? (
         <section id="export" className="glass-well space-y-3 p-5">

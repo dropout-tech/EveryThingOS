@@ -8,7 +8,7 @@ import { NextThing } from "./NextThing";
 import { EmptyState } from "./EmptyState";
 import { LiveLeadForm } from "./LiveLeadForm";
 import { buttonClass } from "./ui/Button";
-import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
+import { demoKey, peekDemoState, useBoardState, useDemoState, writeDemoState } from "@/lib/demo-state";
 import { makeQuote, type SalesDoc } from "@/lib/erp";
 import { nextLead } from "@/lib/next-thing";
 import { beatByStep } from "@/lib/tw-real";
@@ -48,6 +48,7 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
   const [leads, setLeads] = useBoardState(demoKey("leads", pack.id), initial, live);
   const stages = live ? liveStages(leads) : pack.workflow.stages;
   const [note, setNote] = useState<string | null>(null);
+  const [replies] = useDemoState<{ party: string; text: string }[]>(demoKey("timeline", pack.id), []);
 
   function onNext(lead: Lead) {
     const index = stages.indexOf(lead.stage);
@@ -88,6 +89,16 @@ export function CrmBoard({ pack, initial, live = false }: CrmBoardProps) {
     <div className="space-y-4">
       {live ? <LiveLeadForm emphasis={leads.length ? "secondary" : "primary"} /> : null}
       <ActionNote>{note}</ActionNote>
+      {replies.length ? (
+        <section className="glass-well p-4 text-sm">
+          <h2 className="font-medium">今天回過</h2>
+          <ul className="mt-2 space-y-1">
+            {replies.map((reply, index) => (
+              <li key={`${reply.party}-${index}`}>{reply.party}：{reply.text}</li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       {focus ? (
         <NextThing
           title={focus.name}

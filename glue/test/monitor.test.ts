@@ -55,7 +55,7 @@ function harness(env: Partial<Env> = {}) {
     ADMIN_TOKEN: "admin",
     SHELL_TOKEN: "shell",
     EMAIL: { send: async (m: any) => (emails.push(m), { messageId: "m1" }) },
-    PLATFORM_MAIL_FROM: "DropOut OS <ops@dropout.tw>",
+    PLATFORM_MAIL_FROM: "EveryThingOS <ops@dropout.tw>",
     PLATFORM_NOTIFY: "ops@dropout.tw",
     ...env,
   } as unknown as Env;
@@ -112,7 +112,7 @@ describe("uptime", () => {
     expect(h.monitor.incidents).toMatchObject([{ site: "make.dropout.tw", target: "erpnext", started_at: at(0).toISOString(), resolved_at: null, error: "HTTP 502" }]);
     const hook = h.calls.find((c) => c.url.startsWith("https://hooks.slack.com"))!;
     expect(JSON.parse(hook.init!.body as string).text).toContain("連不上：琢奧精密製造（make.dropout.tw）ERPNext");
-    expect(h.emails[0]).toMatchObject({ to: "ops@dropout.tw", subject: "[DropOut OS 監看] 1 個連不上" });
+    expect(h.emails[0]).toMatchObject({ to: "ops@dropout.tw", subject: "[EveryThingOS 監看] 1 個連不上" });
 
     expect(await uptime(h.env, h.app, at(10))).toMatchObject({ down: 0, alerted: [] });
     expect(h.monitor.incidents).toHaveLength(1);
@@ -195,7 +195,7 @@ describe("uptime", () => {
     expect(webhookBody("https://chat.googleapis.com/v1/spaces/x", "hi", [change])).toEqual({ text: "hi" });
     expect(webhookBody("https://ops.example/hook", "hi", [change])).toMatchObject({ text: "hi", content: "hi", message: "hi", events: [change] });
     const many = alertText(Array.from({ length: 80 }, (_, i) => ({ ...change, site: `s${i}` })));
-    expect(many.subject).toBe("[DropOut OS 監看] 80 個連不上");
+    expect(many.subject).toBe("[EveryThingOS 監看] 80 個連不上");
     expect(many.text.length).toBeLessThanOrEqual(1900);
     expect(many.text).toContain("12:00 起");
   });

@@ -1,7 +1,7 @@
 [project]
 name = "dropout_core"
 authors = [{ name = "DropOut Tech", email = "info@dropout.tw" }]
-description = "DropOut OS kernel for ERPNext: identities, consent, events, Taiwan validation, onboarding checks"
+description = "EveryThingOS kernel for ERPNext: identities, consent, events, Taiwan validation, onboarding checks"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

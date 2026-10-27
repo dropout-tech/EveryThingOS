@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 100 DropOut OS industry packs. Run from repo root."""
+"""Generate 100 EveryThingOS industry packs. Run from repo root."""
 from __future__ import annotations
 
 import json
@@ -15,7 +15,7 @@ GROUPS = {
         "saas": ["排隊 App", "外送平台後台", "電子菜單", "班表系統"],
     },
     "教育": {
-        "modules": {"crm": True, "inventory": False, "pos": False, "manufacturing": False, "projects": True, "batch": False, "funnel": True, "hygiene": True, "website": True, "line": True},
+        "modules": {"crm": True, "inventory": True, "pos": False, "manufacturing": False, "projects": True, "batch": False, "funnel": True, "hygiene": True, "website": True, "line": True},
         "saas": ["Google 表單報名", "LINE 群組點名", "Excel 堂數", "Calendly"],
     },
     "健康美容": {

@@ -3,7 +3,7 @@ export const PRICE_LABEL = "每年 NT$100,000";
 export const PRICE_NOTE = "未稅。含每天使用與顧問到現場，不另外加購功能。";
 
 export const COMMERCIAL = {
-  product: "DropOut OS",
+  product: "EveryThingOS",
   legalName: "琢奧科技",
   domain: "dropout.tw",
   siteUrl: "https://os.dropout.tw",

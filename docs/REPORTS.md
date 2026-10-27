@@ -42,17 +42,17 @@
 
 ## 裝到手機
 
-DropOut OS 可以像 App 一樣放在手機桌面，打開時沒有瀏覽器網址列。
+EveryThingOS 可以像 App 一樣放在手機桌面，打開時沒有瀏覽器網址列。
 
 **iPhone（Safari）**
 
-1. 用 Safari 打開公司的 DropOut OS 網址，先登入
+1. 用 Safari 打開公司的 EveryThingOS 網址，先登入
 2. 點下方的「分享」按鈕
-3. 選「加入主畫面」，名稱會是 DropOut OS，按「新增」
+3. 選「加入主畫面」，名稱會是 EveryThingOS，按「新增」
 
 **Android（Chrome）**
 
-1. 用 Chrome 打開公司的 DropOut OS 網址，先登入
+1. 用 Chrome 打開公司的 EveryThingOS 網址，先登入
 2. 點右上角「⋮」
 3. 選「安裝應用程式」或「加到主畫面」
 

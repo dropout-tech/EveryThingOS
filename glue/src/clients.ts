@@ -80,6 +80,29 @@ export class ERPNext {
   }
 }
 
+export type SlimConversation = {
+  id: number;
+  status: unknown;
+  waiting_since: unknown;
+  meta: { sender: { name: unknown }; channel: unknown };
+  messages: { message_type: unknown; created_at: unknown }[];
+};
+
+/** Drops message text, contact details and everything else the waiting queue does not read. */
+export function slimConversation(raw: unknown): SlimConversation | null {
+  const c = raw as Record<string, any> | null;
+  if (!c || typeof c !== "object" || typeof c.id !== "number") return null;
+  const messages: unknown[] = Array.isArray(c.messages) ? c.messages : [];
+  const last = messages[messages.length - 1] as Record<string, unknown> | undefined;
+  return {
+    id: c.id,
+    status: c.status,
+    waiting_since: c.waiting_since,
+    meta: { sender: { name: c.meta?.sender?.name }, channel: c.meta?.channel },
+    messages: last && typeof last === "object" ? [{ message_type: last.message_type, created_at: last.created_at }] : [],
+  };
+}
+
 export class Chatwoot {
   constructor(private t: Tenant, private fetcher: Fetch) {}
 
@@ -98,6 +121,23 @@ export class Chatwoot {
   async findContact(q: string): Promise<{ id: number } | null> {
     const body = await call(this.fetcher, this.url(`/contacts/search?q=${encodeURIComponent(q)}`), { headers: this.headers() }, "chatwoot search");
     return body?.payload?.[0] ?? null;
+  }
+
+  /**
+   * Open conversations, a few pages deep: Chatwoot lists by latest activity, so the
+   * longest waits sit at the end. Only the fields the shell's queue needs leave here.
+   */
+  async openConversations(pages = 4): Promise<{ total: number | null; conversations: SlimConversation[] }> {
+    const conversations: SlimConversation[] = [];
+    let total: number | null = null;
+    for (let page = 1; page <= pages; page++) {
+      const body = await call(this.fetcher, this.url(`/conversations?status=open&assignee_type=all&page=${page}`), { headers: this.headers() }, "chatwoot conversations");
+      if (page === 1 && typeof body?.data?.meta?.all_count === "number") total = body.data.meta.all_count;
+      const rows: unknown[] = Array.isArray(body?.data?.payload) ? body.data.payload : [];
+      conversations.push(...rows.map(slimConversation).filter((c): c is SlimConversation => c !== null));
+      if (!rows.length) break;
+    }
+    return { total, conversations };
   }
 
   /** Chatwoot's POST replaces the label list, so merge with what is there. */

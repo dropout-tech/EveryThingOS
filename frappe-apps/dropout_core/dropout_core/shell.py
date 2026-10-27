@@ -1,4 +1,4 @@
-"""Read models for the DropOut OS shell.
+"""Read models for the EveryThingOS shell.
 
 Everything goes through `frappe.get_list`, so the logged-in user's ERPNext
 roles and user permissions decide what comes back. A section the user may not
@@ -141,6 +141,61 @@ def _stock(company):
 	return rows, sum(flt(b.stock_value) for b in bins)
 
 
+def _course_boms():
+	"""Product Bundles (course BOMs): each course and the material items each student consumes."""
+	bundles = frappe.get_list(
+		"Product Bundle",
+		filters={"disabled": 0},
+		fields=["name", "new_item_code", "description"],
+		order_by="modified desc",
+		limit=50,
+	)
+	if not bundles:
+		return []
+	parent_codes = [b.new_item_code for b in bundles]
+	parent_names = {
+		i.name: i.item_name
+		for i in frappe.get_all("Item", filters={"name": ["in", parent_codes]}, fields=["name", "item_name"])
+	}
+	children = frappe.get_all(
+		"Product Bundle Item",
+		filters={"parent": ["in", [b.name for b in bundles]]},
+		fields=["parent", "item_code", "qty", "uom", "description", "idx"],
+		order_by="idx asc",
+	)
+	child_codes = {c.item_code for c in children}
+	child_items = {
+		i.name: (i.item_name, i.stock_uom)
+		for i in frappe.get_all("Item", filters={"name": ["in", list(child_codes)]}, fields=["name", "item_name", "stock_uom"])
+	} if child_codes else {}
+	by_parent = {}
+	for c in children:
+		item_name, stock_uom = child_items.get(c.item_code, (c.description or c.item_code, c.uom or "份"))
+		by_parent.setdefault(c.parent, []).append(
+			{
+				"sku": c.item_code,
+				"name": item_name or c.item_code,
+				"qty_per_student": flt(c.qty) or 1,
+				"uom": c.uom or stock_uom or "份",
+			}
+		)
+	out = []
+	for b in bundles:
+		lines = by_parent.get(b.name, [])
+		if not lines:
+			continue
+		out.append(
+			{
+				"course_code": b.new_item_code,
+				"course_name": parent_names.get(b.new_item_code) or b.description or b.new_item_code,
+				"target_seats": 15,
+				"lines": lines,
+				"href": _desk("Product Bundle", b.name),
+			}
+		)
+	return out
+
+
 def _aging(company, today):
 	buckets = {}
 	for si in frappe.get_list(
@@ -222,6 +277,7 @@ def books(company=None):
 	s.run("purchases", lambda: _purchases(company, s.denied), [])
 	s.run("stock", lambda: _stock(company), ([], 0))
 	s.out["stock"], s.out["inventory_value"] = s.out["stock"]
+	s.run("course_boms", _course_boms, [])
 	s.run("ar_aging", lambda: _aging(company, today), [])
 	s.run("journals", lambda: _journals(company), [])
 	s.run("einvoices", lambda: _einvoices(company), [])

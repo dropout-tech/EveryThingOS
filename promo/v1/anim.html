@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  :root { --cream: #fffbef; --navy: #123f59; --teal: #1cb3bb; --yellow: #f5c82f; --dog: #4c91af; }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--cream); font-family: "jf open 粉圓 2.1", "jf-openhuninn-2.1", "Noto Sans CJK TC", sans-serif; color: var(--navy); -webkit-font-smoothing: antialiased; }
+  canvas { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+  .layer { position: absolute; inset: 0; }
+  .hide { opacity: 0; }
+
+  #footer { left: 96px; right: 96px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; font-size: 26px; color: var(--teal); letter-spacing: 1px; }
+  #footer img { height: 64px; }
+
+  #title { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #title img { width: 620px; }
+  #title h1 { font-size: 104px; margin-top: 30px; letter-spacing: 2px; }
+  #title p { font-size: 40px; margin-top: 22px; color: var(--teal); }
+
+  .kicker { display: inline-block; font-size: 34px; padding: 10px 30px; border-radius: 999px; background: var(--yellow); color: var(--navy); letter-spacing: 2px; }
+  .kicker.teal { background: var(--teal); color: #fff; }
+  .head { left: 120px; top: 120px; width: 1680px; }
+  .head h2 { font-size: 78px; line-height: 1.25; margin-top: 26px; letter-spacing: 1px; }
+
+  /* pain 1: five broken links */
+  #flow { left: 120px; right: 120px; top: 520px; height: 180px; }
+  .node { position: absolute; top: 0; width: 250px; height: 150px; border-radius: 36px; background: #fff; border: 5px solid var(--navy); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; box-shadow: 0 10px 0 rgba(18,63,89,0.12); }
+  .node small { font-size: 24px; color: var(--teal); margin-bottom: 4px; letter-spacing: 1px; }
+  .link { position: absolute; top: 72px; height: 8px; border-radius: 4px; }
+  .break { position: absolute; top: 40px; width: 70px; height: 70px; border-radius: 50%; background: var(--yellow); color: var(--navy); font-size: 46px; display: flex; align-items: center; justify-content: center; }
+  .dot { position: absolute; top: 62px; width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 0 6px rgba(245,200,47,0.35); }
+
+  .facts { left: 120px; right: 120px; top: 790px; display: flex; gap: 28px; }
+  .fact { flex: 1; background: #fff; border-radius: 28px; padding: 26px 30px; font-size: 36px; line-height: 1.35; border: 4px solid rgba(18,63,89,0.15); }
+  .fact b { color: var(--teal); font-weight: normal; }
+
+  /* solutions */
+  .bullets { left: 120px; top: 360px; width: 680px; }
+  .bullet { display: flex; gap: 22px; align-items: flex-start; font-size: 44px; line-height: 1.32; margin-bottom: 40px; }
+  .bullet i { flex: none; width: 54px; height: 54px; border-radius: 50%; background: var(--teal); color: #fff; font-style: normal; font-size: 32px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .bullet { transition: none; }
+  .bullet.dim { opacity: 0.32 !important; }
+  .bullet.dim i { background: rgba(18,63,89,0.35); }
+  .shot { left: 840px; top: 236px; width: 980px; border-radius: 30px; background: #fff; border: 5px solid var(--navy); overflow: hidden; box-shadow: 0 18px 0 rgba(18,63,89,0.12); }
+  .shot .bar { height: 54px; background: #fff3d1; border-bottom: 4px solid var(--navy); display: flex; align-items: center; gap: 10px; padding-left: 22px; }
+  .shot .bar span { width: 15px; height: 15px; border-radius: 50%; background: var(--yellow); }
+  .shot .bar span:nth-child(2) { background: var(--teal); }
+  .shot .bar span:nth-child(3) { background: var(--dog); }
+  .shot .bar em { font-style: normal; color: var(--navy); font-size: 26px; margin-left: 16px; letter-spacing: 1px; }
+  .shot .view { position: relative; overflow: hidden; width: 970px; height: 608px; background: #fffbef; }
+  .screen { position: absolute; left: 0; top: 0; width: 1100px; height: 690px; transform-origin: 0 0; }
+  .screen .frame { position: absolute; left: 0; top: 0; width: 1100px; }
+  .screen .clip { position: absolute; left: 240px; top: 56px; width: 860px; height: 634px; overflow: hidden; }
+  .screen .tall { position: absolute; left: -240px; width: 1100px; }
+  .screen .ring { position: absolute; border: 3px solid var(--teal); border-radius: 16px; box-shadow: 0 0 0 6px rgba(28,179,187,0.18); pointer-events: none; }
+  .note { font-size: 22px; color: rgba(18,63,89,0.6); }
+
+  /* pain 2: scattered cards */
+  .card { position: absolute; width: 300px; padding: 22px 26px; border-radius: 26px; background: #fff; border: 4px solid var(--navy); font-size: 36px; text-align: center; box-shadow: 0 10px 0 rgba(18,63,89,0.12); }
+  .card small { display: block; font-size: 22px; color: var(--teal); margin-bottom: 6px; letter-spacing: 1px; }
+
+  /* pain 1: scattered booking messages */
+  .bubble { position: absolute; white-space: nowrap; padding: 20px 26px 22px; border-radius: 30px 30px 30px 8px; background: #fff; border: 4px solid var(--navy); font-size: 36px; box-shadow: 0 10px 0 rgba(18,63,89,0.12); }
+  .bubble small { display: flex; align-items: center; gap: 10px; font-size: 22px; color: var(--teal); margin-bottom: 6px; letter-spacing: 1px; }
+  .bubble small i { width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); display: inline-block; }
+  .bubble.r { border-radius: 30px 30px 8px 30px; }
+
+  #close { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #close h2 { font-size: 92px; line-height: 1.3; letter-spacing: 2px; }
+  #close img { width: 520px; margin-top: 46px; }
+  #close p { font-size: 36px; margin-top: 26px; color: var(--teal); }
+  #close .note { margin-top: 26px; }
+</style>
+</head>
+<body>
+<div id="title" class="abs">
+  <img src="/promo/assets/meetplus-trim.png" alt="" />
+  <h1>米特才藝中心　AI 店務升級</h1>
+  <p>20 家分店，三個最卡的地方，一次接起來</p>
+</div>
+
+<div id="p0" class="layer hide">
+  <div class="head abs"><span class="kicker">卡關點 1｜預約與退改課</span><h2>預約散在 LINE、電話、現場<br>退課時學費、材料費算不清</h2></div>
+  <div id="bubbles"></div>
+  <div class="facts abs" id="facts0">
+    <div class="fact">名單記在不同地方，<br><b>同一堂課重複劃位</b></div>
+    <div class="fact">材料包拆了沒？<br><b>退多少吵不完</b></div>
+    <div class="fact">名額是虛的、材料是實的，<br><b>帳對不起來</b></div>
+  </div>
+</div>
+
+<div id="s0" class="layer hide">
+  <div class="head abs"><span class="kicker teal">解法｜一個入口，學費與材料費分開算</span></div>
+  <div class="bullets abs">
+    <div class="bullet"><i>1</i><span>LINE、IG、FB 的詢問<br>進同一個收件匣</span></div>
+    <div class="bullet"><i>2</i><span>四個管道共用<br>同一個預約頁</span></div>
+    <div class="bullet"><i>3</i><span>退課自動拆算<br>已上堂數與材料費</span></div>
+  </div>
+  <div class="shot abs" id="shot0"><div class="bar"><span></span><span></span><span></span><em></em></div><div class="view"></div></div>
+</div>
+
+<div id="p1" class="layer hide">
+  <div class="head abs"><span class="kicker">卡關點 2｜材料履約</span><h2>報名、鎖料、上課、損耗、調撥<br>五段各記各的，對不起來</h2></div>
+  <div id="flow" class="abs"></div>
+  <div class="facts abs" id="facts1">
+    <div class="fact">家長報名了，<br><b>材料包開課前才發現不夠</b></div>
+    <div class="fact">20 家分店剩多少，<br><b>只能在群組一家家問</b></div>
+    <div class="fact">損耗沒留紀錄，<br><b>不知道成本漏在哪</b></div>
+  </div>
+</div>
+
+<div id="s1" class="layer hide">
+  <div class="head abs"><span class="kicker teal">解法｜一張課程 BOM 串到底</span></div>
+  <div class="bullets abs">
+    <div class="bullet"><i>1</i><span>報名成立，依課程 BOM<br>同步鎖定材料包</span></div>
+    <div class="bullet"><i>2</i><span>上課耗用、教學損耗<br>都留下紀錄</span></div>
+    <div class="bullet"><i>3</i><span>AI 提出跨店調撥或補貨<br>建議，由人員確認</span></div>
+  </div>
+  <div class="shot abs" id="shot1"><div class="bar"><span></span><span></span><span></span><em></em></div><div class="view"></div></div>
+</div>
+
+<div id="p2" class="layer hide">
+  <div class="head abs"><span class="kicker">卡關點 3｜師資排班</span><h2>師資資料散在各處<br>媒合、請假、工時、排班全靠人工</h2></div>
+  <div id="cards"></div>
+  <div class="facts abs" id="facts2">
+    <div class="fact">誰會教節慶 DIY？<br><b>翻群組、打電話問</b></div>
+    <div class="fact">排好了才發現<br><b>老師那天請假</b></div>
+    <div class="fact">工時快爆了<br><b>月底才被提醒</b></div>
+  </div>
+</div>
+
+<div id="s2" class="layer hide">
+  <div class="head abs"><span class="kicker teal">解法｜AI 建議、主管確認、全程留痕</span></div>
+  <div class="bullets abs">
+    <div class="bullet"><i>1</i><span>依專長、適教年齡、<br>分店推薦師資</span></div>
+    <div class="bullet"><i>2</i><span>自動排除請假與<br>超過工時上限的人</span></div>
+    <div class="bullet"><i>3</i><span>主管覆核，原建議、<br>調整與時間都留紀錄</span></div>
+  </div>
+  <div class="shot abs" id="shot2"><div class="bar"><span></span><span></span><span></span><em></em></div><div class="view"></div></div>
+</div>
+
+<div id="close" class="abs hide">
+  <h2>預約、材料、人力<br>接在同一條流程上</h2>
+  <img src="/promo/assets/meetplus-trim.png" alt="" />
+  <p>徐立文教主辦　琢奧科技協助導入</p>
+  <p class="note">功能情境示意；實際導入範圍依合作方案確認</p>
+</div>
+
+<div id="footer" class="abs hide"><span>米特才藝中心　徐立文教主辦／琢奧科技協助導入</span><img src="/promo/assets/meetplus-trim.png" alt="" /></div>
+<script type="module" src="./anim.js"></script>
+</body>
+</html>

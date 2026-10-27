@@ -249,8 +249,8 @@ class TestShellReadModels(FrappeTestCase):
 	def test_oauth_client_and_chatwoot_link(self):
 		from dropout_core.provisioning import create_oauth_client, link_chatwoot_user
 
-		first = create_oauth_client("https://a.example/api/auth/callback", app_name="DropOut OS test")
-		second = create_oauth_client("https://b.example/api/auth/callback", app_name="DropOut OS test")
+		first = create_oauth_client("https://a.example/api/auth/callback", app_name="EveryThingOS test")
+		second = create_oauth_client("https://b.example/api/auth/callback", app_name="EveryThingOS test")
 		self.assertEqual(first["client_id"], second["client_id"])
 		self.assertEqual(sorted(second["redirect_uris"]), ["https://a.example/api/auth/callback", "https://b.example/api/auth/callback"])
 		self.assertEqual(frappe.db.get_value("OAuth Client", first["client_id"], "skip_authorization"), 1)
@@ -505,3 +505,21 @@ class TestAccountLock(FrappeTestCase):
 		frappe.set_user("lock-sales@example.com")
 		self.assertTrue(self._lead().name)
 		self.assertEqual(account.status()["ends"], "2027-10-11")
+
+	def test_course_bom_upsert_and_books(self):
+		from dropout_core import actions, shell
+
+		frappe.set_user("Administrator")
+		res = actions.upsert_course_bom(
+			"CRS-TEST-BOM",
+			"STEAM 機器人測試期班",
+			[
+				{"sku": "MAT-TEST-BOOK", "name": "STEAM 測試講義", "qtyPerStudent": 1, "uom": "本"},
+				{"sku": "MAT-TEST-KIT", "name": "感測器測試材料包", "qtyPerStudent": 2, "uom": "組"},
+			],
+		)
+		self.assertTrue(res["ok"])
+		boms = shell.books()["course_boms"]
+		match = next((b for b in boms if b["course_code"] == "CRS-TEST-BOM"), None)
+		self.assertIsNotNone(match)
+		self.assertEqual(len(match["lines"]), 2)

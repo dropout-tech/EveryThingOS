@@ -1,6 +1,6 @@
 # ERPNext apps
 
-DropOut OS 對 ERPNext v15 的所有差異都在這幾個 Frappe app 裡，不改 Frappe／ERPNext 原始碼。升級 ERPNext 時照上游流程 `bench update`，這些 app 跟著 `bench migrate` 重跑設定。
+EveryThingOS 對 ERPNext v15 的所有差異都在這幾個 Frappe app 裡，不改 Frappe／ERPNext 原始碼。升級 ERPNext 時照上游流程 `bench update`，這些 app 跟著 `bench migrate` 重跑設定。
 
 | App | 內容 | 依賴 |
 | --- | --- | --- |

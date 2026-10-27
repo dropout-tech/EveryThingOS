@@ -61,6 +61,31 @@ CUSTOM_FIELDS = {
 		{"fieldname": "tw_hi_dependents", "fieldtype": "Int", "label": "健保眷屬人數", "insert_after": "tw_insurance_column", "non_negative": 1},
 		{"fieldname": "tw_pension_voluntary_rate", "fieldtype": "Percent", "label": "勞退自提比例", "insert_after": "tw_hi_dependents", "non_negative": 1},
 		{"fieldname": "tw_no_employment_insurance", "fieldtype": "Check", "label": "不參加就業保險", "insert_after": "tw_pension_voluntary_rate", "description": "例如已領老年給付或依法不適用的外籍人士"},
+		_section("tw_teacher_section", "師資技能與跨店支援", "tw_no_employment_insurance"),
+		{"fieldname": "tw_skills", "fieldtype": "Small Text", "label": "專長／課程主題標籤", "insert_after": "tw_teacher_section", "description": "以逗號分隔，例如：親子手作,美術創作,節慶DIY,黏土雕塑"},
+		{"fieldname": "tw_age_groups", "fieldtype": "Data", "label": "適教年齡層", "insert_after": "tw_skills", "description": "以逗號分隔，例如：幼兒 3–6 歲,兒童 7–12 歲,親子共學"},
+		{"fieldname": "tw_home_branch", "fieldtype": "Data", "label": "所屬分店／據點", "insert_after": "tw_age_groups"},
+		{"fieldname": "tw_support_branches", "fieldtype": "Data", "label": "可跨店支援據點", "insert_after": "tw_home_branch", "description": "以逗號分隔可支援的分店名稱"},
+	],
+	"Additional Salary": [
+		_section("tw_ot_section", "加班紀錄", "amount"),
+		{"fieldname": "tw_ot_kind", "fieldtype": "Data", "label": "加班種類", "insert_after": "tw_ot_section", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_hours", "fieldtype": "Float", "label": "加班時數", "insert_after": "tw_ot_kind", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_cap_hours", "fieldtype": "Float", "label": "計入每月上限的時數", "insert_after": "tw_ot_hours", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_note", "fieldtype": "Small Text", "label": "倍數與依據", "insert_after": "tw_ot_cap_hours", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_leave_allocation", "fieldtype": "Link", "options": "Leave Allocation", "label": "特休假別分配", "insert_after": "tw_ot_note", "read_only": 1, "no_copy": 1},
+	],
+	"Shift Assignment": [
+		_section("tw_schedule_section", "課程與教室排班", "status"),
+		{"fieldname": "tw_course_name", "fieldtype": "Data", "label": "課程／班級名稱", "insert_after": "tw_schedule_section"},
+		{"fieldname": "tw_branch", "fieldtype": "Data", "label": "上課據點／分店", "insert_after": "tw_course_name"},
+		{"fieldname": "tw_room", "fieldtype": "Data", "label": "教室／地點", "insert_after": "tw_branch"},
+		{"fieldname": "tw_start_time", "fieldtype": "Data", "label": "上課時間（起）", "insert_after": "tw_room"},
+		{"fieldname": "tw_end_time", "fieldtype": "Data", "label": "下課時間（迄）", "insert_after": "tw_start_time"},
+		{"fieldname": "tw_ai_suggested_employee", "fieldtype": "Data", "label": "AI 原始建議師資", "insert_after": "tw_end_time", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ai_reason", "fieldtype": "Small Text", "label": "AI 媒合依據", "insert_after": "tw_ai_suggested_employee", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_audit_decision", "fieldtype": "Data", "label": "主管覆核結果", "insert_after": "tw_ai_reason", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_adjustment_note", "fieldtype": "Small Text", "label": "主管調整內容與原因", "insert_after": "tw_audit_decision", "read_only": 1, "no_copy": 1},
 	],
 	"Salary Slip": [
 		_section("tw_basis_section", "台灣扣繳基準", "deductions"),
@@ -126,6 +151,7 @@ def after_setup_wizard(args=None):
 def ensure_setup():
 	create_custom_fields(CUSTOM_FIELDS, update=True)
 	seed_settings()
+	default_auto_annual_leave()
 	created = {"salary_components": [], "leave_types": []}
 	for row in _load("salary_components.json"):
 		if not frappe.db.exists("Salary Component", row["salary_component"]):
@@ -153,6 +179,14 @@ def seed_settings():
 		s.append("grades", {"insured_salary": amount, "labor": int(amount in labor), "health": 1, "pension": int(amount in pension)})
 	s.flags.ignore_permissions = True
 	s.save()
+
+
+def default_auto_annual_leave():
+	"""Sites set up before the switches existed get them on once. A company that turned one off keeps it off."""
+	for field, value in (("auto_annual_leave", 1), ("auto_settle_unused_leave", 1), ("overtime_quarter_start_month", 1)):
+		stored = frappe.db.sql("select value from `tabSingles` where doctype = %s and field = %s", (SETTINGS, field))
+		if not stored:
+			frappe.db.set_single_value(SETTINGS, field, value)
 
 
 def _existing_roles():

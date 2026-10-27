@@ -167,12 +167,19 @@ def today():
 	company = _company()
 	day = getdate(nowdate())
 	me = _me(user, day)
-	out = {"date": str(day), "company": company, "me": me, "on_leave": [], "approvals": [], "payroll": None, "rates": None, "denied": []}
+	out = {"date": str(day), "company": company, "me": me, "on_leave": [], "approvals": [], "schedule": [], "payroll": None, "rates": None, "denied": []}
 	if roles & APPROVER_ROLES:
+		from dropout_hr_tw.schedule import upcoming_shifts
+
 		out["on_leave"] = _on_leave(company, day)
 		out["approvals"] = _approvals(user, roles, company, me["employee"])
+		out["schedule"] = upcoming_shifts(company, day)
 	else:
 		out["denied"] += ["on_leave", "approvals"]
+		if me["employee"]:
+			from dropout_hr_tw.schedule import upcoming_shifts
+
+			out["schedule"] = [s for s in upcoming_shifts(company, day) if s["employee"] == me["employee"]]
 	if roles & PAYROLL_ROLES:
 		try:
 			out["payroll"] = _payroll(company, day)
@@ -183,8 +190,25 @@ def today():
 		out["denied"].append("payroll")
 	if roles & HR_ROLES:
 		out["rates"] = _rates(day)
-	out["can"] = {"approve": bool(roles & APPROVER_ROLES), "payroll": out["payroll"] is not None}
+		out["staff"] = _staff(company)
+	out["can"] = {
+		"approve": bool(roles & APPROVER_ROLES),
+		"payroll": out["payroll"] is not None,
+		"overtime": bool(roles & HR_ROLES),
+		"schedule": bool(roles & HR_ROLES),
+	}
 	return out
+
+
+def _staff(company):
+	rows = frappe.get_all(
+		"Employee",
+		filters={"company": company, "status": "Active"},
+		fields=["name", "employee_name"],
+		order_by="employee_name asc",
+		limit=500,
+	)
+	return [{"id": r.name, "name": r.employee_name} for r in rows]
 
 
 @frappe.whitelist(methods=["POST"])
@@ -207,7 +231,7 @@ def check_in(log_type, latitude=None, longitude=None):
 	if recent:
 		frappe.throw(_("一分鐘內已經打過卡了"))
 	doc = frappe.new_doc("Employee Checkin")
-	doc.update({"employee": emp.name, "log_type": log_type, "time": now, "device_id": "DropOut OS"})
+	doc.update({"employee": emp.name, "log_type": log_type, "time": now, "device_id": "EveryThingOS"})
 	if latitude not in (None, "") and longitude not in (None, ""):
 		lat, lng = flt(latitude), flt(longitude)
 		if not (-90 <= lat <= 90 and -180 <= lng <= 180):

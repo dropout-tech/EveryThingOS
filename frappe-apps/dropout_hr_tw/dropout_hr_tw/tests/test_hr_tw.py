@@ -289,6 +289,12 @@ class TestShell(FrappeTestCase):
 		shell.decide_leave(app.name, "approve")
 		self.assertIn("請假人", [r["name"] for r in shell.today()["on_leave"]])
 
+	def test_hr_sees_staff_to_record_overtime(self):
+		frappe.set_user("Administrator")
+		today = shell.today()
+		self.assertTrue(today["can"]["overtime"])
+		self.assertIn(self.staff_emp, [s["id"] for s in today["staff"]])
+
 	def test_permission_checks(self):
 		app = self.leave(5)
 		frappe.set_user(self.outsider)
@@ -297,6 +303,8 @@ class TestShell(FrappeTestCase):
 		self.assertEqual(today["approvals"], [])
 		self.assertIn("on_leave", today["denied"])
 		self.assertIsNone(today["me"]["employee"])
+		self.assertNotIn("staff", today)
+		self.assertFalse(today["can"]["overtime"])
 		self.assertRaises(frappe.ValidationError, shell.check_in, "IN")
 
 		frappe.set_user(self.staff)
@@ -328,3 +336,115 @@ class TestShell(FrappeTestCase):
 		self.assertEqual(me["employee"], self.staff_emp)
 		self.assertEqual([l["type"] for l in me["logs"]], ["IN"])
 		self.assertEqual(me["next"], "OUT")
+
+
+class TestOvertime(FrappeTestCase):
+	def setUp(self):
+		install.ensure_setup()
+		frappe.set_user("Administrator")
+		self.employee = make_employee("加班測試")
+		assign(self.employee, 30000)
+		frappe.db.set_single_value(payroll.SETTINGS, "overtime_consent", 0)
+
+	def test_weekday_overtime_lands_on_the_slip(self):
+		from dropout_hr_tw import overtime
+
+		out = overtime.record(self.employee, nowdate(), 2, "weekday")
+		# 30000 / 240 = 125；前 2 小時 4/3 → 333.33… → 333
+		self.assertEqual(out["amount"], 333)
+		doc = frappe.get_doc("Additional Salary", out["name"])
+		self.assertEqual(doc.docstatus, 1)
+		self.assertEqual(doc.salary_component, overtime.COMPONENT)
+		self.assertEqual(doc.tw_ot_cap_hours, 2)
+
+	def test_daily_and_monthly_caps(self):
+		from dropout_hr_tw import overtime
+
+		with self.assertRaises(frappe.ValidationError):
+			overtime.record(self.employee, nowdate(), 5, "weekday")
+		for _i in range(11):
+			overtime.record(self.employee, nowdate(), 4, "weekday")
+		with self.assertRaises(frappe.ValidationError):
+			overtime.record(self.employee, nowdate(), 4, "weekday")
+		frappe.db.set_single_value(payroll.SETTINGS, "overtime_consent", 1)
+		overtime.record(self.employee, nowdate(), 4, "weekday")
+
+	def test_only_hr_records(self):
+		from dropout_hr_tw import overtime
+
+		frappe.set_user(make_user("ot-staff@example.com", "Employee"))
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				overtime.record(self.employee, nowdate(), 1, "weekday")
+		finally:
+			frappe.set_user("Administrator")
+
+
+class TestAnnualLeave(FrappeTestCase):
+	def test_allocates_once_per_leave_year(self):
+		from dropout_hr_tw import annual_leave
+
+		install.ensure_setup()
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 1)
+		joining = add_months(getdate(nowdate()), -13)
+		employee = make_employee("特休測試", date_of_joining=joining)
+		frappe.db.delete("Leave Allocation", {"employee": employee})
+		first = annual_leave.allocate_for(employee, joining, nowdate())
+		self.assertTrue(first)
+		self.assertEqual(frappe.db.get_value("Leave Allocation", first, "new_leaves_allocated"), 7)
+		self.assertIsNone(annual_leave.allocate_for(employee, joining, nowdate()))
+
+	def test_switch_off_does_nothing(self):
+		from dropout_hr_tw import annual_leave
+
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 0)
+		self.assertEqual(annual_leave.allocate_due(), [])
+
+	def test_settles_expired_unused_leave_once(self):
+		from dropout_hr_tw import annual_leave
+
+		install.ensure_setup()
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 1)
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_settle_unused_leave", 1)
+		joining = add_months(getdate(nowdate()), -25)
+		employee = make_employee("特休折算測試", date_of_joining=joining)
+		assign(employee, 30000)
+		frappe.db.delete("Leave Allocation", {"employee": employee})
+		frappe.db.delete("Additional Salary", {"employee": employee})
+		past_day = add_months(getdate(nowdate()), -12)
+		alloc = annual_leave.allocate_for(employee, joining, past_day)
+		self.assertTrue(alloc)
+		settled = annual_leave.settle_allocation(alloc, pay_date=nowdate())
+		self.assertTrue(settled)
+		doc = frappe.get_doc("Additional Salary", settled)
+		self.assertEqual(doc.salary_component, annual_leave.UNUSED_COMPONENT)
+		self.assertEqual(doc.amount, 7000)
+		self.assertIsNone(annual_leave.settle_allocation(alloc, pay_date=nowdate()))
+
+
+class TestSchedule(FrappeTestCase):
+	def setUp(self):
+		install.ensure_setup()
+		frappe.set_user("Administrator")
+		self.t1 = make_employee("排班王老師")
+		self.t2 = make_employee("排班林老師")
+		frappe.db.delete("Shift Assignment", {"employee": ("in", [self.t1, self.t2])})
+
+	def test_assigns_shift_and_blocks_conflicts(self):
+		from dropout_hr_tw import schedule
+
+		day = add_days(nowdate(), 2)
+		res = schedule.assign(self.t1, day, "09:00", "12:00", "STEAM 機器人實作 A 班", room="教室 A")
+		self.assertTrue(res["ok"])
+		# 同一位老師衝堂
+		with self.assertRaises(frappe.ValidationError):
+			schedule.assign(self.t1, day, "11:00", "13:00", "Python 入門班", room="教室 B")
+		# 同一間教室衝突
+		with self.assertRaises(frappe.ValidationError):
+			schedule.assign(self.t2, day, "10:00", "11:30", "自然科學實驗班", room="教室 A")
+		# 下午不重疊可排入
+		res2 = schedule.assign(self.t1, day, "13:30", "15:30", "STEAM 機器人實作 B 班", room="教室 A")
+		self.assertTrue(res2["ok"])
+		today = shell.today()
+		self.assertTrue(today["can"]["schedule"])
+		self.assertGreaterEqual(len(today["schedule"]), 2)

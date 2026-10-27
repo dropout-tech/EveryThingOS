@@ -24,12 +24,7 @@ export default async function SalesPage() {
         />
       ) : null}
       <SalesBoard
-        pack={{
-          id: pack.id,
-          itemType: pack.itemType,
-          fulfillment: pack.fulfillment,
-          modules: pack.modules,
-        }}
+        pack={pack}
         initial={books.data.sales}
         deskUrl={books.origin === "live" ? books.deskUrl : undefined}
         catalog={catalog}

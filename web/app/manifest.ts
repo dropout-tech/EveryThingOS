@@ -3,16 +3,16 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/workspace",
-    name: "DropOut OS",
-    short_name: "DropOut",
+    name: "EveryThingOS",
+    short_name: "EveryThingOS",
     description: "打開就做下一件事：客人、生意、收錢、報表在同一個地方。",
     lang: "zh-TW",
     dir: "ltr",
     start_url: "/workspace",
     scope: "/",
     display: "standalone",
-    background_color: "#07080c",
-    theme_color: "#07080c",
+    background_color: "#f7f7f8",
+    theme_color: "#f7f7f8",
     categories: ["business", "productivity"],
     icons: [
       { src: "/brand/dropout-app-icon.png", sizes: "512x512", type: "image/png", purpose: "any" },

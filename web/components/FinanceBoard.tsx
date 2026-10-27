@@ -20,6 +20,7 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
   const [aging, setAging] = useBoardState(demoKey("aging", packId), books.arAging, live);
   const [invoices, setInvoices] = useBoardState(demoKey("einvoices", packId), books.einvoices, live);
   const [note, setNote] = useState<string | null>(null);
+  const [reconciled, setReconciled] = useBoardState<string[]>(demoKey("recon", packId), [], live);
   const focus = nextAging(aging);
   const pendingInvoice = invoices.find((row) => row.status !== "已上傳");
 
@@ -43,7 +44,7 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
   return (
     <div className="space-y-8">
       <p className="text-sm text-cream-dim">
-        開單就入帳。稅額 5% 已算在單上。電子發票開好後交給加值中心上傳。
+        開單就入帳。要開發票的單才加 5% 營業稅，未稅報價的稅額是 0。電子發票開好後交給加值中心上傳。
       </p>
       <ActionNote>{note}</ActionNote>
       {focus ? (
@@ -78,6 +79,19 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
             )
           }
         />
+      ) : null}
+      {books.deposits?.length ? (
+        <section>
+          <h2 className="text-lg font-medium">訂金與押金</h2>
+          <ul className="mt-3 space-y-2 text-sm">
+            {books.deposits.map((row) => (
+              <li key={`${row.party}-${row.held}`} className="glass-chip px-4 py-3">
+                {row.party} · 留下 {formatTwd(row.held)}
+                <span className="mt-1 block text-xs text-cream-dim">{row.note}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
       <section>
         <h2 className="text-lg font-medium">誰欠我們（帳齡）</h2>
@@ -166,7 +180,15 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
           {invoices.map((row) => (
             <li key={row.related} className="glass-chip flex flex-wrap items-center justify-between gap-2 px-4 py-3">
               <span>
-                {row.no} · 對應 {row.related}
+                {row.no} · {row.party ?? "這張單的客人"} · 對應 {row.related}
+                <label className="mt-1 flex items-center gap-2 text-xs text-cream-dim">
+                  <input
+                    type="checkbox"
+                    checked={reconciled.includes(row.no)}
+                    onChange={() => setReconciled((current) => (current.includes(row.no) ? current.filter((item) => item !== row.no) : [...current, row.no]))}
+                  />
+                  這張單已對過
+                </label>
                 {row.error ? <span className="block text-xs text-danger">{row.error}</span> : null}
               </span>
               <span className="flex items-center gap-3">

@@ -103,6 +103,71 @@ def annual_leave_days(joining, on_date) -> int:
 	return 3
 
 
+def annual_leave_period(joining, on_date):
+	"""這一天落在哪一個特休年度，以到職日週年制計：回傳 (起日, 迄日, 日數)。未滿 6 個月回傳 None。
+
+	滿 6 個月那天起到滿 1 年前一天是 3 日；之後每個到職週年起算一年。
+	公司若和勞工約定曆年制或會計年度制，就不要用這個自動給假，在 ERPNext 自己建。
+	"""
+	start, day = as_date(joining), as_date(on_date)
+	if start is None or day is None:
+		raise ValueError("需要到職日和計算日")
+	six, one = add_months(start, 6), add_months(start, 12)
+	if day < six:
+		return None
+	if day < one:
+		return six, one - dt.timedelta(days=1), annual_leave_days(start, six)
+	years = 1
+	while add_months(start, 12 * (years + 1)) <= day and years <= 80:
+		years += 1
+	begin = add_months(start, 12 * years)
+	return begin, add_months(start, 12 * (years + 1)) - dt.timedelta(days=1), annual_leave_days(start, begin)
+
+
+def quarter_window(on_date, start_month=1):
+	"""勞動基準法第32條第2項但書、勞動部勞動條3字第1070130322號令：
+	每三個月以每連續三個月為一週期，依曆計算，以勞資雙方約定之起迄日期認定。
+	start_month 是約定的起算月份（1 至 12，預設 1 月即 1–3、4–6、7–9、10–12 月）。
+	回傳這一天所在三個月週期的 (起日, 迄日)。
+	"""
+	day = as_date(on_date)
+	if day is None:
+		raise ValueError("需要計算日")
+	anchor = int(start_month)
+	if not 1 <= anchor <= 12:
+		raise ValueError("起算月份要在 1 到 12 之間")
+	abs_month = day.year * 12 + (day.month - 1)
+	offset = (abs_month - (anchor - 1)) % 3
+	first_abs = abs_month - offset
+	last_abs = first_abs + 2
+	start_year, start_m = first_abs // 12, first_abs % 12 + 1
+	end_year, end_m = last_abs // 12, last_abs % 12 + 1
+	end_last_day = calendar.monthrange(end_year, end_m)[1]
+	return dt.date(start_year, start_m, 1), dt.date(end_year, end_m, end_last_day)
+
+
+def overtime_refusal(result, month_hours_so_far, *, consented=False, quarter_hours_so_far=None):
+	"""記加班之前的法定上限檢查。可以記就回傳 None，否則回傳一句原因。
+
+	result 是 overtime_pay 的回傳。month_hours_so_far 是同一位員工這個月已記、計入第32條的時數。
+	consented 為真且傳入 quarter_hours_so_far 時，一併檢查連續三個月 138 小時上限。
+	"""
+	if result["over_daily_cap"]:
+		return "超過一日 12 小時（勞動基準法第32條第2項），不能記。"
+	if Decimal(result["uncounted_hours"]) > 0:
+		return f"有 {result['uncounted_hours']} 小時沒有法定倍數可算，請拆開或改記別的加班種類。"
+	add = Decimal(result["hours_in_monthly_cap"])
+	limit = EXTENSION_HOURS_PER_MONTH_WITH_CONSENT if consented else EXTENSION_HOURS_PER_MONTH
+	so_far = _hours(month_hours_so_far)
+	if add and so_far + add > limit:
+		return f"這個月已記 {so_far} 小時，再加 {add} 小時會超過每月 {limit} 小時（勞動基準法第32條第2項）。"
+	if add and consented and quarter_hours_so_far is not None:
+		q_so_far = _hours(quarter_hours_so_far)
+		if q_so_far + add > EXTENSION_HOURS_PER_QUARTER_WITH_CONSENT:
+			return f"這三個月已記 {q_so_far} 小時，再加 {add} 小時會超過每三個月 {EXTENSION_HOURS_PER_QUARTER_WITH_CONSENT} 小時（勞動基準法第32條第2項但書）。"
+	return None
+
+
 def unused_annual_leave_wage(monthly_wage, unused_days) -> int:
 	"""未休特別休假折發的工資。施行細則第24條之1：計月者，最近一個月正常工作時間工資除以 30，再乘未休日數。
 
@@ -330,4 +395,61 @@ def leave_field_upgrade(name, values):
 			continue
 		if all(_same(values.get(key), expected) for key, expected in row["match"].items()):
 			return dict(row["set"])
+	return None
+
+
+def minutes_of_day(hhmm) -> int:
+	"""將 'HH:MM' 轉成當日第幾分鐘（0..1439），格式不對就丟 ValueError。"""
+	if not isinstance(hhmm, str) or ":" not in hhmm:
+		raise ValueError("時間要用 HH:MM")
+	parts = hhmm.strip().split(":")
+	if len(parts) < 2:
+		raise ValueError("時間要用 HH:MM")
+	hour, minute = int(parts[0]), int(parts[1])
+	if not (0 <= hour <= 23 and 0 <= minute <= 59):
+		raise ValueError("時間超出 00:00 到 23:59")
+	return hour * 60 + minute
+
+
+def schedule_conflict(candidate, existing_shifts, leaves=()):
+	"""師資排班衝突檢查。可以排回傳 None，否則回傳一句中文原因。
+
+	candidate: {"employee", "employee_name"?, "date", "start_time", "end_time", "course_name", "room"?}
+	existing_shifts: [{"employee", "employee_name", "date", "start_time", "end_time", "course_name", "room"?}, ...]
+	leaves: [{"employee", "employee_name"?, "leave_type", "from_date", "to_date"}, ...]
+	"""
+	day = as_date(candidate.get("date"))
+	if day is None:
+		raise ValueError("需要排班日期")
+	start_min = minutes_of_day(candidate.get("start_time"))
+	end_min = minutes_of_day(candidate.get("end_time"))
+	if end_min <= start_min:
+		raise ValueError("下課時間要晚於上課時間")
+	emp = str(candidate.get("employee") or "").strip()
+	emp_name = str(candidate.get("employee_name") or emp).strip()
+	room = str(candidate.get("room") or "").strip()
+
+	for lv in leaves or ():
+		lv_from, lv_to = as_date(lv.get("from_date")), as_date(lv.get("to_date"))
+		if lv.get("employee") == emp and lv_from and lv_to and lv_from <= day <= lv_to:
+			return f"請假衝突：{emp_name} 在 {day} 請{lv.get('leave_type') or '假'}，請改派代課老師。"
+
+	for slot in existing_shifts or ():
+		if as_date(slot.get("date")) != day:
+			continue
+		try:
+			s0 = minutes_of_day(slot.get("start_time"))
+			s1 = minutes_of_day(slot.get("end_time"))
+		except ValueError:
+			continue
+		if not (start_min < s1 and s0 < end_min):
+			continue
+		slot_name = slot.get("employee_name") or slot.get("employee") or ""
+		slot_course = slot.get("course_name") or "排班"
+		if slot.get("employee") == emp:
+			return f"師資衝堂：{slot_name} 在 {day} {slot.get('start_time')}–{slot.get('end_time')} 已經排了「{slot_course}」。"
+		slot_room = str(slot.get("room") or "").strip()
+		if room and slot_room and room == slot_room:
+			return f"教室衝突：「{room}」在 {day} {slot.get('start_time')}–{slot.get('end_time')} 已排給 {slot_name} 的「{slot_course}」。"
+
 	return None

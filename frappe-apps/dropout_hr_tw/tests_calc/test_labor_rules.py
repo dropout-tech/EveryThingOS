@@ -162,3 +162,87 @@ class EmployerSupplement(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class LeaveYear(unittest.TestCase):
+	def test_before_six_months_nothing(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertIsNone(annual_leave_period("2026-01-15", "2026-07-14"))
+
+	def test_six_month_period_is_three_days_until_first_anniversary(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2026-01-15", "2026-07-15"), (dt.date(2026, 7, 15), dt.date(2027, 1, 14), 3))
+
+	def test_anniversary_years(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2024-01-15", "2025-01-15"), (dt.date(2025, 1, 15), dt.date(2026, 1, 14), 7))
+		self.assertEqual(annual_leave_period("2024-01-15", "2026-10-27"), (dt.date(2026, 1, 15), dt.date(2027, 1, 14), 10))
+		self.assertEqual(annual_leave_period("2016-03-01", "2026-03-01")[2], 16)
+
+	def test_month_end_join_clamps(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2025-08-31", "2026-02-28")[0], dt.date(2026, 2, 28))
+
+
+class OvertimeRefusal(unittest.TestCase):
+	def test_inside_cap_is_fine(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 2, "weekday"), 40))
+
+	def test_daily_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIn("12 小時", overtime_refusal(overtime_pay(125, 5, "weekday"), 0))
+
+	def test_monthly_cap_and_consent(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		result = overtime_pay(125, 4, "weekday")
+		self.assertIn("46", overtime_refusal(result, 44))
+		self.assertIsNone(overtime_refusal(result, 44, consented=True))
+		self.assertIn("54", overtime_refusal(result, 52, consented=True))
+		self.assertIsNone(overtime_refusal(result, 44, consented=True, quarter_hours_so_far=134))
+		self.assertIn("138", overtime_refusal(result, 44, consented=True, quarter_hours_so_far=135))
+
+	def test_quarter_window(self):
+		from dropout_hr_tw.labor_rules import quarter_window
+		self.assertEqual(quarter_window("2026-10-27", 1), (dt.date(2026, 10, 1), dt.date(2026, 12, 31)))
+		self.assertEqual(quarter_window("2026-01-15", 2), (dt.date(2025, 11, 1), dt.date(2026, 1, 31)))
+		with self.assertRaises(ValueError):
+			quarter_window("2026-10-27", 0)
+
+	def test_holiday_first_eight_hours_outside_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 8, "holiday"), 46))
+		self.assertIn("46", overtime_refusal(overtime_pay(125, 10, "holiday"), 46))
+
+	def test_disaster_outside_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 6, "disaster"), 46))
+
+	def test_regular_off_past_eight_refused(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIn("沒有法定倍數", overtime_refusal(overtime_pay(125, 10, "regular_off"), 0))
+
+
+class ScheduleConflict(unittest.TestCase):
+	def test_teacher_room_and_leave_conflicts(self):
+		from dropout_hr_tw.labor_rules import schedule_conflict
+
+		existing = [
+			{"employee": "E1", "employee_name": "王老師", "date": "2026-10-28", "start_time": "09:00", "end_time": "12:00", "course_name": "STEAM 機器人", "room": "教室 A"}
+		]
+		leaves = [{"employee": "E2", "employee_name": "林老師", "leave_type": "特休", "from_date": "2026-10-28", "to_date": "2026-10-29"}]
+		self.assertIn(
+			"師資衝堂",
+			schedule_conflict({"employee": "E1", "employee_name": "王老師", "date": "2026-10-28", "start_time": "11:00", "end_time": "13:00", "course_name": "Python 班", "room": "教室 B"}, existing, leaves),
+		)
+		self.assertIn(
+			"教室衝突",
+			schedule_conflict({"employee": "E3", "employee_name": "陳老師", "date": "2026-10-28", "start_time": "10:00", "end_time": "11:30", "course_name": "實驗班", "room": "教室 A"}, existing, leaves),
+		)
+		self.assertIn(
+			"請假衝突",
+			schedule_conflict({"employee": "E2", "employee_name": "林老師", "date": "2026-10-28", "start_time": "14:00", "end_time": "16:00", "course_name": "實驗班", "room": "教室 B"}, existing, leaves),
+		)
+		self.assertIsNone(
+			schedule_conflict({"employee": "E1", "employee_name": "王老師", "date": "2026-10-28", "start_time": "13:00", "end_time": "15:00", "course_name": "Python 班", "room": "教室 A"}, existing, leaves)
+		)

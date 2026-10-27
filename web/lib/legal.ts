@@ -164,7 +164,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "9. 智慧財產與開源",
         paragraphs: [
-          "DropOut OS 的外殼、識別、產業包與整合程式屬於 DropOut。底下使用的開源軟體（ERPNext GPL-3.0、Frappe MIT、Chatwoot 社群版 MIT、Vexa Apache-2.0 等）依各自授權，客戶的權利不因本條款減少。",
+          "EveryThingOS 的外殼、識別、產業包與整合程式屬於 DropOut。底下使用的開源軟體（ERPNext GPL-3.0、Frappe MIT、Chatwoot 社群版 MIT、Vexa Apache-2.0 等）依各自授權，客戶的權利不因本條款減少。",
         ],
       },
       { heading: "10. 服務水準", paragraphs: [`月可用率 ${SLA.uptime}，未達標依服務水準文件抵扣費用。詳見服務水準。`] },
@@ -189,7 +189,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
         heading: "1. 誰在蒐集",
         paragraphs: [
           `${ENTITY.brand}（${ENTITY.name}，統一編號 ${ENTITY.taxId}，地址 ${ENTITY.address}）。`,
-          "這份政策只管 DropOut 自己的客戶、使用者與官網訪客。客戶公司放進 DropOut OS 的客人資料，由客戶公司負責，DropOut 是受託處理者，見資料處理附約。",
+          "這份政策只管 DropOut 自己的客戶、使用者與官網訪客。客戶公司放進 EveryThingOS 的客人資料，由客戶公司負責，DropOut 是受託處理者，見資料處理附約。",
         ],
       },
       {
@@ -209,7 +209,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
           rows: [
             ["官網訪客、來信詢問的人", "姓名、Email、電話、公司、詢問內容（C001 辨識個人者、C038 職業）", "你寫信或填表"],
             ["客戶公司的聯絡人", "姓名、職稱、Email、電話、公司統編、發票資料（C001、C002 辨識財務者、C038）", "簽約、導入時提供"],
-            ["DropOut OS 使用者（客戶員工）", "姓名、Email、職務、登入時間、IP 位址、誰改了什麼（C001、C038）", "公司老闆邀請你、你使用系統時自動記錄"],
+            ["EveryThingOS 使用者（客戶員工）", "姓名、Email、職務、登入時間、IP 位址、誰改了什麼（C001、C038）", "公司老闆邀請你、你使用系統時自動記錄"],
             ["所有人", "Cookie：登入狀態、外觀、選過的行業", "瀏覽器"],
           ],
         },
@@ -252,7 +252,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
     slug: "dpa",
     title: "資料處理附約",
     kicker: "委託處理",
-    summary: "客戶把自己客人的個資放進 DropOut OS 時，DropOut 是受託者。這份附約依《個人資料保護法》第 4 條與施行細則第 8 條寫明雙方的事。",
+    summary: "客戶把自己客人的個資放進 EveryThingOS 時，DropOut 是受託者。這份附約依《個人資料保護法》第 4 條與施行細則第 8 條寫明雙方的事。",
     sections: [
       {
         heading: "1. 角色",
@@ -267,7 +267,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
           rows: [
             ["當事人", "客戶的客人、潛在客人、聯絡人、電子報訂閱者、供應商聯絡人、員工"],
             ["資料類別", "姓名、Email、電話、地址、統編、LINE／IG／FB 帳號 ID、對話內容、訂單與發票、行銷同意紀錄、會議錄音、逐字稿與摘要"],
-            ["處理目的", "提供 DropOut OS：存放、顯示、同步、寄信、開發票、收款、會議摘要、備份"],
+            ["處理目的", "提供 EveryThingOS：存放、顯示、同步、寄信、開發票、收款、會議摘要、備份"],
             ["期間", `合約期間，加上解約後 ${CONTRACT.exportDays} 天`],
           ],
         },
@@ -318,7 +318,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
     slug: "sla",
     title: "服務水準",
     kicker: "SLA",
-    summary: "DropOut OS 每個月要做到多穩、出事多快回、資料最多掉多少、沒做到怎麼補償。",
+    summary: "EveryThingOS 每個月要做到多穩、出事多快回、資料最多掉多少、沒做到怎麼補償。",
     sections: [
       {
         heading: "1. 承諾的數字",

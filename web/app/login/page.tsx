@@ -4,13 +4,13 @@ import { LoginButton } from "@/components/LoginButton";
 import { COMMERCIAL } from "@/lib/commercial";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
 
-export const metadata = { title: "登入", description: "用公司的 ERPNext 帳號登入 DropOut OS。", robots: { index: false } };
+export const metadata = { title: "登入", description: "用公司的 ERPNext 帳號登入 EveryThingOS。", robots: { index: false } };
 
 const REASONS: Record<string, { title: string; next: string }> = {
   state: { title: "登入逾時，或是從另一個分頁開始的。", next: "再按一次「登入」就好。" },
   token: { title: "ERPNext 沒有發出登入憑證。", next: "請公司管理者確認 OAuth Client 的轉回網址跟這個網站一樣；還是不行請寫信給我們。" },
   profile: { title: "登入成功，但讀不到你的 ERPNext 使用者資料。", next: "請公司管理者確認你的帳號沒有被停用，再試一次。" },
-  access_denied: { title: "你在 ERPNext 按了取消授權。", next: "要使用 DropOut OS，請再登入一次並按「允許」。" },
+  access_denied: { title: "你在 ERPNext 按了取消授權。", next: "要使用 EveryThingOS，請再登入一次並按「允許」。" },
   denied: { title: "ERPNext 沒有完成授權。", next: "再試一次；還是不行請公司管理者確認帳號權限。" },
 };
 
@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <div className="space-y-3">
             <h1 className="text-2xl font-medium">這個網址還沒有對應的公司</h1>
             <p className="text-cream-dim">
-              {config.unknownHost} 沒有登記在 DropOut OS。請確認網址是否打錯，或請公司管理者跟我們確認。
+              {config.unknownHost} 沒有登記在 EveryThingOS。請確認網址是否打錯，或請公司管理者跟我們確認。
             </p>
           </div>
         ) : config.directoryError ? (
@@ -85,13 +85,13 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <Link href="/status" className="hover:text-cream">
             系統狀態
           </Link>
-          <a href={`mailto:${COMMERCIAL.email}?subject=${encodeURIComponent("DropOut OS 登入問題")}`} className="hover:text-cream">
+          <a href={`mailto:${COMMERCIAL.email}?subject=${encodeURIComponent("EveryThingOS 登入問題")}`} className="hover:text-cream">
             寫信給我們
           </a>
         </nav>
       </div>
       <Link href="/" className="mt-6 text-sm text-cream-dim hover:text-cream">
-        ← 回 DropOut OS 首頁
+        ← 回 EveryThingOS 首頁
       </Link>
     </main>
   );

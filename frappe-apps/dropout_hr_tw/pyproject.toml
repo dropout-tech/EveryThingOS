@@ -1,7 +1,7 @@
 [project]
 name = "dropout_hr_tw"
 authors = [{ name = "DropOut Tech", email = "info@dropout.tw" }]
-description = "Taiwan payroll and leave setup for Frappe HRMS, and the DropOut OS 人事 page"
+description = "Taiwan payroll and leave setup for Frappe HRMS, and the EveryThingOS 人事 page"
 requires-python = ">=3.10"
 readme = "README.md"
 dynamic = ["version"]

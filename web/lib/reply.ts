@@ -1,3 +1,4 @@
+import { tradeOf } from "./trade";
 import type { IndustryPack } from "./types";
 
 export type ReplyChannel = "ig" | "fb";
@@ -23,6 +24,15 @@ export type ReplyComment = {
 };
 
 export function seedReplyRules(pack: IndustryPack): ReplyRule[] {
+  if (pack.id) {
+    return tradeOf(pack).keywords.map((rule, index) => ({
+      id: `r-${index}`,
+      keyword: rule.keyword,
+      channel: "ig" as const,
+      publicReply: rule.publicReply,
+      dm: rule.dm,
+    }));
+  }
   return [
     {
       id: "r-price",
@@ -49,12 +59,14 @@ export function seedReplyRules(pack: IndustryPack): ReplyRule[] {
 }
 
 export function seedReplyInbox(pack: IndustryPack): ReplyComment[] {
+  const post = pack.id ? tradeOf(pack).postTitle : "春季主視覺";
+  const keyword = pack.id ? tradeOf(pack).keywords[0]?.keyword ?? pack.itemType : pack.itemType;
   return [
     {
       id: "c-price",
       handle: "@mei_studio",
-      text: `想問${pack.itemType}價格`,
-      post: "春季主視覺",
+      text: `想問${keyword}`,
+      post,
       channel: "ig",
       status: "inbox",
     },
@@ -70,15 +82,15 @@ export function seedReplyInbox(pack: IndustryPack): ReplyComment[] {
       id: "c-nice",
       handle: "@wander.tw",
       text: "好美喔",
-      post: "春季主視覺",
+      post,
       channel: "ig",
       status: "inbox",
     },
     {
       id: "c-join",
       handle: "@office_kai",
-      text: "報名",
-      post: "活動貼文",
+      text: pack.id ? (tradeOf(pack).keywords[1]?.keyword ?? "報價") : "報名",
+      post,
       channel: "ig",
       status: "inbox",
     },

@@ -22,7 +22,7 @@ function Unavailable({ title, detail }: { title: string; detail: string }) {
 export default async function WorkspaceLayout({ children }: LayoutProps<"/workspace">) {
   const config = await liveConfig();
   if (config.directoryError) return <Unavailable title="暫時連不上" detail={`${config.directoryError}。資料都在，請過幾分鐘再開。`} />;
-  if (config.unknownHost) return <Unavailable title="這個網址還沒開通" detail={`${config.unknownHost} 還沒有對應的公司。請確認網址，或聯絡 DropOut OS 導入顧問。`} />;
+  if (config.unknownHost) return <Unavailable title="這個網址還沒開通" detail={`${config.unknownHost} 還沒有對應的公司。請確認網址，或聯絡 EveryThingOS 導入顧問。`} />;
   const personal = loginRequired(config);
   if (personal && !(await readSession(config.sessionSecret, config.tenant?.site))) redirect("/login");
   const shop = await currentShop();

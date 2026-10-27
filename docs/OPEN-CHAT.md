@@ -8,7 +8,9 @@ Open Chat 是一個收件匣：LINE 官方帳號、IG 私訊、FB 粉專、官�
 
 頁面在「對話」（`/workspace/chat`）。
 
-收件匣接上之後，最上面是「去收件匣回訊息」。用已經登入的帳號打開 Chatwoot，不用再打一次密碼。新對話找到或建立客人，記在客人的時間軸上。貼圖、附件、指派留在 Chatwoot。
+收件匣接上之後，最上面是等最久的那個客人和「去收件匣回訊息」。下面列出其他在等回的對話（最多 10 個），每列有通道、等了多久、「打開」直接到 Chatwoot 那個對話。按鈕用已經登入的帳號打開 Chatwoot，不用再打一次密碼。新對話找到或建立客人，記在客人的時間軸上。貼圖、附件、指派留在 Chatwoot。
+
+「在等」是：開啟中的對話，而且最後一則是客人傳的（Chatwoot 有 `waiting_since` 就用它）。我們回了最後一則的不算。資料由膠水 `GET /admin/tenants/:site/chat/waiting` 用那家的 Chatwoot 權杖讀最多 4 頁開啟中對話，只傳名字、通道與時間給殼，不傳訊息內容與聯絡方式。名單只給在 Chatwoot 有帳號的人看；沒有帳號、沒有設膠水，或讀不到時，只顯示去收件匣的按鈕。
 
 還沒接上時，最上面是等最久的那個人。按「回她」只寫在這台電腦，畫面要寫明還沒傳到 LINE、IG 或 FB。旁邊是這個人的卡片：跟到哪、買過什麼、還欠什麼。「附報價」去生意，「標成同一個人」只在信箱或手機相同時成立。下面「留言自動轉私訊」是 ManyChat 留下的那一件工作。
 
@@ -43,5 +45,6 @@ Meta（IG、FB）：客人最後一則之後 24 小時內可以回。超過的�
 | --- | --- |
 | `web/app/workspace/chat` | 員工的對話頁 |
 | `web/components/open-chat` | 一個收件匣取代哪些後台 |
-| `web/lib/open-chat` | 通道、同一個人、24 小時與回覆 token |
+| `web/lib/open-chat` | 通道、同一個人、24 小時與回覆 token、即時排隊（`live-queue.ts`） |
+| `glue/src/clients.ts` | `Chatwoot.openConversations`：讀開啟中對話、去掉訊息內容 |
 | `web/lib/reply.ts` | 關鍵字對留言、練習用的收件匣 |

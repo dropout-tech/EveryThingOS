@@ -9,7 +9,7 @@ type Body =
 
 /** DropOut staff only: renew, suspend/resume/cancel, or edit one company's account. */
 export async function POST(request: NextRequest, { params }: RouteContext<"/api/platform/accounts/[site]">) {
-  if (!sameOrigin(request)) return refuse("這個請求不是從 DropOut OS 送出的", 403);
+  if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
   const operator = await platformOperator();
   if (!operator) return refuse("只有 DropOut 營運人員可以做這件事", 403);
   const { site } = await params;

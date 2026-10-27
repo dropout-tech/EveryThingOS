@@ -8,7 +8,7 @@ import { pageMeta } from "@/lib/seo";
 export const metadata = pageMeta(
   "/saas",
   "對照鼎新 A1、億看與常見訂閱",
-  "DropOut OS 的進銷存與帳對齊鼎新 A1、億看 ECOUNT，另外取代 CRM、電子報、表單、短網址等月租工具。逐項對照，照實寫。",
+  "EveryThingOS 的進銷存與帳對齊鼎新 A1、億看 ECOUNT，另外取代 CRM、電子報、表單、短網址等月租工具。逐項對照，照實寫。",
 );
 
 export default function SaasPage() {

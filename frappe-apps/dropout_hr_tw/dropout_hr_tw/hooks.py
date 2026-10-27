@@ -20,3 +20,10 @@ doc_events = {
 		"on_cancel": "dropout_hr_tw.payroll.cancel_employer_journal",
 	},
 }
+
+scheduler_events = {
+	"daily": [
+		"dropout_hr_tw.annual_leave.allocate_due",
+		"dropout_hr_tw.annual_leave.settle_due",
+	],
+}

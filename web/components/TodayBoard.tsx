@@ -19,7 +19,7 @@ export function TodayList({ books }: { books: Books }) {
         <ol className="glass-well divide-y divide-[var(--line)] px-2" aria-label="接著做">
           {rest.map((item, index) => (
             <li key={item.title}>
-              <Link href={item.href} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm hover:bg-white/5">
+              <Link href={item.href} className="flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm hover:bg-ink-2">
                 <span className="display text-xs text-cream-dim">0{index + 2}</span>
                 <span className="flex-1">{item.title}</span>
                 <span aria-hidden="true" className="text-cream-dim">→</span>

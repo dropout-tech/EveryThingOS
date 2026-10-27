@@ -6,8 +6,12 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { NextThing } from "./NextThing";
+import { OvertimeForm } from "./OvertimeForm";
+import { TeacherSchedule } from "./TeacherSchedule";
 import { useConfirm } from "./ui/ConfirmDialog";
+import { demoKey, useDemoState } from "@/lib/demo-state";
 import { formatTwd } from "@/lib/erp";
+import type { ClassDemand } from "@/lib/schedule";
 import type { HrToday } from "@/lib/sources/types";
 
 const LOG_LABEL = { IN: "上班", OUT: "下班" } as const;
@@ -46,10 +50,10 @@ function readLocation(): Promise<{ latitude?: number; longitude?: number }> {
 }
 
 /** `live` false is practice mode: buttons change this screen only and nothing is sent. */
-export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
+export function HrBoard({ data, live, openDemands = [], classBoard = false, hero = "leave", weekly = false, cover = false, rateLine }: { data: HrToday; live: boolean; openDemands?: ClassDemand[]; classBoard?: boolean; hero?: "leave" | "shift"; weekly?: boolean; cover?: boolean; rateLine?: string }) {
   const action = useLiveAction();
   const [locating, setLocating] = useState(false);
-  const [logs, setLogs] = useState(data.me.logs);
+  const [logs, setLogs] = useDemoState(demoKey("clock", `${data.me.employee}:${data.date}`), data.me.logs);
   const [approvals, setApprovals] = useState(data.approvals);
   const [note, setNote] = useState<string | null>(null);
   const [confirm, confirmDialog] = useConfirm();
@@ -74,7 +78,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
     }
     const time = nowTime();
     setLogs((current) => [...current, { type, time }]);
-    setNote(`練習：${LOG_LABEL[type]}打卡 ${time}，沒有送出。`);
+    setNote(`練習：${LOG_LABEL[type]}打卡 ${time}。換頁還在。這筆還沒送進薪資。`);
   }
 
   function decide(name: string, employee: string, decision: "approve" | "reject") {
@@ -93,7 +97,17 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
       <ActionOutcomeNote outcome={action.outcome} />
       {confirmDialog}
 
-      {firstApproval ? (
+      {hero === "shift" && data.schedule?.[0] ? (
+        <NextThing
+          title={`今天先確認「${data.schedule[0].courseName}」`}
+          detail={`${data.schedule[0].employeeName} ${data.schedule[0].startTime}–${data.schedule[0].endTime}。假單在下面核准，不佔這一頁的主按鈕。`}
+          action={
+            <button type="button" className="btn btn-primary" onClick={() => setNote(`已確認今天的班：${data.schedule?.[0]?.courseName}。系統不自己排人。`)}>
+              確認今天的班
+            </button>
+          }
+        />
+      ) : firstApproval ? (
         <NextThing
           title={`${firstApproval.employee}的假單在等你`}
           detail={`${firstApproval.leaveType} · ${days(firstApproval.fromDate, firstApproval.toDate)} · ${firstApproval.days} 天。${firstApproval.reason ? firstApproval.reason : "核准後才算請假。"}`}
@@ -224,6 +238,50 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
         </section>
       )}
 
+      {classBoard && (data.schedule?.length || data.can.schedule) ? (
+        <TeacherSchedule
+          initialSchedule={data.schedule ?? []}
+          staff={data.staff ?? []}
+          leaves={[
+            ...data.onLeave.map((l) => ({ employeeName: l.name, leaveType: l.leaveType, fromDate: l.fromDate, toDate: l.toDate })),
+            ...shownApprovals.map((a) => ({ employeeName: a.employee, leaveType: a.leaveType, fromDate: a.fromDate, toDate: a.toDate })),
+          ]}
+          today={data.date}
+          canSchedule={Boolean(data.can.schedule)}
+          openDemands={openDemands}
+          live={live}
+          run={action.run}
+          busy={action.busy}
+          onPractice={setNote}
+        />
+      ) : data.schedule?.length ? (
+        <section className="space-y-2">
+          <h2 className="text-sm font-medium">今天的班</h2>
+          <ul className="space-y-2">
+            {data.schedule.map((shift) => (
+              <li key={shift.id} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 px-4 py-3 text-sm">
+                <span>
+                  {shift.employeeName}
+                  <span className="ml-2 text-cream-dim">
+                    {shift.startTime}–{shift.endTime} · {shift.courseName}
+                  </span>
+                </span>
+                <span className="text-xs text-cream-dim">
+                  {shift.branch} · {shift.room}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-cream-dim">請假和加班在上面核准。這一頁不自己排人。月延長工時上限 46 小時，正式排班會用已入帳的加班時數再擋一次。</p>
+          {weekly ? <p className="text-xs text-cream-dim">週一到週日沿用這一班，不口頭約。{data.schedule.map((shift) => `${shift.courseName} ${shift.startTime}`).join("、")}。</p> : null}
+          {cover && data.schedule[0] ? (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setNote(`已標代班：${data.schedule?.[0]?.courseName}。這班不會漏。`)}>
+              找代班
+            </button>
+          ) : null}
+        </section>
+      ) : null}
+
       {data.payroll ? (
         <section className="glass-well space-y-2 p-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -231,8 +289,9 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
             <p className="text-xs text-cream-dim">在職 {data.payroll.employees} 人</p>
           </div>
           <p className="text-lg">{PAYROLL_STATE[data.payroll.state]}</p>
+          {rateLine ? <p className="text-sm text-cream-dim">{rateLine}</p> : null}
           {data.payroll.state === "not_started" ? (
-            <p className="text-sm text-cream-dim">到 ERPNext 開一張「薪資發放」，選這個月，系統會替每個人產生薪資單。</p>
+            <p className="text-sm text-cream-dim">實發先空白。費率還沒核對，請對照勞保局、健保署、財政部的公告後再發。</p>
           ) : (
             <p className="text-sm text-cream-dim">
               待確認 {data.payroll.draft} 張、已確認 {data.payroll.submitted} 張，實發合計 {formatTwd(data.payroll.netPay)}
@@ -260,10 +319,21 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
         </section>
       ) : null}
 
+      {data.can.overtime ? (
+        <details className="glass p-5">
+          <summary className="cursor-pointer select-none text-sm font-medium">
+            記加班（依勞基法第 24、39 條倍數算加班費，超過每日 12h／單月 46–54h／三個月 138h 自動擋下）
+          </summary>
+          <div className="mt-4">
+            <OvertimeForm staff={data.staff ?? []} today={data.date} live={live} run={action.run} busy={action.busy} onPractice={setNote} />
+          </div>
+        </details>
+      ) : null}
+
       <section className="glass space-y-2 p-5 text-sm">
         <h2 className="font-medium">請假與加班的法定基準</h2>
         <p className="text-cream-dim">
-          婚假 14 日、特休依年資、平日加班前兩小時是時薪的 4/3。加班費不從打卡自動算。勞健保費率每年仍要對公告，空白的項目不扣。
+          婚假 14 日、特休依年資、平日加班前兩小時是時薪的 4/3。特休在每個到職週年自動給。加班時數由人資輸入，不從打卡推算（休息、輪班、外勤要人判斷）。勞健保費率每年仍要對公告，空白的項目不扣。
         </p>
         <Link href="/help/module-hr" className="text-xs text-cream-dim underline underline-offset-2 hover:text-cream">
           看請假天數、加班倍數和免稅時數

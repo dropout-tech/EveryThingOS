@@ -1,6 +1,6 @@
 # DropOut Core
 
-ERPNext v15 的 DropOut OS 核心 app。不改 ERPNext 原始碼，只加：
+ERPNext v15 的 EveryThingOS 核心 app。不改 ERPNext 原始碼，只加：
 
 - DocType：`DropOut Identity`（通道身分）、`DropOut Consent`（同意）、`DropOut Event`（事件，冪等鍵唯一）、`DropOut Settings`
 - 統一編號檢查碼驗證（系統國家為 Taiwan 時）

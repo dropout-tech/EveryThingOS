@@ -141,6 +141,52 @@ def _email_templates(templates):
 	]
 
 
+@handler("course_boms")
+def _course_boms(boms):
+	"""Course Product Bundles: non-stock parent course Item + stock material Items."""
+	fallback_group = frappe.db.get_value("Item Group", {"is_group": 0}, "name") or "Products"
+	created = []
+	for bom in boms:
+		code = bom["course_code"]
+		course_group = bom.get("item_group") if frappe.db.exists("Item Group", bom.get("item_group")) else fallback_group
+		course_uom = bom.get("uom") if frappe.db.exists("UOM", bom.get("uom")) else "Nos"
+		if not frappe.db.exists("Item", code):
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": code,
+					"item_name": bom.get("course_name") or code,
+					"item_group": course_group,
+					"stock_uom": course_uom,
+					"is_stock_item": 0,
+					"is_sales_item": 1,
+				}
+			).insert(ignore_permissions=True)
+		items = []
+		for mat in bom.get("materials", []):
+			mcode = mat["item_code"]
+			mgroup = mat.get("item_group") if frappe.db.exists("Item Group", mat.get("item_group")) else fallback_group
+			muom = mat.get("uom") if frappe.db.exists("UOM", mat.get("uom")) else "Nos"
+			if not frappe.db.exists("Item", mcode):
+				frappe.get_doc(
+					{
+						"doctype": "Item",
+						"item_code": mcode,
+						"item_name": mat.get("item_name") or mcode,
+						"item_group": mgroup,
+						"stock_uom": muom,
+						"is_stock_item": 1,
+						"is_sales_item": 0,
+						"is_purchase_item": 1,
+					}
+				).insert(ignore_permissions=True)
+			items.append({"item_code": mcode, "qty": mat.get("qty", 1), "uom": muom, "description": mat.get("item_name") or mcode})
+		if items and not frappe.db.exists("Product Bundle", code):
+			frappe.get_doc({"doctype": "Product Bundle", "new_item_code": code, "description": bom.get("course_name") or code, "items": items}).insert(ignore_permissions=True)
+			created.append(code)
+	return created
+
+
 @handler("webshop")
 def _webshop(settings):
 	if "webshop" not in frappe.get_installed_apps():

@@ -1,3 +1,4 @@
+import { practiceCast } from "../practice";
 import type { OpenThread } from "./types";
 
 export const OPEN_THREADS: OpenThread[] = [
@@ -49,14 +50,32 @@ export const OPEN_THREADS: OpenThread[] = [
   },
 ];
 
-export function nextThread(threads: OpenThread[]): OpenThread | null {
-  let oldest: OpenThread | null = null;
+type Waiting = { waitedMinutes: number };
+
+export function nextThread<T extends Waiting>(threads: T[]): T | null {
+  let oldest: T | null = null;
   for (const thread of threads) {
     if (!oldest || thread.waitedMinutes > oldest.waitedMinutes) oldest = thread;
   }
   return oldest;
 }
 
-export function sortThreads(threads: OpenThread[]): OpenThread[] {
+export function sortThreads<T extends Waiting>(threads: T[]): T[] {
   return [...threads].sort((a, b) => b.waitedMinutes - a.waitedMinutes);
+}
+
+export function practiceThreads(pack: { id: string; nameZh: string; itemType: string; pains?: string[] }): OpenThread[] {
+  const people = practiceCast(pack.id);
+  const channels = ["line", "ig", "fb", "web"] as const;
+  return people.slice(0, 4).map((name, index) => ({
+    id: `${pack.id}-${index}`,
+    name,
+    handle: `${pack.nameZh}-${index + 1}`,
+    channel: channels[index] ?? "line",
+    preview: pack.pains?.[index] ?? pack.itemType,
+    waitedMinutes: 90 - index * 20,
+    stage: "客人在問",
+    bought: "還沒買",
+    owed: "沒有帳",
+  }));
 }

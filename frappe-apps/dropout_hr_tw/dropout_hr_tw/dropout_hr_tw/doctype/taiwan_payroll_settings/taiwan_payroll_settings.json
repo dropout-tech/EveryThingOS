@@ -9,6 +9,11 @@
   "verified_by",
   "verified_on",
   "verify_note",
+  "labor_rules_section",
+  "auto_annual_leave",
+  "auto_settle_unused_leave",
+  "overtime_consent",
+  "overtime_quarter_start_month",
   "wage_section",
   "minimum_wage_monthly",
   "minimum_wage_hourly",
@@ -79,6 +84,39 @@
    "fieldtype": "HTML",
    "label": "每年要核對",
    "options": "<p>這裡的數字每年都會變。發薪前請對照：勞動部勞工保險局（勞保、就業保險、職業災害保險、勞退、投保薪資分級表）、衛生福利部中央健康保險署（健保費率、補充保險費率、投保金額分級表）、勞動部（基本工資）、財政部（薪資扣繳、伙食費免稅額度）的當年度公告。預設值只是起點，不是官方數字。職災費率與補充保險費率空白就不計算。</p>"
+  },
+  {
+   "fieldname": "labor_rules_section",
+   "fieldtype": "Section Break",
+   "label": "勞基法自動化"
+  },
+  {
+   "fieldname": "auto_annual_leave",
+   "fieldtype": "Check",
+   "label": "自動給特休（到職日週年制）",
+   "default": "1",
+   "description": "每天檢查，員工進入新的特休年度就建一張「特休」假別分配。約定曆年制或會計年度制的公司請關掉，自己在假別分配建。"
+  },
+  {
+   "fieldname": "auto_settle_unused_leave",
+   "fieldtype": "Check",
+   "label": "特休到期自動折算未休工資",
+   "default": "1",
+   "description": "每天檢查已到期（迄日早於今天）的特休假別分配；若未結轉到下一年度，依施行細則第24條之1（最近一個月正常工作時間工資 ÷ 30 × 未休日數）寫成「特休未休折算」額外薪資。"
+  },
+  {
+   "fieldname": "overtime_consent",
+   "fieldtype": "Check",
+   "label": "已經工會或勞資會議同意延長工時",
+   "default": "0",
+   "description": "勾選後每月延長工時上限由 46 小時改為 54 小時、每三個月不得超過 138 小時（勞動基準法第32條第2項但書）。30 人以上要報當地主管機關備查。"
+  },
+  {
+   "fieldname": "overtime_quarter_start_month",
+   "fieldtype": "Int",
+   "label": "三個月 138 小時起算月份（1–12）",
+   "default": "1",
+   "description": "依勞動部勞動條3字第1070130322號令，以每連續三個月為一週期。預設 1 月（1–3、4–6、7–9、10–12 月）；勞資會議另有約定起算月份者請改填。"
   },
   {
    "fieldname": "wage_section",
