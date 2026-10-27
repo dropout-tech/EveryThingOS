@@ -23,7 +23,7 @@ npm run dev
 | `/workspace` | 今天這一件；接上 ERPNext 時顯示導入進度 |
 | `/workspace/erp/{sales,purchase,stock,finance}` | 生意：同一張單往下走 |
 | `/workspace/crm` | 客人（ERPNext Lead／Customer 與通道身分） |
-| `/workspace/chat` | 對話（Chatwoot：LINE、IG、FB、官網） |
+| `/workspace/chat` | 對話（Chatwoot：LINE、IG、FB、官網）；接上膠水時列出等最久的客人 |
 | `/workspace/letter` | 電子報（ERPNext Email Group、Newsletter、同意紀錄）；寫草稿、寄出 |
 | `/workspace/meetings` | 會議紀錄：接下來的會議（可逐場關掉機器人）與摘要 |
 | `/workspace/website` | 官網：上架商品、網路訂單、表單名單、可貼的詢問表單 |
@@ -47,6 +47,8 @@ npm run dev
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
 | `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |
 | `POST /api/meetings/skip` | 這場會議不派機器人／恢復 |
+| `POST /api/hr/checkin`、`POST /api/hr/leave` | 替自己打卡；核准或退回假單 |
+| `POST /api/hr/overtime` | 人資記加班：依勞基法倍數寫成「加班費」額外薪資，超過每日或每月上限會被擋（`dropout_hr_tw.overtime.record`） |
 | `POST /api/team/{invite,profile,enabled,security}` | 邀請、換職務、停用／恢復、登入安全（`dropout_core.team.*`，限 System Manager） |
 | `POST /api/platform/accounts/[site]` | 營運：續約、暫停／恢復／解約、改公司資料 |
 
