@@ -321,6 +321,32 @@ describe("meetings", () => {
   });
 });
 
+describe("chat waiting queue", () => {
+  const conv = (id: number) => ({ id, status: "open", waiting_since: 1_700_000_000, meta: { sender: { name: `客人${id}`, email: "a@b.c", phone_number: "+886" }, channel: "Channel::Line" }, messages: [{ message_type: 0, created_at: 1_700_000_000, content: "我的地址" }] });
+  const get = (token = "shell") => new Request(`https://glue.example/admin/tenants/${tenant.site}/chat/waiting`, { headers: { authorization: `Bearer ${token}` } });
+
+  it("reads open conversations page by page for the shell and drops message text and contact details", async () => {
+    const page = (payload: unknown[]) => () => ({ data: { meta: { all_count: 3 }, payload } });
+    const h = harness({ "page=1": page([conv(1), conv(2)]), "page=2": page([conv(3)]), "page=3": page([]) });
+    const res = await handle(get(), h.env, h.app);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { enabled: boolean; total: number; conversations: any[] };
+    expect(body).toMatchObject({ enabled: true, total: 3 });
+    expect(body.conversations.map((c) => c.id)).toEqual([1, 2, 3]);
+    expect(JSON.stringify(body)).not.toMatch(/地址|a@b\.c|\+886/);
+    expect(h.calls.map((c) => c.url)).toEqual([1, 2, 3].map((n) => `https://chat.example/api/v1/accounts/3/conversations?status=open&assignee_type=all&page=${n}`));
+    expect((await handle(get("nope"), h.env, h.app)).status).toBe(403);
+  });
+
+  it("says when the company has no inbox and when the inbox does not answer", async () => {
+    const h = harness();
+    h.store.tenants.set(tenant.site, { ...tenant, chatwoot_token: undefined });
+    expect(await (await handle(get(), h.env, h.app)).json()).toEqual({ enabled: false, total: null, conversations: [] });
+    const down = harness({ "/conversations?": () => new Response("boom", { status: 500 }) });
+    expect((await handle(get(), down.env, down.app)).status).toBe(502);
+  });
+});
+
 const req = (method: string, path: string, token: string, body?: unknown) =>
   new Request(`https://glue.example${path}`, {
     method,

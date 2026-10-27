@@ -49,14 +49,16 @@ export const OPEN_THREADS: OpenThread[] = [
   },
 ];
 
-export function nextThread(threads: OpenThread[]): OpenThread | null {
-  let oldest: OpenThread | null = null;
+type Waiting = { waitedMinutes: number };
+
+export function nextThread<T extends Waiting>(threads: T[]): T | null {
+  let oldest: T | null = null;
   for (const thread of threads) {
     if (!oldest || thread.waitedMinutes > oldest.waitedMinutes) oldest = thread;
   }
   return oldest;
 }
 
-export function sortThreads(threads: OpenThread[]): OpenThread[] {
+export function sortThreads<T extends Waiting>(threads: T[]): T[] {
   return [...threads].sort((a, b) => b.waitedMinutes - a.waitedMinutes);
 }

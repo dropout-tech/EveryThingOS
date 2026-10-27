@@ -1,5 +1,6 @@
 import "server-only";
 import { formatTwd, nextLabel, type Books, type SalesStep } from "../erp";
+import { waitingChats, type WaitingChat } from "../open-chat/live-queue";
 import type { IndustryPack } from "../types";
 import { liveConfig } from "./config";
 import { deskUrl, erpMethod } from "./erpnext";
@@ -136,6 +137,20 @@ export async function liveDeadLetters(): Promise<DeadLetter[]> {
   if (!res.ok) throw new Error(`膠水回應 ${res.status}`);
   const body = (await res.json()) as { dead_letters: DeadLetter[] };
   return body.dead_letters;
+}
+
+/** Who is waiting in the Chatwoot inbox, through the glue (it holds the company's Chatwoot token). Null when there is no glue or no inbox. */
+export async function liveChatQueue(): Promise<{ total: number | null; chats: WaitingChat[] } | null> {
+  const glue = (await liveConfig()).glue;
+  if (!glue) return null;
+  const res = await fetch(`${glue.url}/admin/tenants/${encodeURIComponent(glue.site)}/chat/waiting`, {
+    headers: { authorization: `Bearer ${glue.adminToken}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) throw new Error(`對話系統回應 ${res.status}`);
+  const body = (await res.json()) as { enabled: boolean; total: number | null; conversations: unknown[] };
+  return body.enabled ? { total: body.total, chats: waitingChats(body.conversations, Date.now()) } : null;
 }
 
 export function liveCatalog() {

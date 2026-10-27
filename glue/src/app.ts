@@ -1,7 +1,7 @@
 import { lifecycle, mergeAccount, normalizeHost, purgeStatus, reminderFor, taiwanDate, validAccount, type Account } from "./accounts";
 import { backupProblem, checkBackups, purgeNotices, type BackupUsage } from "./backups";
 import { billingAdmin, billingDaily, billingRoute, openPayUrl, renewAccount, type BillingCtx, type BillingEnv } from "./billing";
-import { ERPNext } from "./clients";
+import { Chatwoot, ERPNext } from "./clients";
 import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
 import { errorText, log } from "./log";
@@ -104,6 +104,7 @@ function caller(req: Request, env: Env): "admin" | "shell" | null {
 function shellMayUse(parts: string[], method: string) {
   if (parts[1] === "tenants" && parts[2] && parts[3] === "dead-letters" && !parts[4] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && !parts[4] && method === "GET") return true;
+  if (parts[1] === "tenants" && parts[2] && parts[3] === "chat" && parts[4] === "waiting" && !parts[5] && method === "GET") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "meetings" && parts[4] === "skip" && method === "POST") return true;
   if (parts[1] === "dead-letters" && parts[2] && parts[3] === "replay" && method === "POST") return true;
   if (parts[1] === "tenants" && parts[2] && parts[3] === "billing" && !parts[4] && method === "GET") return true;
@@ -488,6 +489,18 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
         });
       }
       return json({ bot: Boolean(t.vexa), calendars: t.calendars?.length ?? 0, failed_calendars: failed, meetings });
+    }
+    if (parts[1] === "tenants" && parts[3] === "chat" && parts[4] === "waiting" && !parts[5] && req.method === "GET") {
+      const t = await tenantFor(parts[2]);
+      if (!t) return text("not found", 404);
+      const chatwoot = new Chatwoot(t, app.fetcher);
+      if (!chatwoot.enabled) return json({ enabled: false, total: null, conversations: [] });
+      try {
+        return json({ enabled: true, ...(await chatwoot.openConversations()) });
+      } catch (e) {
+        log("warn", "chat.waiting_failed", { site: t.site, error: errorText(e) });
+        return text("對話系統沒有回應", 502);
+      }
     }
     if (parts[1] === "tenants" && parts[3] === "meetings" && parts[4] === "skip" && req.method === "POST") {
       const body = (await req.json()) as { key?: string; skip?: boolean };
