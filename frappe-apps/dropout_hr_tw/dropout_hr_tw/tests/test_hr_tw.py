@@ -328,3 +328,66 @@ class TestShell(FrappeTestCase):
 		self.assertEqual(me["employee"], self.staff_emp)
 		self.assertEqual([l["type"] for l in me["logs"]], ["IN"])
 		self.assertEqual(me["next"], "OUT")
+
+
+class TestOvertime(FrappeTestCase):
+	def setUp(self):
+		install.ensure_setup()
+		frappe.set_user("Administrator")
+		self.employee = make_employee("加班測試")
+		assign(self.employee, 30000)
+		frappe.db.set_single_value(payroll.SETTINGS, "overtime_consent", 0)
+
+	def test_weekday_overtime_lands_on_the_slip(self):
+		from dropout_hr_tw import overtime
+
+		out = overtime.record(self.employee, nowdate(), 2, "weekday")
+		# 30000 / 240 = 125；前 2 小時 4/3 → 333.33… → 333
+		self.assertEqual(out["amount"], 333)
+		doc = frappe.get_doc("Additional Salary", out["name"])
+		self.assertEqual(doc.docstatus, 1)
+		self.assertEqual(doc.salary_component, overtime.COMPONENT)
+		self.assertEqual(doc.tw_ot_cap_hours, 2)
+
+	def test_daily_and_monthly_caps(self):
+		from dropout_hr_tw import overtime
+
+		with self.assertRaises(frappe.ValidationError):
+			overtime.record(self.employee, nowdate(), 5, "weekday")
+		for _i in range(11):
+			overtime.record(self.employee, nowdate(), 4, "weekday")
+		with self.assertRaises(frappe.ValidationError):
+			overtime.record(self.employee, nowdate(), 4, "weekday")
+		frappe.db.set_single_value(payroll.SETTINGS, "overtime_consent", 1)
+		overtime.record(self.employee, nowdate(), 4, "weekday")
+
+	def test_only_hr_records(self):
+		from dropout_hr_tw import overtime
+
+		frappe.set_user(make_user("ot-staff@example.com", "Employee"))
+		try:
+			with self.assertRaises(frappe.PermissionError):
+				overtime.record(self.employee, nowdate(), 1, "weekday")
+		finally:
+			frappe.set_user("Administrator")
+
+
+class TestAnnualLeave(FrappeTestCase):
+	def test_allocates_once_per_leave_year(self):
+		from dropout_hr_tw import annual_leave
+
+		install.ensure_setup()
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 1)
+		joining = add_months(getdate(nowdate()), -13)
+		employee = make_employee("特休測試", date_of_joining=joining)
+		frappe.db.delete("Leave Allocation", {"employee": employee})
+		first = annual_leave.allocate_for(employee, joining, nowdate())
+		self.assertTrue(first)
+		self.assertEqual(frappe.db.get_value("Leave Allocation", first, "new_leaves_allocated"), 7)
+		self.assertIsNone(annual_leave.allocate_for(employee, joining, nowdate()))
+
+	def test_switch_off_does_nothing(self):
+		from dropout_hr_tw import annual_leave
+
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 0)
+		self.assertEqual(annual_leave.allocate_due(), [])

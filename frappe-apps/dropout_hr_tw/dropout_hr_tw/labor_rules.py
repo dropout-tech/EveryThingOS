@@ -103,6 +103,45 @@ def annual_leave_days(joining, on_date) -> int:
 	return 3
 
 
+def annual_leave_period(joining, on_date):
+	"""這一天落在哪一個特休年度，以到職日週年制計：回傳 (起日, 迄日, 日數)。未滿 6 個月回傳 None。
+
+	滿 6 個月那天起到滿 1 年前一天是 3 日；之後每個到職週年起算一年。
+	公司若和勞工約定曆年制或會計年度制，就不要用這個自動給假，在 ERPNext 自己建。
+	"""
+	start, day = as_date(joining), as_date(on_date)
+	if start is None or day is None:
+		raise ValueError("需要到職日和計算日")
+	six, one = add_months(start, 6), add_months(start, 12)
+	if day < six:
+		return None
+	if day < one:
+		return six, one - dt.timedelta(days=1), annual_leave_days(start, six)
+	years = 1
+	while add_months(start, 12 * (years + 1)) <= day and years <= 80:
+		years += 1
+	begin = add_months(start, 12 * years)
+	return begin, add_months(start, 12 * (years + 1)) - dt.timedelta(days=1), annual_leave_days(start, begin)
+
+
+def overtime_refusal(result, month_hours_so_far, *, consented=False):
+	"""記加班之前的法定上限檢查。可以記就回傳 None，否則回傳一句原因。
+
+	result 是 overtime_pay 的回傳。month_hours_so_far 是同一位員工這個月已記、計入第32條的時數。
+	每三個月 138 小時的起算由勞資約定，這裡不替公司決定，只檢查每月。
+	"""
+	if result["over_daily_cap"]:
+		return "超過一日 12 小時（勞動基準法第32條第2項），不能記。"
+	if Decimal(result["uncounted_hours"]) > 0:
+		return f"有 {result['uncounted_hours']} 小時沒有法定倍數可算，請拆開或改記別的加班種類。"
+	add = Decimal(result["hours_in_monthly_cap"])
+	limit = EXTENSION_HOURS_PER_MONTH_WITH_CONSENT if consented else EXTENSION_HOURS_PER_MONTH
+	so_far = _hours(month_hours_so_far)
+	if add and so_far + add > limit:
+		return f"這個月已記 {so_far} 小時，再加 {add} 小時會超過每月 {limit} 小時（勞動基準法第32條第2項）。"
+	return None
+
+
 def unused_annual_leave_wage(monthly_wage, unused_days) -> int:
 	"""未休特別休假折發的工資。施行細則第24條之1：計月者，最近一個月正常工作時間工資除以 30，再乘未休日數。
 

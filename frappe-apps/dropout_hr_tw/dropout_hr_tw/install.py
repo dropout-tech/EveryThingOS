@@ -62,6 +62,13 @@ CUSTOM_FIELDS = {
 		{"fieldname": "tw_pension_voluntary_rate", "fieldtype": "Percent", "label": "勞退自提比例", "insert_after": "tw_hi_dependents", "non_negative": 1},
 		{"fieldname": "tw_no_employment_insurance", "fieldtype": "Check", "label": "不參加就業保險", "insert_after": "tw_pension_voluntary_rate", "description": "例如已領老年給付或依法不適用的外籍人士"},
 	],
+	"Additional Salary": [
+		_section("tw_ot_section", "加班紀錄", "amount"),
+		{"fieldname": "tw_ot_kind", "fieldtype": "Data", "label": "加班種類", "insert_after": "tw_ot_section", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_hours", "fieldtype": "Float", "label": "加班時數", "insert_after": "tw_ot_kind", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_cap_hours", "fieldtype": "Float", "label": "計入每月上限的時數", "insert_after": "tw_ot_hours", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ot_note", "fieldtype": "Small Text", "label": "倍數與依據", "insert_after": "tw_ot_cap_hours", "read_only": 1, "no_copy": 1},
+	],
 	"Salary Slip": [
 		_section("tw_basis_section", "台灣扣繳基準", "deductions"),
 		_basis("tw_rate_year", "費率年度", "tw_basis_section", "Int"),
@@ -126,6 +133,7 @@ def after_setup_wizard(args=None):
 def ensure_setup():
 	create_custom_fields(CUSTOM_FIELDS, update=True)
 	seed_settings()
+	default_auto_annual_leave()
 	created = {"salary_components": [], "leave_types": []}
 	for row in _load("salary_components.json"):
 		if not frappe.db.exists("Salary Component", row["salary_component"]):
@@ -153,6 +161,13 @@ def seed_settings():
 		s.append("grades", {"insured_salary": amount, "labor": int(amount in labor), "health": 1, "pension": int(amount in pension)})
 	s.flags.ignore_permissions = True
 	s.save()
+
+
+def default_auto_annual_leave():
+	"""Sites set up before the switch existed get it on once. A company that turned it off keeps it off."""
+	stored = frappe.db.sql("select value from `tabSingles` where doctype = %s and field = 'auto_annual_leave'", SETTINGS)
+	if not stored:
+		frappe.db.set_single_value(SETTINGS, "auto_annual_leave", 1)
 
 
 def _existing_roles():

@@ -162,3 +162,53 @@ class EmployerSupplement(unittest.TestCase):
 
 if __name__ == "__main__":
 	unittest.main()
+
+
+class LeaveYear(unittest.TestCase):
+	def test_before_six_months_nothing(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertIsNone(annual_leave_period("2026-01-15", "2026-07-14"))
+
+	def test_six_month_period_is_three_days_until_first_anniversary(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2026-01-15", "2026-07-15"), (dt.date(2026, 7, 15), dt.date(2027, 1, 14), 3))
+
+	def test_anniversary_years(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2024-01-15", "2025-01-15"), (dt.date(2025, 1, 15), dt.date(2026, 1, 14), 7))
+		self.assertEqual(annual_leave_period("2024-01-15", "2026-10-27"), (dt.date(2026, 1, 15), dt.date(2027, 1, 14), 10))
+		self.assertEqual(annual_leave_period("2016-03-01", "2026-03-01")[2], 16)
+
+	def test_month_end_join_clamps(self):
+		from dropout_hr_tw.labor_rules import annual_leave_period
+		self.assertEqual(annual_leave_period("2025-08-31", "2026-02-28")[0], dt.date(2026, 2, 28))
+
+
+class OvertimeRefusal(unittest.TestCase):
+	def test_inside_cap_is_fine(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 2, "weekday"), 40))
+
+	def test_daily_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIn("12 小時", overtime_refusal(overtime_pay(125, 5, "weekday"), 0))
+
+	def test_monthly_cap_and_consent(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		result = overtime_pay(125, 4, "weekday")
+		self.assertIn("46", overtime_refusal(result, 44))
+		self.assertIsNone(overtime_refusal(result, 44, consented=True))
+		self.assertIn("54", overtime_refusal(result, 52, consented=True))
+
+	def test_holiday_first_eight_hours_outside_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 8, "holiday"), 46))
+		self.assertIn("46", overtime_refusal(overtime_pay(125, 10, "holiday"), 46))
+
+	def test_disaster_outside_cap(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIsNone(overtime_refusal(overtime_pay(125, 6, "disaster"), 46))
+
+	def test_regular_off_past_eight_refused(self):
+		from dropout_hr_tw.labor_rules import overtime_refusal
+		self.assertIn("沒有法定倍數", overtime_refusal(overtime_pay(125, 10, "regular_off"), 0))
