@@ -150,16 +150,71 @@ const cardEls = CARDS.map(([k, v], i) => {
 const facts1 = [...$("facts1").children], facts2 = [...$("facts2").children];
 const b1 = [...document.querySelectorAll("#s1 .bullet")], b2 = [...document.querySelectorAll("#s2 .bullet")];
 
-// Screenshot crops are in the 1024-wide preview coordinates of a 1920-wide capture.
-const K = 1920 / 1024;
-function crop(img, viewEl, src, [x, y, w, h], width = 950) {
-  img.src = src;
-  const s = width / (w * K);
-  img.style.width = `${1920 * s}px`;
-  img.style.transform = `translate(${-x * K * s}px, ${-y * K * s}px)`;
-  viewEl.style.height = `${h * K * s}px`;
+// Each window is a real practice-mode page: a viewport shot (rail + top bar) with the full-height page scrolled under it.
+const S0 = 970 / 1100, VW = 970, VH = 608, SW = 1100, SH = 690;
+function makeShot(id, name, steps) {
+  const el = $(id);
+  return { el, name, steps, frame: el.querySelector(".frame"), tall: el.querySelector(".tall"), ring: el.querySelector(".ring"), screen: el.querySelector(".screen"), title: el.querySelector("em"), meta: null };
 }
-const view1 = document.querySelector("#shot1 .view"), view2 = document.querySelector("#shot2 .view");
+const shots = [
+  makeShot("shot1", "stock", [
+    { t: 15.5, key: "a", title: "倉庫｜報名即鎖定材料包", fit: { w: 560, h: 380 } },
+    { t: 18.2, key: "b", title: "倉庫｜耗用與損耗都有紀錄", fit: { w: 780, h: 330 } },
+    { t: 20.4, key: "c", title: "倉庫｜AI 跨店調撥建議", fit: { w: 780, h: 420 } },
+  ]),
+  makeShot("shot2", "hr", [
+    { t: 33.8, key: "a", title: "人事｜AI 師資媒合", fit: { w: 780, h: 340 } },
+    { t: 36.2, key: "b", title: "人事｜請假自動找代課", fit: { w: 780, h: 220 } },
+    { t: 38.4, key: "c", title: "人事｜主管覆核全程留痕", fit: { w: 780, h: 320 } },
+  ]),
+];
+const OVERVIEW = { scroll: 0, z: 1, fx: SW / 2, fy: SH / 2 };
+function focusState(shot, step) {
+  const r = shot.meta.rects[step.key];
+  const scroll = clamp(r.y - 56 - 28, 0, shot.meta.height - SH);
+  const z = clamp(Math.min(SW / (step.fit.w + 40), SH / (step.fit.h + 40)), 1, 1.85);
+  return { scroll, z, fx: r.x + step.fit.w / 2, fy: r.y - scroll + step.fit.h / 2 };
+}
+function camAt(shot, t) {
+  let state = OVERVIEW, active = -1;
+  shot.steps.forEach((step, i) => {
+    const k = easeInOut(span(t, step.t, step.t + 0.95));
+    if (k <= 0) return;
+    const next = focusState(shot, step);
+    state = { scroll: lerp(state.scroll, next.scroll, k), z: lerp(state.z, next.z, k), fx: lerp(state.fx, next.fx, k), fy: lerp(state.fy, next.fy, k) };
+    active = i;
+  });
+  return { state, active };
+}
+function drawShot(shot, t) {
+  const { state, active } = camAt(shot, t);
+  const sc = S0 * state.z;
+  const tx = clamp(VW / 2 - sc * state.fx, VW - sc * SW, 0);
+  const ty = clamp(VH / 2 - sc * state.fy, VH - sc * SH, 0);
+  shot.screen.style.transform = `translate(${tx}px, ${ty}px) scale(${sc})`;
+  shot.tall.style.top = `${-56 - state.scroll}px`;
+  shot.title.textContent = active < 0 ? "EveryThingOS　練習帳實機畫面" : shot.steps[active].title;
+  if (active < 0) {
+    shot.ring.style.opacity = 0;
+  } else {
+    const step = shot.steps[active];
+    const r = shot.meta.rects[step.key];
+    shot.ring.style.left = `${r.x - 240 - 6}px`;
+    shot.ring.style.top = `${r.y - state.scroll - 56 - 6}px`;
+    shot.ring.style.width = `${r.w + 12}px`;
+    shot.ring.style.height = `${r.h + 12}px`;
+    shot.ring.style.opacity = easeOut(span(t, step.t + 0.7, step.t + 1.1));
+  }
+  return active;
+}
+function drawBullets(list, shot, t) {
+  const active = camAt(shot, t).active;
+  list.forEach((b, i) => {
+    const t0 = shot.steps[i].t - 0.1;
+    show(b, easeOut(span(t, t0, t0 + 0.6)), (1 - easeOut(span(t, t0, t0 + 0.6))) * 30);
+    b.classList.toggle("dim", active >= 0 && i !== active && t > t0 + 0.6);
+  });
+}
 
 function show(el, o, dy = 0, sc = 1) {
   el.style.opacity = o;
@@ -168,11 +223,13 @@ function show(el, o, dy = 0, sc = 1) {
 
 window.ready = (async () => {
   await document.fonts.load('40px "jf open 粉圓 2.1"');
-  crop($("shot1a"), view1, "/promo/v2/stock-3.png", [225, 280, 490, 170]);
-  crop($("shot1b"), view1, "/promo/v2/stock.png", [225, 505, 390, 103]);
-  $("shot1b").style.top = "0px";
-  crop($("shot2a"), view2, "/promo/v2/hr-2.png", [225, 355, 365, 115]);
-  await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = r)))));
+  const meta = await (await fetch("/promo/v3/meta.json")).json();
+  for (const shot of shots) {
+    shot.meta = meta[shot.name];
+    shot.frame.src = `/promo/v3/${shot.name}-frame.png`;
+    shot.tall.src = `/promo/v3/${shot.name}-tall.png`;
+  }
+  await Promise.all([...document.images].map((i) => (i.complete && i.naturalWidth ? null : new Promise((r) => (i.onload = r)))));
   await document.fonts.ready;
   return true;
 })();
@@ -241,15 +298,11 @@ window.renderAt = (t) => {
   // solution 1: 14–23
   const s1 = span(t, 13.9, 14.4) * (1 - span(t, 22.6, 23.1));
   $("s1").style.opacity = s1;
-  b1.forEach((b, i) => show(b, easeOut(span(t, 14.4 + i * 1.0, 15 + i * 1.0)), (1 - easeOut(span(t, 14.4 + i * 1.0, 15 + i * 1.0))) * 30));
-  const sh1 = easeOut(span(t, 14.5, 15.4));
+  drawBullets(b1, shots[0], t);
+  const sh1 = easeOut(span(t, 14.4, 15.3));
   $("shot1").style.transform = `translateX(${(1 - sh1) * 220}px) rotate(${(1 - sh1) * 3}deg)`;
   $("shot1").style.opacity = sh1;
-  const swap = span(t, 18.6, 19.1);
-  $("shot1a").style.opacity = 1 - swap;
-  $("shot1b").style.opacity = swap;
-  $("shot1t").textContent = swap > 0.5 ? "倉庫｜AI 跨店調撥與補貨建議" : "倉庫｜課程 BOM 與材料預扣";
-  view1.style.height = `${lerp(170 * (950 / 490), 103 * (950 / 390), swap)}px`;
+  if (s1 > 0) drawShot(shots[0], t);
 
   // pain 2: 23–31, organise 31–32.5
   const p2 = span(t, 23, 23.5) * (1 - span(t, 32.3, 32.8));
@@ -274,10 +327,11 @@ window.renderAt = (t) => {
   // solution 2: 32.5–41
   const s2 = span(t, 32.4, 32.9) * (1 - span(t, 40.6, 41.1));
   $("s2").style.opacity = s2;
-  b2.forEach((b, i) => show(b, easeOut(span(t, 33 + i * 1.0, 33.6 + i * 1.0)), (1 - easeOut(span(t, 33 + i * 1.0, 33.6 + i * 1.0))) * 30));
-  const sh2 = easeOut(span(t, 32.8, 33.7));
+  drawBullets(b2, shots[1], t);
+  const sh2 = easeOut(span(t, 32.7, 33.6));
   $("shot2").style.transform = `translateX(${(1 - sh2) * 220}px) rotate(${(1 - sh2) * 3}deg)`;
   $("shot2").style.opacity = sh2;
+  if (s2 > 0) drawShot(shots[1], t);
 
   // close: 41–45
   const cl = easeOut(span(t, 41, 41.8));
