@@ -1,3 +1,5 @@
+import { buildPains, HIT } from "./pains.js";
+
 const W = 1920, H = 1080;
 const NAVY = "#0f2340", TEAL = "#1f8f88", TEAL2 = "#3ca59e", ORANGE = "#e08a3c", TSOFT = "#e6f4f2", OSOFT = "#fbe7d4";
 
@@ -62,15 +64,15 @@ const STICKERS = {
 };
 // [x, y, rotation, scale] for: scattered (pains), reveal card, answers, end card
 const POSE = {
-  squiggle: [[1600, 620, -8, 1], [720, 860, 0, 1], [227, 640, 0, 0.9], [960, 935, 0, 1]],
+  squiggle: [[1790, 600, 80, 1], [720, 860, 0, 1], [227, 640, 0, 0.9], [960, 935, 0, 1]],
   zigzag: [[170, 770, 18, 1], [1250, 850, -6, 1], [1690, 150, 0, 0.9], [1480, 250, 10, 1]],
-  dots: [[1660, 740, 0, 1], [1380, 250, 0, 1], [690, 905, 0, 1], [1650, 360, 0, 1]],
+  dots: [[1830, 780, 0, 1], [1380, 250, 0, 1], [690, 905, 0, 1], [1650, 360, 0, 1]],
   triangle: [[930, 130, 12, 1], [470, 330, -15, 1], [790, 175, 20, 0.8], [1560, 520, 15, 1]],
   semi: [[640, 1000, 0, 1], [760, 255, 0, 1], [58, 560, 90, 0.8], [330, 830, 0, 1]],
 };
 const RING_POSE = {
   orange: { pieces: [[1780, 380, 25], [180, 500, -40], [120, 990, 60], [1830, 980, -20]], settled: [[1560, 470, 1], [1800, 935, 0.9], [1600, 800, 1]] },
-  teal: { pieces: [[1400, 690, 30], [520, 210, -25]], settled: [[360, 740, 1.2], [230, 130, 0.7], [330, 290, 1.1]] },
+  teal: { pieces: [[1700, 300, 30], [330, 260, -25]], settled: [[360, 740, 1.2], [230, 130, 0.7], [330, 290, 1.1]] },
 };
 const sweep = piece(deco, W, H, `<path d="M-60,760 C320,520 520,980 900,700 S1500,300 1980,420" pathLength="1" fill="none" stroke="${TEAL2}" stroke-width="22" stroke-linecap="round" stroke-dasharray="1 1"/>`, 0, 0);
 const sweepPath = sweep.el.querySelector("path");
@@ -118,7 +120,8 @@ const PAINS = [
   { who: "店長", t: "排班表改一次，<b class='o'>群組就炸一次</b>", hl: [6, 5] },
   { who: "老闆", t: "預約、庫存、老師兜不起來，<b class='o'>重複劃位</b>", hl: [7, 3, 5] },
 ];
-const P0 = 3.2, PD = 2;
+const P0 = 3.2, PD = 3, R = P0 + 6 * PD;
+const painScenes = buildPains($("stage"));
 
 const ANS = [
   { x: "LINE、IG、FB 各回各的", t: "LINE、IG、FB、官網<br><b class='t'>同一個收件匣</b>", s: "誰等最久排最前面，回覆記在客人的時間軸。<br>需連結店家自己的 LINE 官方帳號與粉專。", A: "chat", url: "/workspace/chat" },
@@ -128,7 +131,7 @@ const ANS = [
   { x: "排班表改一次炸一次", t: "AI 排班建議<br><b class='t'>主管一鍵確認</b>", s: "自動避開請假與超時的老師；<br>換人也會留下紀錄。", A: "schedule", url: "/workspace/hr" },
   { x: "預約跟庫存兜不起來", t: "LINE、IG 都能預約<br><b class='t'>有料才收單</b>", s: "材料夠就開單鎖料；不夠自動候補，<br>並標出缺哪一項。", A: "book", B: "booked", url: "/book?from=line" },
 ];
-const A0 = 17.6, AD = 3.5, E = A0 + 6 * AD, DUR = E + 4.4;
+const A0 = R + 2.4, AD = 3.5, E = A0 + 6 * AD, DUR = E + 4.4;
 const VW = 1000;
 let meta, S0, VH;
 const dots = [...document.querySelectorAll("#dots span")];
@@ -170,22 +173,22 @@ window.ready = (async () => {
 
 let lastAns = -1;
 window.renderAt = (t) => {
-  const tension = Math.max(span(t, 3, 3.6) * (1 - span(t, 14.8, 15.3)), 0);
+  const tension = Math.max(span(t, 3, 3.6) * (1 - span(t, (R - 0.4), (R + 0.1))), 0);
   const pIdx = t < P0 ? 0 : Math.min(PAINS.length - 1, Math.floor((t - P0) / PD));
   const beat = t < P0 ? 0 : pIdx + back(span(t - (P0 + pIdx * PD), 0, 0.35));
   const endK = easeInOut(span(t, E, E + 1.6));
-  const ansK = easeInOut(span(t, 17.2, 18.2)) * (1 - endK);
+  const ansK = easeInOut(span(t, (R + 2), (R + 3))) * (1 - endK);
   const wSet = [1 - ansK - endK, ansK, endK];
   const settle = (poses) => poses.reduce((acc, p, i) => acc.map((v, j) => v + p[j] * wSet[i]), poses[0].map(() => 0));
   const pop = (k) => back(span(t, 0.35 + k * 0.17, 0.75 + k * 0.17));
-  const join = (k) => back(span(t, 15.25 + k * 0.05, 16.1 + k * 0.05));
+  const join = (k) => back(span(t, (R + 0.05) + k * 0.05, (R + 0.9) + k * 0.05));
 
   let k = 0;
   for (const [name, rp] of Object.entries(RING_POSE)) {
     const pieces = name === "orange" ? orangeRing : tealRing;
     const [cx, cy, S] = settle(rp.settled);
     const spin = name === "orange" ? t * 3 : -t * 5;
-    const pulse = 1 + 0.06 * Math.exp(-((t - 16.25) ** 2) * 18);
+    const pulse = 1 + 0.06 * Math.exp(-((t - (R + 1.05)) ** 2) * 18);
     pieces.forEach((p, i) => {
       const [px, py, pr] = rp.pieces[i];
       const sgn = (i + k) % 2 ? 1 : -1;
@@ -209,12 +212,14 @@ window.renderAt = (t) => {
     k++;
   }
 
-  const sw = easeInOut(span(t, 14.9, 16.1));
+  deco.style.opacity = lerp(1, 0.55, span(t, P0, P0 + 0.3) * (1 - span(t, R - 0.4, R)));
+
+  const sw = easeInOut(span(t, (R - 0.3), (R + 0.9)));
   sweepPath.style.strokeDashoffset = 1 - sw;
-  sweep.el.style.opacity = sw > 0 ? 1 - span(t, 16.5, 17.3) : 0;
+  sweep.el.style.opacity = sw > 0 ? 1 - span(t, (R + 1.3), (R + 2.1)) : 0;
   place(sweep, 0, 0, 0, 1, sweep.el.style.opacity);
 
-  const burst = Math.exp(-Math.max(0, t - 16.0) * 2.2) * (t > 16.0 ? 1 : 0);
+  const burst = Math.exp(-Math.max(0, t - (R + 0.8)) * 2.2) * (t > (R + 0.8) ? 1 : 0);
   confetti.forEach((c, i) => {
     const dx = c.x - 960, dy = c.y - 540, d = Math.hypot(dx, dy) || 1;
     const x = c.x + Math.sin(t * 0.3 * c.sp + c.ph) * 30 + (dx / d) * 160 * burst + tension * Math.sin(t * 27 + i) * 2;
@@ -231,43 +236,54 @@ window.renderAt = (t) => {
   $("count").textContent = opened;
   $("count").style.transform = `scale(${1 + 0.18 * Math.exp(-(((t - 0.7) * 4.5) % 1) * 6) * (t > 0.7 && t < 2.6 ? 1 : 0)})`;
 
-  // ---- windows: open during the hook, shake under their pain, get pulled into one at the reveal ----
-  const pi = t >= P0 && t < P0 + PAINS.length * PD ? Math.floor((t - P0) / PD) : -1;
-  const pull = easeIn(span(t, 15.0, 15.9));
+  // ---- windows: open during the hook, fade back while the pain scenes play, get pulled into one at the reveal ----
+  const pi = t >= P0 && t < R ? Math.floor((t - P0) / PD) : -1;
+  const pull = easeIn(span(t, (R - 0.2), (R + 0.7)));
+  const back8 = easeOut(span(t, P0 - 0.1, P0 + 0.3));
   wins.forEach((w, i) => {
     const open = back(span(t, 0.7 + i * 0.22, 1.1 + i * 0.22));
     const lit = pi >= 0 && PAINS[pi].hl.includes(i);
-    const first = pi >= 0 && PAINS[pi].hl[0] === i;
-    const litK = pi >= 0 ? easeOut(span(t - (P0 + pi * PD), 0, 0.3)) : 0;
-    const dim = pi >= 0 && !lit ? 0.14 : 1;
-    let x = w.x, y = w.y, sc = open;
-    if (lit && first) { x = lerp(w.x, 795, litK); y = lerp(w.y, 300, litK); sc *= lerp(1, 1.55, litK); }
-    else if (lit) sc *= lerp(1, 1.15, litK);
-    const jig = lit ? Math.sin(t * 38 + i) * 4 : 0;
+    const dim = lerp(1, lit ? 0.32 : 0.12, back8);
+    let x = w.x, y = w.y, sc = open * lerp(1, 0.86, back8);
+    const jig = lit ? Math.sin(t * 38 + i) * 3 : 0;
     x = lerp(x, 795, pull); y = lerp(y, 420, pull); sc *= 1 - pull;
-    w.el.style.opacity = span(t, 0.7 + i * 0.22, 0.9 + i * 0.22) * dim * (1 - span(t, 15.6, 15.9));
-    w.el.style.transform = `translate(${x + jig}px, ${y}px) rotate(${w.r * (1 - pull) + (lit ? Math.sin(t * 30) * 1.5 : 0)}deg) scale(${sc})`;
+    w.el.style.opacity = span(t, 0.7 + i * 0.22, 0.9 + i * 0.22) * dim * (1 - span(t, (R + 0.4), (R + 0.7)));
+    w.el.style.transform = `translate(${x + jig}px, ${y}px) rotate(${w.r * (1 - pull)}deg) scale(${sc})`;
     w.el.classList.toggle("lit", lit);
   });
 
-  // ---- pains 3.2–15.2 ----
-  $("pain").style.opacity = span(t, P0, P0 + 0.2) * (1 - span(t, 15, 15.2));
+  // ---- pains P0–R: one animated scene each, the punchline lands with the hit ----
+  $("pain").style.opacity = span(t, P0, P0 + 0.2) * (1 - span(t, (R - 0.2), R));
   $("pnum").style.opacity = $("pain").style.opacity;
+  painScenes.forEach((sc, i) => {
+    const local = t - (P0 + i * PD);
+    const on = i === pi;
+    sc.scene.style.opacity = on ? span(local, 0, 0.12) * (1 - span(local, PD - 0.22, PD)) : 0;
+    if (on) sc.update(local);
+  });
   if (pi >= 0) {
     const p = PAINS[pi];
     const local = t - (P0 + pi * PD);
-    $("who").textContent = p.who;
-    $("painT").innerHTML = p.t;
-    $("pnum").textContent = `痛點 ${pi + 1} / 6`;
-    const k = easeOut(span(local, 0, 0.3));
+    if ($("painT").dataset.i !== String(pi)) {
+      $("who").textContent = p.who;
+      $("painT").innerHTML = p.t;
+      $("painT").dataset.i = pi;
+      $("pnum").textContent = `痛點 ${pi + 1} / 6`;
+    }
+    const k = easeOut(span(local, 0.1, 0.4));
     $("painT").style.transform = `translateY(${(1 - k) * 36}px)`;
-    $("painT").style.opacity = k * (1 - span(local, 1.85, 2));
+    $("painT").style.opacity = k * (1 - span(local, PD - 0.2, PD));
+    const punch = $("painT").querySelector("b");
+    const pk = back(span(local, HIT, HIT + 0.25));
+    punch.style.opacity = span(local, HIT, HIT + 0.05);
+    punch.style.display = "inline-block";
+    punch.style.transform = `scale(${lerp(1.6, 1, pk)})`;
   }
 
-  // ---- reveal 15.2–17.6 ----
-  const rvk = easeOut(span(t, 15.9, 16.5));
-  $("reveal").style.opacity = rvk * (1 - span(t, 17.3, 17.7));
-  $("reveal").querySelector("h1").style.transform = `scale(${0.85 + 0.15 * back(span(t, 15.9, 16.6))})`;
+  // ---- reveal R–A0 ----
+  const rvk = easeOut(span(t, (R + 0.7), (R + 1.3)));
+  $("reveal").style.opacity = rvk * (1 - span(t, (R + 2.1), (R + 2.5)));
+  $("reveal").querySelector("h1").style.transform = `scale(${0.85 + 0.15 * back(span(t, (R + 0.7), (R + 1.4)))})`;
 
   // ---- answers A0–E ----
   const ai = t >= A0 && t < A0 + ANS.length * AD ? Math.floor((t - A0) / AD) : -1;
