@@ -49,7 +49,7 @@ function readLocation(): Promise<{ latitude?: number; longitude?: number }> {
 }
 
 /** `live` false is practice mode: buttons change this screen only and nothing is sent. */
-export function HrBoard({ data, live, openDemands = [] }: { data: HrToday; live: boolean; openDemands?: ClassDemand[] }) {
+export function HrBoard({ data, live, openDemands = [], classBoard = false }: { data: HrToday; live: boolean; openDemands?: ClassDemand[]; classBoard?: boolean }) {
   const action = useLiveAction();
   const [locating, setLocating] = useState(false);
   const [logs, setLogs] = useState(data.me.logs);
@@ -227,7 +227,7 @@ export function HrBoard({ data, live, openDemands = [] }: { data: HrToday; live:
         </section>
       )}
 
-      {(data.schedule?.length || data.can.schedule) ? (
+      {classBoard && (data.schedule?.length || data.can.schedule) ? (
         <TeacherSchedule
           initialSchedule={data.schedule ?? []}
           staff={data.staff ?? []}
@@ -243,6 +243,26 @@ export function HrBoard({ data, live, openDemands = [] }: { data: HrToday; live:
           busy={action.busy}
           onPractice={setNote}
         />
+      ) : data.schedule?.length ? (
+        <section className="space-y-2">
+          <h2 className="text-sm font-medium">今天的班</h2>
+          <ul className="space-y-2">
+            {data.schedule.map((shift) => (
+              <li key={shift.id} className="glass-chip flex flex-wrap items-baseline justify-between gap-2 px-4 py-3 text-sm">
+                <span>
+                  {shift.employeeName}
+                  <span className="ml-2 text-cream-dim">
+                    {shift.startTime}–{shift.endTime} · {shift.courseName}
+                  </span>
+                </span>
+                <span className="text-xs text-cream-dim">
+                  {shift.branch} · {shift.room}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-cream-dim">請假和加班在上面核准。這一頁不自己排人。</p>
+        </section>
       ) : null}
 
       {data.payroll ? (

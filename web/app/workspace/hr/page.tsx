@@ -5,8 +5,10 @@ import { HrBoard } from "@/components/HrBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { decodeHolds, demandsFromHolds, HOLD_COOKIE, holdLines } from "@/lib/holds";
+import { shelfFor, type ShelfShift } from "@/lib/scene-shelf";
 import { getHr } from "@/lib/sources";
 import type { HrToday } from "@/lib/sources/types";
+import { currentIndustry } from "@/lib/workspace";
 
 export const metadata = { title: "人事" };
 
@@ -14,7 +16,31 @@ function taipeiDay(offset = 0) {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date(Date.now() + offset * 86_400_000));
 }
 
-function demo(): HrToday {
+const STAFF = [
+  { id: "HR-EMP-00001", name: "王小明" },
+  { id: "HR-EMP-00002", name: "林業務" },
+  { id: "HR-EMP-00003", name: "陳倉管" },
+  { id: "HR-EMP-00004", name: "李師傅" },
+];
+
+function shiftsOf(shifts: ShelfShift[], today: string): NonNullable<HrToday["schedule"]> {
+  return shifts.map((shift, index) => {
+    const person = STAFF[shift.staff] ?? STAFF[0];
+    return {
+      id: `SH-SCENE-${index}`,
+      employee: person.id,
+      employeeName: person.name,
+      branch: shift.branch,
+      date: today,
+      startTime: shift.start,
+      endTime: shift.end,
+      courseName: shift.what,
+      room: shift.room,
+    };
+  });
+}
+
+function demo(classBoard: boolean, shifts: ShelfShift[]): HrToday {
   const today = taipeiDay();
   return {
     date: today,
@@ -30,51 +56,50 @@ function demo(): HrToday {
     payroll: { month: today.slice(0, 7), state: "slips", employees: 8, draft: 8, submitted: 0, netPay: 312_480, entries: [] },
     rates: { year: Number(today.slice(0, 4)), verified: false, current: true },
     can: { approve: true, payroll: true, overtime: true, schedule: true },
-    staff: [
-      { id: "HR-EMP-00001", name: "王小明" },
-      { id: "HR-EMP-00002", name: "林業務" },
-      { id: "HR-EMP-00003", name: "陳倉管" },
-      { id: "HR-EMP-00004", name: "李師傅" },
-    ],
-    schedule: [
-      {
-        id: "SH-2026-001",
-        employee: "HR-EMP-00001",
-        employeeName: "王小明",
-        branch: "台北信義教室",
-        date: today,
-        startTime: "09:30",
-        endTime: "12:00",
-        courseName: "週末親子手作黏土 A 班",
-        room: "手作教室 A",
-      },
-      {
-        id: "SH-2026-002",
-        employee: "HR-EMP-00002",
-        employeeName: "林業務",
-        branch: "台北信義教室",
-        date: today,
-        startTime: "14:00",
-        endTime: "16:30",
-        courseName: "節慶 DIY 創意美勞班",
-        room: "美術教室 1",
-      },
-      {
-        id: "SH-2026-003",
-        employee: "HR-EMP-00004",
-        employeeName: "李師傅",
-        branch: "台中公益教室",
-        date: taipeiDay(1),
-        startTime: "18:30",
-        endTime: "21:00",
-        courseName: "STEAM 機器人與科學實作",
-        room: "創客教室 B",
-      },
-    ],
+    staff: STAFF,
+    schedule: classBoard
+      ? [
+          {
+            id: "SH-2026-001",
+            employee: "HR-EMP-00001",
+            employeeName: "王小明",
+            branch: "台北信義教室",
+            date: today,
+            startTime: "09:30",
+            endTime: "12:00",
+            courseName: "週末親子手作黏土 A 班",
+            room: "手作教室 A",
+          },
+          {
+            id: "SH-2026-002",
+            employee: "HR-EMP-00002",
+            employeeName: "林業務",
+            branch: "台北信義教室",
+            date: today,
+            startTime: "14:00",
+            endTime: "16:30",
+            courseName: "節慶 DIY 創意美勞班",
+            room: "美術教室 1",
+          },
+          {
+            id: "SH-2026-003",
+            employee: "HR-EMP-00004",
+            employeeName: "李師傅",
+            branch: "台中公益教室",
+            date: taipeiDay(1),
+            startTime: "18:30",
+            endTime: "21:00",
+            courseName: "STEAM 機器人與科學實作",
+            room: "創客教室 B",
+          },
+        ]
+      : shiftsOf(shifts, today),
   };
 }
 
 export default async function HrPage() {
+  const pack = await currentIndustry();
+  const shelf = shelfFor(pack);
   const source = await getHr();
   if (source.origin === "error") return <SourceFailure source={source} next="/workspace/hr" />;
   const live = source.origin === "live";
@@ -91,26 +116,26 @@ export default async function HrPage() {
     );
   }
 
-  const data = source.data ?? demo();
+  const data = source.data ?? demo(shelf.classBoard, shelf.shifts);
   const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
-  const openDemands = demandsFromHolds(holds);
+  const openDemands = shelf.classBoard ? demandsFromHolds(holds) : [];
   const manager = data.can.approve || data.can.payroll;
 
   return (
     <ModuleFrame
-      kicker="人事與師資調度（HRM）"
-      title={manager ? "今天誰在、誰請假、師資怎麼排" : "打卡與我的班表"}
-      hint={manager ? "師資專長、請假與工時放在一起看；AI 只給建議，主管確認才排入。薪資與勞健保沿用既有系統。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
+      kicker={shelf.hrKicker}
+      title={manager ? shelf.hrTitle : "打卡與我的班表"}
+      hint={manager ? shelf.hrHint : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
     >
       <Hint id="hr" help="module-hr" />
-      {holdLines(holds).length ? (
+      {shelf.classBoard && holdLines(holds).length ? (
         <ul className="glass-well space-y-1 p-4 text-sm">
           {holdLines(holds).map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
       ) : null}
-      <HrBoard data={data} live={live} openDemands={openDemands} />
+      <HrBoard data={data} live={live} openDemands={openDemands} classBoard={shelf.classBoard} />
       <SourceNote source={source} demoText="示範資料。接上 ERPNext 人事後，換成你們的同事、假單與薪資。" />
     </ModuleFrame>
   );

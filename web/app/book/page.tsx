@@ -7,6 +7,7 @@ import { applyLocks, decodeHolds, HOLD_COOKIE, openLabel, openSeats } from "@/li
 import { getBooks } from "@/lib/sources";
 import { DEFAULT_BRAND } from "@/lib/brand";
 import { liveConfig } from "@/lib/sources/config";
+import { shelfFor } from "@/lib/scene-shelf";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
 export const metadata = { title: "預約課程", robots: { index: false } };
@@ -30,11 +31,14 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
   const books = await getBooks(pack);
   const data = books.origin === "error" ? null : books.data;
 
+  const shelf = shelfFor(pack);
   const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
-  const courses: BookableCourse[] = (data?.courseBoms ?? []).map((bom) => {
+  const courses: BookableCourse[] = shelf.courses
+    ? (data?.courseBoms ?? []).map((bom) => {
     const evaluated = evaluateCourseBom(applyLocks(bom, holds), data?.stock ?? []);
     return { code: bom.courseCode, name: bom.courseName, label: openLabel(evaluated), full: openSeats(evaluated) <= 0 };
-  });
+  })
+    : [];
   const branches = [...new Set((data?.stock ?? []).map((s) => branchName(s.warehouse)).filter(Boolean))];
 
   return (
@@ -43,13 +47,13 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
       <header className="site-sheet p-6 sm:p-8">
         <p className="kicker">線上預約</p>
         <h1 className="mt-3 text-3xl font-medium">{storeName}</h1>
-        <p className="mt-3 text-cream-dim">選課程、分店和時間。頁上顯示「可預約」時，名額和材料包都已經確認夠用。</p>
+        <p className="mt-3 text-cream-dim">{shelf.bookLead}</p>
       </header>
       <div className="mt-6">
         {courses.length ? (
           <BookingForm courses={courses} branches={branches.length ? branches : ["門市"]} channel={channel} demo={books.origin === "demo"} />
         ) : (
-          <div className="site-sheet p-6 text-cream-dim">這家店還沒開放線上預約，請直接傳 LINE 或打電話。</div>
+          <div className="site-sheet p-6 text-cream-dim">{shelf.bookClosed ?? "這家店還沒開放線上預約，請直接傳 LINE 或打電話。"}</div>
         )}
       </div>
     </main>

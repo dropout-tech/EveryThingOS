@@ -173,10 +173,6 @@ export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
   const mods = new Set(shop.modules);
   return {
     ...pack,
-    nameZh: scene.label,
-    nameEn: scene.id,
-    group: scene.group,
-    tagline: `${SIZES.find((item) => item.id === shop.size)?.label ?? ""} · ${shop.modules.length} 個功能`,
     workflow: { ...pack.workflow, id: scene.id, name: scene.label, stages: [...scene.stages] },
     sampleLoop: scene.stages.join(" → "),
     modules: {
@@ -190,7 +186,7 @@ export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
         manufacturing: shop.scene === "make" && shop.size !== "solo",
         pos: shop.scene === "retail" || shop.scene === "food",
         projects: shop.scene === "build" || shop.scene === "service",
-        batch: shop.scene === "make" || shop.scene === "food" || shop.scene === "farm",
+        batch: shop.scene === "make" || shop.scene === "food" || shop.scene === "farm" || pack.modules.erp.batch,
       },
     },
   };

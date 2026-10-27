@@ -18,6 +18,9 @@ export default async function WorkspaceHome() {
   return (
     <div className="space-y-6">
       <h1 className="sr-only">今天</h1>
+      <p className="text-sm text-cream-dim">
+        現在這一家是{pack.nameZh}。同一種現場裡，別的行業不共用這套貨和班表。
+      </p>
       <RoleGuide allowed={guide.allowed} />
       <Hint id="today" help="module-today" />
       <TodayList books={books.data} />

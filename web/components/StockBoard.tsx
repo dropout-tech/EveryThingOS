@@ -24,9 +24,12 @@ type StockBoardProps = {
   deskUrl?: string;
   fromBookings?: string[];
   bookingLocks?: { branchName: string; sku: string; locked: number; demand: number }[];
+  caption?: string;
+  /** Deposit for this job has to land before anyone buys the shortage. */
+  holdBuy?: boolean;
 };
 
-export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms = [], purchases, live = false, deskUrl, fromBookings = [], bookingLocks = [] }: StockBoardProps) {
+export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms = [], purchases, live = false, deskUrl, fromBookings = [], bookingLocks = [], caption = "單品", holdBuy = false }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
   const focus = nextStock(stock);
@@ -86,7 +89,9 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
-        低於安全庫存會標「不夠」。點「請購」就開一張請購單，不必再填一張空白單。
+        {holdBuy
+          ? "低於安全量先列出來。這張單的訂金進帳，才按請購。"
+          : "低於安全庫存會標「不夠」。點「請購」就開一張請購單，不必再填一張空白單。"}
         貨值 {formatTwd(inventoryValue)}。
       </p>
       {fromBookings.length ? (
@@ -100,26 +105,40 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
       {focus ? (
         <NextThing
           title={`${focus.name} 不夠`}
-          detail={`現有 ${focus.onHand}，安全量 ${focus.safety}。請購之後去進貨。${others > 0 ? `下面還有 ${others} 項不夠。` : ""}`}
+          detail={
+            holdBuy
+              ? `現有 ${focus.onHand}，還差 ${Math.max(1, focus.safety - focus.onHand)}。這張單的訂金進帳才向廠商叫，現在只把缺的列出來。`
+              : `現有 ${focus.onHand}，安全量 ${focus.safety}。請購之後去進貨。${others > 0 ? `下面還有 ${others} 項不夠。` : ""}`
+          }
           action={
-            <button type="button" onClick={() => requestBuy(focus)} className={buttonClass({ variant: "primary" })}>
-              請購
+            <button
+              type="button"
+              onClick={() =>
+                holdBuy
+                  ? setNote(`已列缺：${focus.name} 還差 ${Math.max(1, focus.safety - focus.onHand)}。訂金進了才請購。`)
+                  : requestBuy(focus)
+              }
+              className={buttonClass({ variant: "primary" })}
+            >
+              {holdBuy ? "先列缺料" : "請購"}
             </button>
           }
         />
       ) : null}
-      <CourseBomBoard
-        initialBoms={courseBoms}
-        stock={stock}
-        live={live}
-        deskUrl={deskUrl}
-        onRequestShortage={requestBomShortage}
-        onPracticeNote={setNote}
-        bookingLocks={bookingLocks}
-      />
+      {courseBoms.length ? (
+        <CourseBomBoard
+          initialBoms={courseBoms}
+          stock={stock}
+          live={live}
+          deskUrl={deskUrl}
+          onRequestShortage={requestBomShortage}
+          onPracticeNote={setNote}
+          bookingLocks={bookingLocks}
+        />
+      ) : null}
       <details className="glass p-5">
         <summary className="cursor-pointer select-none text-sm font-medium">
-          單品庫存安全量明細表（{stock.length} 項教材／材料 · 低於安全庫存 {stock.filter((r) => r.onHand < r.safety).length} 項）
+          {caption}（{stock.length} 項 · 低於安全量 {stock.filter((r) => r.onHand < r.safety).length} 項）
         </summary>
         <div className="mt-4 sm:overflow-x-auto">
           <table className="table-stack sm:min-w-[40rem]">
@@ -157,8 +176,16 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
                           打開
                         </DeskLink>
                       ) : low ? (
-                        <button type="button" onClick={() => requestBuy(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
-                          請購
+                        <button
+                          type="button"
+                          onClick={() =>
+                            holdBuy
+                              ? setNote(`已列缺：${row.name} 還差 ${Math.max(1, row.safety - row.onHand)}。訂金進了才請購。`)
+                              : requestBuy(row)
+                          }
+                          className={buttonClass({ variant: "secondary", size: "sm" })}
+                        >
+                          {holdBuy ? "先列缺料" : "請購"}
                         </button>
                       ) : (
                         <span className="text-cream-dim">盤點</span>

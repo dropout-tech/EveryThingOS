@@ -1,5 +1,6 @@
 import type { CourseBom } from "./course-bom";
 import { industryTodayJobs } from "./operator-day";
+import { shelfFor } from "./scene-shelf";
 import { practiceCast } from "./practice";
 import type { IndustryPack } from "./types";
 
@@ -219,8 +220,8 @@ const VENDORS = ["中盤供應", "原廠台灣", "物流夥伴", "包材行"];
 export function buildBooks(pack: IndustryPack): Books {
   const seed = hash(pack.id);
   const parties = practiceCast(pack.id);
+  const shelf = shelfFor(pack);
   const inventoryOn = pack.modules.erp.inventory;
-  const batchOn = pack.modules.erp.batch;
   const monthSales = pick(seed, 48, 220) * 1000;
   const monthCost = Math.round(monthSales * (inventoryOn ? 0.62 : 0.38));
   const ar = pick(seed >>> 2, 80, 360) * 1000;
@@ -236,7 +237,7 @@ export function buildBooks(pack: IndustryPack): Books {
     return {
       no: `SO-${10400 + index}`,
       party: parties[index % parties.length],
-      item: pack.itemType,
+      item: shelf.stock.length ? shelf.stock[index % shelf.stock.length].name : pack.itemType,
       qty: pick(seed + index, 1, 12),
       amount,
       tax,
@@ -267,9 +268,8 @@ export function buildBooks(pack: IndustryPack): Books {
         },
       ];
 
-  const isEdu = pack.group === "教育" || pack.nameEn === "edu";
   const stock: StockRow[] = inventoryOn
-    ? isEdu
+    ? shelf.courses
       ? [
           {
             sku: "MAT-CLAY-SET",
@@ -314,36 +314,11 @@ export function buildBooks(pack: IndustryPack): Books {
             safety: 15,
           },
         ]
-      : [
-          {
-            sku: "SKU-A",
-            name: `主力${pack.itemType}`,
-            warehouse: "本倉",
-            onHand: pick(seed, 2, 9),
-            safety: 12,
-            batch: batchOn ? "LOT-2509" : undefined,
-          },
-          {
-            sku: "SKU-B",
-            name: `常備${pack.itemType}`,
-            warehouse: "本倉",
-            onHand: pick(seed >>> 1, 20, 80),
-            safety: 10,
-            batch: batchOn ? "LOT-2508" : undefined,
-          },
-          {
-            sku: "SKU-C",
-            name: "包材／配件",
-            warehouse: pack.modules.erp.pos ? "門市倉" : "本倉",
-            onHand: pick(seed >>> 2, 40, 200),
-            safety: 30,
-          },
-        ]
+      : shelf.stock
     : [];
 
-  const courseBoms: CourseBom[] = inventoryOn
-    ? isEdu
-      ? [
+  const courseBoms: CourseBom[] = inventoryOn && shelf.courses
+    ? [
           {
             courseCode: "CRS-CLAY-01",
             courseName: "節慶親子手作輕黏土班（4 堂）",
@@ -372,18 +347,6 @@ export function buildBooks(pack: IndustryPack): Books {
             lines: [
               { sku: "MAT-STEAM-BOOK", name: "STEAM 機器人實作講義", qtyPerStudent: 1, uom: "本", unitCost: 250 },
               { sku: "MAT-STEAM-KIT", name: "感測器與馬達實驗材料包", qtyPerStudent: 1, uom: "組", unitCost: 950 },
-            ],
-          },
-        ]
-      : [
-          {
-            courseCode: "BDL-STARTER",
-            courseName: `${pack.nameZh}標準組合包`,
-            targetSeats: 10,
-            bookedSeats: 3,
-            lines: [
-              { sku: "SKU-A", name: `主力${pack.itemType}`, qtyPerStudent: 1, uom: "件" },
-              { sku: "SKU-C", name: "包材／配件", qtyPerStudent: 2, uom: "份" },
             ],
           },
         ]
