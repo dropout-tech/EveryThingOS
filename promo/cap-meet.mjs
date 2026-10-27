@@ -1,45 +1,28 @@
 import puppeteer from "/tmp/node_modules/puppeteer-core/lib/esm/puppeteer/puppeteer-core.js";
 import fs from "node:fs";
 
-// Real practice-mode pages, dressed in the 米特 palette and 粉圓 font for the subsidy video.
+// Real practice-mode pages with the 米特製造所 look saved on the shop profile.
 const out = "/tmp/promo/v3";
 fs.mkdirSync(out, { recursive: true });
 const base = "http://localhost:3456";
 const W = 1100, H = 690, DPR = 2;
-const shop = JSON.stringify({ scene: "edu", size: "mid", modules: ["crm", "sales", "stock", "finance", "chat", "hr"] });
-const SKIN = `
-html[data-theme="white"] {
-  --canvas: #fffbef; --surface: #ffffff; --surface-2: #fdf5e1; --surface-3: #f6ead0;
-  --border: #ecdfc2; --border-strong: #dccca6;
-  --text: #123f59; --text-2: #24526d; --muted: #5a7686;
-  --accent: #1597a0; --accent-hover: #0f7f87; --accent-soft: rgba(28, 179, 187, 0.12); --accent-ring: rgba(28, 179, 187, 0.3);
-  --warn: #a35f00;
-  --shadow-sm: 0 1px 0 rgba(18, 63, 89, 0.06);
-}
-body, .display, .kicker { font-family: "jf open 粉圓 2.1", "Noto Sans CJK TC", sans-serif !important; }
-.os-rail { background: #fffdf6; }
-.brand-glyph { background: #123f59; color: #fffbef; }
-nextjs-portal { display: none !important; }
-* { transition: none !important; animation: none !important; }
-`;
+const shop = JSON.stringify({ scene: "edu", size: "mid", modules: ["crm", "sales", "stock", "finance", "chat", "hr"], brand: "meetplus", name: "米特才藝中心" });
+// Nothing is restyled here: the shop profile picks the 米特製造所 look and store name, exactly as 設定 → 外觀與店名 saves it.
+const HIDE = "nextjs-portal { display: none !important; } * { transition: none !important; animation: none !important; }";
 
 const browser = await puppeteer.launch({ executablePath: "/usr/local/bin/google-chrome", args: ["--no-sandbox"] });
 const page = await browser.newPage();
 await page.setCookie(
   { name: "dropout_theme", value: "white", url: base },
-  { name: "dropout_shop", value: shop, url: base },
+  { name: "dropout_shop", value: encodeURIComponent(shop), url: base },
   { name: "dropout_industry", value: "cram-school", url: base },
 );
 
 async function prep(path, open) {
   await page.goto(`${base}${path}`, { waitUntil: "networkidle0" });
-  await page.addStyleTag({ content: SKIN });
+  await page.addStyleTag({ content: HIDE });
   await page.evaluate((open) => {
     for (const b of document.querySelectorAll("button")) if (b.textContent?.includes("知道了")) b.click();
-    const company = document.querySelector(".os-top p span.truncate");
-    if (company) company.textContent = "米特才藝中心";
-    const initial = document.querySelector(".os-top p span[aria-hidden]");
-    if (initial) initial.textContent = "米";
     for (const d of document.querySelectorAll("main details")) {
       const s = d.querySelector("summary")?.textContent ?? "";
       d.open = open.some((k) => s.includes(k));
@@ -49,7 +32,7 @@ async function prep(path, open) {
 }
 async function document_fonts() {
   await page.evaluate(async () => {
-    await document.fonts.load('16px "jf open 粉圓 2.1"');
+    await document.fonts.load('16px "jf open huninn"');
     await document.fonts.ready;
   });
   await new Promise((r) => setTimeout(r, 400));

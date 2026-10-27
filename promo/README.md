@@ -5,9 +5,9 @@
 | 資料夾 | 影片 | 對象 | 識別 |
 | --- | --- | --- | --- |
 | `v1/` | 補助申請：米特才藝中心 AI 店務升級（45 秒） | 計畫審查、徐立文教 | 米特製造所（奶油底、海軍藍、青綠、黃） |
-| `sales/` | EveryThingOS 介紹（43 秒） | 所有實體門店 | 琢奧科技（深藍、青綠、橘），結尾 dropout.tw |
+| `sales/` | EveryThingOS 介紹（43 秒） | 所有實體門店 | 琢奧科技（白底、海軍藍字、青綠、橘），結尾 dropout.tw |
 
-畫面裡的系統截圖都來自 `web/` 練習模式的真實頁面（教育產業包）。補助影片的畫面另外套上米特色系、粉圓字型，公司名顯示「米特才藝中心」，內容與資料不動；兩段解法用完整視窗依三個重點捲動、推近到對應卡片。影片只講已經做好的功能；LINE／IG／FB 要接店家自己的官方帳號與粉專。
+畫面裡的系統截圖都來自 `web/` 練習模式的真實頁面（教育產業包），截圖時不改任何樣式或文字。補助影片用的是產品裡「設定 → 外觀與店名」存下的設定：外觀選「米特製造所」（奶油底、海軍藍、青綠、jf open 粉圓字），店名填「米特才藝中心」；介紹影片用預設的 EveryThingOS 外觀。兩支影片都先給完整視窗，再推近到對應的卡片。影片只講已經做好的功能；LINE／IG／FB 要接店家自己的官方帳號與粉專。
 
 ## 重做一次
 
@@ -15,13 +15,13 @@
 
 ```bash
 cp -r promo /tmp/promo && mkdir -p /tmp/promo/assets /tmp/promo/v2
-cp branding/assets/logo-hud-lockup-on-dark.png /tmp/promo/assets/do-lockup-dark.png
+python3 -c "from PIL import Image; i=Image.open('branding/assets/logo-full.png'); i.crop(i.getbbox()).save('/tmp/promo/assets/do-full-trim.png')"
 # 米特製造所橫式 logo（官網），裁掉透明邊後存成 /tmp/promo/assets/meetplus-trim.png
 curl -sL "https://static.wixstatic.com/media/f674f3_f7d0e44c96fb489b91b71db9f255acad~mv2.png" -o /tmp/promo/assets/meetplus.png
 # 字型：jf open 粉圓（v1）、Noto Sans CJK TC（sales）
 cd web && npm run dev -- --port 3456   # 另開一個終端
-cd /tmp && node promo/cap2.mjs          # 截系統畫面到 /tmp/promo/v2（sales 用）
-# v1 用：同樣的練習帳頁面套米特色系與粉圓字型，截視窗＋整頁長圖到 /tmp/promo/v3，並記下要推近的卡片座標
+cd /tmp && node promo/sales/cap.mjs     # sales 用：預設外觀，每段截一個完整視窗並記下卡片座標到 /tmp/promo/v4
+# v1 用：店家設定為「米特製造所」外觀＋店名「米特才藝中心」，截視窗＋整頁長圖到 /tmp/promo/v3，並記下要推近的卡片座標
 S='main .glass, main details'
 STOCK_FOCUS="{\"a\":{\"sel\":\"$S\",\"text\":\"課程 BOM 與報名材料包\"},\"b\":{\"sel\":\"$S\",\"text\":\"耗用／損耗登記\"},\"c\":{\"sel\":\"$S\",\"text\":\"AI 智慧備料與跨店調撥建議\"}}" \
 HR_FOCUS="{\"a\":{\"sel\":\"$S\",\"text\":\"AI 師資媒合與排班建議\"},\"b\":{\"sel\":\"$S\",\"text\":\"近期師資班表與請假代課檢查\"},\"c\":{\"sel\":\"$S\",\"text\":\"主管覆核與異常留痕紀錄\"}}" \

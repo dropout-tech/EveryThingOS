@@ -1,7 +1,7 @@
 import * as THREE from "/node_modules/three/build/three.module.js";
 
 const W = 1920, H = 1080;
-const C = { bg: 0x0d1f3b, navy: 0x13305a, teal: 0x3ca59e, teal2: 0x65c5bc, orange: 0xe08a3c, cream: 0xf4efe4 };
+const C = { bg: 0xffffff, navy: 0x0f2340, teal: 0x1f8f88, teal2: 0x3ca59e, orange: 0xe08a3c, cream: 0xb8c3cf };
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setSize(W, H);
 renderer.setPixelRatio(1);
@@ -10,11 +10,11 @@ document.body.prepend(renderer.domElement);
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(C.bg, 14, 42);
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 100);
-scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-const key = new THREE.DirectionalLight(0xffffff, 2.2);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xdfe6ee, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
 key.position.set(5, 8, 10);
 scene.add(key);
-const rim = new THREE.PointLight(C.teal2, 60, 40);
+const rim = new THREE.PointLight(C.teal2, 30, 40);
 rim.position.set(-8, -4, 6);
 scene.add(rim);
 
@@ -30,7 +30,7 @@ let seed = 5;
 const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 
 // ---------- 3D: the two rings and the loop from the 琢奧 mark, plus a field of dust ----------
-const ringMat = (c, e = 0.25) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: e, roughness: 0.35, metalness: 0.2 });
+const ringMat = (c, e = 0.08) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: e, roughness: 0.35, metalness: 0.2 });
 const orange = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.5, 48, 160), ringMat(C.orange));
 const teal = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.28, 32, 120), ringMat(C.teal2));
 scene.add(orange, teal);
@@ -67,7 +67,7 @@ for (let i = 0; i < N; i++) {
 const dustGeo = new THREE.BufferGeometry();
 dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
 dustGeo.setAttribute("color", new THREE.BufferAttribute(dustCol, 3));
-const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.09, vertexColors: true, transparent: true, opacity: 0.8 }));
+const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.08, vertexColors: true, transparent: true, opacity: 0.55 }));
 scene.add(dust);
 
 // ---------- DOM ----------
@@ -100,32 +100,46 @@ const PAINS = [
 const P0 = 3.2, PD = 2;
 
 const ANS = [
-  { x: "LINE、IG、FB 各回各的", t: "LINE、IG、FB、官網<br><b class='t'>同一個收件匣</b>", s: "誰等最久排最前面，回覆記在客人的時間軸。<br>需連結店家自己的 LINE 官方帳號與粉專。", A: ["chat.png", [205, 95, 770, 513]], url: "/workspace/chat" },
-  { x: "庫存記在 Excel，賣完才知道", t: "低於安全量<br><b class='t'>自動標「不夠」</b>", s: "點「請購」直接進貨，不用再記兩張單。", A: ["stock.png", [205, 95, 560, 320]], url: "/workspace/erp/stock" },
-  { x: "課開了才發現材料不夠", t: "課程 BOM<br><b class='t'>報名就鎖材料包</b>", s: "每堂課用哪些材料、還能收幾位、<br>卡在哪一項，一眼看到。", A: ["stock-3.png", [212, 200, 762, 250]], url: "/workspace/erp/stock" },
-  { x: "老師資料全靠記憶", t: "請假、工時、專長<br><b class='t'>一頁看完</b>", s: "專長、適教年齡、支援分店都在師資檔案；<br>假單一鍵核准。", A: ["hr-2.png", [205, 55, 780, 215]], url: "/workspace/hr" },
-  { x: "排班表改一次炸一次", t: "AI 排班建議<br><b class='t'>主管一鍵確認</b>", s: "自動避開請假與超時的老師；<br>換人也會留下紀錄。", A: ["hr-2.png", [212, 305, 768, 190]], url: "/workspace/hr" },
-  { x: "預約跟庫存兜不起來", t: "LINE、IG 都能預約<br><b class='t'>有料才收單</b>", s: "材料夠就開單鎖料；不夠自動候補，<br>並標出缺哪一項。", A: ["book.png", [255, 40, 515, 350]], B: ["book-done.png", [255, 190, 515, 170]], url: "/book?from=line" },
+  { x: "LINE、IG、FB 各回各的", t: "LINE、IG、FB、官網<br><b class='t'>同一個收件匣</b>", s: "誰等最久排最前面，回覆記在客人的時間軸。<br>需連結店家自己的 LINE 官方帳號與粉專。", A: "chat", url: "/workspace/chat" },
+  { x: "庫存記在 Excel，賣完才知道", t: "低於安全量<br><b class='t'>自動標「不夠」</b>", s: "點「請購」直接進貨，不用再記兩張單。", A: "stock", url: "/workspace/erp/stock" },
+  { x: "課開了才發現材料不夠", t: "課程 BOM<br><b class='t'>報名就鎖材料包</b>", s: "每堂課用哪些材料、還能收幾位、<br>卡在哪一項，一眼看到。", A: "bom", url: "/workspace/erp/stock" },
+  { x: "老師資料全靠記憶", t: "專長、適教年齡、工時<br><b class='t'>一頁看完</b>", s: "每位老師的專長與適教年齡都在師資主檔；<br>接近工時上限會先提醒。", A: "teachers", url: "/workspace/hr" },
+  { x: "排班表改一次炸一次", t: "AI 排班建議<br><b class='t'>主管一鍵確認</b>", s: "自動避開請假與超時的老師；<br>換人也會留下紀錄。", A: "schedule", url: "/workspace/hr" },
+  { x: "預約跟庫存兜不起來", t: "LINE、IG 都能預約<br><b class='t'>有料才收單</b>", s: "材料夠就開單鎖料；不夠自動候補，<br>並標出缺哪一項。", A: "book", B: "booked", url: "/book?from=line" },
 ];
 const A0 = 17.6, AD = 3.5, E = A0 + 6 * AD, DUR = E + 4.4;
-const K = 1920 / 1024;
-const imgs = {};
-function place(img, view, shot, [file, [x, y, w, h]], width, top) {
-  img.src = `/promo/v2/${file}`;
-  const s = width / (w * K);
-  img.style.width = `${1920 * s}px`;
-  img.style.transform = `translate(${-x * K * s}px, ${-y * K * s}px)`;
-  view.style.height = `${h * K * s}px`;
-  shot.style.width = `${width}px`;
-  shot.style.top = `${top ?? 540 - (h * K * s + 40) / 2}px`;
-}
+const VW = 1000;
+let meta, S0, VH;
 const dots = [...document.querySelectorAll("#dots span")];
+
+// Each capture is a full 1280×760 window; the camera starts on the whole window and pushes in on the recorded card.
+function focusOf(r) {
+  const z = clamp(Math.min(VW / ((r.w + 48) * S0), VH / ((r.h + 48) * S0)), 1, 1.75);
+  const cx = (r.x + r.w / 2) * S0, cy = (r.y + r.h / 2) * S0;
+  return { z, tx: clamp(VW / 2 - cx * z, VW - VW * z, 0), ty: clamp(VH / 2 - cy * z, VH - VH * z, 0) };
+}
+function camera2d(name, k) {
+  const f = focusOf(meta[name]);
+  const z = lerp(1, f.z, k), tx = lerp(0, f.tx, k), ty = lerp(0, f.ty, k);
+  $("imgA").style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+  const r = meta[name], ring = $("ringA");
+  ring.style.left = `${tx + (r.x - 6) * S0 * z}px`;
+  ring.style.top = `${ty + (r.y - 6) * S0 * z}px`;
+  ring.style.width = `${(r.w + 12) * S0 * z}px`;
+  ring.style.height = `${(r.h + 12) * S0 * z}px`;
+}
 
 window.ready = (async () => {
   await document.fonts.load('700 60px "Noto Sans CJK TC"');
   await document.fonts.load('900 60px "Noto Sans CJK TC"');
-  const files = new Set(ANS.flatMap((a) => [a.A[0], a.B?.[0]]).filter(Boolean));
-  await Promise.all([...files].map((f) => new Promise((r) => { const i = new Image(); i.onload = r; i.src = `/promo/v2/${f}`; imgs[f] = i; })));
+  meta = await (await fetch("/promo/v4/meta.json")).json();
+  S0 = VW / meta.W;
+  VH = Math.round(meta.H * S0);
+  $("shotA").querySelector(".view").style.height = `${VH}px`;
+  $("imgA").style.width = `${VW}px`;
+  $("shotA").style.top = `${540 - (VH + 40) / 2}px`;
+  const files = new Set(ANS.flatMap((a) => [a.A, a.B]).filter(Boolean));
+  await Promise.all([...files].map((f) => new Promise((r) => { const i = new Image(); i.onload = r; i.src = `/promo/v4/${f}.png`; })));
   await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => (i.onload = r)))));
   await document.fonts.ready;
   return true;
@@ -159,7 +173,7 @@ window.renderAt = (t) => {
   teal.position.set(lerp(lerp(lerp(-7.5, -6.4, rvE), -13.5, ansK), -9, endK) - shake, lerp(lerp(lerp(-2.8, 2.6, rvE), 6.8, ansK), 3.4, endK), lerp(-8, -5, rvE));
   teal.rotation.set(0.8 + t * 0.3, t * 0.4, 0);
   const mats = [orange.material, teal.material];
-  mats.forEach((m) => (m.emissiveIntensity = 0.2 + 0.5 * Math.exp(-((t - 16) ** 2) * 2) + tension * 0.05 * Math.sin(t * 9)));
+  mats.forEach((m) => (m.emissiveIntensity = 0.06 + 0.25 * Math.exp(-((t - 16) ** 2) * 2) + tension * 0.03 * Math.sin(t * 9)));
 
   loop.visible = false;
   const sw = span(t, 14.9, 16.2);
@@ -195,7 +209,7 @@ window.renderAt = (t) => {
     x = lerp(x, 795, pull); y = lerp(y, 420, pull); sc *= 1 - pull;
     w.el.style.opacity = span(t, 0.7 + i * 0.22, 0.9 + i * 0.22) * dim * (1 - span(t, 15.6, 15.9));
     w.el.style.transform = `translate(${x + jig}px, ${y}px) rotate(${w.r * (1 - pull) + (lit ? Math.sin(t * 30) * 1.5 : 0)}deg) scale(${sc})`;
-    w.el.style.borderColor = lit ? "#e08a3c" : "rgba(101,197,188,0.28)";
+    w.el.style.borderColor = lit ? "#d9772a" : "#e3e7ec";
   });
 
   // ---- pains 3.2–15.2 ----
@@ -229,13 +243,21 @@ window.renderAt = (t) => {
       $("aT").innerHTML = a.t;
       $("aS").innerHTML = a.s;
       $("aUrl").textContent = `dropout.tw${a.url}`;
-      place($("imgA"), $("shotA").querySelector(".view"), $("shotA"), a.A, 1000, a.B ? 120 : undefined);
+      $("imgA").src = `/promo/v4/${a.A}.png`;
       if (a.B) {
-        place($("imgB"), $("shotB").querySelector(".view"), $("shotB"), a.B, 760, 560);
+        const r = meta[a.B], pad = 24, bw = 640, s = bw / ((r.w + pad * 2) * S0) ;
+        const img = $("imgB");
+        img.src = `/promo/v4/${a.B}.png`;
+        img.style.width = `${VW * s}px`;
+        img.style.transform = `translate(${-(r.x - pad) * S0 * s}px, ${-(r.y - pad) * S0 * s}px)`;
+        $("shotB").querySelector(".view").style.height = `${(r.h + pad * 2) * S0 * s}px`;
         $("bUrl").textContent = "預約完成";
       }
       lastAns = ai;
     }
+    const zk = easeInOut(span(local, 0.75, 1.65));
+    camera2d(a.A, zk);
+    $("ringA").style.opacity = easeOut(span(local, 1.5, 1.9));
     const inK = easeOut(span(local, 0, 0.45)), outK = span(local, AD - 0.2, AD);
     $("aX").style.opacity = easeOut(span(local, 0.05, 0.35)) * (1 - outK);
     $("aT").style.opacity = inK * (1 - outK);
@@ -245,9 +267,10 @@ window.renderAt = (t) => {
     const sk = easeOut(span(local, 0.1, 0.6));
     $("shotA").style.opacity = sk * (1 - outK);
     $("shotA").style.transform = `translateX(${(1 - sk) * 160}px) perspective(1600px) rotateY(${(1 - sk) * -14 - 3}deg) translateY(${Math.sin(t * 1.2) * 6}px)`;
-    const bk = a.B ? easeOut(span(local, 1.3, 1.8)) : 0;
+    const bk = a.B ? easeOut(span(local, 1.9, 2.4)) : 0;
     $("shotB").style.opacity = bk * (1 - outK);
-    $("shotB").style.left = "1100px";
+    $("shotB").style.left = "1150px";
+    $("shotB").style.top = "700px";
     $("shotB").style.transform = `translateY(${(1 - bk) * 80}px) scale(${0.9 + 0.1 * bk})`;
     dots.forEach((d, i) => (d.style.background = i === ai ? "#e08a3c" : i < ai ? "rgba(101,197,188,0.75)" : "rgba(244,239,228,0.2)"));
   }
