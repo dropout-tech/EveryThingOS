@@ -167,12 +167,19 @@ def today():
 	company = _company()
 	day = getdate(nowdate())
 	me = _me(user, day)
-	out = {"date": str(day), "company": company, "me": me, "on_leave": [], "approvals": [], "payroll": None, "rates": None, "denied": []}
+	out = {"date": str(day), "company": company, "me": me, "on_leave": [], "approvals": [], "schedule": [], "payroll": None, "rates": None, "denied": []}
 	if roles & APPROVER_ROLES:
+		from dropout_hr_tw.schedule import upcoming_shifts
+
 		out["on_leave"] = _on_leave(company, day)
 		out["approvals"] = _approvals(user, roles, company, me["employee"])
+		out["schedule"] = upcoming_shifts(company, day)
 	else:
 		out["denied"] += ["on_leave", "approvals"]
+		if me["employee"]:
+			from dropout_hr_tw.schedule import upcoming_shifts
+
+			out["schedule"] = [s for s in upcoming_shifts(company, day) if s["employee"] == me["employee"]]
 	if roles & PAYROLL_ROLES:
 		try:
 			out["payroll"] = _payroll(company, day)
@@ -184,7 +191,12 @@ def today():
 	if roles & HR_ROLES:
 		out["rates"] = _rates(day)
 		out["staff"] = _staff(company)
-	out["can"] = {"approve": bool(roles & APPROVER_ROLES), "payroll": out["payroll"] is not None, "overtime": bool(roles & HR_ROLES)}
+	out["can"] = {
+		"approve": bool(roles & APPROVER_ROLES),
+		"payroll": out["payroll"] is not None,
+		"overtime": bool(roles & HR_ROLES),
+		"schedule": bool(roles & HR_ROLES),
+	}
 	return out
 
 

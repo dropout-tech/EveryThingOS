@@ -420,3 +420,31 @@ class TestAnnualLeave(FrappeTestCase):
 		self.assertEqual(doc.salary_component, annual_leave.UNUSED_COMPONENT)
 		self.assertEqual(doc.amount, 7000)
 		self.assertIsNone(annual_leave.settle_allocation(alloc, pay_date=nowdate()))
+
+
+class TestSchedule(FrappeTestCase):
+	def setUp(self):
+		install.ensure_setup()
+		frappe.set_user("Administrator")
+		self.t1 = make_employee("排班王老師")
+		self.t2 = make_employee("排班林老師")
+		frappe.db.delete("Shift Assignment", {"employee": ("in", [self.t1, self.t2])})
+
+	def test_assigns_shift_and_blocks_conflicts(self):
+		from dropout_hr_tw import schedule
+
+		day = add_days(nowdate(), 2)
+		res = schedule.assign(self.t1, day, "09:00", "12:00", "STEAM 機器人實作 A 班", room="教室 A")
+		self.assertTrue(res["ok"])
+		# 同一位老師衝堂
+		with self.assertRaises(frappe.ValidationError):
+			schedule.assign(self.t1, day, "11:00", "13:00", "Python 入門班", room="教室 B")
+		# 同一間教室衝突
+		with self.assertRaises(frappe.ValidationError):
+			schedule.assign(self.t2, day, "10:00", "11:30", "自然科學實驗班", room="教室 A")
+		# 下午不重疊可排入
+		res2 = schedule.assign(self.t1, day, "13:30", "15:30", "STEAM 機器人實作 B 班", room="教室 A")
+		self.assertTrue(res2["ok"])
+		today = shell.today()
+		self.assertTrue(today["can"]["schedule"])
+		self.assertGreaterEqual(len(today["schedule"]), 2)

@@ -18,6 +18,7 @@ type RawBooks = {
   sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string }[];
   purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string; doctype: string }[];
   stock: { sku: string; name: string; warehouse: string; on_hand: number; safety: number; href: string }[];
+  course_boms?: { course_code: string; course_name: string; target_seats?: number; lines: { sku: string; name: string; qty_per_student: number; uom: string }[]; href?: string }[];
   ar_aging: { party: string; current: number; d30: number; d60: number; d90: number; href: string }[];
   journals: { no: string; date: string; memo: string; debit: string; credit: string; amount: number; href: string }[];
   pnl: { label: string; amount: number }[];
@@ -56,6 +57,13 @@ export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, 
     })),
     purchases: raw.purchases.map((p) => ({ ...p, item: p.item || pack.itemType, href: link(p.href) })),
     stock,
+    courseBoms: (raw.course_boms ?? []).map((b) => ({
+      courseCode: b.course_code,
+      courseName: b.course_name,
+      targetSeats: b.target_seats ?? 15,
+      lines: b.lines.map((l) => ({ sku: l.sku, name: l.name, qtyPerStudent: l.qty_per_student, uom: l.uom })),
+      href: b.href ? link(b.href) : undefined,
+    })),
     arAging: raw.ar_aging.map((r) => ({ ...r, href: link(r.href) })),
     journals: raw.journals.map((j) => ({ ...j, href: link(j.href) })),
     pnl: raw.pnl,
@@ -217,6 +225,7 @@ type RawHr = {
   rates: HrToday["rates"];
   can: HrToday["can"];
   staff?: HrToday["staff"];
+  schedule?: { id: string; employee: string; employee_name: string; date: string; start_time: string; end_time: string; course_name: string; room?: string; href?: string }[];
   denied: string[];
 };
 
@@ -235,6 +244,17 @@ export async function liveHr(): Promise<HrToday> {
     rates: raw.rates ? { ...raw.rates, href: link(raw.rates.href) } : null,
     can: raw.can,
     staff: raw.staff ?? [],
+    schedule: (raw.schedule ?? []).map((s) => ({
+      id: s.id,
+      employee: s.employee,
+      employeeName: s.employee_name,
+      date: s.date,
+      startTime: s.start_time,
+      endTime: s.end_time,
+      courseName: s.course_name,
+      room: s.room || undefined,
+      href: link(s.href),
+    })),
     denied: raw.denied,
   };
 }

@@ -101,7 +101,7 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
     case "food":
       return ["crm", "sales", "stock", "finance"];
     case "edu":
-      return ["crm", "finance", "chat", "meetings"];
+      return ["crm", "sales", "stock", "finance", "chat", "hr"];
     case "care":
       return ["crm", "finance", "chat"];
     case "make":
@@ -123,7 +123,7 @@ export function recommendModules(sceneId: string, size: ShopSize, picked: Featur
   const set = new Set(picked.length ? picked : defaultsForScene(sceneId));
   if (set.has("sales") || set.has("stock") || set.has("purchase")) set.add("finance");
   if (set.has("letter") || set.has("chat") || set.has("website")) set.add("crm");
-  if ((sceneId === "retail" || sceneId === "make" || sceneId === "food") && size !== "solo") {
+  if ((sceneId === "retail" || sceneId === "make" || sceneId === "food" || sceneId === "edu") && size !== "solo") {
     set.add("stock");
   }
   if (size === "solo") {

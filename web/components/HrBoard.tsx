@@ -7,6 +7,7 @@ import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { NextThing } from "./NextThing";
 import { OvertimeForm } from "./OvertimeForm";
+import { TeacherSchedule } from "./TeacherSchedule";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
@@ -224,6 +225,23 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
           )}
         </section>
       )}
+
+      {(data.schedule?.length || data.can.schedule) ? (
+        <TeacherSchedule
+          initialSchedule={data.schedule ?? []}
+          staff={data.staff ?? []}
+          leaves={[
+            ...data.onLeave.map((l) => ({ employeeName: l.name, leaveType: l.leaveType, fromDate: l.fromDate, toDate: l.toDate })),
+            ...shownApprovals.map((a) => ({ employeeName: a.employee, leaveType: a.leaveType, fromDate: a.fromDate, toDate: a.toDate })),
+          ]}
+          today={data.date}
+          canSchedule={Boolean(data.can.schedule)}
+          live={live}
+          run={action.run}
+          busy={action.busy}
+          onPractice={setNote}
+        />
+      ) : null}
 
       {data.payroll ? (
         <section className="glass-well space-y-2 p-5">

@@ -202,3 +202,94 @@ def send_newsletter(name):
 	except frappe.ValidationError as e:
 		return _refused(e)
 	return {"ok": True, "name": nl.name, "recipients": len(nl.newsletter_recipients)}
+
+
+@frappe.whitelist(methods=["POST"])
+def upsert_course_bom(course_code, course_name, lines, target_seats=15):
+	"""Creates or updates a course Product Bundle and any missing course/material Items."""
+	if not ({"System Manager", "Item Manager", "Stock Manager", "Sales Manager"} & set(frappe.get_roles())):
+		raise frappe.PermissionError(_("只有管理教材或課程的人可以設定課程 BOM"))
+	code = (course_code or "").strip()[:60]
+	title = (course_name or code).strip()[:80]
+	rows = frappe.parse_json(lines) if isinstance(lines, str) else lines
+	if not code or not rows:
+		frappe.throw(_("要填課程代號與至少一項教材或材料"))
+
+	leaf_group = (
+		"期班"
+		if frappe.db.exists("Item Group", "期班")
+		else (frappe.db.get_value("Item Group", {"is_group": 0}, "name") or "Products")
+	)
+	mat_group = (
+		"教材"
+		if frappe.db.exists("Item Group", "教材")
+		else leaf_group
+	)
+
+	try:
+		if not frappe.db.exists("Item", code):
+			course_uom = "期" if frappe.db.exists("UOM", "期") else "Nos"
+			frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": code,
+					"item_name": title,
+					"item_group": leaf_group,
+					"stock_uom": course_uom,
+					"is_stock_item": 0,
+					"is_sales_item": 1,
+				}
+			).insert()
+		else:
+			frappe.db.set_value("Item", code, "item_name", title)
+
+		bundle_items = []
+		for r in rows:
+			sku = (r.get("sku") or "").strip()[:60]
+			mname = (r.get("name") or sku).strip()[:80]
+			qty = flt(r.get("qtyPerStudent") or r.get("qty") or 1)
+			uom = (r.get("uom") or "").strip()[:12]
+			if not sku or qty <= 0:
+				frappe.throw(_("材料的品號與用量要填好"))
+			if uom and not frappe.db.exists("UOM", uom):
+				frappe.get_doc({"doctype": "UOM", "uom_name": uom, "must_be_whole_number": 0}).insert(ignore_permissions=True)
+			use_uom = uom if uom and frappe.db.exists("UOM", uom) else "Nos"
+			if not frappe.db.exists("Item", sku):
+				frappe.get_doc(
+					{
+						"doctype": "Item",
+						"item_code": sku,
+						"item_name": mname,
+						"item_group": mat_group,
+						"stock_uom": use_uom,
+						"is_stock_item": 1,
+						"is_sales_item": 0,
+						"is_purchase_item": 1,
+					}
+				).insert()
+			bundle_items.append({"item_code": sku, "qty": qty, "uom": use_uom, "description": mname})
+
+		if frappe.db.exists("Product Bundle", code):
+			pb = frappe.get_doc("Product Bundle", code)
+			pb.description = title
+			pb.set("items", bundle_items)
+			pb.save()
+		else:
+			pb = frappe.get_doc(
+				{
+					"doctype": "Product Bundle",
+					"new_item_code": code,
+					"description": title,
+					"items": bundle_items,
+				}
+			).insert()
+	except frappe.PermissionError:
+		raise
+	except frappe.ValidationError as e:
+		return _refused(e)
+
+	return {
+		"ok": True,
+		"message": _("已儲存「{0}」的課程 BOM（{1} 項教材／材料）").format(title, len(bundle_items)),
+		"created": {"doctype": "Product Bundle", "name": pb.name, "href": _desk("Product Bundle", pb.name)},
+	}

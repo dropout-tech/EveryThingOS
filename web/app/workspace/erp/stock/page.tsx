@@ -28,7 +28,9 @@ export default async function StockPage() {
         inventoryValue={books.data.inventoryValue}
         batchOn={pack.modules.erp.batch}
         stock={books.data.stock}
+        courseBoms={books.data.courseBoms}
         purchases={books.data.purchases}
+        live={books.origin === "live"}
         deskUrl={books.origin === "live" ? books.deskUrl : undefined}
       />
       <SourceNote source={books} />

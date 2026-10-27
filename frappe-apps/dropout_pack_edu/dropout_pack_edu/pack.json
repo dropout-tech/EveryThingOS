@@ -1,11 +1,14 @@
 {
  "domains": [
-  "Services"
+  "Services",
+  "Distribution"
  ],
  "item_groups": [
   "課程",
   "期班",
-  "教材"
+  "教材",
+  "材料包",
+  "耗材"
  ],
  "customer_groups": [
   "學員",
@@ -15,7 +18,9 @@
  "uoms": [
   "堂",
   "期",
-  "本"
+  "本",
+  "份",
+  "組"
  ],
  "sales_stages": [
   "詢問",
@@ -27,6 +32,52 @@
   "試聽活動",
   "官網",
   "社群"
+ ],
+ "course_boms": [
+  {
+   "course_code": "CRS-STEAM-01",
+   "course_name": "STEAM 機器人實作期班（8 堂）",
+   "item_group": "期班",
+   "uom": "期",
+   "materials": [
+    {
+     "item_code": "MAT-STEAM-BOOK",
+     "item_name": "STEAM 機器人實作講義",
+     "item_group": "教材",
+     "uom": "本",
+     "qty": 1
+    },
+    {
+     "item_code": "MAT-STEAM-KIT",
+     "item_name": "感測器與馬達實驗材料包",
+     "item_group": "材料包",
+     "uom": "組",
+     "qty": 1
+    }
+   ]
+  },
+  {
+   "course_code": "CRS-SCI-01",
+   "course_name": "兒童自然科學實驗班（12 堂）",
+   "item_group": "期班",
+   "uom": "期",
+   "materials": [
+    {
+     "item_code": "MAT-SCI-BOOK",
+     "item_name": "科學實驗觀察紀錄冊",
+     "item_group": "教材",
+     "uom": "本",
+     "qty": 1
+    },
+    {
+     "item_code": "MAT-SCI-BOX",
+     "item_name": "酸鹼與光學實驗耗材包",
+     "item_group": "耗材",
+     "uom": "份",
+     "qty": 2
+    }
+   ]
+  }
  ],
  "project_templates": [
   {

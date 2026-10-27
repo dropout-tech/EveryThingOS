@@ -70,6 +70,13 @@ CUSTOM_FIELDS = {
 		{"fieldname": "tw_ot_note", "fieldtype": "Small Text", "label": "倍數與依據", "insert_after": "tw_ot_cap_hours", "read_only": 1, "no_copy": 1},
 		{"fieldname": "tw_leave_allocation", "fieldtype": "Link", "options": "Leave Allocation", "label": "特休假別分配", "insert_after": "tw_ot_note", "read_only": 1, "no_copy": 1},
 	],
+	"Shift Assignment": [
+		_section("tw_schedule_section", "課程與教室排班", "status"),
+		{"fieldname": "tw_course_name", "fieldtype": "Data", "label": "課程／班級名稱", "insert_after": "tw_schedule_section"},
+		{"fieldname": "tw_room", "fieldtype": "Data", "label": "教室／地點", "insert_after": "tw_course_name"},
+		{"fieldname": "tw_start_time", "fieldtype": "Data", "label": "上課時間（起）", "insert_after": "tw_room"},
+		{"fieldname": "tw_end_time", "fieldtype": "Data", "label": "下課時間（迄）", "insert_after": "tw_start_time"},
+	],
 	"Salary Slip": [
 		_section("tw_basis_section", "台灣扣繳基準", "deductions"),
 		_basis("tw_rate_year", "費率年度", "tw_basis_section", "Int"),

@@ -396,3 +396,60 @@ def leave_field_upgrade(name, values):
 		if all(_same(values.get(key), expected) for key, expected in row["match"].items()):
 			return dict(row["set"])
 	return None
+
+
+def minutes_of_day(hhmm) -> int:
+	"""將 'HH:MM' 轉成當日第幾分鐘（0..1439），格式不對就丟 ValueError。"""
+	if not isinstance(hhmm, str) or ":" not in hhmm:
+		raise ValueError("時間要用 HH:MM")
+	parts = hhmm.strip().split(":")
+	if len(parts) < 2:
+		raise ValueError("時間要用 HH:MM")
+	hour, minute = int(parts[0]), int(parts[1])
+	if not (0 <= hour <= 23 and 0 <= minute <= 59):
+		raise ValueError("時間超出 00:00 到 23:59")
+	return hour * 60 + minute
+
+
+def schedule_conflict(candidate, existing_shifts, leaves=()):
+	"""師資排班衝突檢查。可以排回傳 None，否則回傳一句中文原因。
+
+	candidate: {"employee", "employee_name"?, "date", "start_time", "end_time", "course_name", "room"?}
+	existing_shifts: [{"employee", "employee_name", "date", "start_time", "end_time", "course_name", "room"?}, ...]
+	leaves: [{"employee", "employee_name"?, "leave_type", "from_date", "to_date"}, ...]
+	"""
+	day = as_date(candidate.get("date"))
+	if day is None:
+		raise ValueError("需要排班日期")
+	start_min = minutes_of_day(candidate.get("start_time"))
+	end_min = minutes_of_day(candidate.get("end_time"))
+	if end_min <= start_min:
+		raise ValueError("下課時間要晚於上課時間")
+	emp = str(candidate.get("employee") or "").strip()
+	emp_name = str(candidate.get("employee_name") or emp).strip()
+	room = str(candidate.get("room") or "").strip()
+
+	for lv in leaves or ():
+		lv_from, lv_to = as_date(lv.get("from_date")), as_date(lv.get("to_date"))
+		if lv.get("employee") == emp and lv_from and lv_to and lv_from <= day <= lv_to:
+			return f"請假衝突：{emp_name} 在 {day} 請{lv.get('leave_type') or '假'}，請改派代課老師。"
+
+	for slot in existing_shifts or ():
+		if as_date(slot.get("date")) != day:
+			continue
+		try:
+			s0 = minutes_of_day(slot.get("start_time"))
+			s1 = minutes_of_day(slot.get("end_time"))
+		except ValueError:
+			continue
+		if not (start_min < s1 and s0 < end_min):
+			continue
+		slot_name = slot.get("employee_name") or slot.get("employee") or ""
+		slot_course = slot.get("course_name") or "排班"
+		if slot.get("employee") == emp:
+			return f"師資衝堂：{slot_name} 在 {day} {slot.get('start_time')}–{slot.get('end_time')} 已經排了「{slot_course}」。"
+		slot_room = str(slot.get("room") or "").strip()
+		if room and slot_room and room == slot_room:
+			return f"教室衝突：「{room}」在 {day} {slot.get('start_time')}–{slot.get('end_time')} 已排給 {slot_name} 的「{slot_course}」。"
+
+	return None

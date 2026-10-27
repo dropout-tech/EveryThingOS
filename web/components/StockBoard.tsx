@@ -3,10 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ActionNote } from "./ActionNote";
+import { CourseBomBoard } from "./CourseBomBoard";
 import { DeskLink } from "./DeskLink";
 import { NextThing } from "./NextThing";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import type { CourseBom } from "@/lib/course-bom";
 import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
 import { formatTwd, makePurchaseRequest, type PurchaseDoc, type StockRow } from "@/lib/erp";
 import { nextStock } from "@/lib/next-thing";
@@ -16,11 +18,13 @@ type StockBoardProps = {
   inventoryValue: number;
   batchOn: boolean;
   stock: StockRow[];
+  courseBoms?: CourseBom[];
   purchases: PurchaseDoc[];
+  live?: boolean;
   deskUrl?: string;
 };
 
-export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, deskUrl }: StockBoardProps) {
+export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms = [], purchases, live = false, deskUrl }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
   const focus = nextStock(stock);
@@ -35,6 +39,20 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
     });
     writeDemoState(demoKey("purchases", packId), [po, ...existing.filter((item) => item.no !== po.no)]);
     setNote(`已為「${row.name}」開請購 ${po.no}。直接去採購頁轉進貨。`);
+    window.setTimeout(() => router.push("/workspace/erp/purchase"), 600);
+  }
+
+  function requestBomShortage(items: { sku: string; name: string; shortage: number }[], courseName: string) {
+    const existing = peekDemoState<PurchaseDoc[]>(demoKey("purchases", packId), purchases);
+    const created = items.map((item) =>
+      makePurchaseRequest({
+        sku: item.sku,
+        name: `${item.name}（${courseName}缺 ${item.shortage}）`,
+        amount: Math.max(1, item.shortage * 600),
+      }),
+    );
+    writeDemoState(demoKey("purchases", packId), [...created, ...existing]);
+    setNote(`已為「${courseName}」開立 ${created.length} 筆缺料請購（${created.map((c) => c.no).join("、")}）。直接去採購頁轉進貨。`);
     window.setTimeout(() => router.push("/workspace/erp/purchase"), 600);
   }
 
@@ -117,6 +135,14 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, purchases, 
           </tbody>
         </table>
       </div>
+      <CourseBomBoard
+        initialBoms={courseBoms}
+        stock={stock}
+        live={live}
+        deskUrl={deskUrl}
+        onRequestShortage={requestBomShortage}
+        onPracticeNote={setNote}
+      />
     </div>
   );
 }

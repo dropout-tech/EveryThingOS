@@ -43,12 +43,14 @@ npm run dev
 | `GET /api/shop/profile` | 下載 ShopProfile（導入工具 `plan`／`provision` 的輸入） |
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
 | `POST /api/erp/quotation` | 開報價單（`dropout_core.actions.create_quotation`） |
+| `POST /api/erp/course-bom` | 新增／更新課程 BOM（`dropout_core.actions.upsert_course_bom`，對應 ERPNext `Product Bundle`） |
 | `POST /api/erp/advance` | 這張單的下一步：報價→訂單→出貨→發票→收款；採購→收貨→帳單→付款 |
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
 | `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |
 | `POST /api/meetings/skip` | 這場會議不派機器人／恢復 |
 | `POST /api/hr/checkin`、`POST /api/hr/leave` | 替自己打卡；核准或退回假單 |
 | `POST /api/hr/overtime` | 人資記加班：依勞基法倍數寫成「加班費」額外薪資，超過每日或每月上限會被擋（`dropout_hr_tw.overtime.record`） |
+| `POST /api/hr/schedule` | 師資／人員排班：檢查老師衝堂、教室衝突與請假撞課後，寫入 Frappe HRMS `Shift Assignment`（`dropout_hr_tw.schedule.assign`） |
 | `POST /api/team/{invite,profile,enabled,security}` | 邀請、換職務、停用／恢復、登入安全（`dropout_core.team.*`，限 System Manager） |
 | `POST /api/platform/accounts/[site]` | 營運：續約、暫停／恢復／解約、改公司資料 |
 

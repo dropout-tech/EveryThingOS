@@ -1,3 +1,4 @@
+import type { CourseBom } from "./course-bom";
 import { industryTodayJobs } from "./operator-day";
 import { practiceCast } from "./practice";
 import type { IndustryPack } from "./types";
@@ -206,6 +207,7 @@ export type Books = {
   sales: SalesDoc[];
   purchases: PurchaseDoc[];
   stock: StockRow[];
+  courseBoms?: CourseBom[];
   arAging: AgingRow[];
   journals: LedgerLine[];
   pnl: { label: string; amount: number }[];
@@ -265,32 +267,99 @@ export function buildBooks(pack: IndustryPack): Books {
         },
       ];
 
+  const isEdu = pack.group === "教育" || pack.nameEn === "edu";
   const stock: StockRow[] = inventoryOn
-    ? [
-        {
-          sku: "SKU-A",
-          name: `主力${pack.itemType}`,
-          warehouse: "本倉",
-          onHand: pick(seed, 2, 9),
-          safety: 12,
-          batch: batchOn ? "LOT-2509" : undefined,
-        },
-        {
-          sku: "SKU-B",
-          name: `常備${pack.itemType}`,
-          warehouse: "本倉",
-          onHand: pick(seed >>> 1, 20, 80),
-          safety: 10,
-          batch: batchOn ? "LOT-2508" : undefined,
-        },
-        {
-          sku: "SKU-C",
-          name: "包材／配件",
-          warehouse: pack.modules.erp.pos ? "門市倉" : "本倉",
-          onHand: pick(seed >>> 2, 40, 200),
-          safety: 30,
-        },
-      ]
+    ? isEdu
+      ? [
+          {
+            sku: "MAT-STEAM-KIT",
+            name: "感測器與馬達實驗材料包",
+            warehouse: "教材倉",
+            onHand: 7,
+            safety: 15,
+          },
+          {
+            sku: "MAT-STEAM-BOOK",
+            name: "STEAM 機器人實作講義",
+            warehouse: "教材倉",
+            onHand: 18,
+            safety: 15,
+          },
+          {
+            sku: "MAT-SCI-BOX",
+            name: "酸鹼與光學實驗耗材包",
+            warehouse: "教材倉",
+            onHand: 16,
+            safety: 20,
+          },
+          {
+            sku: "MAT-SCI-BOOK",
+            name: "科學實驗觀察紀錄冊",
+            warehouse: "教材倉",
+            onHand: 25,
+            safety: 12,
+          },
+        ]
+      : [
+          {
+            sku: "SKU-A",
+            name: `主力${pack.itemType}`,
+            warehouse: "本倉",
+            onHand: pick(seed, 2, 9),
+            safety: 12,
+            batch: batchOn ? "LOT-2509" : undefined,
+          },
+          {
+            sku: "SKU-B",
+            name: `常備${pack.itemType}`,
+            warehouse: "本倉",
+            onHand: pick(seed >>> 1, 20, 80),
+            safety: 10,
+            batch: batchOn ? "LOT-2508" : undefined,
+          },
+          {
+            sku: "SKU-C",
+            name: "包材／配件",
+            warehouse: pack.modules.erp.pos ? "門市倉" : "本倉",
+            onHand: pick(seed >>> 2, 40, 200),
+            safety: 30,
+          },
+        ]
+    : [];
+
+  const courseBoms: CourseBom[] = inventoryOn
+    ? isEdu
+      ? [
+          {
+            courseCode: "CRS-STEAM-01",
+            courseName: "STEAM 機器人實作期班（8 堂）",
+            targetSeats: 12,
+            lines: [
+              { sku: "MAT-STEAM-BOOK", name: "STEAM 機器人實作講義", qtyPerStudent: 1, uom: "本" },
+              { sku: "MAT-STEAM-KIT", name: "感測器與馬達實驗材料包", qtyPerStudent: 1, uom: "組" },
+            ],
+          },
+          {
+            courseCode: "CRS-SCI-01",
+            courseName: "兒童自然科學實驗班（12 堂）",
+            targetSeats: 10,
+            lines: [
+              { sku: "MAT-SCI-BOOK", name: "科學實驗觀察紀錄冊", qtyPerStudent: 1, uom: "本" },
+              { sku: "MAT-SCI-BOX", name: "酸鹼與光學實驗耗材包", qtyPerStudent: 2, uom: "份" },
+            ],
+          },
+        ]
+      : [
+          {
+            courseCode: "BDL-STARTER",
+            courseName: `${pack.nameZh}標準組合包`,
+            targetSeats: 10,
+            lines: [
+              { sku: "SKU-A", name: `主力${pack.itemType}`, qtyPerStudent: 1, uom: "件" },
+              { sku: "SKU-C", name: "包材／配件", qtyPerStudent: 2, uom: "份" },
+            ],
+          },
+        ]
     : [];
 
   const arAging = parties.slice(0, 4).map((party, index) => ({
@@ -360,6 +429,7 @@ export function buildBooks(pack: IndustryPack): Books {
     sales,
     purchases,
     stock,
+    courseBoms,
     arAging,
     journals,
     pnl,

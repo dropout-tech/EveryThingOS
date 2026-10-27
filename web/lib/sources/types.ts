@@ -1,4 +1,5 @@
 import type { Books } from "../erp";
+import type { ShiftSlot } from "../schedule";
 
 export type SystemId = "erpnext" | "glue" | "chatwoot";
 
@@ -84,9 +85,11 @@ export type HrToday = {
   approvals: { name: string; employee: string; leaveType: string; fromDate: string; toDate: string; days: number; reason: string; href?: string }[];
   payroll: { month: string; state: "not_started" | "started" | "slips" | "paid"; employees: number; draft: number; submitted: number; netPay: number; entries: { name: string; status: string; href?: string }[] } | null;
   rates: { year: number; verified: boolean; current: boolean; href?: string } | null;
-  can: { approve: boolean; payroll: boolean; overtime?: boolean };
-  /** Active employees, only for HR roles (used to pick who worked overtime). */
+  can: { approve: boolean; payroll: boolean; overtime?: boolean; schedule?: boolean };
+  /** Active employees, only for HR roles (used to pick who worked overtime or teaches a shift). */
   staff?: { id: string; name: string }[];
+  /** Upcoming teacher/staff shifts (Shift Assignments). */
+  schedule?: ShiftSlot[];
   denied?: string[];
 };
 
