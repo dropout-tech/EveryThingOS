@@ -44,6 +44,7 @@ npm run dev
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
 | `POST /api/erp/quotation` | 開報價單（`dropout_core.actions.create_quotation`） |
 | `POST /api/erp/course-bom` | 新增／更新課程 BOM（`dropout_core.actions.upsert_course_bom`，對應 ERPNext `Product Bundle`） |
+| `POST /api/erp/stock-movement` | 登記 WMS 上課領用耗用、教學損耗／報廢與跨店調撥（`dropout_core.actions.record_stock_movement`，對應 ERPNext `Stock Entry`） |
 | `POST /api/erp/advance` | 這張單的下一步：報價→訂單→出貨→發票→收款；採購→收貨→帳單→付款 |
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
 | `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |

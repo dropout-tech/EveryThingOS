@@ -96,7 +96,18 @@ def upcoming_shifts(company, day, days=14):
 
 
 @frappe.whitelist(methods=["POST"])
-def assign(employee, date, start_time, end_time, course_name, room=None):
+def assign(
+	employee,
+	date,
+	start_time,
+	end_time,
+	course_name,
+	room=None,
+	branch=None,
+	ai_suggested_employee=None,
+	ai_reason=None,
+	adjustment_note=None,
+):
 	if not ROLES & set(frappe.get_roles()):
 		raise frappe.PermissionError(_("只有人資或老闆可以排班"))
 	emp = frappe.db.get_value(
@@ -114,6 +125,7 @@ def assign(employee, date, start_time, end_time, course_name, room=None):
 	if not course:
 		frappe.throw(_("要填課程或班級名稱"))
 	room_clean = str(room or "").strip()[:40]
+	branch_clean = str(branch or "").strip()[:40]
 	try:
 		s_min = labor_rules.minutes_of_day(start_t)
 		e_min = labor_rules.minutes_of_day(end_t)
@@ -151,6 +163,8 @@ def assign(employee, date, start_time, end_time, course_name, room=None):
 		frappe.throw(_(conflict))
 
 	shift_type = _ensure_shift_type(start_t, end_t)
+	ai_emp = str(ai_suggested_employee or "").strip()[:140]
+	decision = ("adopted" if ai_emp == emp.name else "modified") if ai_emp else ""
 	doc = frappe.get_doc(
 		{
 			"doctype": "Shift Assignment",
@@ -161,9 +175,14 @@ def assign(employee, date, start_time, end_time, course_name, room=None):
 			"end_date": day,
 			"status": "Active",
 			"tw_course_name": course,
+			"tw_branch": branch_clean,
 			"tw_room": room_clean,
 			"tw_start_time": start_t,
 			"tw_end_time": end_t,
+			"tw_ai_suggested_employee": ai_emp,
+			"tw_ai_reason": str(ai_reason or "").strip()[:500],
+			"tw_audit_decision": decision,
+			"tw_adjustment_note": str(adjustment_note or "").strip()[:500],
 		}
 	)
 	doc.insert()

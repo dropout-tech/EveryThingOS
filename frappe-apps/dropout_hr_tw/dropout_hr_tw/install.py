@@ -61,6 +61,11 @@ CUSTOM_FIELDS = {
 		{"fieldname": "tw_hi_dependents", "fieldtype": "Int", "label": "健保眷屬人數", "insert_after": "tw_insurance_column", "non_negative": 1},
 		{"fieldname": "tw_pension_voluntary_rate", "fieldtype": "Percent", "label": "勞退自提比例", "insert_after": "tw_hi_dependents", "non_negative": 1},
 		{"fieldname": "tw_no_employment_insurance", "fieldtype": "Check", "label": "不參加就業保險", "insert_after": "tw_pension_voluntary_rate", "description": "例如已領老年給付或依法不適用的外籍人士"},
+		_section("tw_teacher_section", "師資技能與跨店支援", "tw_no_employment_insurance"),
+		{"fieldname": "tw_skills", "fieldtype": "Small Text", "label": "專長／課程主題標籤", "insert_after": "tw_teacher_section", "description": "以逗號分隔，例如：親子手作,美術創作,節慶DIY,黏土雕塑"},
+		{"fieldname": "tw_age_groups", "fieldtype": "Data", "label": "適教年齡層", "insert_after": "tw_skills", "description": "以逗號分隔，例如：幼兒 3–6 歲,兒童 7–12 歲,親子共學"},
+		{"fieldname": "tw_home_branch", "fieldtype": "Data", "label": "所屬分店／據點", "insert_after": "tw_age_groups"},
+		{"fieldname": "tw_support_branches", "fieldtype": "Data", "label": "可跨店支援據點", "insert_after": "tw_home_branch", "description": "以逗號分隔可支援的分店名稱"},
 	],
 	"Additional Salary": [
 		_section("tw_ot_section", "加班紀錄", "amount"),
@@ -73,9 +78,14 @@ CUSTOM_FIELDS = {
 	"Shift Assignment": [
 		_section("tw_schedule_section", "課程與教室排班", "status"),
 		{"fieldname": "tw_course_name", "fieldtype": "Data", "label": "課程／班級名稱", "insert_after": "tw_schedule_section"},
-		{"fieldname": "tw_room", "fieldtype": "Data", "label": "教室／地點", "insert_after": "tw_course_name"},
+		{"fieldname": "tw_branch", "fieldtype": "Data", "label": "上課據點／分店", "insert_after": "tw_course_name"},
+		{"fieldname": "tw_room", "fieldtype": "Data", "label": "教室／地點", "insert_after": "tw_branch"},
 		{"fieldname": "tw_start_time", "fieldtype": "Data", "label": "上課時間（起）", "insert_after": "tw_room"},
 		{"fieldname": "tw_end_time", "fieldtype": "Data", "label": "下課時間（迄）", "insert_after": "tw_start_time"},
+		{"fieldname": "tw_ai_suggested_employee", "fieldtype": "Data", "label": "AI 原始建議師資", "insert_after": "tw_end_time", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_ai_reason", "fieldtype": "Small Text", "label": "AI 媒合依據", "insert_after": "tw_ai_suggested_employee", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_audit_decision", "fieldtype": "Data", "label": "主管覆核結果", "insert_after": "tw_ai_reason", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_adjustment_note", "fieldtype": "Small Text", "label": "主管調整內容與原因", "insert_after": "tw_audit_decision", "read_only": 1, "no_copy": 1},
 	],
 	"Salary Slip": [
 		_section("tw_basis_section", "台灣扣繳基準", "deductions"),

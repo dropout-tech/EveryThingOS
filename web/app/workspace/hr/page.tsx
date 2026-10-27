@@ -39,31 +39,34 @@ function demo(): HrToday {
         id: "SH-2026-001",
         employee: "HR-EMP-00001",
         employeeName: "王小明",
+        branch: "台北信義教室",
         date: today,
         startTime: "09:30",
         endTime: "12:00",
-        courseName: "STEAM 機器人實作 A 班",
-        room: "教室 A",
+        courseName: "週末親子手作黏土 A 班",
+        room: "手作教室 A",
       },
       {
         id: "SH-2026-002",
         employee: "HR-EMP-00002",
         employeeName: "林業務",
+        branch: "台北信義教室",
         date: today,
         startTime: "14:00",
         endTime: "16:30",
-        courseName: "兒童自然科學實驗班",
-        room: "實驗室 1",
+        courseName: "節慶 DIY 創意美勞班",
+        room: "美術教室 1",
       },
       {
         id: "SH-2026-003",
         employee: "HR-EMP-00004",
         employeeName: "李師傅",
+        branch: "台中公益教室",
         date: taipeiDay(1),
         startTime: "18:30",
         endTime: "21:00",
-        courseName: "Python 資料分析實戰",
-        room: "電腦教室 B",
+        courseName: "STEAM 機器人與科學實作",
+        room: "創客教室 B",
       },
     ],
   };
@@ -91,9 +94,9 @@ export default async function HrPage() {
 
   return (
     <ModuleFrame
-      kicker="人事"
-      title={manager ? "今天誰在、誰請假" : "打卡"}
-      hint={manager ? "打卡、核准假單在這裡做完。員工資料、排班、薪資結構在 ERPNext 人事後台。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
+      kicker="人事與師資調度（HRM）"
+      title={manager ? "今天誰在、誰請假、師資怎麼排" : "打卡與我的班表"}
+      hint={manager ? "採「勞動法規先行、AI 建議、主管覆核、異常留痕」：整合師資專長／適教年齡層標籤、請假、出勤與工時，提出跨店排班建議與人力缺口提醒；薪資／勞健保支援既有系統串接、匯入或必要欄位管理。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
     >
       <Hint id="hr" help="module-hr" />
       <HrBoard data={data} live={live} />

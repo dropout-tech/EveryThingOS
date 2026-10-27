@@ -41,12 +41,12 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 產品殼：onboarding、今天一件事、生意、客人、對話、電子報、會議、官網、名單健康、團隊、設定 | `web/` | 示範與真實資料都可用；客人頁練習的十步依台灣那一行的真實做法（`web/lib/tw-real/`）；生意、客人、倉庫、進貨、收錢、電子報、對話、人事、會議、報表、擋假信最上面各是一件「現在這件」（沒卡住就不硬補）；ERPNext 登入（OAuth2 + PKCE）、Chatwoot 單一登入；Open Chat 把 LINE、IG、FB、官網收成一個收件匣，ManyChat 只留關鍵字轉私訊（[docs/OPEN-CHAT.md](docs/OPEN-CHAT.md)）；殼裡直接開報價、單據下一步、收款、新增客人、寄電子報、關掉某場會議機器人；**一個部署服務所有公司**（依網址分公司）；團隊與權限、試用與續約提醒 |
 | 營運後台：所有公司的合約、用量、續約、暫停、解約 | `web/app/platform` | Cloudflare Access 保護，另外部署 |
 | ERPNext 自訂 app：統編、Identity／Consent／Event、膠水 API、檢查報表、導入進度、殼的讀寫 API | `frappe-apps/dropout_core` | 本機 ERPNext v15 測過（27 項測試）；含職務、邀請、兩步驟驗證、稽核紀錄、每日備份 |
-| 產業包：製造、顧問、教育（含課程 BOM `Product Bundle` 與教材／材料包庫存） | `frappe-apps/dropout_pack_*`、`web/components/CourseBomBoard.tsx` | 設定精靈完成後自動套用；倉庫頁自動試算現有材料夠開幾位學員、瓶頸材料與一鍵補齊缺料 |
+| 產業包：製造、顧問、教育（含課程 BOM 預先鎖定、虛實履約拆解、WMS 領用耗用／損耗報廢、20 店跨據點庫存與 AI 跨店調撥／補貨建議） | `frappe-apps/dropout_pack_*`、`web/components/CourseBomBoard.tsx`、`web/lib/course-bom.ts` | 設定精靈完成後自動套用；倉庫頁自動試算現有材料夠開幾位學員、已鎖定材料、虛實履約退課成本拆解與跨店調撥建議 |
 | 台灣金流：綠界、藍新 | `frappe-apps/dropout_pay_tw` | Frappe Payments 擴充；正式啟用前要跑一次金流商測試環境 |
 | 系統間同步 G1–G10、會議機器人排程、電子發票（綠界 B2C）、公司合約與網址目錄 | `glue/` | Worker 本機測過；尚未建 D1、Queues、部署 |
 | 導入工具：plan、provision、convert、check、import、**bootstrap（一行開站加搬家）**、**fleet（一次很多家、續約、暫停）** | `toolkit/` | 三家示範公司（製造、顧問、教育）本機一行開站搬家跑過，重跑會略過 |
 | CI：殼、膠水、導入工具、ERPNext 上的 app 測試 | `.github/workflows/ci.yml` | 每個 PR 跑。殼的 `npm test` 鎖住十一個現場的十步與 Open Chat |
-| 人事薪資與師資排班：請假、核准、打卡、師資排班與衝堂／請假代課檢查、薪資（勞健保、勞退、職災、獎金補充保費、扣繳費率可改；月中到離職勞保按 30 日；雇主負擔可入帳；到職週年自動給特休、到期未休自動折算工資；人資記加班依倍數入帳並擋下每日 12 小時、每月 46／54 小時、每三個月 138 小時上限；婚假 14 日） | `frappe-apps/dropout_hr_tw`、`web/app/workspace/hr` | 用 Frappe HRMS v15；每年改的費率要對勞保局、健保署公告，不寫死（[docs/HR.md](docs/HR.md)） |
+| 人事薪資與智慧師資調度（HRM）：師資技能與適教年齡層標籤、跨店支援、「勞動法規先行、AI 建議、主管覆核、異常留痕」排班與衝堂／請假代課檢查、工時異常提醒；薪資／勞健保支援既有系統串接、匯入或必要欄位管理 | `frappe-apps/dropout_hr_tw`、`web/app/workspace/hr`、`web/lib/schedule.ts` | 用 Frappe HRMS v15；每年改的費率要對勞保局、健保署公告，不寫死（[docs/HR.md](docs/HR.md)） |
 | 老闆儀表板：營收、毛利、帳齡、前十大客人、成交漏斗、缺貨，卡片可自己挑、排順序；手機可安裝（PWA） | `web/app/workspace/reports`、`dropout_core/reports.py` | 數字直接用 ERPNext 原生報表（[docs/REPORTS.md](docs/REPORTS.md)） |
 | 年費自動帳單：到期前 60 天開帳單、綠界線上付款、付款即續約、開電子發票；客戶健康度 | `glue/src/billing.ts`、`glue/src/health.ts`、`/platform` | 要設綠界金鑰並跑測試環境（[docs/BILLING.md](docs/BILLING.md)） |
 | 對外 API 與 Webhook：每家公司自己的金鑰、`/v1` 客人／商品／訂單／發票、事件推播 | `glue/src/publicApi.ts`、`glue/src/webhooks.ts`、`/workspace/settings/api` | [docs/PUBLIC-API.md](docs/PUBLIC-API.md)、[docs/openapi.yaml](docs/openapi.yaml) |

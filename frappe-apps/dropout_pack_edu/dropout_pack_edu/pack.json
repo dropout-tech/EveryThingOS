@@ -35,6 +35,50 @@
  ],
  "course_boms": [
   {
+   "course_code": "CRS-CLAY-01",
+   "course_name": "節慶親子手作輕黏土班（4 堂）",
+   "item_group": "期班",
+   "uom": "期",
+   "materials": [
+    {
+     "item_code": "MAT-CLAY-SET",
+     "item_name": "節慶造型輕黏土材料包",
+     "item_group": "材料包",
+     "uom": "組",
+     "qty": 1
+    },
+    {
+     "item_code": "MAT-FRAME-01",
+     "item_name": "木質展示相框與配件組",
+     "item_group": "耗材",
+     "uom": "份",
+     "qty": 1
+    }
+   ]
+  },
+  {
+   "course_code": "CRS-ART-01",
+   "course_name": "兒童創意美術與媒材創作班（8 堂）",
+   "item_group": "期班",
+   "uom": "期",
+   "materials": [
+    {
+     "item_code": "MAT-CANVAS-01",
+     "item_name": "兒童創作畫布板與畫冊",
+     "item_group": "教材",
+     "uom": "本",
+     "qty": 1
+    },
+    {
+     "item_code": "MAT-ACRYLIC-SET",
+     "item_name": "水洗無毒顏料與複合媒材包",
+     "item_group": "材料包",
+     "uom": "組",
+     "qty": 2
+    }
+   ]
+  },
+  {
    "course_code": "CRS-STEAM-01",
    "course_name": "STEAM 機器人實作期班（8 堂）",
    "item_group": "期班",

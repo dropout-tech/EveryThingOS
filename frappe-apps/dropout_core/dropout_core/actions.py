@@ -293,3 +293,44 @@ def upsert_course_bom(course_code, course_name, lines, target_seats=15):
 		"message": _("已儲存「{0}」的課程 BOM（{1} 項教材／材料）").format(title, len(bundle_items)),
 		"created": {"doctype": "Product Bundle", "name": pb.name, "href": _desk("Product Bundle", pb.name)},
 	}
+
+
+@frappe.whitelist(methods=["POST"])
+def record_stock_movement(kind, item_code, qty, from_warehouse, to_warehouse=None, reason=None):
+	"""WMS stock movement: consume (上課領用耗用), wastage (教學損耗／報廢), or transfer (跨店調撥)."""
+	if not ({"System Manager", "Stock Manager", "Stock User", "Sales Manager"} & set(frappe.get_roles())):
+		raise frappe.PermissionError(_("只有倉庫或門市管理人員可以登記耗用、損耗與跨店調撥"))
+	if kind not in ("consume", "wastage", "transfer"):
+		frappe.throw(_("異動種類只能是上課耗用、教學損耗或跨店調撥"))
+	amount_qty = flt(qty)
+	if amount_qty <= 0:
+		frappe.throw(_("數量要大於 0"))
+	if kind == "transfer" and not to_warehouse:
+		frappe.throw(_("跨店調撥要選調入分店倉庫"))
+
+	entry_type = "Material Transfer" if kind == "transfer" else "Material Issue"
+	label = {"consume": "上課領用耗用", "wastage": "教學損耗／報廢", "transfer": "跨店調撥"}[kind]
+	se = frappe.new_doc("Stock Entry")
+	se.stock_entry_type = entry_type
+	se.company = _company()
+	se.remarks = f"[{label}] {reason or ''}".strip()
+	row = {
+		"item_code": item_code,
+		"qty": amount_qty,
+		"s_warehouse": from_warehouse,
+	}
+	if kind == "transfer":
+		row["t_warehouse"] = to_warehouse
+	se.append("items", row)
+	try:
+		se.insert()
+		se.submit()
+	except frappe.PermissionError:
+		raise
+	except frappe.ValidationError as e:
+		return _refused(e)
+	return {
+		"ok": True,
+		"message": _("已登記{0}：{1} × {2}").format(label, item_code, amount_qty),
+		"created": {"doctype": "Stock Entry", "name": se.name, "href": _desk("Stock Entry", se.name)},
+	}

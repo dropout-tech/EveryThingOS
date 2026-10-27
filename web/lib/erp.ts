@@ -272,32 +272,46 @@ export function buildBooks(pack: IndustryPack): Books {
     ? isEdu
       ? [
           {
+            sku: "MAT-CLAY-SET",
+            name: "節慶造型輕黏土材料包",
+            warehouse: "台北信義教室倉",
+            onHand: 8,
+            safety: 15,
+          },
+          {
+            sku: "MAT-FRAME-01",
+            name: "木質展示相框與配件組",
+            warehouse: "台北信義教室倉",
+            onHand: 18,
+            safety: 15,
+          },
+          {
+            sku: "MAT-ACRYLIC-SET",
+            name: "水洗無毒顏料與複合媒材包",
+            warehouse: "台北信義教室倉",
+            onHand: 14,
+            safety: 20,
+          },
+          {
+            sku: "MAT-CANVAS-01",
+            name: "兒童創作畫布板與畫冊",
+            warehouse: "台北信義教室倉",
+            onHand: 22,
+            safety: 15,
+          },
+          {
             sku: "MAT-STEAM-KIT",
             name: "感測器與馬達實驗材料包",
-            warehouse: "教材倉",
+            warehouse: "台北信義教室倉",
             onHand: 7,
             safety: 15,
           },
           {
             sku: "MAT-STEAM-BOOK",
             name: "STEAM 機器人實作講義",
-            warehouse: "教材倉",
+            warehouse: "台北信義教室倉",
             onHand: 18,
             safety: 15,
-          },
-          {
-            sku: "MAT-SCI-BOX",
-            name: "酸鹼與光學實驗耗材包",
-            warehouse: "教材倉",
-            onHand: 16,
-            safety: 20,
-          },
-          {
-            sku: "MAT-SCI-BOOK",
-            name: "科學實驗觀察紀錄冊",
-            warehouse: "教材倉",
-            onHand: 25,
-            safety: 12,
           },
         ]
       : [
@@ -331,21 +345,33 @@ export function buildBooks(pack: IndustryPack): Books {
     ? isEdu
       ? [
           {
-            courseCode: "CRS-STEAM-01",
-            courseName: "STEAM 機器人實作期班（8 堂）",
-            targetSeats: 12,
+            courseCode: "CRS-CLAY-01",
+            courseName: "節慶親子手作輕黏土班（4 堂）",
+            targetSeats: 15,
+            bookedSeats: 6,
             lines: [
-              { sku: "MAT-STEAM-BOOK", name: "STEAM 機器人實作講義", qtyPerStudent: 1, uom: "本" },
-              { sku: "MAT-STEAM-KIT", name: "感測器與馬達實驗材料包", qtyPerStudent: 1, uom: "組" },
+              { sku: "MAT-CLAY-SET", name: "節慶造型輕黏土材料包", qtyPerStudent: 1, uom: "組", unitCost: 450 },
+              { sku: "MAT-FRAME-01", name: "木質展示相框與配件組", qtyPerStudent: 1, uom: "份", unitCost: 350 },
             ],
           },
           {
-            courseCode: "CRS-SCI-01",
-            courseName: "兒童自然科學實驗班（12 堂）",
-            targetSeats: 10,
+            courseCode: "CRS-ART-01",
+            courseName: "兒童創意美術與媒材創作班（8 堂）",
+            targetSeats: 12,
+            bookedSeats: 5,
             lines: [
-              { sku: "MAT-SCI-BOOK", name: "科學實驗觀察紀錄冊", qtyPerStudent: 1, uom: "本" },
-              { sku: "MAT-SCI-BOX", name: "酸鹼與光學實驗耗材包", qtyPerStudent: 2, uom: "份" },
+              { sku: "MAT-CANVAS-01", name: "兒童創作畫布板與畫冊", qtyPerStudent: 1, uom: "本", unitCost: 300 },
+              { sku: "MAT-ACRYLIC-SET", name: "水洗無毒顏料與複合媒材包", qtyPerStudent: 2, uom: "組", unitCost: 450 },
+            ],
+          },
+          {
+            courseCode: "CRS-STEAM-01",
+            courseName: "STEAM 機器人實作期班（8 堂）",
+            targetSeats: 12,
+            bookedSeats: 4,
+            lines: [
+              { sku: "MAT-STEAM-BOOK", name: "STEAM 機器人實作講義", qtyPerStudent: 1, uom: "本", unitCost: 250 },
+              { sku: "MAT-STEAM-KIT", name: "感測器與馬達實驗材料包", qtyPerStudent: 1, uom: "組", unitCost: 950 },
             ],
           },
         ]
@@ -354,6 +380,7 @@ export function buildBooks(pack: IndustryPack): Books {
             courseCode: "BDL-STARTER",
             courseName: `${pack.nameZh}標準組合包`,
             targetSeats: 10,
+            bookedSeats: 3,
             lines: [
               { sku: "SKU-A", name: `主力${pack.itemType}`, qtyPerStudent: 1, uom: "件" },
               { sku: "SKU-C", name: "包材／配件", qtyPerStudent: 2, uom: "份" },
