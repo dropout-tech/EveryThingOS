@@ -449,23 +449,28 @@ describe("accounts", () => {
   it("daily pushes the contract status to ERPNext and mails each reminder once; state changes push right away", async () => {
     const h = harness({ "api.resend.com": () => ({ id: "r1" }) });
     Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "EveryThingOS <billing@dropout.tw>", PLATFORM_NOTIFY: "ops@dropout.tw" });
-    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
-    const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
-    expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
-
     const now = new Date("2026-10-12T18:01:00Z");
-    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
-    expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
-    const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));
-    expect(mail).toHaveLength(1);
-    expect(mail[0].body).toMatchObject({ to: ["boss@make.tw"], subject: "EveryThingOS 試用還有 7 天（琢奧精密製造）", reply_to: "ops@dropout.tw" });
-    expect(h.emails.at(-1)).toMatchObject({ to: "ops@dropout.tw" });
-    const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
-    expect(detail.events[0]).toMatchObject({ action: "提醒", actor: "排程" });
+    vi.useFakeTimers({ now, toFake: ["Date"] });
+    try {
+      await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", trial_ends: "2026-10-20", contact_email: "boss@make.tw" }), h.env, h.app);
+      const pushes = () => h.calls.filter((c) => c.url.endsWith("dropout_core.account.set_status"));
+      expect(pushes().at(-1)!.body).toMatchObject({ stage: "trial", locked: 0 });
 
-    const res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "測試" }), h.env, h.app);
-    expect(((await res.json()) as any).erpnext).toBe(true);
-    expect(pushes().at(-1)!.body).toMatchObject({ stage: "suspended", locked: 1 });
+      expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 1, pushed: 1 });
+      expect(await daily(h.env, h.app, now)).toMatchObject({ reminded: 0 });
+      const mail = h.calls.filter((c) => c.url.includes("api.resend.com"));
+      expect(mail).toHaveLength(1);
+      expect(mail[0].body).toMatchObject({ to: ["boss@make.tw"], subject: "EveryThingOS 試用還有 7 天（琢奧精密製造）", reply_to: "ops@dropout.tw" });
+      expect(h.emails.at(-1)).toMatchObject({ to: "ops@dropout.tw" });
+      const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
+      expect(detail.events[0]).toMatchObject({ action: "提醒", actor: "排程" });
+
+      const res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "測試" }), h.env, h.app);
+      expect(((await res.json()) as any).erpnext).toBe(true);
+      expect(pushes().at(-1)!.body).toMatchObject({ stage: "suspended", locked: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
