@@ -62,7 +62,7 @@ meta.stock = await shot("stock", "現在這件");
 await open("/workspace/erp/stock", ["課程 BOM 與報名材料包"]);
 meta.bom = await shot("bom", "課程 BOM 與報名材料包", "main details");
 await open("/workspace/hr", ["師資技能標籤"]);
-meta.teachers = await shot("teachers", "師資技能標籤與工時合規主檔", "main details");
+meta.teachers = await shot("teachers", "師資技能標籤與工時", "main details");
 await open("/workspace/hr");
 meta.schedule = await shot("schedule", "AI 師資媒合與排班建議");
 await open("/book?from=line");

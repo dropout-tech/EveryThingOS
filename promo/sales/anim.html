@@ -6,29 +6,39 @@
   :root { --bg: #ffffff; --navy: #0f2340; --teal: #1f8f88; --teal-soft: #e6f4f2; --orange: #d9772a; --dim: #5b6b80; --line: #e3e7ec; }
   * { margin: 0; box-sizing: border-box; }
   html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "Noto Sans CJK TC", sans-serif; color: var(--navy); -webkit-font-smoothing: antialiased; }
-  canvas { position: absolute; inset: 0; }
+  body { background-color: #fff; background-image: linear-gradient(rgba(15,35,64,0.05) 1.5px, transparent 1.5px), linear-gradient(90deg, rgba(15,35,64,0.05) 1.5px, transparent 1.5px); background-size: 60px 60px; background-position: -1px -1px; }
+  #deco, #confetti { position: absolute; inset: 0; pointer-events: none; }
+  #deco { filter: drop-shadow(7px 7px 0 var(--navy)); }
+  .piece { position: absolute; left: 0; top: 0; }
   .abs { position: absolute; }
   .layer { position: absolute; inset: 0; }
   .hide { opacity: 0; }
   b.o { color: var(--orange); font-weight: 700; }
   b.t { color: var(--teal); font-weight: 700; }
+  #ans h2 b.t { background: linear-gradient(transparent 62%, var(--teal-soft) 62%); }
 
   #hook { left: 0; right: 0; top: 330px; text-align: center; }
   #hook h1 { font-size: 100px; font-weight: 700; letter-spacing: -2px; line-height: 1.15; }
-  #count { font-size: 230px; font-weight: 900; color: var(--orange); line-height: 1; letter-spacing: -6px; }
+  #count { font-size: 230px; font-weight: 900; color: var(--orange); line-height: 1; letter-spacing: -6px; text-shadow: 9px 9px 0 var(--navy); }
 
-  .win { position: absolute; width: 330px; border-radius: 18px; background: #fff; border: 2px solid var(--line); box-shadow: 0 18px 50px rgba(15,35,64,0.12); overflow: hidden; }
-  .win .tb { height: 34px; display: flex; align-items: center; gap: 8px; padding-left: 14px; background: #f4f6f8; border-bottom: 1px solid var(--line); }
-  .win .tb i { width: 11px; height: 11px; border-radius: 50%; background: #cfd6de; }
+  .win { position: absolute; width: 330px; border-radius: 10px; background: #fff; border: 3px solid var(--navy); box-shadow: 8px 8px 0 var(--navy); overflow: hidden; }
+  .win.lit { border-color: var(--orange); box-shadow: 10px 10px 0 var(--orange); }
+  .win .tb { height: 34px; display: flex; align-items: center; gap: 8px; padding-left: 14px; background: #f4f6f8; border-bottom: 3px solid var(--navy); }
+  .win.lit .tb { border-bottom-color: var(--orange); }
+  .win.w0 .tb { background: var(--teal-soft); }
+  .win.w1 .tb { background: #fbe7d4; }
+  .win.w2 .tb { background: repeating-linear-gradient(45deg, #e6f4f2 0 8px, #fff 8px 16px); }
+  .win .tb i { width: 11px; height: 11px; border-radius: 50%; background: #fff; border: 2px solid var(--navy); }
   .win .bd { padding: 18px 20px 22px; font-size: 32px; font-weight: 700; }
   .win .bd small { display: block; font-size: 20px; font-weight: 400; color: var(--dim); margin-top: 6px; }
 
   #pain { left: 0; right: 0; top: 760px; text-align: center; }
-  #pain .who { display: inline-block; font-size: 28px; padding: 6px 22px; border-radius: 999px; border: 2px solid var(--orange); color: var(--orange); letter-spacing: 2px; background: #fff; }
+  #pain .who { display: inline-block; font-size: 28px; padding: 6px 22px; border-radius: 999px; border: 3px solid var(--navy); color: var(--orange); letter-spacing: 2px; background: #fff; box-shadow: 5px 5px 0 var(--navy); font-weight: 700; }
   #pain h2 { font-size: 72px; font-weight: 700; margin-top: 18px; letter-spacing: -1px; }
   #pnum { position: absolute; left: 96px; top: 70px; font-size: 30px; color: var(--dim); letter-spacing: 4px; }
 
-  #reveal { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #reveal { inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; }
+  #reveal .card { background: #fff; border: 4px solid var(--navy); border-radius: 8px; box-shadow: 18px 18px 0 var(--navy); padding: 44px 90px 54px; }
   #reveal p { font-size: 54px; color: var(--dim); }
   #reveal h1 { font-size: 168px; font-weight: 900; letter-spacing: -5px; margin-top: 10px; }
   #reveal h1 span { color: var(--teal); }
@@ -38,8 +48,9 @@
   #ans .x { position: absolute; left: 110px; top: 300px; width: 640px; font-size: 32px; color: var(--dim); text-decoration: line-through; text-decoration-color: var(--orange); text-decoration-thickness: 3px; line-height: 1.4; }
   #ans h2 { position: absolute; left: 110px; top: 420px; width: 660px; font-size: 64px; font-weight: 700; line-height: 1.25; letter-spacing: -1px; }
   #ans .s { position: absolute; left: 110px; top: 700px; width: 640px; font-size: 28px; color: var(--dim); line-height: 1.45; }
-  .shot { position: absolute; left: 820px; top: 223px; width: 1000px; border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(15,35,64,0.16), 0 4px 14px rgba(15,35,64,0.06); }
-  .shot .bar { height: 40px; background: #f4f6f8; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 9px; padding-left: 18px; }
+  .shot { position: absolute; left: 820px; top: 223px; width: 1000px; border-radius: 20px; overflow: hidden; background: #fff; border: 3px solid var(--navy); box-shadow: 14px 14px 0 var(--navy); }
+  #plate { position: absolute; left: 776px; width: 1000px; border: 3px solid var(--navy); border-radius: 20px; background: repeating-linear-gradient(45deg, #e6f4f2 0 16px, #fff 16px 32px); }
+  .shot .bar { height: 40px; background: #f4f6f8; border-bottom: 3px solid var(--navy); display: flex; align-items: center; gap: 9px; padding-left: 18px; }
   .shot .bar i { width: 12px; height: 12px; border-radius: 50%; background: #cfd6de; }
   .shot .bar i:first-child { background: var(--orange); }
   .shot .bar i:nth-child(2) { background: var(--teal); }
@@ -59,16 +70,19 @@
 </style>
 </head>
 <body>
+<div id="confetti"></div>
+<div id="deco"></div>
 <div id="wins"></div>
 <div id="hook" class="abs"><h1 id="hookT">老闆，你今天開了幾個視窗？</h1><div id="count">0</div></div>
 <div id="pnum" class="hide"></div>
 <div id="pain" class="abs hide"><span class="who" id="who"></span><h2 id="painT"></h2></div>
-<div id="reveal" class="abs hide"><p>把這些，收進一個網頁</p><h1>EveryThing<span>OS</span></h1></div>
+<div id="reveal" class="abs hide"><div class="card"><p>把這些，收進一個網頁</p><h1>EveryThing<span>OS</span></h1></div></div>
 <div id="ans" class="abs hide">
   <div class="num" id="aNum"></div>
   <div class="x" id="aX"></div>
   <h2 id="aT"></h2>
   <div class="s" id="aS"></div>
+  <div id="plate"></div>
   <div class="shot" id="shotA"><div class="bar"><i></i><i></i><i></i><em id="aUrl"></em></div><div class="view"><img id="imgA" /><div class="ring" id="ringA"></div></div></div>
   <div class="shot" id="shotB"><div class="bar"><i></i><i></i><i></i><em id="bUrl"></em></div><div class="view"><img id="imgB" /></div></div>
   <div id="dots"><span></span><span></span><span></span><span></span><span></span><span></span></div>
