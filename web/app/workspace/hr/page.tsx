@@ -1,8 +1,10 @@
+import { cookies } from "next/headers";
 import { EmptyState } from "@/components/EmptyState";
 import { Hint } from "@/components/Hint";
 import { HrBoard } from "@/components/HrBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
+import { decodeHolds, demandsFromHolds, HOLD_COOKIE, holdLines } from "@/lib/holds";
 import { getHr } from "@/lib/sources";
 import type { HrToday } from "@/lib/sources/types";
 
@@ -90,6 +92,8 @@ export default async function HrPage() {
   }
 
   const data = source.data ?? demo();
+  const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
+  const openDemands = demandsFromHolds(holds);
   const manager = data.can.approve || data.can.payroll;
 
   return (
@@ -99,7 +103,14 @@ export default async function HrPage() {
       hint={manager ? "師資專長、請假與工時放在一起看；AI 只給建議，主管確認才排入。薪資與勞健保沿用既有系統。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
     >
       <Hint id="hr" help="module-hr" />
-      <HrBoard data={data} live={live} />
+      {holdLines(holds).length ? (
+        <ul className="glass-well space-y-1 p-4 text-sm">
+          {holdLines(holds).map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
+      <HrBoard data={data} live={live} openDemands={openDemands} />
       <SourceNote source={source} demoText="示範資料。接上 ERPNext 人事後，換成你們的同事、假單與薪資。" />
     </ModuleFrame>
   );

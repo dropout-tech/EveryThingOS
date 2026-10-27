@@ -336,8 +336,25 @@ def record_stock_movement(kind, item_code, qty, from_warehouse, to_warehouse=Non
 	}
 
 
+def _slot_orders(course_code, date, slot):
+	"""Submitted and draft sales orders for this course, date and time slot."""
+	rows = frappe.db.sql(
+		"""
+		select so.name, so.po_no, so.docstatus, so.customer, sum(soi.qty) as qty
+		from `tabSales Order` so
+		inner join `tabSales Order Item` soi on soi.parent = so.name
+		where so.docstatus < 2 and so.delivery_date = %s and soi.item_code = %s
+		group by so.name
+		""",
+		(date, course_code),
+		as_dict=True,
+	)
+	mark = f"{date} {slot or ''}".strip()
+	return [r for r in rows if mark and mark in (r.po_no or "")]
+
+
 @frappe.whitelist(methods=["POST"])
-def book_course(course_code, branch, date, slot, seats, parent_name, phone, channel="官網", line_id=None, note=None):
+def book_course(course_code, branch, date, slot, seats, parent_name, phone, channel="官網", line_id=None, note=None, target_seats=None):
 	"""One booking from the website, a LINE rich menu, an IG/FB profile link or the counter.
 
 	Creates (or reuses, by phone) the Customer and one Sales Order for the course. When every
@@ -393,6 +410,16 @@ def book_course(course_code, branch, date, slot, seats, parent_name, phone, chan
 			if not ident_line:
 				_add_identity("Customer", customer, "line", line_id.strip()[:40], verified=0)
 
+		same_slot = _slot_orders(code, date, slot)
+		if any(r.customer == customer for r in same_slot):
+			return {"ok": True, "status": "duplicate", "message": _("這個手機在這個時段已經有預約，不會再劃一次。")}
+		taken = sum(flt(r.qty) for r in same_slot if r.docstatus == 1)
+		cap = cint(target_seats)
+		full_message = None
+		if cap > 0 and taken + qty > cap:
+			left = max(0, cap - int(taken))
+			full_message = _("這個時段只剩 {0} 位（額定 {1} 人），先排候補，不會重複劃位。").format(left, cap) if left else _("這個時段額滿（額定 {0} 人），先排候補，不會重複劃位。").format(cap)
+
 		so = frappe.new_doc("Sales Order")
 		so.customer = customer
 		so.company = _company()
@@ -403,7 +430,7 @@ def book_course(course_code, branch, date, slot, seats, parent_name, phone, chan
 			so.set_warehouse = warehouse
 		so.append("items", {"item_code": code, "qty": qty, "delivery_date": date, "warehouse": warehouse})
 		so.insert()
-		if not shortages:
+		if not shortages and not full_message:
 			so.submit()
 	except frappe.PermissionError:
 		raise
@@ -411,6 +438,13 @@ def book_course(course_code, branch, date, slot, seats, parent_name, phone, chan
 		return _refused(e)
 
 	so.add_comment("Comment", "；".join(x for x in (label, f"LINE：{line_id}" if line_id else "", note or "") if x))
+	if full_message:
+		return {
+			"ok": True,
+			"status": "full",
+			"message": full_message,
+			"created": {"doctype": "Sales Order", "name": so.name, "href": _desk("Sales Order", so.name)},
+		}
 	if shortages:
 		short = "、".join(f"{sku} 缺 {flt(n, 2)}" for sku, n in shortages)
 		return {
@@ -422,6 +456,39 @@ def book_course(course_code, branch, date, slot, seats, parent_name, phone, chan
 	return {
 		"ok": True,
 		"status": "locked",
-		"message": _("已保留 {0} 位，材料包已隨訂單鎖定").format(qty),
+		"message": _("已保留 {0} 位，材料包已隨訂單鎖定。這堂課還要到人事確認老師。").format(qty),
 		"created": {"doctype": "Sales Order", "name": so.name, "href": _desk("Sales Order", so.name)},
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def request_purchase(item_code, qty, warehouse=None, reason=None):
+	"""One Material Request, item and quantity already filled in. Staff submit it in ERPNext."""
+	if not ({"System Manager", "Purchase Manager", "Purchase User", "Stock Manager", "Stock User"} & set(frappe.get_roles())):
+		raise frappe.PermissionError(_("只有採購或倉庫人員可以請購"))
+	sku = (item_code or "").strip()
+	if not frappe.db.exists("Item", sku):
+		frappe.throw(_("找不到這個品項"))
+	amount = flt(qty)
+	if amount <= 0:
+		frappe.throw(_("數量要大於 0"))
+	mr = frappe.new_doc("Material Request")
+	mr.material_request_type = "Purchase"
+	mr.company = _company()
+	mr.schedule_date = add_days(nowdate(), 3)
+	mr.title = (reason or sku)[:140]
+	row = {"item_code": sku, "qty": amount, "schedule_date": mr.schedule_date, "uom": frappe.db.get_value("Item", sku, "stock_uom")}
+	if warehouse and frappe.db.exists("Warehouse", warehouse):
+		row["warehouse"] = warehouse
+	mr.append("items", row)
+	try:
+		mr.insert()
+	except frappe.PermissionError:
+		raise
+	except frappe.ValidationError as e:
+		return _refused(e)
+	return {
+		"ok": True,
+		"message": _("已開請購 {0}：{1} × {2}。到進貨頁送出即可，不用再填一張空白單。").format(mr.name, sku, amount),
+		"created": {"doctype": "Material Request", "name": mr.name, "href": _desk("Material Request", mr.name)},
 	}

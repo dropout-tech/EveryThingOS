@@ -26,6 +26,7 @@ type Props = {
   leaves: LeaveSpan[];
   today: string;
   canSchedule: boolean;
+  openDemands?: ClassDemand[];
   live: boolean;
   run: ReturnType<typeof useLiveAction>["run"];
   busy: boolean;
@@ -228,13 +229,14 @@ export function TeacherSchedule({
   leaves,
   today,
   canSchedule,
+  openDemands = [],
   live,
   run,
   busy,
   onPractice,
 }: Props) {
   const [slots, setSlots] = useState<ShiftSlot[]>(initialSchedule);
-  const [demands, setDemands] = useState<ClassDemand[]>(() => initialDemands(today));
+  const [demands, setDemands] = useState<ClassDemand[]>(() => [...openDemands, ...initialDemands(today)]);
   const [editingDemandId, setEditingDemandId] = useState<string | null>(null);
   const [overrideTeacher, setOverrideTeacher] = useState<Record<string, string>>({});
   const [overrideNote, setOverrideNote] = useState<Record<string, string>>({});
@@ -309,7 +311,7 @@ export function TeacherSchedule({
     });
 
     if (live) {
-      await run(
+      const saved = await run(
         "/api/hr/schedule",
         {
           employee: chosen.id,
@@ -326,6 +328,7 @@ export function TeacherSchedule({
         },
         (r) => String(r.message ?? `已覆核排班：${chosen.name}`),
       );
+      if (!saved?.ok) return;
     } else {
       const created: ShiftSlot = {
         id: `SH-${demand.id}`,
@@ -348,6 +351,13 @@ export function TeacherSchedule({
       );
     }
 
+    if (demand.id.startsWith("HOLD-")) {
+      await fetch("/api/holds", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: demand.id.slice(5), teacher: chosen.name }),
+      });
+    }
     setAudits((cur) => [audit, ...cur]);
     setDemands((cur) => cur.filter((d) => d.id !== demand.id));
   }
@@ -436,6 +446,7 @@ export function TeacherSchedule({
                     <div className="space-y-3">
                       <div className="space-y-1">
                         <p className="font-medium">{d.courseName}</p>
+                        {d.id.startsWith("HOLD-") ? <p className="text-xs text-cream-dim">預約帶進來的。主管確認才排入，不會自己排老師。</p> : null}
                         <p className="flex flex-wrap gap-x-3 gap-y-1">
                           <Stat icon="calendar">{d.date.slice(5)} {d.startTime}–{d.endTime}</Stat>
                           <Stat icon="store">{d.branch.replace("教室", "")}</Stat>

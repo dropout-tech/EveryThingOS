@@ -10,6 +10,7 @@ import { OvertimeForm } from "./OvertimeForm";
 import { TeacherSchedule } from "./TeacherSchedule";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
+import type { ClassDemand } from "@/lib/schedule";
 import type { HrToday } from "@/lib/sources/types";
 
 const LOG_LABEL = { IN: "上班", OUT: "下班" } as const;
@@ -48,7 +49,7 @@ function readLocation(): Promise<{ latitude?: number; longitude?: number }> {
 }
 
 /** `live` false is practice mode: buttons change this screen only and nothing is sent. */
-export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
+export function HrBoard({ data, live, openDemands = [] }: { data: HrToday; live: boolean; openDemands?: ClassDemand[] }) {
   const action = useLiveAction();
   const [locating, setLocating] = useState(false);
   const [logs, setLogs] = useState(data.me.logs);
@@ -236,6 +237,7 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
           ]}
           today={data.date}
           canSchedule={Boolean(data.can.schedule)}
+          openDemands={openDemands}
           live={live}
           run={action.run}
           busy={action.busy}

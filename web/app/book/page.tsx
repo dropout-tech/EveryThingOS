@@ -1,7 +1,9 @@
+import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { BookingForm, type BookableCourse } from "@/components/BookingForm";
-import { seatsLabel, type BookingChannel } from "@/lib/booking";
+import type { BookingChannel } from "@/lib/booking";
 import { evaluateCourseBom } from "@/lib/course-bom";
+import { applyLocks, decodeHolds, HOLD_COOKIE, openLabel, openSeats } from "@/lib/holds";
 import { getBooks } from "@/lib/sources";
 import { DEFAULT_BRAND } from "@/lib/brand";
 import { liveConfig } from "@/lib/sources/config";
@@ -28,9 +30,10 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
   const books = await getBooks(pack);
   const data = books.origin === "error" ? null : books.data;
 
+  const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
   const courses: BookableCourse[] = (data?.courseBoms ?? []).map((bom) => {
-    const evaluated = evaluateCourseBom(bom, data?.stock ?? []);
-    return { code: bom.courseCode, name: bom.courseName, label: seatsLabel(evaluated), full: evaluated.remainingSeats <= 0 };
+    const evaluated = evaluateCourseBom(applyLocks(bom, holds), data?.stock ?? []);
+    return { code: bom.courseCode, name: bom.courseName, label: openLabel(evaluated), full: openSeats(evaluated) <= 0 };
   });
   const branches = [...new Set((data?.stock ?? []).map((s) => branchName(s.warehouse)).filter(Boolean))];
 

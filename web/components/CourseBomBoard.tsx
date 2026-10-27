@@ -30,6 +30,7 @@ type Props = {
   deskUrl?: string;
   onRequestShortage: (items: { sku: string; name: string; shortage: number }[], courseName: string) => void;
   onPracticeNote: (message: string) => void;
+  bookingLocks?: { branchName: string; sku: string; locked: number; demand: number }[];
 };
 
 const INITIAL_BRANCH_STOCKS: BranchMaterialStock[] = [
@@ -177,10 +178,20 @@ const CHANNEL_ICON: Record<CourseEnrollmentOrder["channel"], IconName> = {
   門市現場: "store",
 };
 
-export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestShortage, onPracticeNote }: Props) {
+export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestShortage, onPracticeNote, bookingLocks = [] }: Props) {
   const action = useLiveAction();
   const [boms, setBoms] = useState<CourseBom[]>(initialBoms);
-  const [branchStocks, setBranchStocks] = useState<BranchMaterialStock[]>(INITIAL_BRANCH_STOCKS);
+  const [branchStocks, setBranchStocks] = useState<BranchMaterialStock[]>(() =>
+    INITIAL_BRANCH_STOCKS.map((row) => {
+      const extra = bookingLocks.filter((lock) => lock.sku === row.sku && (lock.branchName === row.branchName || lock.branchName.startsWith(row.branchName)));
+      if (!extra.length) return row;
+      return {
+        ...row,
+        locked: row.locked + extra.reduce((sum, lock) => sum + lock.locked, 0),
+        upcomingDemand: row.upcomingDemand + extra.reduce((sum, lock) => sum + lock.demand, 0),
+      };
+    }),
+  );
   const [enrollments, setEnrollments] = useState<CourseEnrollmentOrder[]>(INITIAL_ENROLLMENTS);
   const [openForm, setOpenForm] = useState(false);
   const [courseCode, setCourseCode] = useState("CRS-NEW-01");
@@ -225,8 +236,16 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
     }
   }
 
-  function executeRecommendation(rec: AiInventoryRecommendation) {
+  async function executeRecommendation(rec: AiInventoryRecommendation) {
     if (rec.action === "transfer" && rec.sourceBranch) {
+      if (live) {
+        const res = await action.run(
+          "/api/erp/stock-movement",
+          { kind: "transfer", sku: rec.sku, qty: rec.qty, fromBranch: rec.sourceBranch, toBranch: rec.targetBranch, reason: "AI 跨店調撥" },
+          (r) => String(r.message ?? "已調撥"),
+        );
+        if (!res?.ok) return;
+      }
       setBranchStocks((cur) =>
         cur.map((row) => {
           if (row.sku !== rec.sku) return row;

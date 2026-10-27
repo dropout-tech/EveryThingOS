@@ -22,27 +22,54 @@ type StockBoardProps = {
   purchases: PurchaseDoc[];
   live?: boolean;
   deskUrl?: string;
+  fromBookings?: string[];
+  bookingLocks?: { branchName: string; sku: string; locked: number; demand: number }[];
 };
 
-export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms = [], purchases, live = false, deskUrl }: StockBoardProps) {
+export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms = [], purchases, live = false, deskUrl, fromBookings = [], bookingLocks = [] }: StockBoardProps) {
   const router = useRouter();
   const [note, setNote] = useState<string | null>(null);
   const focus = nextStock(stock);
   const others = stock.filter((row) => row.onHand < row.safety).length - (focus ? 1 : 0);
 
-  function requestBuy(row: StockRow) {
+  async function requestBuy(row: StockRow) {
+    const qty = Math.max(1, row.safety - row.onHand);
+    if (live) {
+      const res = await fetch("/api/erp/purchase-request", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sku: row.sku, qty, warehouse: row.warehouse, reason: "低於安全量" }),
+      });
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; message?: string } | null;
+      setNote(body?.message ?? "請購沒送出去");
+      return;
+    }
     const existing = peekDemoState<PurchaseDoc[]>(demoKey("purchases", packId), purchases);
     const po = makePurchaseRequest({
       sku: row.sku,
       name: row.name,
-      amount: Math.max(1, (row.safety - row.onHand) * 800),
+      amount: qty * 800,
     });
     writeDemoState(demoKey("purchases", packId), [po, ...existing.filter((item) => item.no !== po.no)]);
     setNote(`已為「${row.name}」開請購 ${po.no}。直接去採購頁轉進貨。`);
     window.setTimeout(() => router.push("/workspace/erp/purchase"), 600);
   }
 
-  function requestBomShortage(items: { sku: string; name: string; shortage: number }[], courseName: string) {
+  async function requestBomShortage(items: { sku: string; name: string; shortage: number }[], courseName: string) {
+    if (live) {
+      const notes: string[] = [];
+      for (const item of items) {
+        const res = await fetch("/api/erp/purchase-request", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ sku: item.sku, qty: item.shortage, reason: courseName }),
+        });
+        const body = (await res.json().catch(() => null)) as { message?: string } | null;
+        if (body?.message) notes.push(body.message);
+      }
+      setNote(notes.join(" ") || `「${courseName}」的請購沒送出去`);
+      return;
+    }
     const existing = peekDemoState<PurchaseDoc[]>(demoKey("purchases", packId), purchases);
     const created = items.map((item) =>
       makePurchaseRequest({
@@ -59,24 +86,25 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
   return (
     <div className="space-y-4">
       <p className="text-sm text-cream-dim">
-        低於安全庫存會標「不夠」。點「請購」就去進貨，不必記兩張單。
+        低於安全庫存會標「不夠」。點「請購」就開一張請購單，不必再填一張空白單。
         貨值 {formatTwd(inventoryValue)}。
       </p>
+      {fromBookings.length ? (
+        <ul className="glass-well space-y-1 p-4 text-sm">
+          {fromBookings.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
       <ActionNote>{note}</ActionNote>
       {focus ? (
         <NextThing
           title={`${focus.name} 不夠`}
           detail={`現有 ${focus.onHand}，安全量 ${focus.safety}。請購之後去進貨。${others > 0 ? `下面還有 ${others} 項不夠。` : ""}`}
           action={
-            deskUrl ? (
-              <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`} className={buttonClass({ variant: "primary" })}>
-                請購
-              </DeskLink>
-            ) : (
-              <button type="button" onClick={() => requestBuy(focus)} className={buttonClass({ variant: "primary" })}>
-                請購
-              </button>
-            )
+            <button type="button" onClick={() => requestBuy(focus)} className={buttonClass({ variant: "primary" })}>
+              請購
+            </button>
           }
         />
       ) : null}
@@ -87,6 +115,7 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
         deskUrl={deskUrl}
         onRequestShortage={requestBomShortage}
         onPracticeNote={setNote}
+        bookingLocks={bookingLocks}
       />
       <details className="glass p-5">
         <summary className="cursor-pointer select-none text-sm font-medium">
@@ -123,16 +152,10 @@ export function StockBoard({ packId, inventoryValue, batchOn, stock, courseBoms 
                     <td data-label="安全">{row.safety}</td>
                     {batchOn ? <td data-label="批號">{row.batch ?? "—"}</td> : null}
                     <td data-label="下一步">
-                      {deskUrl ? (
-                        low ? (
-                          <DeskLink href={`${deskUrl}/app/material-request/new?material_request_type=Purchase`} className={buttonClass({ variant: "secondary", size: "sm" })}>
-                            請購
-                          </DeskLink>
-                        ) : (
-                          <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
-                            打開
-                          </DeskLink>
-                        )
+                      {deskUrl && !low ? (
+                        <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
+                          打開
+                        </DeskLink>
                       ) : low ? (
                         <button type="button" onClick={() => requestBuy(row)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                           請購

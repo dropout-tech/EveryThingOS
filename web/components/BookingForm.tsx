@@ -5,7 +5,7 @@ import { parseBooking, type BookingChannel } from "@/lib/booking";
 
 export type BookableCourse = { code: string; name: string; label: string; full: boolean };
 
-type Result = { status?: "locked" | "waitlist" | "pending"; message?: string };
+type Result = { status?: "locked" | "waitlist" | "pending" | "duplicate" | "full"; message?: string };
 
 const SLOTS = ["10:00", "13:30", "15:30", "19:00"];
 
@@ -42,7 +42,7 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
   }
 
   if (result) {
-    const title = result.status === "locked" ? "預約完成" : result.status === "waitlist" ? "已排候補" : "已收到預約";
+    const title = result.status === "locked" ? "預約完成" : result.status === "duplicate" ? "不會重複劃位" : result.status === "full" || result.status === "waitlist" ? "已排候補" : "已收到預約";
     return (
       <div className="site-sheet p-6 sm:p-8" role="status">
         <h2 className="text-2xl font-medium">{title}</h2>
@@ -117,7 +117,7 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
       <button type="submit" className="btn btn-primary w-full" disabled={busy}>
         {busy ? "確認名額與材料中…" : "預約"}
       </button>
-      {demo ? <p className="text-xs text-cream-dim">練習模式：會照課程 BOM 算名額，但不會真的送出。</p> : null}
+      {demo ? <p className="text-xs text-cream-dim">練習模式：名額和材料會記在這台瀏覽器，倉庫和人事看得到同一筆。不會送到店外的系統。</p> : null}
     </form>
   );
 }

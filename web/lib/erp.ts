@@ -347,7 +347,7 @@ export function buildBooks(pack: IndustryPack): Books {
           {
             courseCode: "CRS-CLAY-01",
             courseName: "節慶親子手作輕黏土班（4 堂）",
-            targetSeats: 15,
+            targetSeats: 7,
             bookedSeats: 6,
             lines: [
               { sku: "MAT-CLAY-SET", name: "節慶造型輕黏土材料包", qtyPerStudent: 1, uom: "組", unitCost: 450 },

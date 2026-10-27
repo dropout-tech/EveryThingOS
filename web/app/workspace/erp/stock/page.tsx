@@ -1,6 +1,8 @@
+import { cookies } from "next/headers";
 import { BookingLinks } from "@/components/BookingLinks";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { StockBoard } from "@/components/StockBoard";
+import { applyLocks, decodeHolds, HOLD_COOKIE, holdLines, stockPressure } from "@/lib/holds";
 import { getBooks } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
 
@@ -22,6 +24,8 @@ export default async function StockPage() {
     );
   }
 
+  const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
+  const courseBoms = (books.data.courseBoms ?? []).map((bom) => applyLocks(bom, holds));
   return (
     <div className="space-y-4">
       <StockBoard
@@ -29,10 +33,12 @@ export default async function StockPage() {
         inventoryValue={books.data.inventoryValue}
         batchOn={pack.modules.erp.batch}
         stock={books.data.stock}
-        courseBoms={books.data.courseBoms}
+        courseBoms={courseBoms}
         purchases={books.data.purchases}
         live={books.origin === "live"}
         deskUrl={books.origin === "live" ? books.deskUrl : undefined}
+        fromBookings={holdLines(holds)}
+        bookingLocks={stockPressure(holds, courseBoms)}
       />
       {books.data.courseBoms?.length ? <BookingLinks /> : null}
       <SourceNote source={books} />
