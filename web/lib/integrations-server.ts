@@ -69,7 +69,7 @@ export async function loadIntegrations(): Promise<IntegrationsSource> {
 
 /** One write from the settings page, forwarded to the glue for this company only. */
 export async function integrationAction<T extends Record<string, unknown>>(request: NextRequest, build: (body: T) => { path: string; body?: unknown } | string) {
-  if (!sameOrigin(request)) return refuse("這個請求不是從 DropOut OS 送出的", 403);
+  if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
   const access = await integrationAccess();
   if (!access.ok) return refuse(access.message, access.status);
   const body = (await readJson<T>(request)) ?? ({} as T);

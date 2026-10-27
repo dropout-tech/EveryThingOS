@@ -1,4 +1,4 @@
-"""This site's DropOut OS contract status, pushed by the glue.
+"""This site's EveryThingOS contract status, pushed by the glue.
 
 While the contract is read-only, suspended or cancelled, staff can still read
 and export, but cannot create, change, submit, cancel or delete business
@@ -63,7 +63,7 @@ def guard(doc, method=None):
 		return
 	if not frappe.get_cached_doc(SETTINGS).get("account_locked") or _privileged():
 		return
-	message = frappe.get_cached_doc(SETTINGS).get("account_message") or _("這家公司的 DropOut OS 合約目前只能看，不能新增或修改。")
+	message = frappe.get_cached_doc(SETTINGS).get("account_message") or _("這家公司的 EveryThingOS 合約目前只能看，不能新增或修改。")
 	frappe.throw(message, frappe.PermissionError, title=_("只能看"))
 
 

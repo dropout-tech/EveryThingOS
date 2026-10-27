@@ -1,4 +1,4 @@
-# DropOut OS（EveryThingOS）
+# EveryThingOS（EveryThingOS）
 
 琢奧科技的中小企業作業系統。**CRM、ERP、人事薪資、老闆報表、對外 API、魅力圈、清庫、短網址、官網、社群回覆**同一登入、同一主檔、同一套 DropOut 皮。
 

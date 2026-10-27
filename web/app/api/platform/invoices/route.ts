@@ -10,7 +10,7 @@ type Body =
 
 /** DropOut staff only: open, mark paid offline, void, resend the link, or retry the e-invoice for one renewal invoice. */
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) return refuse("這個請求不是從 DropOut OS 送出的", 403);
+  if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
   const operator = await platformOperator();
   if (!operator) return refuse("只有 DropOut 營運人員可以做這件事", 403);
   const body = await readJson<Body>(request);

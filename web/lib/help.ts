@@ -42,12 +42,12 @@ const MENU_BY_ROLE: Record<string, string> = {
 export const HELP: HelpArticle[] = [
   {
     slug: "start",
-    title: "開始使用 DropOut OS",
+    title: "開始使用 EveryThingOS",
     category: "開始使用",
     summary: "登入、看「今天」、練習一筆生意，第一個小時要做的事。",
     keywords: ["登入", "入門", "第一次", "今天", "示範", "練習"],
     blocks: [
-      { p: "DropOut OS 是一個網址、一次登入，就能回客人訊息、跟進客人、走完報價到收款、發電子報。背後的帳、單據、客人資料都在你們公司自己的 ERPNext，DropOut OS 是上面那層比較好用的畫面。" },
+      { p: "EveryThingOS 是一個網址、一次登入，就能回客人訊息、跟進客人、走完報價到收款、發電子報。背後的帳、單據、客人資料都在你們公司自己的 ERPNext，EveryThingOS 是上面那層比較好用的畫面。" },
       { h: "第一個小時" },
       {
         ordered: true,
@@ -70,7 +70,7 @@ export const HELP: HelpArticle[] = [
     slug: "octalysis",
     title: "畫面為什麼這樣排",
     category: "開始使用",
-    summary: "用八角框架看 DropOut OS：下一件事、做完就看得到、不發點數。",
+    summary: "用八角框架看 EveryThingOS：下一件事、做完就看得到、不發點數。",
     keywords: ["八角", "八角框架", "遊戲化", "octalysis", "驅力", "今天", "下一步", "點數", "周郁凱"],
     blocks: [
       { p: "畫面照周郁凱的八角框架來排。那是一套看「人為什麼會把一件事做完」的八個驅力。我們拿它決定每一頁先給什麼，不拿它做打怪升級。" },
@@ -112,7 +112,7 @@ export const HELP: HelpArticle[] = [
           ],
         },
       },
-      { p: "按鈕會帶你到做那件事的地方：在 DropOut OS 裡做得到的就開對應的頁面；只能在 ERPNext 做的（公司資料、匯入、員工資料）會在新分頁打開 ERPNext 的那一頁。" },
+      { p: "按鈕會帶你到做那件事的地方：在 EveryThingOS 裡做得到的就開對應的頁面；只能在 ERPNext 做的（公司資料、匯入、員工資料）會在新分頁打開 ERPNext 的那一頁。" },
       { h: "收起來、叫回來" },
       { p: "不想每天看到，按清單下面的「先收起來」。之後到「設定」，清單一直都在那裡，按「放回『今天』」就回來了。收起來只記在這台電腦的瀏覽器。" },
       { p: "練習模式沒有接 ERPNext，清單裡的「公司、客人、商品」用練習帳本算完成；「第一張報價」「第一筆收款」跟著你在練習帳本上做的走。" },
@@ -162,9 +162,9 @@ export const HELP: HelpArticle[] = [
     keywords: ["手機", "app", "iphone", "android", "主畫面", "pwa", "離線"],
     blocks: [
       { h: "iPhone（Safari）" },
-      { ordered: true, list: ["用 Safari 打開公司的 DropOut OS 網址，先登入", "點下方的「分享」按鈕", "選「加入主畫面」，按「新增」"] },
+      { ordered: true, list: ["用 Safari 打開公司的 EveryThingOS 網址，先登入", "點下方的「分享」按鈕", "選「加入主畫面」，按「新增」"] },
       { h: "Android（Chrome）" },
-      { ordered: true, list: ["用 Chrome 打開公司的 DropOut OS 網址，先登入", "點右上角「⋮」", "選「安裝應用程式」或「加到主畫面」"] },
+      { ordered: true, list: ["用 Chrome 打開公司的 EveryThingOS 網址，先登入", "點右上角「⋮」", "選「安裝應用程式」或「加到主畫面」"] },
       { p: "沒網路時打開，會看到「現在沒有網路」，連上後按「再試一次」。手機上不會存客人、帳、報表；手機遺失時，請老闆到「團隊」停用那個人。" },
     ],
     related: ["module-reports"],
@@ -460,7 +460,7 @@ export const HELP: HelpArticle[] = [
     keywords: ["團隊", "邀請", "帳號", "停用", "離職", "兩步驟", "密碼", "安全"],
     blocks: [
       { p: "只有老闆看得到「團隊」。邀請：填 Email、名字、職務，對方會收到 ERPNext 設定密碼的信。帳號不收人頭費。" },
-      { p: "換職務立刻生效。停用的人馬上登出，DropOut OS 拿著的登入也一起撤銷。不能把自己的老闆權限拿掉，也不能讓公司沒有老闆。" },
+      { p: "換職務立刻生效。停用的人馬上登出，EveryThingOS 拿著的登入也一起撤銷。不能把自己的老闆權限拿掉，也不能讓公司沒有老闆。" },
       { p: "登入安全：全員兩步驟驗證（驗證器 App 或 Email）、密碼強度、連續輸錯幾次鎖住、閒置自動登出。下面的「最近紀錄」是誰登入、誰改了什麼、誰匯出資料。" },
     ],
     related: ["roles"],

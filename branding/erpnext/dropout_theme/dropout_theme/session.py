@@ -1,3 +1,3 @@
 def boot(bootinfo):
-    bootinfo["sitename"] = "DropOut OS"
-    bootinfo["app_name"] = "DropOut OS"
+    bootinfo["sitename"] = "EveryThingOS"
+    bootinfo["app_name"] = "EveryThingOS"

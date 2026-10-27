@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate 100 DropOut OS industry packs. Run from repo root."""
+"""Generate 100 EveryThingOS industry packs. Run from repo root."""
 from __future__ import annotations
 
 import json

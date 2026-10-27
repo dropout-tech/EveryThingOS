@@ -163,8 +163,8 @@ export async function checkoutFields(cfg: { keys: GatewayKeys }, inv: Invoice, t
     MerchantTradeDate: merchantTradeDate(now),
     PaymentType: "aio",
     TotalAmount: String(inv.amount),
-    TradeDesc: "DropOut OS 年約",
-    ItemName: `DropOut OS 年約一年 ${inv.id}`,
+    TradeDesc: "EveryThingOS 年約",
+    ItemName: `EveryThingOS 年約一年 ${inv.id}`,
     ReturnURL: `${origin.replace(/\/+$/, "")}/billing/ecpay`,
     ClientBackURL: backUrl,
     ChoosePayment: "ALL",
@@ -220,7 +220,7 @@ export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Dat
         address: inv.buyer_address,
         grand_total: inv.amount,
         net_total: inv.net,
-        items: [{ item_name: "DropOut OS 年約", qty: 1, uom: "年", amount: inv.net }],
+        items: [{ item_name: "EveryThingOS 年約", qty: 1, uom: "年", amount: inv.net }],
       }),
       10_000,
     );
@@ -334,7 +334,7 @@ export async function billingRoute(req: Request, url: URL, parts: string[], ctx:
     if (!safeEqual(sig, await paySignature(env, id))) return page("連結無效", "<p>這個付款連結不完整，請回覆續約通知信，我們再寄一次。</p>", 400);
     const inv = await store.getInvoice(id);
     if (!inv) return page("找不到帳單", "<p>這張帳單不存在，請回覆續約通知信。</p>", 404);
-    const head = `<p>${escapeHtml(inv.buyer_name)} · 帳單 ${escapeHtml(inv.id)}<br>DropOut OS 年約一年 ${ntd(inv.net)} ＋ 營業稅 ${ntd(inv.tax)} ＝ <b>${ntd(inv.amount)}</b></p>`;
+    const head = `<p>${escapeHtml(inv.buyer_name)} · 帳單 ${escapeHtml(inv.id)}<br>EveryThingOS 年約一年 ${ntd(inv.net)} ＋ 營業稅 ${ntd(inv.tax)} ＝ <b>${ntd(inv.amount)}</b></p>`;
     if (inv.status === "paid") return page("已經付款", `${head}<p>${inv.paid_at?.slice(0, 10)} 收到款項，${inv.renewed_until ? `年約到 ${inv.renewed_until}` : "續約處理中"}。謝謝！</p>`);
     if (inv.status === "void") return page("帳單已作廢", `${head}<p>這張帳單已作廢，請回覆續約通知信，我們寄新的給您。</p>`);
     const cfg = ecpayConfig(env);
@@ -453,8 +453,8 @@ export async function billingAdmin(req: Request, url: URL, parts: string[], ctx:
         ? await mailCustomer(
             ctx,
             to,
-            `DropOut OS 年約付款連結（${inv.buyer_name}）`,
-            `${inv.buyer_name} 您好，\n\n這是 DropOut OS 年約的付款連結，金額 ${ntd(inv.amount)}（含 5% 營業稅）：\n${link}\n\n可以刷卡或 ATM 轉帳。付款後馬上續約一年，電子發票會寄到這個信箱。\n有問題直接回覆這封信即可。\n\nDropOut OS`,
+            `EveryThingOS 年約付款連結（${inv.buyer_name}）`,
+            `${inv.buyer_name} 您好，\n\n這是 EveryThingOS 年約的付款連結，金額 ${ntd(inv.amount)}（含 5% 營業稅）：\n${link}\n\n可以刷卡或 ATM 轉帳。付款後馬上續約一年，電子發票會寄到這個信箱。\n有問題直接回覆這封信即可。\n\nEveryThingOS`,
           )
         : false;
       await store.addAccountEvent(inv.site, ctx.actor, "寄付款連結", sent ? `${inv.id} 寄給 ${to}` : `${inv.id} 沒有寄出（${to ? "寄信沒有設定或失敗" : "沒有聯絡人 Email"}），連結交給營運自己貼`);

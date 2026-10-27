@@ -267,7 +267,7 @@ describe("e-invoice data", () => {
 describe("operators and the shell", () => {
   it("mark paid offline renews through the same path; void and resend; e-invoice off stays quiet", async () => {
     const h = harness({ einvoice: "off" });
-    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "DropOut OS <billing@dropout.tw>" });
+    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "EveryThingOS <billing@dropout.tw>" });
     const ends = addDays(today, 30);
     await h.store.putAccount(account({ renews_on: ends }));
     await billingDaily(h.ctx);
@@ -307,7 +307,7 @@ describe("operators and the shell", () => {
 
   it("daily reminders carry the payment link", async () => {
     const h = harness();
-    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "DropOut OS <billing@dropout.tw>" });
+    Object.assign(h.env, { RESEND_API_KEY: "re_test", PLATFORM_MAIL_FROM: "EveryThingOS <billing@dropout.tw>" });
     const now = new Date();
     await h.store.putAccount(account({ renews_on: addDays(taiwanDate(now), 30) }));
     const out = await daily(h.env, h.app, now);

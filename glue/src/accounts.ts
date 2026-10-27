@@ -1,4 +1,4 @@
-/** A customer company's contract with DropOut OS. Dates are YYYY-MM-DD in Taiwan time. */
+/** A customer company's contract with EveryThingOS. Dates are YYYY-MM-DD in Taiwan time. */
 export type Account = {
   site: string;
   company: string;
@@ -103,15 +103,15 @@ export function reminderFor(a: Account, now = new Date(), payUrl?: string | null
   const l = lifecycle(a, now);
   if (l.days === null || !REMIND_AT[l.stage]?.includes(l.days)) return null;
   const subject = {
-    trial: `DropOut OS 試用${l.days === 0 ? "今天到期" : `還有 ${l.days} 天`}`,
-    due_soon: `DropOut OS 年約${l.days === 0 ? "今天到期" : `還有 ${l.days} 天到期`}`,
-    past_due: "DropOut OS 已到期，寬限期內仍可正常使用",
-    read_only: "DropOut OS 已改成只能看",
+    trial: `EveryThingOS 試用${l.days === 0 ? "今天到期" : `還有 ${l.days} 天`}`,
+    due_soon: `EveryThingOS 年約${l.days === 0 ? "今天到期" : `還有 ${l.days} 天到期`}`,
+    past_due: "EveryThingOS 已到期，寬限期內仍可正常使用",
+    read_only: "EveryThingOS 已改成只能看",
   }[l.stage as "trial" | "due_soon" | "past_due" | "read_only"];
   return {
     key: `remind:${a.site}:${l.stage}:${l.ends}:${l.days}`,
     subject: `${subject}（${a.company}）`,
-    text: `${a.company} 您好，\n\n${l.message}\n\n${payUrl ? `線上付款（刷卡或 ATM）：\n${payUrl}\n\n` : ""}要續約或有任何問題，直接回覆這封信即可。\n\nDropOut OS`,
+    text: `${a.company} 您好，\n\n${l.message}\n\n${payUrl ? `線上付款（刷卡或 ATM）：\n${payUrl}\n\n` : ""}要續約或有任何問題，直接回覆這封信即可。\n\nEveryThingOS`,
   };
 }
 

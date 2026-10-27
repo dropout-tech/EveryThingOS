@@ -86,7 +86,7 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
               <th scope="col" className="px-5 py-3 font-normal">要做的事</th>
               <th scope="col" className="px-5 py-3 font-normal">鼎新 A1</th>
               <th scope="col" className="px-5 py-3 font-normal">億看</th>
-              <th scope="col" className="px-5 py-3 font-normal text-cream">DropOut OS</th>
+              <th scope="col" className="px-5 py-3 font-normal text-cream">EveryThingOS</th>
               {full ? <th scope="col" className="px-5 py-3 font-normal">為什麼更好用</th> : null}
             </tr>
           </thead>

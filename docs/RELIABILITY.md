@@ -1,6 +1,6 @@
 # 可靠度：目標、監看、出事怎麼辦、上線檢查
 
-這份寫的是 DropOut OS 正式營運時「多穩、怎麼知道壞了、壞了誰做什麼」。數字是對客戶的承諾，SLA 頁用同一組數字；改數字要兩邊一起改。
+這份寫的是 EveryThingOS 正式營運時「多穩、怎麼知道壞了、壞了誰做什麼」。數字是對客戶的承諾，SLA 頁用同一組數字；改數字要兩邊一起改。
 
 ## 目標
 
@@ -56,7 +56,7 @@
 | --- | --- | --- |
 | 「N 個連不上」 | 那幾家的 ERPNext 或殼連續 2 次（約 10 分鐘）沒回應 | 照下面「出事時的流程」 |
 | 「N 個恢復」 | 同一批又回應了 | 看死信、寫事後檢討 |
-| Uptime 執行失敗／「[DropOut OS 外部監看] 有 N 項連不上」 | 從 GitHub 打不到膠水或殼，或膠水 `/status` 說自己的排程沒在跑 | 先看是不是 Cloudflare 全面出事（cloudflarestatus.com）；不是的話 `glue/` 跑 `npx wrangler tail`、看最近一次部署 |
+| Uptime 執行失敗／「[EveryThingOS 外部監看] 有 N 項連不上」 | 從 GitHub 打不到膠水或殼，或膠水 `/status` 說自己的排程沒在跑 | 先看是不是 Cloudflare 全面出事（cloudflarestatus.com）；不是的話 `glue/` 跑 `npx wrangler tail`、看最近一次部署 |
 | 「備份：…沒有設定異地備份」 | 那站的 S3 Backup Settings 沒打開 | `dropout-onboard provision --backup-bucket … --apply` 重跑一次（做過的步驟會略過） |
 | 「備份：讀不到 R2」 | 那站讀 bucket 失敗（金鑰過期、bucket 改名） | 換 R2 金鑰後在那站的 S3 Backup Settings 更新 |
 | 「備份：最新備份沒有上傳到 R2」「R2 裡沒有備份（上傳失敗）」 | 本機有備份，上傳失敗；ERPNext 只寄信不報錯 | 那站 Error Log 與營運信箱找「Backup Upload Failed」；空間不足時清 `private/backups` |

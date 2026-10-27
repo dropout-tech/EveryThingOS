@@ -1,9 +1,9 @@
 /**
- * 八角框架（Octalysis，周郁凱）在 DropOut OS 的落點。
+ * 八角框架（Octalysis，周郁凱）在 EveryThingOS 的落點。
  * 說明中心與架構文件都讀這份，避免八個驅力各寫各的。
  * 設計決策見 docs/OCTALYSIS.md、docs/ARCHITECTURE.md 第 0.5 節。
  *
- * 框架名稱與八個驅力是周郁凱的公開架構。這裡只記 DropOut OS 怎麼用，
+ * 框架名稱與八個驅力是周郁凱的公開架構。這裡只記 EveryThingOS 怎麼用，
  * 不重製他的圖表或教材。
  */
 

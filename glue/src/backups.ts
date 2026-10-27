@@ -34,7 +34,7 @@ type Notice = { site: string; company: string; change: "stale" | "fresh"; detail
 export function backupAlertText(notices: Notice[]) {
   const stale = notices.filter((n) => n.change === "stale");
   const fresh = notices.filter((n) => n.change === "fresh");
-  const subject = `[DropOut OS 備份] ${[stale.length ? `${stale.length} 家備份過期` : "", fresh.length ? `${fresh.length} 家恢復` : ""].filter(Boolean).join("、")}`;
+  const subject = `[EveryThingOS 備份] ${[stale.length ? `${stale.length} 家備份過期` : "", fresh.length ? `${fresh.length} 家恢復` : ""].filter(Boolean).join("、")}`;
   const lines = [...stale.map((n) => `備份過期：${n.company}（${n.site}）${n.detail ?? ""}`), ...fresh.map((n) => `備份恢復：${n.company}（${n.site}）`)];
   const shown = lines.slice(0, 30);
   if (lines.length > shown.length) shown.push(`…還有 ${lines.length - shown.length} 家，看營運後台`);
@@ -87,7 +87,7 @@ export async function purgeNotices(env: Env, app: App, accounts: Account[], now 
     due.push({ site: a.site, company: a.company, due_on: p.due_on });
   }
   if (due.length) {
-    const subject = `[DropOut OS 營運] ${due.length} 家解約滿 90 天，等刪除`;
+    const subject = `[EveryThingOS 營運] ${due.length} 家解約滿 90 天，等刪除`;
     const lines = due.slice(0, 30).map((d) => `${d.company}（${d.site}）${d.due_on} 起可刪`);
     await deliver(env, app.fetcher, subject, [subject, ...lines, "刪除前先確認：dropout-onboard fleet purge <site>（預設只預演）"].join("\n").slice(0, 1900), due);
   }

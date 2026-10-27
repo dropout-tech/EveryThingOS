@@ -311,7 +311,7 @@ export async function manageWebhooks(req: Request, parts: string[], ctx: { site:
     return json({ ok: true });
   }
   if (action === "test" && req.method === "POST") {
-    const event: WebhookEvent = { id: `evt_ping_${randomHex(6)}`, type: "ping", created_at: new Date().toISOString(), data: { message: "DropOut OS 測試通知" } };
+    const event: WebhookEvent = { id: `evt_ping_${randomHex(6)}`, type: "ping", created_at: new Date().toISOString(), data: { message: "EveryThingOS 測試通知" } };
     const r = await send(hook, event, ctx.fetcher);
     await api.addDelivery({ webhook_id: id, site, event_id: event.id, event_type: "ping", attempt: 1, status: r.status, ok: !r.error, error: r.error, duration_ms: r.ms, created_at: new Date().toISOString() });
     return json({ ok: !r.error, status: r.status, error: r.error, duration_ms: r.ms });

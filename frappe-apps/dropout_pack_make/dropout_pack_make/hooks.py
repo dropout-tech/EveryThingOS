@@ -1,7 +1,7 @@
 app_name = "dropout_pack_make"
 app_title = "DropOut Pack Make"
 app_publisher = "DropOut Tech"
-app_description = "DropOut OS industry pack: 製造業"
+app_description = "EveryThingOS industry pack: 製造業"
 app_email = "info@dropout.tw"
 app_license = "mit"
 

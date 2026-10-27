@@ -1,7 +1,7 @@
 app_name = "dropout_core"
 app_title = "DropOut Core"
 app_publisher = "DropOut Tech"
-app_description = "DropOut OS kernel for ERPNext"
+app_description = "EveryThingOS kernel for ERPNext"
 app_email = "info@dropout.tw"
 app_license = "mit"
 

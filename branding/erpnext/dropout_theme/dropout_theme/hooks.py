@@ -1,5 +1,5 @@
 app_name = "dropout_theme"
-app_title = "DropOut OS"
+app_title = "EveryThingOS"
 app_publisher = "琢奧科技 DropOut Tech"
 app_description = "DropOut visual identity for ERPNext / Frappe"
 app_email = "info@dropout.tw"
@@ -14,8 +14,8 @@ web_include_css = ["/assets/dropout_theme/css/dropout.css"]
 website_context = {
     "favicon": "/assets/dropout_theme/images/favicon.ico",
     "splash_image": "/assets/dropout_theme/images/logo-full.png",
-    "app_name": "DropOut OS",
-    "brand_html": "DropOut OS",
+    "app_name": "EveryThingOS",
+    "brand_html": "EveryThingOS",
     "footer_html": "琢奧科技 DropOut Tech",
     "hide_login": 0,
 }

@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/workspace",
-    name: "DropOut OS",
-    short_name: "DropOut",
+    name: "EveryThingOS",
+    short_name: "EveryThingOS",
     description: "打開就做下一件事：客人、生意、收錢、報表在同一個地方。",
     lang: "zh-TW",
     dir: "ltr",

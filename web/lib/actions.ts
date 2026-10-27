@@ -45,7 +45,7 @@ const STATUS: Record<SourceError["kind"], number> = { login: 401, denied: 403, u
  * such as removing a person who left the company.
  */
 export async function erpAction(request: NextRequest, method: string, args: Record<string, unknown>, { always = false } = {}) {
-  if (!sameOrigin(request)) return refuse("這個請求不是從 DropOut OS 送出的", 403);
+  if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
   const config = await liveConfig();
   if (!config.erpnext) return refuse("ERPNext 還沒接上，現在是練習模式", 409);
   const blocked = always ? null : writeBlocked(config);

@@ -1,6 +1,6 @@
 # 對外 API 與 Webhook
 
-讓公司自己的其他系統接進 DropOut OS：蝦皮／momo 的串接程式、會計師事務所的匯出、自己寫的 App、Zapier、n8n、Make。
+讓公司自己的其他系統接進 EveryThingOS：蝦皮／momo 的串接程式、會計師事務所的匯出、自己寫的 App、Zapier、n8n、Make。
 
 - **API**：別的系統來讀客人、商品、訂單、發票，或新增客戶與潛在客人
 - **Webhook**：有新訂單、開了發票、收到錢時，DropOut 主動通知別的系統

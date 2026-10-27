@@ -22,14 +22,14 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "DropOut OS｜琢奧科技",
-    template: "%s｜DropOut OS",
+    default: "EveryThingOS｜琢奧科技",
+    template: "%s｜EveryThingOS",
   },
   description: "給台灣中小企業的作業系統：CRM、進銷存、財務、人事薪資、報表、對話、電子報一個登入。每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
   metadataBase: new URL(COMMERCIAL.siteUrl),
   applicationName: COMMERCIAL.product,
   openGraph: {
-    title: "DropOut OS｜客人、進銷存、帳、薪資，一個登入做完",
+    title: "EveryThingOS｜客人、進銷存、帳、薪資，一個登入做完",
     description: "給台灣中小企業的作業系統。每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
     siteName: COMMERCIAL.product,
     locale: "zh_TW",

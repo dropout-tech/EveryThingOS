@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: DropOut OS Public API
+  title: EveryThingOS Public API
   version: "1.0.0"
   summary: 讀寫一家公司的客人、商品、訂單、發票，並接收事件通知。
   description: |

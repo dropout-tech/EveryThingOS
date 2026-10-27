@@ -1,6 +1,6 @@
 [project]
 name = "dropout-onboard"
-description = "DropOut OS onboarding toolkit: provision a company site, migrate data, check it"
+description = "EveryThingOS onboarding toolkit: provision a company site, migrate data, check it"
 requires-python = ">=3.10"
 dynamic = ["version"]
 dependencies = []

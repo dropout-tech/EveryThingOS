@@ -42,11 +42,11 @@ def create_integration_user(email=None):
 	return {"user": email, "api_key": frappe.db.get_value("User", email, "api_key"), "api_secret": secret}
 
 
-SHELL_CLIENT = "DropOut OS"
+SHELL_CLIENT = "EveryThingOS"
 
 
 def create_oauth_client(redirect_uri, app_name=SHELL_CLIENT):
-	"""Register the DropOut OS shell with Frappe's own OAuth provider. Staff log in
+	"""Register the EveryThingOS shell with Frappe's own OAuth provider. Staff log in
 	with their ERPNext user, so ERPNext roles decide what the shell may show."""
 	name = frappe.db.get_value("OAuth Client", {"app_name": app_name})
 	doc = frappe.get_doc("OAuth Client", name) if name else frappe.new_doc("OAuth Client")

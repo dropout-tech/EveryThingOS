@@ -78,7 +78,7 @@ class Provisioner:
 			Step("同步帳號", self._integration_user, "建 glue 使用者與 API key"),
 		]
 		if a.shell_url:
-			steps.append(Step("殼登入", self._shell_login, f"ERPNext OAuth Client「DropOut OS」，轉回 {a.shell_url}/api/auth/callback"))
+			steps.append(Step("殼登入", self._shell_login, f"ERPNext OAuth Client「EveryThingOS」，轉回 {a.shell_url}/api/auth/callback"))
 		if a.glue_url:
 			steps.append(Step("登記到膠水", self._register_glue, f"PUT {a.glue_url}/admin/tenants/{a.site} 與 /admin/accounts/{a.site}（{self._contract_text()}）；ERPNext Webhook 指向膠水"))
 		if getattr(a, "backup_bucket", None):

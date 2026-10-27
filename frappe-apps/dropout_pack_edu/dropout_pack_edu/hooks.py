@@ -1,7 +1,7 @@
 app_name = "dropout_pack_edu"
 app_title = "DropOut Pack Edu"
 app_publisher = "DropOut Tech"
-app_description = "DropOut OS industry pack: 教育服務業"
+app_description = "EveryThingOS industry pack: 教育服務業"
 app_email = "info@dropout.tw"
 app_license = "mit"
 

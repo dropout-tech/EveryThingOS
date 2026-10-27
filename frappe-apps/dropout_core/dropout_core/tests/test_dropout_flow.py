@@ -249,8 +249,8 @@ class TestShellReadModels(FrappeTestCase):
 	def test_oauth_client_and_chatwoot_link(self):
 		from dropout_core.provisioning import create_oauth_client, link_chatwoot_user
 
-		first = create_oauth_client("https://a.example/api/auth/callback", app_name="DropOut OS test")
-		second = create_oauth_client("https://b.example/api/auth/callback", app_name="DropOut OS test")
+		first = create_oauth_client("https://a.example/api/auth/callback", app_name="EveryThingOS test")
+		second = create_oauth_client("https://b.example/api/auth/callback", app_name="EveryThingOS test")
 		self.assertEqual(first["client_id"], second["client_id"])
 		self.assertEqual(sorted(second["redirect_uris"]), ["https://a.example/api/auth/callback", "https://b.example/api/auth/callback"])
 		self.assertEqual(frappe.db.get_value("OAuth Client", first["client_id"], "skip_authorization"), 1)

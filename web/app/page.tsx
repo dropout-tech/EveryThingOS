@@ -7,7 +7,7 @@ import { COMMERCIAL } from "@/lib/commercial";
 import { hasChosenIndustry } from "@/lib/workspace";
 
 export const metadata = {
-  title: { absolute: "DropOut OS｜台灣中小企業的 CRM、進銷存、財務與薪資，一年 NT$100,000" },
+  title: { absolute: "EveryThingOS｜台灣中小企業的 CRM、進銷存、財務與薪資，一年 NT$100,000" },
   description: "客人、進銷存、帳、人事薪資、老闆報表、對話與電子報，一個登入做完。對齊鼎新 A1／億看，每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
   alternates: { canonical: "/" },
 };

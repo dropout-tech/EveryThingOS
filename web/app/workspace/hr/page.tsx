@@ -41,7 +41,7 @@ export default async function HrPage() {
       <ModuleFrame kicker="人事" title="這家公司還沒開人事">
         <EmptyState
           title="ERPNext 還沒裝人事模組，所以這裡沒有打卡、請假與薪資。"
-          detail="請 DropOut OS 導入顧問在導入工具選「人事」：會裝上 Frappe HRMS 與台灣的薪資元件、勞健保費率和假別。"
+          detail="請 EveryThingOS 導入顧問在導入工具選「人事」：會裝上 Frappe HRMS 與台灣的薪資元件、勞健保費率和假別。"
           help="module-hr"
         />
       </ModuleFrame>

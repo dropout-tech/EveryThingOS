@@ -1,4 +1,4 @@
-"""Read models for the DropOut OS shell.
+"""Read models for the EveryThingOS shell.
 
 Everything goes through `frappe.get_list`, so the logged-in user's ERPNext
 roles and user permissions decide what comes back. A section the user may not

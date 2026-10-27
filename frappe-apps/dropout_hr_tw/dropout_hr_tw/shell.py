@@ -207,7 +207,7 @@ def check_in(log_type, latitude=None, longitude=None):
 	if recent:
 		frappe.throw(_("一分鐘內已經打過卡了"))
 	doc = frappe.new_doc("Employee Checkin")
-	doc.update({"employee": emp.name, "log_type": log_type, "time": now, "device_id": "DropOut OS"})
+	doc.update({"employee": emp.name, "log_type": log_type, "time": now, "device_id": "EveryThingOS"})
 	if latitude not in (None, "") and longitude not in (None, ""):
 		lat, lng = flt(latitude), flt(longitude)
 		if not (-90 <= lat <= 90 and -180 <= lng <= 180):

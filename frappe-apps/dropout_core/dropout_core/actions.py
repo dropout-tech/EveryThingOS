@@ -1,4 +1,4 @@
-"""Write actions for the DropOut OS shell.
+"""Write actions for the EveryThingOS shell.
 
 Each action runs as the logged-in user: documents are created with ERPNext's own
 mappers (`make_sales_order`, `get_payment_entry`, …) and saved without
@@ -25,7 +25,7 @@ def _payment(dt, dn):
 		frappe.throw(_("公司還沒設定預設的銀行或現金科目"))
 	bank = frappe.get_cached_value("Account", pe.paid_to if pe.payment_type == "Receive" else pe.paid_from, "account_type") == "Bank"
 	if bank and not pe.reference_no:
-		pe.reference_no = f"DropOut OS {dn}"
+		pe.reference_no = f"EveryThingOS {dn}"
 		pe.reference_date = nowdate()
 	return pe
 
@@ -113,7 +113,7 @@ def create_lead(name, email=None, phone=None, company_name=None, notes=None):
 	lead.company_name = company_name
 	lead.email_id = email
 	lead.mobile_no = phone
-	lead.source = "DropOut OS" if frappe.db.exists("Lead Source", "DropOut OS") else None
+	lead.source = "EveryThingOS" if frappe.db.exists("Lead Source", "EveryThingOS") else None
 	try:
 		lead.insert()
 	except frappe.PermissionError:

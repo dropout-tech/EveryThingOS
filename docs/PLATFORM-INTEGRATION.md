@@ -76,7 +76,7 @@
 
 ```mermaid
 flowchart TB
-  subgraph shell [DropOut OS 殼]
+  subgraph shell [EveryThingOS 殼]
     Today[今天：一件事]
     Card[客人卡片：360 時間軸]
     Search[全域搜尋]

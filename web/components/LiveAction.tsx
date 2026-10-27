@@ -49,7 +49,7 @@ export function useLiveAction() {
       startTransition(() => router.refresh());
       return result;
     } catch {
-      setOutcome({ ok: false, message: "連不到 DropOut OS，請檢查網路後再試一次" });
+      setOutcome({ ok: false, message: "連不到 EveryThingOS，請檢查網路後再試一次" });
       return null;
     } finally {
       setBusy(false);

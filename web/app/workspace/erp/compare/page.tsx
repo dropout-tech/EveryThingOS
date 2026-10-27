@@ -15,7 +15,7 @@ export default function ComparePage() {
               <th scope="col">能力</th>
               <th scope="col">鼎新 A1</th>
               <th scope="col">億看 ECOUNT</th>
-              <th scope="col">DropOut OS</th>
+              <th scope="col">EveryThingOS</th>
               <th scope="col">為什麼更好用</th>
             </tr>
           </thead>
@@ -25,7 +25,7 @@ export default function ComparePage() {
                 <td data-primary="">{row.capability}</td>
                 <td data-label="鼎新 A1" className="text-cream-dim">{row.a1}</td>
                 <td data-label="億看" className="text-cream-dim">{row.ecount}</td>
-                <td data-label="DropOut OS">{row.dropout}</td>
+                <td data-label="EveryThingOS">{row.dropout}</td>
                 <td data-label="好在哪" className="font-medium">{row.better}</td>
               </tr>
             ))}

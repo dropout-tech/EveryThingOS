@@ -137,7 +137,7 @@ def _provision_args(s, company_required=True):
 	s.add_argument("--bench-dir", default=os.environ.get("BENCH_DIR", "/home/frappe/frappe-bench"))
 	s.add_argument("--bench", default=os.environ.get("BENCH", "bench"))
 	s.add_argument("--erpnext-url", help="膠水呼叫 ERPNext 用的網址（通常是 Tunnel 網址）")
-	s.add_argument("--shell-url", default=os.environ.get("SHELL_URL"), help="這家公司的 DropOut OS 網址，用來設定 ERPNext 登入")
+	s.add_argument("--shell-url", default=os.environ.get("SHELL_URL"), help="這家公司的 EveryThingOS 網址，用來設定 ERPNext 登入")
 	s.add_argument("--glue-url", default=os.environ.get("GLUE_URL"))
 	s.add_argument("--glue-admin-token", default=os.environ.get("GLUE_ADMIN_TOKEN"))
 	s.add_argument("--mail-from")
@@ -155,7 +155,7 @@ def _provision_args(s, company_required=True):
 
 
 def build_parser():
-	p = argparse.ArgumentParser(prog="dropout-onboard", description="DropOut OS 導入工具：開站、搬家、檢查")
+	p = argparse.ArgumentParser(prog="dropout-onboard", description="EveryThingOS 導入工具：開站、搬家、檢查")
 	sub = p.add_subparsers(dest="cmd", required=True)
 
 	s = sub.add_parser("plan", help="依殼裡選的現場、規模、功能，列出要裝的 app 與搬家順序")

@@ -80,7 +80,7 @@ const minutes = (from: string, to: string) => Math.max(1, Math.round((Date.parse
 export function alertText(changes: Change[]) {
   const down = changes.filter((c) => c.change === "down");
   const up = changes.filter((c) => c.change === "up");
-  const subject = `[DropOut OS 監看] ${[down.length ? `${down.length} 個連不上` : "", up.length ? `${up.length} 個恢復` : ""].filter(Boolean).join("、")}`;
+  const subject = `[EveryThingOS 監看] ${[down.length ? `${down.length} 個連不上` : "", up.length ? `${up.length} 個恢復` : ""].filter(Boolean).join("、")}`;
   const lines = [
     ...down.map((c) => `連不上：${c.company}（${c.site}）${TARGET_LABEL[c.target]}，${clock(c.since)} 起；${c.error ?? ""}`),
     ...up.map((c) => `恢復：${c.company}（${c.site}）${TARGET_LABEL[c.target]}，停了約 ${minutes(c.since, c.at)} 分鐘`),

@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
   title: "說明中心",
-  description: "DropOut OS 怎麼開始、怎麼匯入資料、每個功能怎麼用、權限、續約和資料匯出。",
+  description: "EveryThingOS 怎麼開始、怎麼匯入資料、每個功能怎麼用、權限、續約和資料匯出。",
 };
 
 export default async function HelpPage({ searchParams }: PageProps<"/help">) {

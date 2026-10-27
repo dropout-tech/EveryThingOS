@@ -10,7 +10,7 @@ import { pageMeta } from "@/lib/seo";
 export const metadata = pageMeta(
   "/pricing",
   "產品與價格：一年 NT$100,000",
-  "DropOut OS 是給台灣中小企業的作業系統：CRM、進銷存、財務、人事薪資、報表、對話、電子報一個登入。每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
+  "EveryThingOS 是給台灣中小企業的作業系統：CRM、進銷存、財務、人事薪資、報表、對話、電子報一個登入。每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
 );
 
 export default function PricingPage() {
@@ -25,7 +25,7 @@ export default function PricingPage() {
         <ModuleGrid />
         <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]" aria-labelledby="price">
           <div className="site-sheet p-6 sm:p-8">
-            <p className="text-sm text-cream-dim">DropOut OS 一年</p>
+            <p className="text-sm text-cream-dim">EveryThingOS 一年</p>
             <h2 id="price" className="mt-2 text-4xl font-medium sm:text-5xl">
               NT${formatted}
             </h2>
