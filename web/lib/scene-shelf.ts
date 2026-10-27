@@ -1,4 +1,5 @@
 import type { StockRow } from "./erp";
+import { tradeOf } from "./trade";
 
 /**
  * What a picky owner actually counts. Keyed by industry id, then by the
@@ -11,6 +12,7 @@ export type ShelfShift = {
   end: string;
   what: string;
   room: string;
+  skill?: string;
 };
 
 export type SceneShelf = {
@@ -36,8 +38,8 @@ const HR = {
   hrHint: "打卡、請假和加班在這一頁。班表是給人看的，系統不自己排人。",
 };
 
-function row(sku: string, name: string, warehouse: string, onHand: number, safety: number, batch?: string): StockRow {
-  return { sku, name, warehouse, onHand, safety, ...(batch ? { batch } : {}) };
+function row(sku: string, name: string, warehouse: string, onHand: number, safety: number, batch?: string, extra?: Partial<StockRow>): StockRow {
+  return { sku, name, warehouse, onHand, safety, unitCost: extra?.unitCost ?? 120, ...(batch ? { batch } : {}), ...extra };
 }
 
 const RETAIL: SceneShelf = {
@@ -62,8 +64,8 @@ const RETAIL: SceneShelf = {
 
 const DRUG: SceneShelf = {
   stock: [
-    row("LOT-MASK", "醫用口罩", "門市倉", 6, 20, "LOT-2509"),
-    row("LOT-LOTION", "乳液", "門市倉", 24, 8, "LOT-2512"),
+    row("LOT-MASK", "醫用口罩", "門市倉", 6, 20, "LOT-2509", { expiry: "2026-09-30", unitCost: 4 }),
+    row("LOT-LOTION", "乳液", "門市倉", 24, 8, "LOT-2512", { expiry: "2027-06-01", unitCost: 180 }),
     row("LOT-BAG", "藥袋", "門市倉", 50, 20),
   ],
   courses: false,
@@ -112,8 +114,8 @@ const CRAM: SceneShelf = {
   hrHint: "請假和加班在這一頁核准。科目老師的配對還沒有各自的標籤，不會拿才藝課的技能來排補習班。",
   classBoard: false,
   shifts: [
-    { staff: 0, branch: "教室", start: "18:30", end: "21:00", what: "國三數學", room: "教室 A" },
-    { staff: 1, branch: "教室", start: "16:00", end: "18:00", what: "國中英文", room: "教室 B" },
+    { staff: 0, branch: "教室", start: "18:30", end: "21:00", what: "國三數學", room: "教室 A", skill: "數學" },
+    { staff: 1, branch: "教室", start: "16:00", end: "18:00", what: "國中英文", room: "教室 B", skill: "英文" },
   ],
 };
 
@@ -139,8 +141,8 @@ const CLINIC: SceneShelf = {
   courses: false,
   holdBuy: false,
   caption: "耗材（批號分開，不做成課程名額）",
-  bookLead: "客人在 LINE 約哪一天、做哪一項。",
-  bookClosed: "約時間在對話。做完照報價收，這一趟是自費，不在這裡劃課程名額，也不申報健保。",
+  bookLead: "選日期和診間。做完照報價收。",
+  bookClosed: "選日期和診間時段。做完照報價收，這一趟是自費，也不申報健保。這不是課程名額。",
   ...HR,
   hrTitle: "今天誰在診間、誰請假",
   classBoard: false,
@@ -186,7 +188,7 @@ const INN: SceneShelf = {
   holdBuy: false,
   caption: "房晚不是庫存件數",
   bookLead: "先問哪幾天、幾個人。訂金照報價收，錢進來才留房。",
-  bookClosed: "住房還是借場地，先問日期和人數。訂金進帳才把那幾天留下，不把房晚當成材料包，也不在這裡鎖課程名額。",
+  bookClosed: "住房先問日期和人數。訂金進帳才把那幾天留下。下面可以直接留下日期和房型。",
   ...HR,
   hrTitle: "今天誰在櫃檯、誰打掃",
   classBoard: false,
@@ -297,6 +299,33 @@ const BY_SCENE: Record<string, SceneShelf> = {
   },
 };
 
-export function shelfFor(pack: { id: string; workflow?: { id?: string } }): SceneShelf {
-  return BY_INDUSTRY[pack.id] ?? BY_SCENE[pack.workflow?.id ?? ""] ?? BY_SCENE.other;
+export function shelfFor(pack: { id: string; nameZh?: string; itemType?: string; fulfillment?: string; group?: string; pains?: string[]; code?: string; workflow?: { id?: string; stages?: string[] }; modules?: { erp: { inventory: boolean; batch?: boolean } } }): SceneShelf {
+  const owned = BY_INDUSTRY[pack.id];
+  if (owned) return owned;
+  if (pack.nameZh && pack.itemType) {
+    const trade = tradeOf(pack as Parameters<typeof tradeOf>[0]);
+    const stock = trade.stock.map((item) =>
+      row(item.sku, item.name, item.warehouse, item.onHand, item.safety, item.batch, {
+        expiry: item.expiry,
+        serial: item.serial,
+        unitCost: item.unitCost,
+        recipe: item.recipe,
+        grade: item.grade,
+        soldTo: item.soldTo,
+      }),
+    );
+    return {
+      stock,
+      courses: false,
+      holdBuy: trade.holdBuy,
+      caption: stock.length ? trade.caption : `${pack.nameZh}沒有倉庫，履行是${pack.fulfillment ?? "交付"}`,
+      bookLead: trade.bookLead,
+      bookClosed: trade.bookable ? null : trade.bookClosed,
+      ...HR,
+      hrTitle: trade.hrTitle,
+      classBoard: false,
+      shifts: trade.shifts,
+    };
+  }
+  return BY_SCENE[pack.workflow?.id ?? ""] ?? BY_SCENE.other;
 }

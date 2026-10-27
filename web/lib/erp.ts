@@ -2,6 +2,7 @@ import type { CourseBom } from "./course-bom";
 import { industryTodayJobs } from "./operator-day";
 import { shelfFor } from "./scene-shelf";
 import { practiceCast } from "./practice";
+import { tradeOf } from "./trade";
 import type { IndustryPack } from "./types";
 
 export type SalesStep = "quote" | "order" | "fulfill" | "invoice" | "paid";
@@ -141,6 +142,17 @@ export type SalesDoc = {
   qty: number;
   amount: number;
   tax: number;
+  /** false = 未稅報價，稅額是 0。沒寫則沿用營業稅 5%。 */
+  taxable?: boolean;
+  /** false = 這一行不開發票，履行後直接記收款。 */
+  invoiceable?: boolean;
+  buyerTaxId?: string;
+  deposit?: number;
+  kind?: "standard" | "deposit" | "change" | "monthly" | "return";
+  parentNo?: string;
+  channel?: string;
+  serial?: string;
+  allowance?: boolean;
   step: SalesStep;
   next: string;
   overdueDays?: number;
@@ -182,6 +194,12 @@ export type StockRow = {
   onHand: number;
   safety: number;
   batch?: string;
+  expiry?: string;
+  serial?: string;
+  unitCost?: number;
+  recipe?: string;
+  grade?: string;
+  soldTo?: string;
   href?: string;
 };
 
@@ -212,41 +230,63 @@ export type Books = {
   arAging: AgingRow[];
   journals: LedgerLine[];
   pnl: { label: string; amount: number }[];
-  einvoices: { no: string; status: string; amount: number; related: string; error?: string; href?: string }[];
+  einvoices: { no: string; status: string; amount: number; related: string; party?: string; error?: string; href?: string }[];
+  deposits?: { party: string; held: number; note: string }[];
 };
 
 const VENDORS = ["中盤供應", "原廠台灣", "物流夥伴", "包材行"];
+
+function taipeiMonthDay(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Taipei", month: "2-digit", day: "2-digit" }).formatToParts(date);
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
+  const day = parts.find((part) => part.type === "day")?.value ?? "01";
+  return `${month}/${day}`;
+}
+
+function sellableName(stock: StockRow[], itemType: string) {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei" }).format(new Date());
+  const row = stock.find((item) => !item.expiry || item.expiry >= today) ?? stock[0];
+  return row?.name ?? itemType;
+}
 
 export function buildBooks(pack: IndustryPack): Books {
   const seed = hash(pack.id);
   const parties = practiceCast(pack.id);
   const shelf = shelfFor(pack);
+  const trade = tradeOf(pack);
   const inventoryOn = pack.modules.erp.inventory;
   const monthSales = pick(seed, 48, 220) * 1000;
-  const monthCost = Math.round(monthSales * (inventoryOn ? 0.62 : 0.38));
-  const ar = pick(seed >>> 2, 80, 360) * 1000;
-  const ap = inventoryOn ? pick(seed >>> 3, 40, 180) * 1000 : pick(seed >>> 3, 8, 40) * 1000;
-  const cash = pick(seed >>> 4, 90, 420) * 1000;
-  const inventoryValue = inventoryOn ? pick(seed >>> 5, 60, 280) * 1000 : 0;
-  const overdueAr = Math.round(ar * 0.18);
-  const vatPayable = Math.round(monthSales * 0.05 - monthCost * 0.05);
-
+  const itemName = sellableName(shelf.stock, pack.itemType);
+  const unit = shelf.stock.find((row) => row.name === itemName)?.unitCost ?? 120;
   const sales: SalesDoc[] = SALES_STEPS.map((step, index) => {
     const amount = pick(seed + index * 17, 8, 86) * 400;
-    const tax = Math.round(amount * 0.05);
+    const untaxed = step.id === "quote";
+    const tax = untaxed ? 0 : Math.round(amount * 0.05);
+    const deposit = trade.deposit && step.id === "quote" ? Math.round(amount * 0.3) : undefined;
     return {
       no: `SO-${10400 + index}`,
       party: parties[index % parties.length],
-      item: shelf.stock.length ? shelf.stock[index % shelf.stock.length].name : pack.itemType,
-      qty: pick(seed + index, 1, 12),
+      item: itemName,
+      qty: pick(seed + index, 1, 6),
       amount,
       tax,
+      taxable: !untaxed,
+      invoiceable: step.id !== "quote",
+      buyerTaxId: step.id === "invoice" || step.id === "paid" ? "" : undefined,
+      deposit,
+      kind: deposit ? "deposit" : trade.changeOrder && step.id === "order" ? "change" : trade.monthlyBill && step.id === "invoice" ? "monthly" : "standard",
+      parentNo: trade.changeOrder && step.id === "order" ? "SO-10400" : undefined,
+      channel: trade.dineIn && step.id === "order" ? "內用" : undefined,
+      serial: trade.serial && step.id === "order" ? shelf.stock.find((row) => row.serial)?.serial : undefined,
       step: step.id,
       next: nextLabel(step.id, pack),
       overdueDays: step.id === "invoice" ? pick(seed, 3, 21) : undefined,
       invoiceNo: step.id === "invoice" || step.id === "paid" ? `AB-${11200000 + seed % 8000 + index}` : undefined,
     };
   });
+  const monthCost = inventoryOn
+    ? sales.reduce((sum, doc) => sum + doc.qty * unit, 0)
+    : 0;
 
   const purchases = inventoryOn
     ? [0, 1, 2].map((index) => ({
@@ -352,26 +392,31 @@ export function buildBooks(pack: IndustryPack): Books {
         ]
     : [];
 
-  const arAging = parties.slice(0, 4).map((party, index) => ({
-    party,
-    current: pick(seed + index, 4, 20) * 1000,
-    d30: pick(seed + 8 + index, 0, 12) * 1000,
-    d60: index === 0 ? pick(seed, 6, 18) * 1000 : 0,
-    d90: index === 0 ? pick(seed >>> 3, 4, 14) * 1000 : 0,
-  }));
+  const openInvoice = sales.find((doc) => doc.step === "invoice");
+  const arAging = openInvoice
+    ? [{ party: openInvoice.party, current: 0, d30: 0, d60: openInvoice.amount, d90: 0 }]
+    : [];
+  const serviceCost = inventoryOn ? monthCost : purchases[0]?.amount ?? 0;
+  const ar = openInvoice ? openInvoice.amount + openInvoice.tax : pick(seed >>> 2, 80, 360) * 1000;
+  const ap = purchases[0]?.amount ?? 0;
+  const cash = pick(seed >>> 4, 90, 420) * 1000;
+  const inventoryValue = inventoryOn ? stock.reduce((sum, row) => sum + row.onHand * (row.unitCost ?? unit), 0) : 0;
+  const overdueAr = openInvoice?.amount ?? 0;
+  const vatPayable = sales.reduce((sum, doc) => sum + doc.tax, 0);
+  const todayStamp = taipeiMonthDay();
 
   const journals: LedgerLine[] = [
     {
-      no: "JV-0918",
-      date: "09/18",
+      no: `JV-${todayStamp.replace("/", "")}`,
+      date: todayStamp,
       memo: `銷貨 ${pack.fulfillment}（開單就入帳）`,
       debit: "應收帳款",
       credit: "銷貨收入／稅額",
       amount: sales[2].amount + sales[2].tax,
     },
     {
-      no: "JV-0919",
-      date: "09/19",
+      no: `JV-${todayStamp.replace("/", "")}B`,
+      date: todayStamp,
       memo: inventoryOn ? "進貨入庫（開單就入帳）" : "費用認列（開單就入帳）",
       debit: inventoryOn ? "存貨" : "營業費用",
       credit: "應付帳款",
@@ -391,10 +436,10 @@ export function buildBooks(pack: IndustryPack): Books {
 
   const pnl = [
     { label: "本月銷貨（未稅）", amount: monthSales },
-    { label: inventoryOn ? "銷貨成本" : "服務成本", amount: -monthCost },
-    { label: "毛利", amount: monthSales - monthCost },
-    { label: "營業費用", amount: -Math.round(monthSales * 0.18) },
-    { label: "本月損益", amount: monthSales - monthCost - Math.round(monthSales * 0.18) },
+    { label: inventoryOn ? "銷貨成本（這幾張單的進價）" : "直接成本（這幾張費用單）", amount: -serviceCost },
+    { label: "毛利", amount: monthSales - serviceCost },
+    { label: "營業費用（這家還沒入帳）", amount: 0 },
+    { label: "本月損益", amount: monthSales - serviceCost },
   ];
 
   const einvoices = sales
@@ -404,11 +449,15 @@ export function buildBooks(pack: IndustryPack): Books {
       status: row.step === "paid" ? "已上傳" : "開立待上傳",
       amount: row.amount + row.tax,
       related: row.no,
+      party: row.party,
     }));
+  const deposits = trade.depositLedger || trade.deposit
+    ? sales.filter((doc) => doc.deposit).map((doc) => ({ party: doc.party, held: doc.deposit ?? 0, note: "訂金留下，尾款另計。押金跟訂金分開。" }))
+    : [];
 
   return {
     monthSales,
-    monthCost,
+    monthCost: serviceCost,
     ar,
     ap,
     cash,
@@ -424,6 +473,7 @@ export function buildBooks(pack: IndustryPack): Books {
     journals,
     pnl,
     einvoices,
+    deposits,
   };
 }
 
@@ -450,12 +500,13 @@ export function advanceSalesDoc(
   if (index < 0 || index >= SALES_STEP_ORDER.length - 1) {
     return { ...doc, next: "完成", overdueDays: undefined };
   }
-  const step = SALES_STEP_ORDER[index + 1];
-  const needsInvoice = step === "invoice" || step === "paid";
+  let step = SALES_STEP_ORDER[index + 1];
+  if (step === "invoice" && doc.invoiceable === false) step = "paid";
+  const needsInvoice = doc.invoiceable !== false && (step === "invoice" || step === "paid");
   return {
     ...doc,
     step,
-    next: nextLabel(step, pack),
+    next: doc.invoiceable === false && step === "paid" ? "記入已收（不開發票）" : nextLabel(step, pack),
     overdueDays: step === "invoice" ? 0 : undefined,
     invoiceNo: needsInvoice ? (doc.invoiceNo ?? `AB-${11200000 + (Number(doc.no.replace(/\D/g, "")) % 8000)}`) : doc.invoiceNo,
   };
@@ -466,13 +517,22 @@ export function makeQuote(input: {
   item: string;
   amount: number;
   pack: Pick<IndustryPack, "fulfillment" | "modules">;
+  taxable?: boolean;
+  invoiceable?: boolean;
+  deposit?: number;
+  channel?: string;
+  kind?: SalesDoc["kind"];
+  parentNo?: string;
+  serial?: string;
+  buyerTaxId?: string;
 }): SalesDoc | null {
   const party = input.party.trim().slice(0, 40);
   const amount = Math.round(input.amount);
   if (!party || !Number.isFinite(amount) || amount <= 0 || amount > 10_000_000) {
     return null;
   }
-  const tax = Math.round(amount * 0.05);
+  const taxable = input.taxable !== false;
+  const tax = taxable ? Math.round(amount * 0.05) : 0;
   const serial = Date.now().toString().slice(-5);
   return {
     no: `SO-${serial}`,
@@ -481,6 +541,14 @@ export function makeQuote(input: {
     qty: 1,
     amount,
     tax,
+    taxable,
+    invoiceable: input.invoiceable !== false,
+    deposit: input.deposit,
+    channel: input.channel,
+    kind: input.kind ?? (input.deposit ? "deposit" : "standard"),
+    parentNo: input.parentNo,
+    serial: input.serial,
+    buyerTaxId: input.buyerTaxId,
     step: "quote",
     next: nextLabel("quote", input.pack),
   };

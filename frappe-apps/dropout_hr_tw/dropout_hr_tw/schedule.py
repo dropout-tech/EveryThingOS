@@ -162,6 +162,13 @@ def assign(
 	if conflict:
 		frappe.throw(_(conflict))
 
+	from dropout_hr_tw.overtime import month_cap_hours
+
+	used = float(month_cap_hours(emp.name, day))
+	cap = labor_rules.EXTENSION_HOURS_PER_MONTH
+	if used >= cap:
+		frappe.throw(_("本月已入帳的延長工時 {0} 小時，已到每月 {1} 小時上限，這班先不排。").format(used, cap))
+
 	shift_type = _ensure_shift_type(start_t, end_t)
 	ai_emp = str(ai_suggested_employee or "").strip()[:140]
 	decision = ("adopted" if ai_emp == emp.name else "modified") if ai_emp else ""

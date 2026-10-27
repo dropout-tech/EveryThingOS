@@ -50,7 +50,7 @@ export function parseBooking(raw: unknown, today = new Date()): { ok: true; valu
   if (date < todayTw) return { ok: false, message: "不能預約已經過去的日期" };
   if (!slot) return { ok: false, message: "請選時段" };
   if (!Number.isFinite(seats) || seats < 1 || seats > 10) return { ok: false, message: "一次可預約 1–10 位" };
-  if (!parentName) return { ok: false, message: "請留家長稱呼" };
+  if (!parentName) return { ok: false, message: "請留稱呼" };
   if (!PHONE.test(phone)) return { ok: false, message: "請留可以聯絡的手機" };
 
   return {

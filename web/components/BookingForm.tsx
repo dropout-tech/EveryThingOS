@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { parseBooking, type BookingChannel } from "@/lib/booking";
+import type { TradeField } from "@/lib/trade";
 
 export type BookableCourse = { code: string; name: string; label: string; full: boolean };
 
@@ -14,7 +15,7 @@ function tomorrow() {
   return d.toISOString().slice(0, 10);
 }
 
-export function BookingForm({ courses, branches, channel, demo }: { courses: BookableCourse[]; branches: string[]; channel: BookingChannel; demo: boolean }) {
+export function BookingForm({ courses, branches, channel, demo, legend = "課程", partyLabel = "稱呼", verb = "預約", fields = [] }: { courses: BookableCourse[]; branches: string[]; channel: BookingChannel; demo: boolean; legend?: string; partyLabel?: string; verb?: string; fields?: TradeField[] }) {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -22,6 +23,13 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data: Record<string, unknown> = { ...Object.fromEntries(new FormData(event.currentTarget).entries()), channel };
+    const extra = fields
+      .map((field) => {
+        const value = String(data[field.name] ?? "").trim();
+        return value ? `${field.label}：${value}` : "";
+      })
+      .filter(Boolean);
+    if (extra.length) data.note = [data.note, ...extra].filter(Boolean).join("；");
     const checked = parseBooking(data);
     if (!checked.ok) {
       setFailure(checked.message);
@@ -54,10 +62,16 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
     );
   }
 
+  const dateLabel = fields.find((field) => field.name === "date")?.label ?? "日期";
+  const slotField = fields.find((field) => field.name === "slot");
+  const seatsLabel = fields.find((field) => field.name === "seats")?.label ?? "人數";
+  const extra = fields.filter((field) => !["date", "slot", "seats"].includes(field.name));
+  const slots = slotField?.options?.length ? slotField.options : SLOTS;
+
   return (
     <form onSubmit={submit} className="site-sheet space-y-4 p-6 sm:p-8" noValidate>
       <fieldset>
-        <legend className="text-sm">課程</legend>
+        <legend className="text-sm">{legend}</legend>
         <div className="mt-2 space-y-2">
           {courses.map((c, i) => (
             <label key={c.code} className="glass-chip flex cursor-pointer items-center justify-between gap-3 px-4 py-3">
@@ -80,29 +94,43 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
           </select>
         </label>
         <label className="text-sm">
-          人數
+          {seatsLabel}
           <input name="seats" type="number" min={1} max={10} defaultValue={1} className="site-field mt-1" />
         </label>
         <label className="text-sm">
-          日期
+          {dateLabel}
           <input name="date" type="date" defaultValue={tomorrow()} className="site-field mt-1" />
         </label>
         <label className="text-sm">
-          時段
+          {slotField?.label ?? "時段"}
           <select name="slot" className="site-field mt-1">
-            {SLOTS.map((s) => (
+            {slots.map((s) => (
               <option key={s}>{s}</option>
             ))}
           </select>
         </label>
         <label className="text-sm">
-          家長稱呼
+          {partyLabel}
           <input name="parentName" autoComplete="name" className="site-field mt-1" />
         </label>
         <label className="text-sm">
           手機
           <input name="phone" type="tel" autoComplete="tel" className="site-field mt-1" />
         </label>
+        {extra.map((field) => (
+          <label key={field.name} className="text-sm">
+            {field.label}
+            {field.kind === "select" ? (
+              <select name={field.name} className="site-field mt-1">
+                {(field.options ?? []).map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
+              </select>
+            ) : (
+              <input name={field.name} type={field.kind === "number" ? "number" : field.kind === "date" ? "date" : "text"} className="site-field mt-1" />
+            )}
+          </label>
+        ))}
         <label className="text-sm sm:col-span-2">
           LINE ID <span className="text-xs text-cream-dim">（可不填，填了門市會用 LINE 回你）</span>
           <input name="lineId" className="site-field mt-1" />
@@ -115,9 +143,9 @@ export function BookingForm({ courses, branches, channel, demo }: { courses: Boo
         </p>
       ) : null}
       <button type="submit" className="btn btn-primary w-full" disabled={busy}>
-        {busy ? "確認名額與材料中…" : "預約"}
+        {busy ? "確認中…" : verb}
       </button>
-      {demo ? <p className="text-xs text-cream-dim">練習模式：名額和材料會記在這台瀏覽器，倉庫和人事看得到同一筆。不會送到店外的系統。</p> : null}
+      {demo ? <p className="text-xs text-cream-dim">練習模式：名額記在這一家，另一台瀏覽器也看得到。不會送到店外的系統。</p> : null}
     </form>
   );
 }

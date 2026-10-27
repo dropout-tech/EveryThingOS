@@ -18,10 +18,11 @@ import {
 } from "@/lib/erp";
 import { nextSalesDoc, salesPlain } from "@/lib/next-thing";
 import type { Catalog } from "@/lib/sources/types";
+import { tradeOf, type Trade } from "@/lib/trade";
 import type { IndustryPack } from "@/lib/types";
 
 type SalesBoardProps = {
-  pack: Pick<IndustryPack, "id" | "itemType" | "fulfillment" | "modules">;
+  pack: Pick<IndustryPack, "id" | "nameZh" | "group" | "itemType" | "fulfillment" | "pains" | "modules" | "workflow">;
   initial: SalesDoc[];
   deskUrl?: string;
   catalog?: Catalog | null;
@@ -31,8 +32,16 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
   const live = Boolean(deskUrl);
   const action = useLiveAction();
   const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live);
+  const trade: Trade = tradeOf(pack);
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
+  const [taxable, setTaxable] = useState(false);
+  const [invoiceable, setInvoiceable] = useState(true);
+  const [channel, setChannel] = useState(trade.dineIn ? "內用" : "");
+  const [deposit, setDeposit] = useState("");
+  const [serial, setSerial] = useState("");
+  const [buyerTaxId, setBuyerTaxId] = useState("");
+  const [returnDays, setReturnDays] = useBoardState(demoKey("return-days", pack.id), trade.returnDays, live);
   const [note, setNote] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -57,17 +66,31 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     if (doc.next === "完成") return;
     const next = advanceSalesDoc(doc, pack);
     setDocs((current) => current.map((item) => (item.no === doc.no ? next : item)));
-    setNote(`${doc.party}：${doc.next}。同一張單往前走，不必切到另一個畫面再開單。`);
+    if (doc.deposit && next.step === "paid") {
+      writeDemoState(demoKey("deposit-in", pack.id), true);
+    }
+    if (doc.channel === "外帶" && next.step === "fulfill") {
+      const delta = peekDemoState<Record<string, number>>(demoKey("stock-delta", pack.id), {});
+      writeDemoState(demoKey("stock-delta", pack.id), { ...delta, "PKG-BOX": (delta["PKG-BOX"] ?? 0) - doc.qty });
+    }
+    setNote(`${doc.party}：${doc.next}。同一張單往前走。${doc.channel === "外帶" && next.step === "fulfill" ? "外帶容器另扣。" : ""}`);
   }
 
   function onCreate(event: FormEvent) {
     event.preventDefault();
     const parsed = Number(amount.replace(/[,，\s]/g, ""));
+    const depositAmount = Math.round(Number(deposit.replace(/[,，\s]/g, "")));
     const quote = makeQuote({
       party,
       item: pack.itemType,
       amount: parsed,
       pack,
+      taxable,
+      invoiceable,
+      deposit: trade.deposit && depositAmount > 0 ? depositAmount : undefined,
+      channel: channel || undefined,
+      serial: serial || undefined,
+      buyerTaxId: buyerTaxId || undefined,
     });
     if (!quote) {
       setFormError(party.trim() ? "金額要是 1 到一千萬之間的數字。" : "請填客戶名稱。");
@@ -77,7 +100,8 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     setDocs((current) => [quote, ...current]);
     setParty("");
     setAmount("");
-    setNote(`已開 ${quote.no}。客人在問 → 下一步只會看到「轉成訂單」。`);
+    if (quote.kind === "deposit") writeDemoState(demoKey("deposit-in", pack.id), false);
+    setNote(`已開 ${quote.no}。${quote.taxable ? "含 5% 營業稅。" : "未稅報價。"}${quote.invoiceable ? "" : "這行不開發票。"}`);
   }
 
   return (
@@ -101,10 +125,55 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
         <Field label="未稅金額" className="sm:w-36" error={formError && party.trim() ? formError : null}>
           <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="28600" className="field" />
         </Field>
+        {trade.dineIn ? (
+          <Field label="內用或外帶" className="sm:w-36">
+            <select value={channel} onChange={(event) => setChannel(event.target.value)} className="field">
+              <option>內用</option>
+              <option>外帶</option>
+            </select>
+          </Field>
+        ) : null}
+        {trade.deposit ? (
+          <Field label="訂金（可空白）" className="sm:w-36">
+            <input value={deposit} onChange={(event) => setDeposit(event.target.value)} inputMode="numeric" placeholder="訂金" className="field" />
+          </Field>
+        ) : null}
+        {trade.serial ? (
+          <Field label="序號" className="sm:w-36">
+            <input value={serial} onChange={(event) => setSerial(event.target.value)} placeholder="SN-" className="field" />
+          </Field>
+        ) : null}
+        <Field label="統編（可空白）" className="sm:w-36">
+          <input value={buyerTaxId} onChange={(event) => setBuyerTaxId(event.target.value)} placeholder="統編" className="field" />
+        </Field>
         <button type="submit" className={buttonClass({ variant: focus ? "secondary" : "primary" })}>
           開一張報價
         </button>
-        <p className="text-xs text-cream-dim sm:basis-full">稅 5% 自動加。這一包賣的是「{pack.itemType}」。</p>
+        <label className="flex items-center gap-2 text-xs text-cream-dim">
+          <input type="checkbox" checked={taxable} onChange={(event) => setTaxable(event.target.checked)} />
+          這張加 5% 營業稅
+        </label>
+        <label className="flex items-center gap-2 text-xs text-cream-dim">
+          <input type="checkbox" checked={invoiceable} onChange={(event) => setInvoiceable(event.target.checked)} />
+          這行可以開發票
+        </label>
+        {trade.returns ? (
+          <label className="flex items-center gap-2 text-xs text-cream-dim">
+            退換天數
+            <input
+              type="number"
+              min={0}
+              max={60}
+              value={returnDays}
+              onChange={(event) => setReturnDays(Number(event.target.value))}
+              className="field w-16"
+            />
+          </label>
+        ) : null}
+        <p className="text-xs text-cream-dim sm:basis-full">
+          這一包是「{pack.itemType}」。做到「{pack.fulfillment}」。{trade.returns ? `退換 ${returnDays} 天，憑這張單。` : ""}
+          {trade.dineIn ? "外帶會另扣外帶容器。" : ""}
+        </p>
       </form>
       )}
       <ActionNote>{note}</ActionNote>
@@ -129,7 +198,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>
             <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
               <span>
-              {column.plain}
+              {trade.stepPlain[column.id]}
               <span className="ml-1 text-xs font-normal text-cream-dim">{column.formal}</span>
               </span>
               <span className="text-xs text-cream-dim">{column.docs.length}</span>
@@ -143,9 +212,16 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     <p className="text-sm text-cream-dim">
                       {doc.item} × {doc.qty}
                     </p>
-                    <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}</p>
+                    <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}{doc.taxable === false ? " · 未稅" : ""}</p>
+                    {doc.deposit ? <p className="mt-1 text-xs text-cream-dim">訂金 {formatTwd(doc.deposit)}，尾款另計</p> : null}
+                    {doc.kind === "change" ? <p className="mt-1 text-xs text-cream-dim">追加，原單 {doc.parentNo}</p> : null}
+                    {doc.kind === "monthly" ? <p className="mt-1 text-xs text-cream-dim">併進本月月結</p> : null}
+                    {doc.channel ? <p className="mt-1 text-xs text-cream-dim">{doc.channel}</p> : null}
+                    {doc.serial ? <p className="mt-1 text-xs text-cream-dim">序號 {doc.serial} · {doc.party}</p> : null}
+                    {doc.buyerTaxId ? <p className="mt-1 text-xs text-cream-dim">統編 {doc.buyerTaxId}</p> : null}
+                    {doc.allowance ? <p className="mt-1 text-xs text-cream-dim">已折讓</p> : null}
                     {doc.invoiceNo ? (
-                      <p className="mt-1 text-xs text-cream-dim">發票 {doc.invoiceNo}</p>
+                      <p className="mt-1 text-xs text-cream-dim">發票 {doc.invoiceNo} · {doc.party}</p>
                     ) : null}
                     {doc.overdueDays ? (
                       <p className="mt-1 text-xs text-warn">已逾期 {doc.overdueDays} 天</p>
@@ -158,6 +234,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                         </DeskLink>
                       </>
                     ) : (
+                      <>
                       <button
                         type="button"
                         disabled={doc.next === "完成"}
@@ -166,6 +243,22 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                       >
                         {doc.next}
                       </button>
+                      {trade.changeOrder ? (
+                        <button type="button" className={buttonClass({ variant: "ghost", size: "sm", block: true })} onClick={() => {
+                          const extra = makeQuote({ party: doc.party, item: `${doc.item}追加`, amount: doc.amount, pack, taxable: doc.taxable, kind: "change", parentNo: doc.no });
+                          if (extra) setDocs((current) => [extra, ...current]);
+                        }}>另開追加</button>
+                      ) : null}
+                      {trade.monthlyBill && doc.step === "invoice" ? (
+                        <button type="button" className={buttonClass({ variant: "ghost", size: "sm", block: true })} onClick={() => setDocs((current) => current.map((item) => item.no === doc.no ? { ...item, kind: "monthly" } : item))}>併入月結</button>
+                      ) : null}
+                      {doc.invoiceNo ? (
+                        <button type="button" className={buttonClass({ variant: "ghost", size: "sm", block: true })} onClick={() => setDocs((current) => current.map((item) => item.no === doc.no ? { ...item, allowance: true } : item))}>折讓</button>
+                      ) : null}
+                      {trade.returns ? (
+                        <button type="button" className={buttonClass({ variant: "ghost", size: "sm", block: true })} onClick={() => setDocs((current) => current.map((item) => item.no === doc.no ? { ...item, kind: "return" } : item))}>退換（{returnDays} 天內）</button>
+                      ) : null}
+                      </>
                     )}
                   </li>
                 ))

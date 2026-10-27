@@ -4,6 +4,8 @@ import { SetupChecklist } from "@/components/SetupChecklist";
 import { SetupProgress } from "@/components/SetupProgress";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { TodayList } from "@/components/TodayBoard";
+import { TradeDesk } from "@/components/TradeDesk";
+import { tradeOf } from "@/lib/trade";
 import { workspaceGuide } from "@/lib/guide-server";
 import { getBooks, getSetup } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
@@ -19,8 +21,9 @@ export default async function WorkspaceHome() {
     <div className="space-y-6">
       <h1 className="sr-only">今天</h1>
       <p className="text-sm text-cream-dim">
-        現在這一家是{pack.nameZh}。同一種現場裡，別的行業不共用這套貨和班表。
+        現在這一家是{pack.nameZh}。今天先處理：{pack.pains.join("、") || pack.sampleLoop}。
       </p>
+      <TradeDesk packId={pack.id} facts={tradeOf(pack).extra} />
       <RoleGuide allowed={guide.allowed} />
       <Hint id="today" help="module-today" />
       <TodayList books={books.data} />

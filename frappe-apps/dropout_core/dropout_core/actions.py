@@ -462,6 +462,63 @@ def book_course(course_code, branch, date, slot, seats, parent_name, phone, chan
 
 
 @frappe.whitelist(methods=["POST"])
+def book_resource(resource, branch, date, slot, seats, parent_name, phone, channel="官網", note=None, target_seats=None):
+	"""A table, room night, clinic slot or trial. Not a course Product Bundle.
+
+	One Lead carries the date and slot in a comment, so a second browser sees the same
+	remaining seats. This does not invent an item or a government form."""
+	if not ({"System Manager", "Sales Manager", "Sales User"} & set(frappe.get_roles())):
+		raise frappe.PermissionError(_("只有門市或業務人員可以收預約"))
+	from dropout_core.api import _add_identity, _find_identity
+
+	qty = cint(seats) or 1
+	if qty < 1 or qty > 10:
+		frappe.throw(_("一次可預約 1–10 位"))
+	mobile = normalize_phone(phone)
+	if not mobile:
+		frappe.throw(_("請留可以聯絡的手機"))
+	mark = f"{(date or '')[:10]} {(slot or '')[:20]} {(resource or '')[:60]}".strip()
+	who = (parent_name or "").strip()[:140] or mobile
+	same = frappe.db.sql(
+		"""select c.content, l.name, l.mobile_no
+		   from `tabComment` c
+		   inner join `tabLead` l on l.name = c.reference_name
+		   where c.reference_doctype = 'Lead' and c.comment_type = 'Comment' and c.content like %s""",
+		(f"%{mark}%",),
+		as_dict=True,
+	)
+	if any(r.mobile_no == mobile for r in same):
+		return {"ok": True, "status": "duplicate", "message": _("這個手機在這個時段已經有預約，不會再劃一次。")}
+	cap = cint(target_seats)
+	full = cap > 0 and len(same) + qty > cap
+	lead = frappe.new_doc("Lead")
+	lead.first_name = who
+	lead.mobile_no = mobile
+	lead.source = "EveryThingOS" if frappe.db.exists("Lead Source", "EveryThingOS") else None
+	try:
+		lead.insert()
+	except frappe.PermissionError:
+		raise
+	except frappe.ValidationError as e:
+		return _refused(e)
+	_add_identity("Lead", lead.name, "phone", mobile, verified=0)
+	lead.add_comment("Comment", "；".join(x for x in (mark, f"{(channel or '官網')[:12]}", branch or "", note or "") if x))
+	if full:
+		return {
+			"ok": True,
+			"status": "full",
+			"message": _("這個時段額滿（額定 {0}），先排候補，不會重複劃位。").format(cap),
+			"created": {"doctype": "Lead", "name": lead.name, "href": _desk("Lead", lead.name)},
+		}
+	return {
+		"ok": True,
+		"status": "locked",
+		"message": _("已留下 {0}（{1}）。這不是課程，房位、桌次或診間記在這張名單上。").format(qty, mark),
+		"created": {"doctype": "Lead", "name": lead.name, "href": _desk("Lead", lead.name)},
+	}
+
+
+@frappe.whitelist(methods=["POST"])
 def request_purchase(item_code, qty, warehouse=None, reason=None):
 	"""One Material Request, item and quantity already filled in. Staff submit it in ERPNext."""
 	if not ({"System Manager", "Purchase Manager", "Purchase User", "Stock Manager", "Stock User"} & set(frappe.get_roles())):

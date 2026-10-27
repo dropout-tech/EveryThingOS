@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --import ./test/register.mjs --test lib/tw-real/scenes.test.ts lib/open-chat/open-chat.test.ts lib/dashboard.test.ts lib/overtime.test.ts lib/open-chat/live-queue.test.ts lib/course-bom.test.ts lib/schedule.test.ts lib/edu-scenarios.test.ts lib/booking.test.ts lib/holds.test.ts lib/brand.test.ts lib/scene-shelf.test.ts",
+    "test": "node --experimental-strip-types --import ./test/register.mjs --test lib/tw-real/scenes.test.ts lib/open-chat/open-chat.test.ts lib/dashboard.test.ts lib/overtime.test.ts lib/open-chat/live-queue.test.ts lib/course-bom.test.ts lib/schedule.test.ts lib/edu-scenarios.test.ts lib/booking.test.ts lib/holds.test.ts lib/brand.test.ts lib/scene-shelf.test.ts lib/trade.test.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"

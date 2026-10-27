@@ -38,6 +38,10 @@ export type ShopProfile = {
   brand?: BrandId;
   /** Display name for the top bar and booking page. */
   name?: string;
+  /** The shop typed this name. Switching industry keeps it. */
+  nameLocked?: boolean;
+  /** The shop unchecked modules on purpose. Switching industry keeps them. */
+  customModules?: boolean;
 };
 
 function stageNames(script: { beats: readonly { step: string }[] }) {
@@ -132,8 +136,6 @@ export function recommendModules(sceneId: string, size: ShopSize, picked: Featur
   }
   if (size === "solo") {
     set.delete("website");
-  } else {
-    set.add("hr");
   }
   if (size === "large" && (sceneId === "retail" || sceneId === "stay" || sceneId === "edu")) {
     set.add("website");
@@ -150,13 +152,20 @@ export function parseShop(raw: string | undefined | null): ShopProfile | null {
     const modules = Array.isArray(value.modules)
       ? [...new Set(value.modules.map((id) => LEGACY_FEATURES[id as string] ?? id))].filter((id): id is FeatureId => FEATURE_IDS.has(id as FeatureId))
       : defaultsForScene(scene);
-    return { scene, size, modules: modules.length ? modules : defaultsForScene(scene), ...readLook(value) };
+    return {
+      scene,
+      size,
+      modules: modules.length ? modules : defaultsForScene(scene),
+      ...readLook(value),
+      ...(value.customModules === true ? { customModules: true } : {}),
+      ...(value.nameLocked === true ? { nameLocked: true } : {}),
+    };
   } catch {
     return null;
   }
 }
 
-export function shopFromPack(pack: IndustryPack): ShopProfile {
+export function shopFromPack(pack: IndustryPack, before?: ShopProfile | null): ShopProfile {
   const scene = sceneFromGroup(pack.group).id;
   const modules: FeatureId[] = [];
   if (pack.modules.crm) modules.push("crm");
@@ -165,16 +174,22 @@ export function shopFromPack(pack: IndustryPack): ShopProfile {
   if (pack.modules.funnel) modules.push("letter");
   if (pack.modules.line) modules.push("chat");
   if (pack.modules.website) modules.push("website");
-  return { scene, size: "small", modules: recommendModules(scene, "small", modules) };
+  const size = before?.size ?? "small";
+  return {
+    scene,
+    size,
+    modules: before?.customModules ? before.modules : recommendModules(scene, size, modules),
+    ...(before?.brand ? { brand: before.brand } : {}),
+    name: before?.nameLocked ? before.name : pack.nameZh,
+    ...(before?.nameLocked ? { nameLocked: true } : {}),
+    ...(before?.customModules ? { customModules: true } : {}),
+  };
 }
 
 export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
-  const scene = sceneById(shop.scene);
   const mods = new Set(shop.modules);
   return {
     ...pack,
-    workflow: { ...pack.workflow, id: scene.id, name: scene.label, stages: [...scene.stages] },
-    sampleLoop: scene.stages.join(" → "),
     modules: {
       crm: mods.has("crm"),
       funnel: mods.has("letter"),
@@ -182,7 +197,7 @@ export function applyShop(pack: IndustryPack, shop: ShopProfile): IndustryPack {
       website: mods.has("website"),
       line: mods.has("chat"),
       erp: {
-        inventory: mods.has("stock"),
+        inventory: pack.modules.erp.inventory && mods.has("stock"),
         manufacturing: shop.scene === "make" && shop.size !== "solo",
         pos: shop.scene === "retail" || shop.scene === "food",
         projects: shop.scene === "build" || shop.scene === "service",

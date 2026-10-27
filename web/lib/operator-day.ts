@@ -94,14 +94,31 @@ export function industryTodayJobs(
   const follow = path.find((step) => step.href !== "/workspace/crm");
 
   const home = pack.modules.crm ? "/workspace/crm" : (path[0]?.href ?? "/workspace/erp/finance");
-  const jobs: DayJob[] = [
-    {
-      title: `${money.person} 還停在「${waiting}」`,
-      detail: nextBeat?.detail ?? `下一步是「${nextStage}」。`,
-      href: home,
-      tone: "urgent",
-    },
-  ];
+  const painJobs: DayJob[] = (pack.pains ?? []).slice(0, 2).map((pain, index) => ({
+    title: pain,
+    detail: `${pack.nameZh}的痛點。下一步照「${stages[0] ?? "今天"}」。`,
+    href: /庫存|貨|效期|報廢|料|序號/.test(pain) && pack.modules.erp.inventory
+      ? "/workspace/erp/stock"
+      : /預約|超賣|訂位|檔期|班/.test(pain)
+        ? "/workspace/hr"
+        : /對話|私訊|留言|客服/.test(pain)
+          ? "/workspace/chat"
+          : index === 0
+            ? home
+            : "/workspace/erp/sales",
+    tone: index === 0 ? "urgent" : "warn",
+  }));
+
+  const jobs: DayJob[] = painJobs.length
+    ? painJobs
+    : [
+        {
+          title: `${money.person} 還停在「${waiting}」`,
+          detail: nextBeat?.detail ?? `下一步是「${nextStage}」。`,
+          href: home,
+          tone: "urgent",
+        },
+      ];
 
   if (follow) {
     jobs.push({

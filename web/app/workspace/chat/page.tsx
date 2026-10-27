@@ -5,7 +5,9 @@ import { InboxOnly, LiveQueue } from "@/components/open-chat/LiveQueue";
 import { OpenChatDesk } from "@/components/open-chat/OpenChatDesk";
 import { ReplyBoard } from "@/components/ReplyBoard";
 import { Badge } from "@/components/ui/Badge";
+import { practiceThreads } from "@/lib/open-chat/threads";
 import { seedReplyInbox, seedReplyRules } from "@/lib/reply";
+import { tradeOf } from "@/lib/trade";
 import { isLive } from "@/lib/sources";
 import { liveConfig } from "@/lib/sources/config";
 import { liveChatQueue, liveMe } from "@/lib/sources/live";
@@ -43,7 +45,7 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
 
   return (
     <ModuleFrame kicker="對話" title="LINE、IG、FB、官網的訊息在同一個收件匣">
-      {connected ? await liveInbox() : <OpenChatDesk />}
+      {connected ? await liveInbox() : <OpenChatDesk threads={practiceThreads(pack)} packId={pack.id} storeName={pack.nameZh} />}
       {note ? (
         <p className="glass-chip px-4 py-2 text-sm" role="status">
           {note}
@@ -54,9 +56,9 @@ export default async function ChatPage({ searchParams }: PageProps<"/workspace/c
         <h2 className="flex items-center gap-2 text-sm font-medium">
           留言自動轉私訊 <Badge tone="demo" />
         </h2>
-        <p className="text-xs text-cream-dim">這裡按送出不會傳到 Instagram；規則在導入時設在對話系統。</p>
+        <p className="text-xs text-cream-dim">這裡按送出留在{pack.nameZh}的練習對話，不會送到 Instagram，規則也還沒在 Instagram 上跑。</p>
         <ManychatBoard />
-        <ReplyBoard quiet pack={{ id: pack.id, workflow: pack.workflow }} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} />
+        <ReplyBoard quiet pack={pack} initialRules={seedReplyRules(pack)} initialInbox={seedReplyInbox(pack)} commentToOrder={tradeOf(pack).commentToOrder} />
       </div>
     </ModuleFrame>
   );

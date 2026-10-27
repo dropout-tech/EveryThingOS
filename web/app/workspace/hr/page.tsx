@@ -5,7 +5,9 @@ import { HrBoard } from "@/components/HrBoard";
 import { ModuleFrame } from "@/components/ModuleFrame";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { decodeHolds, demandsFromHolds, HOLD_COOKIE, holdLines } from "@/lib/holds";
+import { ledgerHolds, mergeHolds } from "@/lib/practice-ledger";
 import { shelfFor, type ShelfShift } from "@/lib/scene-shelf";
+import { tradeOf } from "@/lib/trade";
 import { getHr } from "@/lib/sources";
 import type { HrToday } from "@/lib/sources/types";
 import { currentIndustry } from "@/lib/workspace";
@@ -16,53 +18,43 @@ function taipeiDay(offset = 0) {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Taipei" }).format(new Date(Date.now() + offset * 86_400_000));
 }
 
-const STAFF = [
-  { id: "HR-EMP-00001", name: "王小明" },
-  { id: "HR-EMP-00002", name: "林業務" },
-  { id: "HR-EMP-00003", name: "陳倉管" },
-  { id: "HR-EMP-00004", name: "李師傅" },
-];
-
-function shiftsOf(shifts: ShelfShift[], today: string): NonNullable<HrToday["schedule"]> {
+function shiftsOf(shifts: ShelfShift[], today: string, staff: { id: string; name: string }[]): NonNullable<HrToday["schedule"]> {
   return shifts.map((shift, index) => {
-    const person = STAFF[shift.staff] ?? STAFF[0];
+    const person = staff[shift.staff] ?? staff[0];
     return {
       id: `SH-SCENE-${index}`,
-      employee: person.id,
-      employeeName: person.name,
+      employee: person?.id ?? `HR-${index}`,
+      employeeName: person?.name ?? "尚未建檔",
       branch: shift.branch,
       date: today,
       startTime: shift.start,
       endTime: shift.end,
-      courseName: shift.what,
+      courseName: shift.skill ? `${shift.what} · 專長 ${shift.skill}` : shift.what,
       room: shift.room,
     };
   });
 }
 
-function demo(classBoard: boolean, shifts: ShelfShift[]): HrToday {
+function demo(classBoard: boolean, shifts: ShelfShift[], staff: { id: string; name: string; role: string }[], leaveReason: string): HrToday {
   const today = taipeiDay();
+  const people = staff.length ? staff : [{ id: "HR-0", name: "尚未建檔", role: "員工" }];
   return {
     date: today,
-    me: { employee: "HR-EMP-00001", name: "王小明", logs: [{ type: "IN", time: "08:56" }], next: "OUT" },
-    onLeave: [
-      { name: "林業務", leaveType: "特休", fromDate: today, toDate: taipeiDay(1), halfDay: false },
-      { name: "陳倉管", leaveType: "病假", fromDate: today, toDate: today, halfDay: true },
-    ],
+    me: { employee: people[0].id, name: people[0].name, logs: [{ type: "IN", time: "08:56" }], next: "OUT" },
+    onLeave: people[1] ? [{ name: people[1].name, leaveType: "特休", fromDate: today, toDate: taipeiDay(1), halfDay: false }] : [],
     approvals: [
-      { name: "HR-LAP-2026-00012", employee: "張會計", leaveType: "事假", fromDate: taipeiDay(2), toDate: taipeiDay(2), days: 1, reason: "小孩學校日" },
-      { name: "HR-LAP-2026-00013", employee: "李師傅", leaveType: "家庭照顧假", fromDate: taipeiDay(5), toDate: taipeiDay(6), days: 2, reason: "家人開刀住院" },
+      { name: "HR-LAP-001", employee: people[2]?.name ?? people[0].name, leaveType: "事假", fromDate: taipeiDay(2), toDate: taipeiDay(2), days: 1, reason: leaveReason },
     ],
-    payroll: { month: today.slice(0, 7), state: "slips", employees: 8, draft: 8, submitted: 0, netPay: 312_480, entries: [] },
+    payroll: { month: today.slice(0, 7), state: "not_started", employees: people.length, draft: 0, submitted: 0, netPay: 0, entries: [] },
     rates: { year: Number(today.slice(0, 4)), verified: false, current: true },
     can: { approve: true, payroll: true, overtime: true, schedule: true },
-    staff: STAFF,
+    staff: people.map((person) => ({ id: person.id, name: person.name })),
     schedule: classBoard
       ? [
           {
             id: "SH-2026-001",
-            employee: "HR-EMP-00001",
-            employeeName: "王小明",
+            employee: people[0].id,
+            employeeName: people[0].name,
             branch: "台北信義教室",
             date: today,
             startTime: "09:30",
@@ -72,8 +64,8 @@ function demo(classBoard: boolean, shifts: ShelfShift[]): HrToday {
           },
           {
             id: "SH-2026-002",
-            employee: "HR-EMP-00002",
-            employeeName: "林業務",
+            employee: people[1]?.id ?? people[0].id,
+            employeeName: people[1]?.name ?? people[0].name,
             branch: "台北信義教室",
             date: today,
             startTime: "14:00",
@@ -81,19 +73,8 @@ function demo(classBoard: boolean, shifts: ShelfShift[]): HrToday {
             courseName: "節慶 DIY 創意美勞班",
             room: "美術教室 1",
           },
-          {
-            id: "SH-2026-003",
-            employee: "HR-EMP-00004",
-            employeeName: "李師傅",
-            branch: "台中公益教室",
-            date: taipeiDay(1),
-            startTime: "18:30",
-            endTime: "21:00",
-            courseName: "STEAM 機器人與科學實作",
-            room: "創客教室 B",
-          },
         ]
-      : shiftsOf(shifts, today),
+      : shiftsOf(shifts, today, people),
   };
 }
 
@@ -116,8 +97,9 @@ export default async function HrPage() {
     );
   }
 
-  const data = source.data ?? demo(shelf.classBoard, shelf.shifts);
-  const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
+  const trade = tradeOf(pack);
+  const data = source.data ?? demo(shelf.classBoard, shelf.shifts, trade.staff, trade.leaveReason);
+  const holds = mergeHolds(decodeHolds((await cookies()).get(HOLD_COOKIE)?.value), ledgerHolds(pack.id));
   const openDemands = shelf.classBoard ? demandsFromHolds(holds) : [];
   const manager = data.can.approve || data.can.payroll;
 
@@ -135,7 +117,16 @@ export default async function HrPage() {
           ))}
         </ul>
       ) : null}
-      <HrBoard data={data} live={live} openDemands={openDemands} classBoard={shelf.classBoard} />
+      <HrBoard
+        data={data}
+        live={live}
+        openDemands={openDemands}
+        classBoard={shelf.classBoard}
+        hero={trade.hero}
+        weekly={trade.weeklyRoster}
+        cover={trade.coverShift}
+        rateLine={`${pack.nameZh}有 ${trade.staff.length} 位練習員工（${trade.staff.map((person) => `${person.name}·${person.role}`).join("、")}）。實發先空白。`}
+      />
       <SourceNote source={source} demoText="示範資料。接上 ERPNext 人事後，換成你們的同事、假單與薪資。" />
     </ModuleFrame>
   );

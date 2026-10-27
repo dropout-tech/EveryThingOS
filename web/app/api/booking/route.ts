@@ -3,6 +3,8 @@ import { readJson, refuse, reply, sameOrigin } from "@/lib/actions";
 import { parseBooking, type BookingRequest } from "@/lib/booking";
 import { evaluateCourseBom } from "@/lib/course-bom";
 import { applyLocks, decodeHolds, decideHold, encodeHolds, HOLD_COOKIE, pushHold, type HoldDecision } from "@/lib/holds";
+import { ledgerHolds, mergeHolds, saveLedgerHolds } from "@/lib/practice-ledger";
+import { tradeOf } from "@/lib/trade";
 import { getBooks } from "@/lib/sources";
 import { liveConfig } from "@/lib/sources/config";
 import { erpPost, SourceError } from "@/lib/sources/erpnext";
@@ -51,10 +53,38 @@ export async function POST(request: NextRequest) {
   if (!parsed.ok) return refuse(parsed.message);
   const b = parsed.value;
   const config = await liveConfig();
-  const books = await getBooks(await currentIndustry());
-  const bom = books.origin !== "error" ? books.data.courseBoms?.find((c) => c.courseCode === b.courseCode) : undefined;
+  const pack = await currentIndustry();
+  const books = await getBooks(pack);
+  const trade = tradeOf(pack);
+  const found = books.origin !== "error" ? books.data.courseBoms?.find((c) => c.courseCode === b.courseCode) : undefined;
+  const bom = found ?? (trade.bookable && b.courseCode === trade.offerCode
+    ? { courseCode: trade.offerCode, courseName: trade.offerName, targetSeats: trade.capacity, bookedSeats: trade.booked, lines: [] }
+    : undefined);
 
-  if (config.erpnext) {
+  if (config.erpnext && bom && bom.lines.length === 0) {
+    try {
+      const result = await erpPost<Record<string, unknown>>(
+        "dropout_core.actions.book_resource",
+        { resource: b.courseCode, branch: b.branch, date: b.date, slot: b.slot, seats: b.seats, parent_name: b.parentName, phone: b.phone, channel: b.channel, note: b.note, target_seats: bom.targetSeats },
+        config,
+      );
+      const status = String(result.status ?? "");
+      const prior = mergeHolds(decodeHolds(request.cookies.get(HOLD_COOKIE)?.value), ledgerHolds(pack.id));
+      const decision: HoldDecision =
+        status === "locked"
+          ? { status: "locked", seats: b.seats, locks: [], remainingAfter: 0, reason: "ok", message: String(result.message ?? "") }
+          : { status: "waitlist", seats: b.seats, shortBy: 0, bottleneck: null, reason: status === "duplicate" ? "duplicate" : status === "full" ? "full" : "material", message: String(result.message ?? "") };
+      const holds = status && status !== "duplicate" ? pushHold(prior, b, bom.courseName, decision) : prior;
+      saveLedgerHolds(pack.id, holds);
+      return withHolds({ ok: Boolean(result.ok), status: status || undefined, message: result.message as string | undefined }, holds, request);
+    } catch (error) {
+      if (!(error instanceof SourceError) || error.kind !== "login" || !config.glue) {
+        return refuse("現在送不出去，請直接傳 LINE 或打電話給門市", 502);
+      }
+    }
+  }
+
+  if (config.erpnext && bom && bom.lines.length > 0) {
     try {
       const result = await erpPost<Record<string, unknown>>(
         "dropout_core.actions.book_course",
@@ -62,12 +92,13 @@ export async function POST(request: NextRequest) {
         config,
       );
       const status = String(result.status ?? "");
-      const prior = decodeHolds(request.cookies.get(HOLD_COOKIE)?.value);
+      const prior = mergeHolds(decodeHolds(request.cookies.get(HOLD_COOKIE)?.value), ledgerHolds(pack.id));
       const decision: HoldDecision =
         status === "locked"
           ? { status: "locked", seats: b.seats, locks: [], remainingAfter: 0, reason: "ok", message: String(result.message ?? "") }
           : { status: "waitlist", seats: b.seats, shortBy: 0, bottleneck: null, reason: status === "duplicate" ? "duplicate" : status === "full" ? "full" : "material", message: String(result.message ?? "") };
       const holds = status && status !== "duplicate" ? pushHold(prior, b, bom?.courseName ?? b.courseCode, decision) : prior;
+      saveLedgerHolds(pack.id, holds);
       return withHolds({ ok: Boolean(result.ok), status: status || undefined, message: result.message as string | undefined }, holds, request);
     } catch (error) {
       if (!(error instanceof SourceError) || error.kind !== "login" || !config.glue) {
@@ -93,9 +124,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (!bom || books.origin === "error") return refuse("找不到這堂課");
-  const prior = decodeHolds(request.cookies.get(HOLD_COOKIE)?.value);
+  const prior = mergeHolds(decodeHolds(request.cookies.get(HOLD_COOKIE)?.value), ledgerHolds(pack.id));
   const decision = decideHold(evaluateCourseBom(applyLocks(bom, prior), books.data.stock), b, prior);
   const holds = pushHold(prior, b, bom.courseName, decision);
+  saveLedgerHolds(pack.id, holds);
   const status = decision.reason === "duplicate" ? "duplicate" : decision.reason === "full" ? "full" : decision.status;
   return withHolds(
     { ok: true, demo: true, status, message: `${decision.message}（練習模式：倉庫的鎖定和人事的待排已更新，沒有送到店外的系統）` },

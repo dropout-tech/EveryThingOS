@@ -5,18 +5,20 @@ import { ActionNote } from "@/components/ActionNote";
 import { NextThing } from "@/components/NextThing";
 import { channelById } from "@/lib/open-chat/channels";
 import { nextThread, OPEN_THREADS } from "@/lib/open-chat/threads";
+import type { OpenThread } from "@/lib/open-chat/types";
+import { demoKey, peekDemoState, writeDemoState } from "@/lib/demo-state";
 import { windowNote } from "@/lib/open-chat/reply-window";
 import type { PersonRef } from "@/lib/open-chat/types";
 import { PersonCard } from "./PersonCard";
 import { ReplyBox } from "./ReplyBox";
 import { ThreadList } from "./ThreadList";
 
-export function OpenChatDesk() {
-  const focus = nextThread(OPEN_THREADS);
+export function OpenChatDesk({ threads = OPEN_THREADS, packId, storeName }: { threads?: OpenThread[]; packId?: string; storeName?: string }) {
+  const focus = nextThread(threads);
   const [note, setNote] = useState<string | null>(null);
   if (!focus) return null;
 
-  const others: PersonRef[] = OPEN_THREADS.filter((thread) => thread.id !== focus.id);
+  const others: PersonRef[] = threads.filter((thread) => thread.id !== focus.id);
   const channel = channelById(focus.channel)?.label ?? focus.channel;
 
   return (
@@ -32,9 +34,16 @@ export function OpenChatDesk() {
             thread={focus}
             others={others}
             live={false}
-            onPracticeReply={(text) => setNote(`已寫下給 ${focus.name} 的「${text}」。還沒傳到${channel}。`)}
+            onPracticeReply={(text) => {
+              if (packId) {
+                const key = demoKey("timeline", packId);
+                const prev = peekDemoState<{ party: string; text: string }[]>(key, []);
+                writeDemoState(key, [{ party: focus.name, text }, ...prev].slice(0, 20));
+              }
+              setNote(`已寫下給 ${focus.name} 的「${text}」。留在${storeName ?? "這家"}的練習對話，客人頁看得到「今天回過」。還沒傳到${channel}。`);
+            }}
           />
-          <ThreadList threads={OPEN_THREADS} activeId={focus.id} />
+          <ThreadList threads={threads} activeId={focus.id} />
         </div>
         <PersonCard thread={focus} />
       </div>

@@ -3,6 +3,8 @@ import { BookingLinks } from "@/components/BookingLinks";
 import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { StockBoard } from "@/components/StockBoard";
 import { applyLocks, decodeHolds, HOLD_COOKIE, holdLines, stockPressure } from "@/lib/holds";
+import { ledgerHolds, mergeHolds } from "@/lib/practice-ledger";
+import { tradeOf } from "@/lib/trade";
 import { shelfFor } from "@/lib/scene-shelf";
 import { getBooks } from "@/lib/sources";
 import { currentIndustry } from "@/lib/workspace";
@@ -19,14 +21,15 @@ export default async function StockPage() {
       <div className="glass p-6">
         <h2 className="text-xl font-medium">這家公司沒有倉庫要管</h2>
         <p className="mt-2 text-cream-dim">
-          履行是「{pack.fulfillment}」。A1／億看仍會把進銷存選單全部攤開；DropOut 依產業包把盤點藏起來，避免教育／顧問業去學品號。
+          這家是{pack.nameZh}，做到的是「{pack.fulfillment}」。沒有倉庫，所以不出現品號。
         </p>
       </div>
     );
   }
 
-  const holds = decodeHolds((await cookies()).get(HOLD_COOKIE)?.value);
+  const holds = mergeHolds(decodeHolds((await cookies()).get(HOLD_COOKIE)?.value), ledgerHolds(pack.id));
   const shelf = shelfFor(pack);
+  const trade = tradeOf(pack);
   const courseBoms = (books.data.courseBoms ?? []).map((bom) => applyLocks(bom, holds));
   return (
     <div className="space-y-4">
@@ -43,6 +46,9 @@ export default async function StockPage() {
         bookingLocks={stockPressure(holds, courseBoms)}
         caption={shelf.caption}
         holdBuy={shelf.holdBuy}
+        stopSell={trade.stopSell}
+        waste={trade.waste}
+        sales={books.data.sales}
       />
       {courseBoms.length ? <BookingLinks /> : null}
       <SourceNote source={books} />

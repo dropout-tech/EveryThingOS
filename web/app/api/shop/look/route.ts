@@ -12,10 +12,15 @@ export async function POST(request: NextRequest) {
   if (!shop) return refuse("請先選現場與功能", 409);
   const body = await readJson<{ brand?: string; name?: string }>(request);
   if (!body) return refuse("格式不對");
-  const next = { ...shop, brand: parseBrand(body.brand) };
+  const next = { ...shop, brand: parseBrand(body.brand), nameLocked: false as boolean };
   const name = cleanShopName(body.name);
-  if (name) next.name = name;
-  else delete next.name;
+  if (name) {
+    next.name = name;
+    next.nameLocked = true;
+  } else {
+    delete next.name;
+    next.nameLocked = false;
+  }
   const response = reply({ ok: true, message: "外觀已更新", shop: next });
   response.cookies.set(SHOP_COOKIE, JSON.stringify(next), { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   return response;

@@ -9,6 +9,7 @@ import { NextThing } from "./NextThing";
 import { OvertimeForm } from "./OvertimeForm";
 import { TeacherSchedule } from "./TeacherSchedule";
 import { useConfirm } from "./ui/ConfirmDialog";
+import { demoKey, useDemoState } from "@/lib/demo-state";
 import { formatTwd } from "@/lib/erp";
 import type { ClassDemand } from "@/lib/schedule";
 import type { HrToday } from "@/lib/sources/types";
@@ -49,10 +50,10 @@ function readLocation(): Promise<{ latitude?: number; longitude?: number }> {
 }
 
 /** `live` false is practice mode: buttons change this screen only and nothing is sent. */
-export function HrBoard({ data, live, openDemands = [], classBoard = false }: { data: HrToday; live: boolean; openDemands?: ClassDemand[]; classBoard?: boolean }) {
+export function HrBoard({ data, live, openDemands = [], classBoard = false, hero = "leave", weekly = false, cover = false, rateLine }: { data: HrToday; live: boolean; openDemands?: ClassDemand[]; classBoard?: boolean; hero?: "leave" | "shift"; weekly?: boolean; cover?: boolean; rateLine?: string }) {
   const action = useLiveAction();
   const [locating, setLocating] = useState(false);
-  const [logs, setLogs] = useState(data.me.logs);
+  const [logs, setLogs] = useDemoState(demoKey("clock", `${data.me.employee}:${data.date}`), data.me.logs);
   const [approvals, setApprovals] = useState(data.approvals);
   const [note, setNote] = useState<string | null>(null);
   const [confirm, confirmDialog] = useConfirm();
@@ -77,7 +78,7 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false }: { 
     }
     const time = nowTime();
     setLogs((current) => [...current, { type, time }]);
-    setNote(`練習：${LOG_LABEL[type]}打卡 ${time}，沒有送出。`);
+    setNote(`練習：${LOG_LABEL[type]}打卡 ${time}。換頁還在。這筆還沒送進薪資。`);
   }
 
   function decide(name: string, employee: string, decision: "approve" | "reject") {
@@ -96,7 +97,17 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false }: { 
       <ActionOutcomeNote outcome={action.outcome} />
       {confirmDialog}
 
-      {firstApproval ? (
+      {hero === "shift" && data.schedule?.[0] ? (
+        <NextThing
+          title={`今天先確認「${data.schedule[0].courseName}」`}
+          detail={`${data.schedule[0].employeeName} ${data.schedule[0].startTime}–${data.schedule[0].endTime}。假單在下面核准，不佔這一頁的主按鈕。`}
+          action={
+            <button type="button" className="btn btn-primary" onClick={() => setNote(`已確認今天的班：${data.schedule?.[0]?.courseName}。系統不自己排人。`)}>
+              確認今天的班
+            </button>
+          }
+        />
+      ) : firstApproval ? (
         <NextThing
           title={`${firstApproval.employee}的假單在等你`}
           detail={`${firstApproval.leaveType} · ${days(firstApproval.fromDate, firstApproval.toDate)} · ${firstApproval.days} 天。${firstApproval.reason ? firstApproval.reason : "核准後才算請假。"}`}
@@ -261,7 +272,13 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false }: { 
               </li>
             ))}
           </ul>
-          <p className="text-xs text-cream-dim">請假和加班在上面核准。這一頁不自己排人。</p>
+          <p className="text-xs text-cream-dim">請假和加班在上面核准。這一頁不自己排人。月延長工時上限 46 小時，正式排班會用已入帳的加班時數再擋一次。</p>
+          {weekly ? <p className="text-xs text-cream-dim">週一到週日沿用這一班，不口頭約。{data.schedule.map((shift) => `${shift.courseName} ${shift.startTime}`).join("、")}。</p> : null}
+          {cover && data.schedule[0] ? (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setNote(`已標代班：${data.schedule?.[0]?.courseName}。這班不會漏。`)}>
+              找代班
+            </button>
+          ) : null}
         </section>
       ) : null}
 
@@ -272,8 +289,9 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false }: { 
             <p className="text-xs text-cream-dim">在職 {data.payroll.employees} 人</p>
           </div>
           <p className="text-lg">{PAYROLL_STATE[data.payroll.state]}</p>
+          {rateLine ? <p className="text-sm text-cream-dim">{rateLine}</p> : null}
           {data.payroll.state === "not_started" ? (
-            <p className="text-sm text-cream-dim">到 ERPNext 開一張「薪資發放」，選這個月，系統會替每個人產生薪資單。</p>
+            <p className="text-sm text-cream-dim">實發先空白。費率還沒核對，請對照勞保局、健保署、財政部的公告後再發。</p>
           ) : (
             <p className="text-sm text-cream-dim">
               待確認 {data.payroll.draft} 張、已確認 {data.payroll.submitted} 張，實發合計 {formatTwd(data.payroll.netPay)}

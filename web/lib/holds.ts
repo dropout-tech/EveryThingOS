@@ -57,14 +57,14 @@ export function applyLocks(bom: CourseBom, holds: readonly Hold[]): CourseBom {
   return extra ? { ...bom, bookedSeats: (bom.bookedSeats ?? 0) + extra } : bom;
 }
 
-/** 這班還能收幾位：額定人數扣掉已收，再跟材料剩餘取較小的。 */
+/** 這班還能收幾位。沒有材料配方時只看額定人數；有配方時再跟材料剩餘取較小的。 */
 export function openSeats(bom: EvaluatedCourseBom): number {
   const byRoster = Math.max(0, bom.targetSeats - bom.bookedSeats);
+  if (!bom.lines.length) return byRoster;
   return Math.min(byRoster, bom.remainingSeats);
 }
 
 export function openLabel(bom: EvaluatedCourseBom): string {
-  if (!bom.lines.length) return "請洽門市";
   const n = openSeats(bom);
   if (n <= 0) return "額滿，可排候補";
   if (n <= 3) return `剩 ${n} 位`;
@@ -85,6 +85,28 @@ export function decideHold(evaluated: EvaluatedCourseBom, request: BookingReques
     return { status: "waitlist", seats: want, shortBy: want, bottleneck: null, reason: "duplicate", message: "這個手機在這個時段已經有預約，不會再劃一次。" };
   }
   const sessionLeft = Math.max(0, evaluated.targetSeats - evaluated.bookedSeats);
+  if (!evaluated.lines.length) {
+    if (sessionLeft < want) {
+      return {
+        status: "waitlist",
+        seats: want,
+        shortBy: want - sessionLeft,
+        bottleneck: null,
+        reason: "full",
+        message: sessionLeft > 0
+          ? `這個時段只剩 ${sessionLeft}（額定 ${evaluated.targetSeats}、已留 ${evaluated.bookedSeats}），先排候補，不會重複劃位。`
+          : `這個時段額滿（額定 ${evaluated.targetSeats}、已留 ${evaluated.bookedSeats}），先排候補，不會重複劃位。`,
+      };
+    }
+    return {
+      status: "locked",
+      seats: want,
+      locks: [],
+      remainingAfter: sessionLeft - want,
+      reason: "ok",
+      message: `已留下 ${want}（${request.date} ${request.slot}）。這筆記在這一家，另一台瀏覽器也看得到。`,
+    };
+  }
   const materialLeft = evaluated.remainingSeats;
   if (sessionLeft < want && sessionLeft <= materialLeft) {
     return {

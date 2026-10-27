@@ -2,6 +2,7 @@
 export const BRANDS = [
   { id: "everythingos", label: "EveryThingOS", hint: "灰白底、琢奧青綠" },
   { id: "meetplus", label: "米特製造所", hint: "奶油底、海軍藍、青綠、粉圓字" },
+  { id: "store", label: "這家的名字", hint: "顏色沿用現在的，頂欄和預約頁用這一家的名字" },
 ] as const;
 
 export type BrandId = (typeof BRANDS)[number]["id"];
