@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { Icon } from "./ui/Viz";
 import {
   buildTwentyEduScenarios,
   summarizeCognitiveReduction,
@@ -46,16 +47,9 @@ export function TwentyScenariosBoard({
   return (
     <section className="glass space-y-3 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-medium">
-            20 家分店／20 個真實客戶情境一鍵解決（認知負擔降低 {summary.overallReductionPct}%）
-          </h2>
-          <p className="mt-0.5 text-xs text-cream-dim">
-            原本人工要跨表比對 {summary.totalManualSteps} 個步驟，系統全部在背後算好，每個情境都變成「看一句結論、按一下完成」。
-          </p>
-        </div>
+        <h2 className="text-sm font-medium">20 家分店・20 個真實情境</h2>
         <Badge tone="ok">
-          已驗證 {summary.scenarioCount}/20 情境 · 步驟 {summary.totalManualSteps} → {summary.totalSystemSteps}（-{summary.overallReductionPct}%）
+          {summary.totalManualSteps} 步 → {summary.totalSystemSteps} 步（-{summary.overallReductionPct}%）
         </Badge>
       </div>
 
@@ -111,22 +105,31 @@ export function TwentyScenariosBoard({
             </p>
             <h3 className="mt-0.5 text-base font-medium">{current.title}</h3>
           </div>
-          <Badge tone="ok">
-            {current.manualStepsCount} 步變 1 步（認知負擔 -{current.cognitiveReductionPct}%）
-          </Badge>
+          <Badge tone="ok">-{current.cognitiveReductionPct}%</Badge>
         </div>
 
-        {/* 以前人工 5-6 步（劃掉） vs 現在 1 句話 */}
-        <p className="text-xs text-cream-dim line-through">
-          以前人工（{current.manualStepsCount} 步）：{current.beforeSteps.join(" → ")}
-        </p>
+        <div className="flex items-center gap-2" role="img" aria-label={`以前 ${current.manualStepsCount} 步：${current.beforeSteps.join("、")}；現在 1 步`}>
+          <span className="flex gap-1">
+            {current.beforeSteps.map((step, i) => (
+              <span key={i} className="viz-avatar viz-avatar-muted !h-6 !w-6 text-[0.65rem] line-through" title={step}>
+                {i + 1}
+              </span>
+            ))}
+          </span>
+          <Icon name="arrow" className="text-cream-dim" />
+          <span className="viz-avatar viz-avatar-accent !h-6 !w-6">
+            <Icon name="check" className="!h-3.5 !w-3.5" />
+          </span>
+          <span className="text-xs text-cream-dim">{current.manualStepsCount} 步變 1 步</span>
+        </div>
 
-        <p className="text-sm font-medium">
-          現在系統算好：{current.decisionHeadline}
-        </p>
+        <p className="text-sm font-medium">{current.decisionHeadline}</p>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          <span className="text-xs text-cream-dim">系統底層檢核：{current.engineProof}</span>
+          <details className="text-xs text-cream-dim">
+            <summary className="cursor-pointer select-none">怎麼算的</summary>
+            <p className="mt-1 max-w-prose">{current.engineProof}</p>
+          </details>
           <button
             type="button"
             onClick={triggerCurrent}

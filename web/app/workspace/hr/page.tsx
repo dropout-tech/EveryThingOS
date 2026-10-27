@@ -96,7 +96,7 @@ export default async function HrPage() {
     <ModuleFrame
       kicker="人事與師資調度（HRM）"
       title={manager ? "今天誰在、誰請假、師資怎麼排" : "打卡與我的班表"}
-      hint={manager ? "採「勞動法規先行、AI 建議、主管覆核、異常留痕」：整合師資專長／適教年齡層標籤、請假、出勤與工時，提出跨店排班建議與人力缺口提醒；薪資／勞健保支援既有系統串接、匯入或必要欄位管理。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
+      hint={manager ? "師資專長、請假與工時放在一起看；AI 只給建議，主管確認才排入。薪資與勞健保沿用既有系統。" : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
     >
       <Hint id="hr" help="module-hr" />
       <HrBoard data={data} live={live} />

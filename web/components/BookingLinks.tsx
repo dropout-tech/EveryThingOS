@@ -1,11 +1,12 @@
 import { headers } from "next/headers";
+import { Icon, type IconName } from "./ui/Viz";
 
-const LINKS = [
-  { from: "line", label: "LINE 圖文選單" },
-  { from: "ig", label: "Instagram 個人頁" },
-  { from: "fb", label: "Facebook 粉專按鈕" },
-  { from: "counter", label: "門市平板" },
-] as const;
+const LINKS: { from: string; label: string; icon: IconName }[] = [
+  { from: "line", label: "LINE 圖文選單", icon: "chat" },
+  { from: "ig", label: "Instagram", icon: "camera" },
+  { from: "fb", label: "Facebook 粉專", icon: "thumb" },
+  { from: "counter", label: "門市平板", icon: "tablet" },
+];
 
 /** 同一個預約頁，依來源帶參數；預約進來就是一張課程訂單，材料夠才鎖料。 */
 export async function BookingLinks() {
@@ -15,13 +16,23 @@ export async function BookingLinks() {
   return (
     <details className="glass p-5">
       <summary className="cursor-pointer text-sm font-medium">預約連結：貼到 LINE、IG、FB 或門市平板</summary>
-      <p className="mt-2 text-xs text-cream-dim">客人預約時，系統用課程 BOM 算名額：材料夠就開單並鎖料，不夠就排候補並標出缺哪一項。</p>
-      <ul className="mt-3 space-y-2">
+      <div className="viz-flow mt-3">
+        <span><Icon name="users" />客人預約</span>
+        <Icon name="arrow" />
+        <span><Icon name="box" />材料夠：開單鎖料</span>
+        <span><Icon name="clock" />不夠：排候補</span>
+      </div>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {LINKS.map((l) => (
-          <li key={l.from} className="glass-chip flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm">
-            <span>{l.label}</span>
-            <a href={`/book?from=${l.from}`} target="_blank" rel="noreferrer" className="font-mono text-xs underline underline-offset-2">
-              {origin}/book?from={l.from}
+          <li key={l.from} className="glass-chip flex flex-col gap-2 p-3 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <span className="viz-avatar viz-avatar-accent">
+                <Icon name={l.icon} />
+              </span>
+              {l.label}
+            </span>
+            <a href={`/book?from=${l.from}`} target="_blank" rel="noreferrer" className="truncate font-mono text-xs text-cream-dim underline underline-offset-2">
+              {origin.replace(/^https?:\/\//, "")}/book?from={l.from}
             </a>
           </li>
         ))}

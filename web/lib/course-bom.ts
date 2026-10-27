@@ -237,6 +237,8 @@ export type AiInventoryRecommendation = {
   sourceBranch?: string;
   qty: number;
   reason: string;
+  /** 缺料分店的數字，畫成長條用：現有、已鎖定、排課需求（含損耗）、安全量 */
+  need: { onHand: number; locked: number; demand: number; safety: number; wastagePct: number };
 };
 
 /**
@@ -273,6 +275,7 @@ export function planMultiStoreReplenishment(rows: readonly BranchMaterialStock[]
       const requiredTotal = s.locked + demandWithWastage + s.safety;
       let deficit = Math.max(0, requiredTotal - s.onHand);
       if (deficit <= 0) continue;
+      const need = { onHand: s.onHand, locked: s.locked, demand: demandWithWastage, safety: s.safety, wastagePct: Math.round(wastageRate * 100) };
 
       // 先找同區有餘裕的分店，再找跨區有餘裕的分店
       const orderedDonors = [
@@ -296,6 +299,7 @@ export function planMultiStoreReplenishment(rows: readonly BranchMaterialStock[]
           sourceBranch: donor.store.branchName,
           qty: moveQty,
           reason: `${s.branchName} 已鎖定 ${s.locked} ${s.uom}、近期排課需求 ${s.upcomingDemand} ${s.uom}（含損耗率 ${Math.round(wastageRate * 100)}% 與安全量 ${s.safety}），現有 ${s.onHand} ${s.uom} 不足；${donor.store.branchName} 扣除自身需求與安全量後尚有餘裕，建議優先跨店調撥 ${moveQty} ${s.uom}，免重複採購。`,
+          need,
         });
       }
 
@@ -309,6 +313,7 @@ export function planMultiStoreReplenishment(rows: readonly BranchMaterialStock[]
           targetBranch: s.branchName,
           qty: deficit,
           reason: `${s.branchName} 排課需求 ${s.upcomingDemand} ${s.uom}（加計歷史損耗率 ${Math.round(wastageRate * 100)}% 與安全量 ${s.safety}），跨店調度後仍缺 ${deficit} ${s.uom}，建議總部採購補貨。`,
+          need,
         });
       }
     }

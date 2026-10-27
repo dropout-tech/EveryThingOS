@@ -6,6 +6,7 @@ import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { TwentyScenariosBoard } from "./TwentyScenariosBoard";
 import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
+import { Avatar, Bar, Dots, Icon, Legend, Stat, type IconName } from "./ui/Viz";
 import {
   evaluateCourseBom,
   MOVEMENT_LABELS,
@@ -164,10 +165,16 @@ const INITIAL_ENROLLMENTS: CourseEnrollmentOrder[] = [
 ];
 
 const MATERIAL_STAGE_LABEL: Record<MaterialStage, string> = {
-  locked: "已預扣鎖定（未拆封領用）",
-  issued: "現場已領用（實體履約）",
-  consumed: "上課已耗用（實體履約）",
-  returned: "完好退回入庫",
+  locked: "材料包已鎖・未拆",
+  issued: "材料包已領用",
+  consumed: "材料包已用掉",
+  returned: "材料包已退回",
+};
+
+const CHANNEL_ICON: Record<CourseEnrollmentOrder["channel"], IconName> = {
+  官網預約: "web",
+  "LINE 預約": "chat",
+  門市現場: "store",
 };
 
 export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestShortage, onPracticeNote }: Props) {
@@ -313,31 +320,78 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
       {/* 第一眼極簡決策區：AI 已經算好的跨店調撥與補貨建議（免翻表、一鍵確認） */}
       <section className="glass space-y-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base font-medium">AI 智慧備料與跨店調撥建議（不用自己翻 20 店庫存表）</h2>
-            <p className="mt-0.5 text-xs text-cream-dim">
-              系統已自動把「報名預扣鎖定＋歷史損耗率＋各分店安全量」算完。能從鄰近分店調撥的絕不重複採購，點一下就完成。
-            </p>
-          </div>
+          <h2 className="flex items-center gap-2 text-base font-medium">
+            <Icon name="spark" className="text-teal" />
+            AI 備料與跨店調撥
+          </h2>
           <Badge tone="ok">待確認 {aiRecommendations.length} 件</Badge>
+        </div>
+        <div className="viz-flow" aria-label="AI 怎麼算">
+          <span><Icon name="lock" />報名鎖料</span>
+          <Icon name="arrow" />
+          <span><Icon name="leaf" />損耗率</span>
+          <Icon name="arrow" />
+          <span><Icon name="shield" />安全量</span>
+          <Icon name="arrow" />
+          <span><Icon name="truck" />先調撥，再採購</span>
         </div>
 
         {aiRecommendations.length ? (
           <ul className="grid gap-3 md:grid-cols-2">
-            {aiRecommendations.slice(0, 4).map((rec) => (
-              <li key={rec.id} className="glass-well flex flex-col justify-between gap-3 p-4 text-sm">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium">
-                      {rec.action === "transfer"
-                        ? `跨店調撥：${rec.sourceBranch} → ${rec.targetBranch}`
-                        : `總部補貨請購：${rec.targetBranch}`}
-                    </span>
-                    <Badge tone={rec.action === "transfer" ? "ok" : "warn"}>
-                      {rec.materialName} × {rec.qty} {rec.uom}
-                    </Badge>
+            {aiRecommendations.slice(0, 4).map((rec) => {
+              const required = rec.need.locked + rec.need.demand + rec.need.safety;
+              const have = Math.min(rec.need.onHand, required);
+              return (
+              <li key={rec.id} className="glass-well flex flex-col justify-between gap-3 p-4 text-sm" title={rec.reason}>
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <p className="flex items-center gap-1.5 text-xs text-cream-dim">
+                        <Icon name={rec.action === "transfer" ? "truck" : "cart"} />
+                        {rec.action === "transfer" ? "跨店調撥" : "總部請購"} · {rec.materialName}
+                      </p>
+                      <p className="viz-route">
+                        {rec.action === "transfer" ? (
+                          <>
+                            <span><Icon name="store" />{rec.sourceBranch?.replace("教室", "")}</span>
+                            <Icon name="arrow" />
+                          </>
+                        ) : (
+                          <>
+                            <span><Icon name="cart" />總部</span>
+                            <Icon name="arrow" />
+                          </>
+                        )}
+                        <span><Icon name="store" />{rec.targetBranch.replace("教室", "")}</span>
+                      </p>
+                    </div>
+                    <p className="shrink-0 text-right">
+                      <span className="viz-big">{rec.qty}</span>
+                      <span className="ml-1 text-xs text-cream-dim">{rec.uom}</span>
+                    </p>
                   </div>
-                  <p className="text-xs text-cream-dim">{rec.reason}</p>
+                  <div className="space-y-1.5">
+                    <Bar
+                      label={`現有 ${rec.need.onHand}，需要 ${required}`}
+                      max={required}
+                      segments={[
+                        { value: have, tone: "accent" },
+                        { value: required - have, tone: "warn" },
+                      ]}
+                    />
+                    <Legend
+                      items={[
+                        { tone: "accent", label: <>現有 <b>{rec.need.onHand}</b></> },
+                        { tone: "warn", label: <>缺 <b>{Math.max(0, required - rec.need.onHand)}</b></> },
+                      ]}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    <Stat icon="lock">鎖定 {rec.need.locked}</Stat>
+                    <Stat icon="calendar">排課 {rec.need.demand}</Stat>
+                    <Stat icon="leaf">損耗 {rec.need.wastagePct}%</Stat>
+                    <Stat icon="shield">安全量 {rec.need.safety}</Stat>
+                  </div>
                 </div>
                 <div className="flex items-center justify-end">
                   <button
@@ -349,7 +403,8 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
                   </button>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         ) : (
           <p className="text-sm text-cream-dim">目前 20 家據點材料皆充足，沒有需要調撥或補貨的項目。</p>
@@ -362,13 +417,20 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
       {/* 漸進式揭露（1）：課程 BOM 與報名預扣鎖定明細（預設顯示精簡卡片，配方表單按需展開） */}
       <details className="glass p-5" open>
         <summary className="cursor-pointer select-none text-sm font-medium">
-          課程 BOM 與報名材料包預扣鎖定（{evaluated.length} 門課 · 已自動鎖定 {totalLockedStudents} 人份材料包）
+          課程 BOM 與報名材料包
+          <span className="ml-2 text-xs font-normal text-cream-dim">
+            {evaluated.length} 門課 · 已鎖 {totalLockedStudents} 人份
+          </span>
         </summary>
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-cream-dim">
-              CRM 預約進單即自動依 BOM 預先鎖定材料包，直接告訴你每門課「還能再收幾位學員」與「卡在哪項材料」。
-            </p>
+            <div className="viz-flow">
+              <span><Icon name="users" />報名</span>
+              <Icon name="arrow" />
+              <span><Icon name="lock" />依 BOM 鎖材料包</span>
+              <Icon name="arrow" />
+              <span><Icon name="check" />算出還能收幾位</span>
+            </div>
             <button
               type="button"
               onClick={() => setOpenForm((v) => !v)}
@@ -512,7 +574,7 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
               const shortLines = bom.lines.filter((l) => l.shortageForTarget > 0);
               return (
                 <article key={bom.courseCode} className="glass-chip flex flex-col justify-between gap-3 p-4 text-sm">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <p className="font-medium">{bom.courseName}</p>
                       {bom.readyForTarget ? (
@@ -521,15 +583,51 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
                         <Badge tone="warn">缺 {bom.targetSeats - bom.maxSeats} 人份</Badge>
                       )}
                     </div>
-                    <p className="text-xs text-cream-dim">
-                      已報名鎖定 {bom.bookedSeats} 人 ／ 目標 {bom.targetSeats} 人
-                    </p>
-                    <ul className="space-y-1 text-xs text-cream-dim">
-                      {bom.lines.map((line) => (
-                        <li key={line.sku}>
-                          · {line.name}：現有 {line.onHand}（鎖定 {line.lockedQty}、可用 {line.availableQty}）
-                        </li>
-                      ))}
+                    <div className="space-y-1.5">
+                      <Bar
+                        className="viz-bar-lg"
+                        label={`目標 ${bom.targetSeats} 人：已報名 ${bom.bookedSeats}、還能收 ${bom.remainingSeats}、缺 ${Math.max(0, bom.targetSeats - Math.max(bom.maxSeats, bom.bookedSeats))}`}
+                        max={bom.targetSeats}
+                        segments={[
+                          { value: bom.bookedSeats, tone: "accent" },
+                          { value: bom.remainingSeats, tone: "ok" },
+                          { value: Math.max(0, bom.targetSeats - Math.max(bom.maxSeats, bom.bookedSeats)), tone: "warn" },
+                        ]}
+                      />
+                      <Legend
+                        items={[
+                          { tone: "accent", label: <>已報名 <b>{bom.bookedSeats}</b></> },
+                          { tone: "ok", label: <>還能收 <b>{bom.remainingSeats}</b></> },
+                          { tone: "warn", label: <>缺 <b>{Math.max(0, bom.targetSeats - Math.max(bom.maxSeats, bom.bookedSeats))}</b></> },
+                        ]}
+                      />
+                    </div>
+                    <ul className="space-y-2">
+                      {bom.lines.map((line) => {
+                        const need = bom.targetSeats * line.qtyPerStudent;
+                        return (
+                          <li key={line.sku} className="space-y-1">
+                            <p className="flex items-center justify-between gap-2 text-xs">
+                              <span className="flex min-w-0 items-center gap-1.5">
+                                <Icon name="box" className="text-cream-dim" />
+                                <span className="truncate">{line.name}</span>
+                              </span>
+                              <span className="shrink-0 tabular-nums text-cream-dim">
+                                {line.onHand}/{need}
+                              </span>
+                            </p>
+                            <Bar
+                              label={`${line.name}：現有 ${line.onHand}，開滿需要 ${need}，已鎖定 ${line.lockedQty}`}
+                              max={need}
+                              segments={[
+                                { value: Math.min(line.lockedQty, line.onHand), tone: "accent" },
+                                { value: Math.min(line.availableQty, Math.max(0, need - line.lockedQty)), tone: "ok" },
+                                { value: line.shortageForTarget, tone: "warn" },
+                              ]}
+                            />
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
 
@@ -577,34 +675,67 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
       {/* 漸進式揭露（2）：退改課 × 虛實履約自動拆算（點開即看每筆學員退費明細） */}
       <details className="glass p-5">
         <summary className="cursor-pointer select-none text-sm font-medium">
-          課程退改課 × 虛實履約自動拆算（{enrollments.length} 筆報名單 · 自動區分已拆封材料費與未上堂數學費）
+          退改課自動拆算
+          <span className="ml-2 text-xs font-normal text-cream-dim">
+            {enrollments.length} 筆 · 課程費與材料費分開算
+          </span>
         </summary>
         <div className="mt-4 space-y-3">
-          <p className="text-xs text-cream-dim">
-            不用人工查點名表或爭執材料包能不能退：系統自動依「課程堂數（虛擬履約）」與「材料包狀態（實體履約）」算出應退金額。
-          </p>
+          <Legend
+            items={[
+              { tone: "muted", label: "已上課" },
+              { tone: "warn", label: "材料已領用・不退" },
+              { tone: "accent", label: "可退" },
+            ]}
+          />
           <ul className="space-y-2.5">
             {enrollments.map((order) => {
               const split = splitCourseFulfillment(order);
+              const total = order.tuitionAmount + order.materialPackAmount;
+              const nt = (n: number) => `NT$${n.toLocaleString("zh-TW")}`;
               return (
-                <li key={order.orderNo} className="glass-chip space-y-2 p-4 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <span className="font-medium">{order.studentName}</span>
-                      <span className="ml-2 text-xs text-cream-dim">
-                        {order.branchName} · {order.channel} · {order.courseName}
-                      </span>
+                <li key={order.orderNo} className="glass-chip space-y-3 p-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <Avatar name={order.studentName} />
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{order.studentName.replace(/（.*）/, "")}</p>
+                        <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                          <Stat icon={CHANNEL_ICON[order.channel]}>{order.channel}</Stat>
+                          <Stat icon="store">{order.branchName.replace("教室", "")}</Stat>
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <Badge tone="ok">
-                        已上 {order.attendedSessions}/{order.totalSessions} 堂
-                      </Badge>
-                      <Badge tone={order.materialStage === "locked" ? "ok" : "warn"}>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="flex items-center gap-1.5 text-cream-dim">
+                        <Dots done={order.attendedSessions} total={order.totalSessions} label={`已上 ${order.attendedSessions}/${order.totalSessions} 堂`} />
+                        {order.attendedSessions}/{order.totalSessions} 堂
+                      </span>
+                      <Badge tone={order.materialStage === "locked" || order.materialStage === "returned" ? "ok" : "warn"}>
                         {MATERIAL_STAGE_LABEL[order.materialStage]}
                       </Badge>
                     </div>
                   </div>
-                  <p className="text-xs text-cream-dim">{split.summary}</p>
+                  <div className="space-y-1.5">
+                    <Bar
+                      className="viz-bar-lg"
+                      label={split.summary}
+                      max={total}
+                      segments={[
+                        { value: split.earnedTuition, tone: "muted" },
+                        { value: split.nonRefundableMaterial, tone: "warn" },
+                        { value: split.refundableAmount, tone: "accent" },
+                      ]}
+                    />
+                    <p className="flex flex-wrap items-baseline justify-between gap-2 text-xs text-cream-dim">
+                      <span className="tabular-nums">
+                        {order.courseName} · 共 {nt(total)}
+                      </span>
+                      <span>
+                        可退 <span className="text-base font-semibold text-cream tabular-nums">{nt(split.refundableAmount)}</span>
+                      </span>
+                    </p>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {order.materialStage === "locked" ? (
                       <button
@@ -649,7 +780,8 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
       {/* 漸進式揭露（3）：總部 20 店跨據點庫存水位總表與手動耗損登記 */}
       <details className="glass p-5">
         <summary className="cursor-pointer select-none text-sm font-medium">
-          總部 20 店跨據點材料水位總表 ＆ 手動耗用／損耗登記（北中南各分店即時同步）
+          20 店材料水位 ＆ 耗用／損耗登記
+          <span className="ml-2 text-xs font-normal text-cream-dim">北・中・南</span>
         </summary>
         <div className="mt-4 space-y-4">
           <div className="sm:overflow-x-auto">
@@ -679,7 +811,19 @@ export function CourseBomBoard({ initialBoms, stock, live, deskUrl, onRequestSho
                       </td>
                       <td data-label="材料名稱">{row.materialName}</td>
                       <td data-label="現有" className={short ? "font-medium text-warn" : ""}>
-                        {row.onHand} {row.uom}
+                        <span className="flex items-center gap-2">
+                          <Bar
+                            className="w-16"
+                            label={`現有 ${row.onHand}，已鎖定 ${row.locked}，鎖定＋排課＋安全量共需 ${row.locked + row.upcomingDemand + row.safety}`}
+                            max={Math.max(row.onHand, row.locked + row.upcomingDemand + row.safety)}
+                            marker={row.locked + row.upcomingDemand + row.safety}
+                            segments={[
+                              { value: Math.min(row.locked, row.onHand), tone: "accent" },
+                              { value: Math.max(0, row.onHand - row.locked), tone: short ? "warn" : "ok" },
+                            ]}
+                          />
+                          {row.onHand} {row.uom}
+                        </span>
                       </td>
                       <td data-label="已鎖定">
                         {row.locked} {row.uom}
