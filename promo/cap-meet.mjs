@@ -64,8 +64,21 @@ async function capture(name, path, open, focus) {
   return { height, rects };
 }
 
+const CARD = "main .glass, main details";
+const focus = (map) => Object.fromEntries(Object.entries(map).map(([k, text]) => [k, { sel: CARD, text }]));
 const meta = {};
-meta.stock = await capture("stock", "/workspace/erp/stock", ["課程 BOM 與報名材料包", "耗用／損耗登記"], JSON.parse(process.env.STOCK_FOCUS ?? "{}"));
-meta.hr = await capture("hr", "/workspace/hr", ["主管覆核與異常留痕", "師資技能標籤"], JSON.parse(process.env.HR_FOCUS ?? "{}"));
+meta.chat = await capture("chat", "/workspace/chat", ["預約連結"], focus({ a: "等最久", b: "預約連結" }));
+meta.stock = await capture(
+  "stock",
+  "/workspace/erp/stock",
+  ["課程 BOM 與報名材料包", "耗用／損耗登記", "退改課自動拆算"],
+  focus({ a: "課程 BOM 與報名材料包", b: "耗用／損耗登記", c: "AI 備料與跨店調撥", r: "退改課自動拆算" }),
+);
+meta.hr = await capture(
+  "hr",
+  "/workspace/hr",
+  ["主管覆核與異常留痕"],
+  focus({ a: "AI 師資媒合與排班建議", b: "近期師資班表與請假代課檢查", c: "主管覆核與異常留痕紀錄" }),
+);
 fs.writeFileSync(`${out}/meta.json`, JSON.stringify(meta, null, 2));
 await browser.close();

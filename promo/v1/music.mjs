@@ -1,7 +1,7 @@
 import { synth } from "../synth.mjs";
 
 // Warm, kid-friendly: ukulele strums, bells, claps. Tension (A minor, sparse) under each pain, bright C major under each answer.
-const DUR = 45;
+const DUR = 64;
 const s = synth(DUR);
 const B = 60 / 108;
 const MAJ = [
@@ -61,30 +61,21 @@ function tense(t0, t1) {
 bright(0, 4.5, { drums: false });
 s.bell(0.3, 84, 0.08);
 s.bell(0.9, 88, 0.07);
-// 4.5–12 pain 1
-tense(4.5, 12.2);
-[5.2, 5.45, 5.7, 5.95, 6.2].forEach((t) => s.pop(t, 0.12, 420));
-[6.6, 6.75, 6.9, 7.05].forEach((t) => s.blip(t, 300, 0.1));
-[8, 8.7, 9.4].forEach((t) => s.pop(t, 0.1, 300));
-s.riser(10.6, 1.6, 0.1);
-// 12.2 resolve: confetti
-s.boom(12.4, 0.45);
-[0, 1, 2, 3, 4].forEach((i) => s.bell(12.4 + i * 0.09, [72, 76, 79, 84, 88][i], 0.07, i % 2 ? 0.4 : -0.4));
-bright(12.4, 23);
-[14.4, 15.4, 16.4].forEach((t) => s.pop(t, 0.08, 700));
-s.whoosh(18.4, 0.5, 0.1);
-// 23–31 pain 2
-tense(23, 31);
-[23.6, 23.8, 24, 24.2, 24.4, 24.6].forEach((t) => s.pop(t, 0.1, 380));
-[26.4, 27.1, 27.8].forEach((t) => s.pop(t, 0.1, 300));
-s.riser(29.6, 1.6, 0.1);
-// 31.2 resolve
-s.boom(31.3, 0.45);
-[0, 1, 2, 3, 4].forEach((i) => s.bell(31.3 + i * 0.09, [72, 76, 79, 84, 88][i], 0.07, i % 2 ? 0.4 : -0.4));
-bright(31.3, 41);
-[33, 34, 35].forEach((t) => s.pop(t, 0.08, 700));
-// 41–45 close: ring out on C
-s.pad(41, [48, 55, 60, 64, 67], 2.6, 0.04, 0.1, 1.4);
-strum(41, [60, 64, 67, 72], 0.16);
-[0, 0.3, 0.6, 0.9].forEach((d, i) => s.bell(41.6 + d, [76, 79, 84, 88][i], 0.06, i % 2 ? 0.3 : -0.3));
+
+// Three blocks (預約、材料、師資), 18.5 s each: pain, resolve at +7.9, answer with three zooms.
+for (const B0 of [4.5, 23, 41.5]) {
+  tense(B0, B0 + 7.7);
+  [0.7, 0.95, 1.2, 1.45, 1.7, 1.95].forEach((d) => s.pop(B0 + d, 0.11, 400));
+  [3.5, 4.2, 4.9].forEach((d) => s.pop(B0 + d, 0.1, 300));
+  s.riser(B0 + 6.1, 1.6, 0.1);
+  s.boom(B0 + 7.9, 0.45);
+  [0, 1, 2, 3, 4].forEach((i) => s.bell(B0 + 7.9 + i * 0.09, [72, 76, 79, 84, 88][i], 0.07, i % 2 ? 0.4 : -0.4));
+  bright(B0 + 7.9, B0 + 18.5);
+  [11, 13.7, 15.9].forEach((d) => s.pop(B0 + d, 0.08, 700));
+}
+
+// 60–64 close: ring out on C
+s.pad(60, [48, 55, 60, 64, 67], 2.6, 0.04, 0.1, 1.4);
+strum(60, [60, 64, 67, 72], 0.16);
+[0, 0.3, 0.6, 0.9].forEach((d, i) => s.bell(60.6 + d, [76, 79, 84, 88][i], 0.06, i % 2 ? 0.3 : -0.3));
 s.write("/tmp/promo/v1/music.wav", 1.6);

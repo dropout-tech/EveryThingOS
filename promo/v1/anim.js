@@ -95,7 +95,8 @@ for (let i = 0; i < 20; i++) {
 }
 
 const burstGeo = [geos.sparkle, geos.flower, geos.dot];
-const bursts = [12.6, 31.4].map((t0) => {
+const BLOCKS = [4.5, 23, 41.5], CLOSE = 60;
+const bursts = BLOCKS.map((b) => b + 8.1).map((t0) => {
   const parts = [];
   for (let i = 0; i < 44; i++) {
     const m = new THREE.Mesh(burstGeo[i % 3], mat([C.yellow, C.teal, C.navy, C.dog][i % 4]));
@@ -147,72 +148,107 @@ const cardEls = CARDS.map(([k, v], i) => {
   $("cards").appendChild(c);
   return { c, x: [140, 520, 980, 1380, 300, 1180][i], y: [400, 500, 405, 515, 590, 600][i], r: [-9, 6, -4, 10, 7, -7][i] };
 });
-const facts1 = [...$("facts1").children], facts2 = [...$("facts2").children];
-const b1 = [...document.querySelectorAll("#s1 .bullet")], b2 = [...document.querySelectorAll("#s2 .bullet")];
+const BUBBLES = [
+  ["LINE", "週六還有位嗎？"], ["電話", "幫我記一位"], ["門市", "紙本登記"],
+  ["官網", "表單報名"], ["IG", "可以改期嗎？"], ["退課", "材料費退不退？"],
+];
+const bubbleEls = BUBBLES.map(([k, v], i) => {
+  const c = document.createElement("div");
+  c.className = `bubble${i % 2 ? " r" : ""}`;
+  c.innerHTML = `<small><i></i>${k}</small>${v}`;
+  $("bubbles").appendChild(c);
+  return { c, x: [130, 560, 1010, 1420, 330, 1200][i], y: [430, 505, 425, 515, 610, 615][i], r: [-6, 5, -3, 7, 4, -5][i] };
+});
+const facts0 = [...$("facts0").children], facts1 = [...$("facts1").children], facts2 = [...$("facts2").children];
+const bulletsOf = (id) => [...document.querySelectorAll(`#${id} .bullet`)];
 
 // Each window is a real practice-mode page: a viewport shot (rail + top bar) with the full-height page scrolled under it.
+// A step can switch to another page; the window dips out and back in on the switch.
 const S0 = 970 / 1100, VW = 970, VH = 608, SW = 1100, SH = 690;
-function makeShot(id, name, steps) {
+function makeShot(id, steps) {
   const el = $(id);
-  return { el, name, steps, frame: el.querySelector(".frame"), tall: el.querySelector(".tall"), ring: el.querySelector(".ring"), screen: el.querySelector(".screen"), title: el.querySelector("em"), meta: null };
+  const view = el.querySelector(".view");
+  const screens = {};
+  for (const page of new Set(steps.map((s) => s.page))) {
+    const sc = document.createElement("div");
+    sc.className = "screen";
+    sc.innerHTML = `<img class="frame" /><div class="clip"><img class="tall" /><div class="ring"></div></div>`;
+    view.appendChild(sc);
+    screens[page] = { el: sc, frame: sc.querySelector(".frame"), tall: sc.querySelector(".tall"), ring: sc.querySelector(".ring"), meta: null };
+  }
+  return { el, steps, screens, title: el.querySelector("em") };
 }
 const shots = [
-  makeShot("shot1", "stock", [
-    { t: 15.5, key: "a", title: "倉庫｜報名即鎖定材料包", fit: { w: 560, h: 380 } },
-    { t: 18.2, key: "b", title: "倉庫｜耗用與損耗都有紀錄", fit: { w: 780, h: 330 } },
-    { t: 20.4, key: "c", title: "倉庫｜AI 跨店調撥建議", fit: { w: 780, h: 420 } },
+  makeShot("shot0", [
+    { t: 11, page: "chat", key: "a", title: "對話｜LINE、IG、FB 同一個收件匣" },
+    { t: 13.7, page: "chat", key: "b", title: "預約｜四個管道，同一個預約頁" },
+    { t: 15.9, page: "stock", key: "r", title: "退改課｜學費與材料費自動拆算" },
   ]),
-  makeShot("shot2", "hr", [
-    { t: 33.8, key: "a", title: "人事｜AI 師資媒合", fit: { w: 780, h: 340 } },
-    { t: 36.2, key: "b", title: "人事｜請假自動找代課", fit: { w: 780, h: 220 } },
-    { t: 38.4, key: "c", title: "人事｜主管覆核全程留痕", fit: { w: 780, h: 320 } },
+  makeShot("shot1", [
+    { t: 11, page: "stock", key: "a", title: "倉庫｜報名即鎖定材料包" },
+    { t: 13.7, page: "stock", key: "b", title: "倉庫｜耗用與損耗都有紀錄" },
+    { t: 15.9, page: "stock", key: "c", title: "倉庫｜AI 跨店調撥建議" },
+  ]),
+  makeShot("shot2", [
+    { t: 11, page: "hr", key: "a", title: "人事｜AI 師資媒合" },
+    { t: 13.7, page: "hr", key: "b", title: "人事｜請假自動找代課" },
+    { t: 15.9, page: "hr", key: "c", title: "人事｜主管覆核全程留痕" },
   ]),
 ];
 const OVERVIEW = { scroll: 0, z: 1, fx: SW / 2, fy: SH / 2 };
-function focusState(shot, step) {
-  const r = shot.meta.rects[step.key];
-  const scroll = clamp(r.y - 56 - 28, 0, shot.meta.height - SH);
-  const z = clamp(Math.min(SW / (step.fit.w + 40), SH / (step.fit.h + 40)), 1, 1.85);
-  return { scroll, z, fx: r.x + step.fit.w / 2, fy: r.y - scroll + step.fit.h / 2 };
+function focusState(screen, step) {
+  const r = screen.meta.rects[step.key];
+  const fit = { w: Math.min(r.w, 780), h: Math.min(r.h, 420) };
+  const scroll = clamp(r.y - 56 - 28, 0, screen.meta.height - SH);
+  const z = clamp(Math.min(SW / (fit.w + 40), SH / (fit.h + 40)), 1, 1.85);
+  return { scroll, z, fx: r.x + fit.w / 2, fy: r.y - scroll + fit.h / 2 };
 }
-function camAt(shot, t) {
-  let state = OVERVIEW, active = -1;
+function camAt(shot, L) {
+  let state = OVERVIEW, active = -1, page = shot.steps[0].page, fade = 1;
   shot.steps.forEach((step, i) => {
-    const k = easeInOut(span(t, step.t, step.t + 0.95));
+    if (step.page !== page && L >= step.t - 0.3) {
+      fade = Math.min(fade, Math.abs(L - step.t) / 0.3);
+      if (L < step.t) return;
+      page = step.page;
+      state = OVERVIEW;
+    }
+    const k = easeInOut(span(L, step.t, step.t + 0.95));
     if (k <= 0) return;
-    const next = focusState(shot, step);
+    const next = focusState(shot.screens[page], step);
     state = { scroll: lerp(state.scroll, next.scroll, k), z: lerp(state.z, next.z, k), fx: lerp(state.fx, next.fx, k), fy: lerp(state.fy, next.fy, k) };
     active = i;
   });
-  return { state, active };
+  return { state, active, page, fade: clamp(fade) };
 }
-function drawShot(shot, t) {
-  const { state, active } = camAt(shot, t);
+function drawShot(shot, L) {
+  const { state, active, page, fade } = camAt(shot, L);
+  for (const [name, sc] of Object.entries(shot.screens)) sc.el.style.display = name === page ? "block" : "none";
+  const screen = shot.screens[page];
   const sc = S0 * state.z;
   const tx = clamp(VW / 2 - sc * state.fx, VW - sc * SW, 0);
   const ty = clamp(VH / 2 - sc * state.fy, VH - sc * SH, 0);
-  shot.screen.style.transform = `translate(${tx}px, ${ty}px) scale(${sc})`;
-  shot.tall.style.top = `${-56 - state.scroll}px`;
+  screen.el.style.transform = `translate(${tx}px, ${ty}px) scale(${sc})`;
+  screen.el.style.opacity = fade;
+  screen.tall.style.top = `${-56 - state.scroll}px`;
   shot.title.textContent = active < 0 ? "EveryThingOS　練習帳實機畫面" : shot.steps[active].title;
   if (active < 0) {
-    shot.ring.style.opacity = 0;
+    screen.ring.style.opacity = 0;
   } else {
     const step = shot.steps[active];
-    const r = shot.meta.rects[step.key];
-    shot.ring.style.left = `${r.x - 240 - 6}px`;
-    shot.ring.style.top = `${r.y - state.scroll - 56 - 6}px`;
-    shot.ring.style.width = `${r.w + 12}px`;
-    shot.ring.style.height = `${r.h + 12}px`;
-    shot.ring.style.opacity = easeOut(span(t, step.t + 0.7, step.t + 1.1));
+    const r = screen.meta.rects[step.key];
+    screen.ring.style.left = `${r.x - 240 - 6}px`;
+    screen.ring.style.top = `${r.y - state.scroll - 56 - 6}px`;
+    screen.ring.style.width = `${r.w + 12}px`;
+    screen.ring.style.height = `${Math.min(r.h, SH) + 12}px`;
+    screen.ring.style.opacity = easeOut(span(L, step.t + 0.7, step.t + 1.1));
   }
-  return active;
 }
-function drawBullets(list, shot, t) {
-  const active = camAt(shot, t).active;
+function drawBullets(list, shot, L) {
+  const active = camAt(shot, L).active;
   list.forEach((b, i) => {
     const t0 = shot.steps[i].t - 0.1;
-    show(b, easeOut(span(t, t0, t0 + 0.6)), (1 - easeOut(span(t, t0, t0 + 0.6))) * 30);
-    b.classList.toggle("dim", active >= 0 && i !== active && t > t0 + 0.6);
+    show(b, easeOut(span(L, t0, t0 + 0.6)), (1 - easeOut(span(L, t0, t0 + 0.6))) * 30);
+    b.classList.toggle("dim", active >= 0 && i !== active && L > t0 + 0.6);
   });
 }
 
@@ -225,18 +261,53 @@ window.ready = (async () => {
   await document.fonts.load('40px "jf open 粉圓 2.1"');
   const meta = await (await fetch("/promo/v3/meta.json")).json();
   for (const shot of shots) {
-    shot.meta = meta[shot.name];
-    shot.frame.src = `/promo/v3/${shot.name}-frame.png`;
-    shot.tall.src = `/promo/v3/${shot.name}-tall.png`;
+    for (const [name, sc] of Object.entries(shot.screens)) {
+      sc.meta = meta[name];
+      sc.frame.src = `/promo/v3/${name}-frame.png`;
+      sc.tall.src = `/promo/v3/${name}-tall.png`;
+    }
   }
   await Promise.all([...document.images].map((i) => (i.complete && i.naturalWidth ? null : new Promise((r) => (i.onload = r)))));
   await document.fonts.ready;
   return true;
 })();
 
+function kicker(layer, fixed, before, after) {
+  const k = $(layer).querySelector(".kicker");
+  k.textContent = fixed ? after : before;
+  k.className = fixed ? "kicker teal" : "kicker";
+}
+
+// Solution layer for block b (local time L from the block start): window slides in, three zooms.
+function solution(i, L) {
+  const o = span(L, 9.4, 9.9) * (1 - span(L, 18.1, 18.6));
+  $(`s${i}`).style.opacity = o;
+  drawBullets(bulletsOf(`s${i}`), shots[i], L);
+  const sh = easeOut(span(L, 9.9, 10.8));
+  $(`shot${i}`).style.transform = `translateX(${(1 - sh) * 220}px) rotate(${(1 - sh) * 3}deg)`;
+  $(`shot${i}`).style.opacity = sh;
+  if (o > 0) drawShot(shots[i], L);
+}
+
+// Scattered pieces that wobble during the pain and line up at the fix (bubbles for 預約, cards for 師資).
+function scatter(items, L, rowY) {
+  const tidy = easeInOut(span(L, 8, 9));
+  items.forEach((c, i) => {
+    const inn = back(span(L, 0.6 + i * 0.2, 1.2 + i * 0.2));
+    const chaos = (1 - tidy) * (0.4 + span(L, 2, 3) * 0.6);
+    const x = lerp(c.x + Math.sin(L * 1.7 + i) * 26 * chaos, 120 + i * 285, tidy);
+    const y = lerp(c.y + Math.cos(L * 1.3 + i * 2) * 22 * chaos, rowY, tidy);
+    const r = lerp(c.r + Math.sin(L * 2.1 + i) * 4 * chaos, 0, tidy);
+    c.c.style.opacity = span(L, 0.6 + i * 0.2, 0.9 + i * 0.2);
+    c.c.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${inn * lerp(1, 0.86, tidy)})`;
+    c.c.style.borderColor = tidy > 0.5 ? "#1cb3bb" : "#123f59";
+  });
+}
+const factsIn = (list, L) => list.forEach((f, i) => show(f, easeOut(span(L, 3.4 + i * 0.7, 4 + i * 0.7)) * (1 - span(L, 7.6, 8)), (1 - easeOut(span(L, 3.4 + i * 0.7, 4 + i * 0.7))) * 40));
+
 window.renderAt = (t) => {
-  // background shapes: restless during the two pains, settled during the answers
-  const pain = Math.max(span(t, 4.5, 5.5) * (1 - span(t, 12, 13)), span(t, 23, 24) * (1 - span(t, 31, 32)));
+  // background shapes: restless during each pain, settled during the answers
+  const pain = Math.max(...BLOCKS.map((b) => span(t - b, 0, 1) * (1 - span(t - b, 7.5, 8.5))));
   for (const d of decor) {
     const wob = Math.sin(t * d.sp * 2 + d.ph);
     const jit = pain * Math.sin(t * 13 + d.ph * 3) * 0.12;
@@ -252,7 +323,7 @@ window.renderAt = (t) => {
       p.m.rotation.set(p.spin * dt, p.spin * dt * 0.7, p.spin * dt * 0.5);
     }
   }
-  camera.position.set(Math.sin(t * 0.18) * 0.8, Math.cos(t * 0.14) * 0.4, 20 - span(t, 0, 45) * 1.2);
+  camera.position.set(Math.sin(t * 0.18) * 0.8, Math.cos(t * 0.14) * 0.4, 20 - span(t, 0, CLOSE + 4) * 1.2);
   camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
 
@@ -263,81 +334,66 @@ window.renderAt = (t) => {
   $("title").querySelector("h1").style.transform = `translateY(${(1 - easeOut(span(t, 0.8, 1.7))) * 40}px)`;
   $("title").querySelector("h1").style.opacity = easeOut(span(t, 0.8, 1.7));
   $("title").querySelector("p").style.opacity = easeOut(span(t, 1.6, 2.4));
-  $("footer").style.opacity = span(t, 4.5, 5.2) * (1 - span(t, 40.6, 41.2));
+  $("footer").style.opacity = span(t, 4.5, 5.2) * (1 - span(t, CLOSE - 0.4, CLOSE + 0.2));
 
-  // pain 1: 4.5–12, reconnect 12–14
-  const p1 = span(t, 4.5, 5.0) * (1 - span(t, 13.6, 14.1));
-  $("p1").style.opacity = p1;
-  const k1 = $("p1").querySelector(".kicker");
-  const fixed = t >= 12.2;
-  k1.textContent = fixed ? "接起來｜同一張課程 BOM" : "卡關點 1｜材料履約";
-  k1.className = fixed ? "kicker teal" : "kicker";
-  $("p1").querySelector("h2").style.opacity = easeOut(span(t, 4.8, 5.6));
-  nodes.forEach((n, i) => {
-    const x = back(span(t, 5.2 + i * 0.25, 5.8 + i * 0.25));
-    n.style.opacity = span(t, 5.2 + i * 0.25, 5.5 + i * 0.25);
-    n.style.transform = `scale(${0.4 + 0.6 * x})`;
-    n.style.borderColor = fixed ? "#1cb3bb" : "#123f59";
-  });
-  links.forEach((l, i) => {
-    const heal = easeInOut(span(t, 12.3 + i * 0.22, 12.6 + i * 0.22));
-    l.style.background = heal > 0 ? `linear-gradient(90deg, #1cb3bb ${heal * 100}%, transparent ${heal * 100}%), repeating-linear-gradient(90deg, rgba(18,63,89,0.35) 0 14px, transparent 14px 26px)` : "repeating-linear-gradient(90deg, rgba(18,63,89,0.35) 0 14px, transparent 14px 26px)";
-    l.style.opacity = span(t, 6.4, 6.8);
-  });
-  breaks.forEach((b, i) => {
-    const pop = back(span(t, 6.6 + i * 0.15, 7.1 + i * 0.15));
-    const gone = span(t, 12.1 + i * 0.22, 12.4 + i * 0.22);
-    b.style.opacity = span(t, 6.6 + i * 0.15, 6.8 + i * 0.15) * (1 - gone);
-    b.style.transform = `scale(${pop * (1 + gone * 0.8)}) rotate(${Math.sin(t * 6 + i) * 10}deg)`;
-  });
-  const run = span(t, 12.6, 13.6);
-  runner.style.opacity = run > 0 && run < 1 ? 1 : 0;
-  runner.style.left = `${lerp(110, 1680 - 140, easeInOut(run))}px`;
-  facts1.forEach((f, i) => show(f, easeOut(span(t, 8 + i * 0.7, 8.6 + i * 0.7)) * (1 - span(t, 11.8, 12.2)), (1 - easeOut(span(t, 8 + i * 0.7, 8.6 + i * 0.7))) * 40));
+  // block 1: 預約與退改課
+  {
+    const L = t - BLOCKS[0];
+    $("p0").style.opacity = span(L, 0, 0.5) * (1 - span(L, 9.1, 9.6));
+    $("p0").querySelector("h2").style.opacity = easeOut(span(L, 0.3, 1.1));
+    kicker("p0", L >= 7.9, "卡關點 1｜預約與退改課", "接起來｜同一個預約入口");
+    scatter(bubbleEls, L, 520);
+    factsIn(facts0, L);
+    solution(0, L);
+  }
 
-  // solution 1: 14–23
-  const s1 = span(t, 13.9, 14.4) * (1 - span(t, 22.6, 23.1));
-  $("s1").style.opacity = s1;
-  drawBullets(b1, shots[0], t);
-  const sh1 = easeOut(span(t, 14.4, 15.3));
-  $("shot1").style.transform = `translateX(${(1 - sh1) * 220}px) rotate(${(1 - sh1) * 3}deg)`;
-  $("shot1").style.opacity = sh1;
-  if (s1 > 0) drawShot(shots[0], t);
+  // block 2: 材料履約 (five broken links that heal)
+  {
+    const L = t - BLOCKS[1];
+    $("p1").style.opacity = span(L, 0, 0.5) * (1 - span(L, 9.1, 9.6));
+    $("p1").querySelector("h2").style.opacity = easeOut(span(L, 0.3, 1.1));
+    const fixed = L >= 7.7;
+    kicker("p1", fixed, "卡關點 2｜材料履約", "接起來｜同一張課程 BOM");
+    nodes.forEach((n, i) => {
+      const x = back(span(L, 0.7 + i * 0.25, 1.3 + i * 0.25));
+      n.style.opacity = span(L, 0.7 + i * 0.25, 1 + i * 0.25);
+      n.style.transform = `scale(${0.4 + 0.6 * x})`;
+      n.style.borderColor = fixed ? "#1cb3bb" : "#123f59";
+    });
+    links.forEach((l, i) => {
+      const heal = easeInOut(span(L, 7.8 + i * 0.22, 8.1 + i * 0.22));
+      l.style.background = heal > 0 ? `linear-gradient(90deg, #1cb3bb ${heal * 100}%, transparent ${heal * 100}%), repeating-linear-gradient(90deg, rgba(18,63,89,0.35) 0 14px, transparent 14px 26px)` : "repeating-linear-gradient(90deg, rgba(18,63,89,0.35) 0 14px, transparent 14px 26px)";
+      l.style.opacity = span(L, 1.9, 2.3);
+    });
+    breaks.forEach((b, i) => {
+      const pop = back(span(L, 2.1 + i * 0.15, 2.6 + i * 0.15));
+      const gone = span(L, 7.6 + i * 0.22, 7.9 + i * 0.22);
+      b.style.opacity = span(L, 2.1 + i * 0.15, 2.3 + i * 0.15) * (1 - gone);
+      b.style.transform = `scale(${pop * (1 + gone * 0.8)}) rotate(${Math.sin(t * 6 + i) * 10}deg)`;
+    });
+    const run = span(L, 8.1, 9.1);
+    runner.style.opacity = run > 0 && run < 1 ? 1 : 0;
+    runner.style.left = `${lerp(110, 1680 - 140, easeInOut(run))}px`;
+    factsIn(facts1, L);
+    solution(1, L);
+  }
 
-  // pain 2: 23–31, organise 31–32.5
-  const p2 = span(t, 23, 23.5) * (1 - span(t, 32.3, 32.8));
-  $("p2").style.opacity = p2;
-  $("p2").querySelector("h2").style.opacity = easeOut(span(t, 23.3, 24.1));
-  const k2 = $("p2").querySelector(".kicker");
-  const tidy = easeInOut(span(t, 31, 32));
-  k2.textContent = t >= 31 ? "整理好｜同一份師資檔案" : "卡關點 2｜師資排班";
-  k2.className = t >= 31 ? "kicker teal" : "kicker";
-  cardEls.forEach((c, i) => {
-    const inn = back(span(t, 23.6 + i * 0.2, 24.2 + i * 0.2));
-    const chaos = (1 - tidy) * (0.4 + span(t, 25, 26) * 0.6);
-    const x = lerp(c.x + Math.sin(t * 1.7 + i) * 26 * chaos, 120 + i * 285, tidy);
-    const y = lerp(c.y + Math.cos(t * 1.3 + i * 2) * 22 * chaos, 500, tidy);
-    const r = lerp(c.r + Math.sin(t * 2.1 + i) * 4 * chaos, 0, tidy);
-    c.c.style.opacity = span(t, 23.6 + i * 0.2, 23.9 + i * 0.2);
-    c.c.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg) scale(${inn * lerp(1, 0.86, tidy)})`;
-    c.c.style.borderColor = tidy > 0.5 ? "#1cb3bb" : "#123f59";
-  });
-  facts2.forEach((f, i) => show(f, easeOut(span(t, 26.4 + i * 0.7, 27 + i * 0.7)) * (1 - span(t, 30.6, 31)), (1 - easeOut(span(t, 26.4 + i * 0.7, 27 + i * 0.7))) * 40));
+  // block 3: 師資排班
+  {
+    const L = t - BLOCKS[2];
+    $("p2").style.opacity = span(L, 0, 0.5) * (1 - span(L, 9.1, 9.6));
+    $("p2").querySelector("h2").style.opacity = easeOut(span(L, 0.3, 1.1));
+    kicker("p2", L >= 7.9, "卡關點 3｜師資排班", "整理好｜同一份師資檔案");
+    scatter(cardEls, L, 500);
+    factsIn(facts2, L);
+    solution(2, L);
+  }
 
-  // solution 2: 32.5–41
-  const s2 = span(t, 32.4, 32.9) * (1 - span(t, 40.6, 41.1));
-  $("s2").style.opacity = s2;
-  drawBullets(b2, shots[1], t);
-  const sh2 = easeOut(span(t, 32.7, 33.6));
-  $("shot2").style.transform = `translateX(${(1 - sh2) * 220}px) rotate(${(1 - sh2) * 3}deg)`;
-  $("shot2").style.opacity = sh2;
-  if (s2 > 0) drawShot(shots[1], t);
-
-  // close: 41–45
-  const cl = easeOut(span(t, 41, 41.8));
-  $("close").style.opacity = cl * (1 - span(t, 44.4, 45));
+  // close
+  const cl = easeOut(span(t, CLOSE, CLOSE + 0.8));
+  $("close").style.opacity = cl * (1 - span(t, CLOSE + 3.4, CLOSE + 4));
   $("close").querySelector("h2").style.transform = `translateY(${(1 - cl) * 40}px)`;
-  $("close").querySelector("img").style.transform = `scale(${0.7 + 0.3 * back(span(t, 41.6, 42.4))})`;
-  $("close").querySelector("img").style.opacity = span(t, 41.6, 42);
-  $("close").querySelectorAll("p").forEach((p, i) => (p.style.opacity = easeOut(span(t, 42.3 + i * 0.3, 42.8 + i * 0.3))));
+  $("close").querySelector("img").style.transform = `scale(${0.7 + 0.3 * back(span(t, CLOSE + 0.6, CLOSE + 1.4))})`;
+  $("close").querySelector("img").style.opacity = span(t, CLOSE + 0.6, CLOSE + 1);
+  $("close").querySelectorAll("p").forEach((p, i) => (p.style.opacity = easeOut(span(t, CLOSE + 1.3 + i * 0.3, CLOSE + 1.8 + i * 0.3))));
 };

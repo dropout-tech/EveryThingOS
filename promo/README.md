@@ -4,7 +4,7 @@
 
 | 資料夾 | 影片 | 對象 | 識別 |
 | --- | --- | --- | --- |
-| `v1/` | 補助申請：米特才藝中心 AI 店務升級（45 秒） | 計畫審查、徐立文教 | 米特製造所（奶油底、海軍藍、青綠、黃） |
+| `v1/` | 補助申請：米特才藝中心 AI 店務升級（64 秒，三個卡關點：預約與退改課、材料、師資） | 計畫審查、徐立文教 | 米特製造所（奶油底、海軍藍、青綠、黃） |
 | `sales/` | EveryThingOS 介紹（43 秒） | 所有實體門店 | 琢奧科技（白底、海軍藍字、青綠、橘），結尾 dropout.tw |
 
 畫面裡的系統截圖都來自 `web/` 練習模式的真實頁面（教育產業包），截圖時不改任何樣式或文字。補助影片用的是產品裡「設定 → 外觀與店名」存下的設定：外觀選「米特製造所」（奶油底、海軍藍、青綠、jf open 粉圓字），店名填「米特才藝中心」；介紹影片用預設的 EveryThingOS 外觀。兩支影片都先給完整視窗，再推近到對應的卡片。影片只講已經做好的功能；LINE／IG／FB 要接店家自己的官方帳號與粉專。
@@ -22,11 +22,8 @@ curl -sL "https://static.wixstatic.com/media/f674f3_f7d0e44c96fb489b91b71db9f255
 cd web && npm run dev -- --port 3456   # 另開一個終端
 cd /tmp && node promo/sales/cap.mjs     # sales 用：預設外觀，每段截一個完整視窗並記下卡片座標到 /tmp/promo/v4
 # v1 用：店家設定為「米特製造所」外觀＋店名「米特才藝中心」，截視窗＋整頁長圖到 /tmp/promo/v3，並記下要推近的卡片座標
-S='main .glass, main details'
-STOCK_FOCUS="{\"a\":{\"sel\":\"$S\",\"text\":\"課程 BOM 與報名材料包\"},\"b\":{\"sel\":\"$S\",\"text\":\"耗用／損耗登記\"},\"c\":{\"sel\":\"$S\",\"text\":\"AI 智慧備料與跨店調撥建議\"}}" \
-HR_FOCUS="{\"a\":{\"sel\":\"$S\",\"text\":\"AI 師資媒合與排班建議\"},\"b\":{\"sel\":\"$S\",\"text\":\"近期師資班表與請假代課檢查\"},\"c\":{\"sel\":\"$S\",\"text\":\"主管覆核與異常留痕紀錄\"}}" \
-  node promo/cap-meet.mjs
-node promo/v1/music.mjs && node promo/render2.mjs v1 all 45
+node promo/cap-meet.mjs   # 要推近的卡片寫在腳本裡（聊天、庫存、人資三頁）
+node promo/v1/music.mjs && node promo/render2.mjs v1 all 64
 node promo/sales/music.mjs && node promo/render2.mjs sales all 43
 ffmpeg -y -framerate 30 -i /tmp/promo/v1/frames/f%04d.jpg -i /tmp/promo/v1/music.wav -c:v libx264 -pix_fmt yuv420p -crf 18 -c:a aac -b:a 192k -shortest v1.mp4
 ```
