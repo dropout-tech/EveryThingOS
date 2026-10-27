@@ -280,13 +280,14 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
       ) : null}
 
       {data.can.overtime ? (
-        <section className="glass space-y-3 p-5">
-          <div>
-            <h2 className="text-sm font-medium">記加班</h2>
-            <p className="mt-1 text-xs text-cream-dim">依勞基法第 24、39 條的倍數算加班費，寫進當月薪資單的「加班費」。</p>
+        <details className="glass p-5">
+          <summary className="cursor-pointer select-none text-sm font-medium">
+            記加班（依勞基法第 24、39 條倍數算加班費，超過每日 12h／單月 46–54h／三個月 138h 自動擋下）
+          </summary>
+          <div className="mt-4">
+            <OvertimeForm staff={data.staff ?? []} today={data.date} live={live} run={action.run} busy={action.busy} onPractice={setNote} />
           </div>
-          <OvertimeForm staff={data.staff ?? []} today={data.date} live={live} run={action.run} busy={action.busy} onPractice={setNote} />
-        </section>
+        </details>
       ) : null}
 
       <section className="glass space-y-2 p-5 text-sm">
