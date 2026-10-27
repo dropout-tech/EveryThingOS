@@ -1,7 +1,8 @@
 """記加班：人資輸入核准的時數與種類，系統依勞基法倍數算出加發金額，寫成「加班費」額外薪資。
 
-不讀打卡推算時數（休息、輪班、外勤的判斷要人做）。超過一日 12 小時或每月上限的時數會被擋下，
-所以記進去的金額都在財政部免稅時數內（台財稅第 16713 號函），「加班費」薪資項目維持免稅。
+不讀打卡推算時數（休息、輪班、外勤的判斷要人做）。超過一日 12 小時、每月上限（46 或 54 小時）
+或每三個月 138 小時的時數會被擋下，所以記進去的金額都在財政部免稅時數內（台財稅第 16713 號函），
+「加班費」薪資項目維持免稅。
 """
 
 from decimal import Decimal
@@ -26,15 +27,30 @@ KINDS = {
 }
 
 
-def month_cap_hours(employee, day):
-	"""Hours already recorded this month that count toward the 第32條 monthly limit."""
+def _cap_hours_between(employee, start, end):
 	total = frappe.db.sql(
 		"""select coalesce(sum(tw_ot_cap_hours), 0) from `tabAdditional Salary`
 		   where employee = %s and salary_component = %s and docstatus = 1
 		     and payroll_date between %s and %s""",
-		(employee, COMPONENT, get_first_day(day), get_last_day(day)),
+		(employee, COMPONENT, start, end),
 	)[0][0]
 	return Decimal(str(flt(total)))
+
+
+def month_cap_hours(employee, day):
+	"""Hours already recorded this month that count toward the 第32條 monthly limit."""
+	return _cap_hours_between(employee, get_first_day(day), get_last_day(day))
+
+
+def quarter_cap_hours(employee, day, start_month=1):
+	"""Hours already recorded in the 3-month window that count toward the 第32條 138-hour limit."""
+	q_start, q_end = labor_rules.quarter_window(day, start_month)
+	return _cap_hours_between(employee, q_start, q_end)
+
+
+def _quarter_start_month():
+	raw = cint(frappe.db.get_single_value(SETTINGS, "overtime_quarter_start_month"))
+	return raw if 1 <= raw <= 12 else 1
 
 
 @frappe.whitelist(methods=["POST"])
@@ -58,7 +74,8 @@ def record(employee, work_date, hours, kind, reason=None):
 	result = labor_rules.overtime_pay(labor_rules.hourly_from_monthly(wage), Decimal(str(hrs)), kind)
 	so_far = month_cap_hours(employee, day)
 	consented = bool(cint(frappe.db.get_single_value(SETTINGS, "overtime_consent")))
-	refusal = labor_rules.overtime_refusal(result, so_far, consented=consented)
+	q_so_far = quarter_cap_hours(employee, day, _quarter_start_month()) if consented else None
+	refusal = labor_rules.overtime_refusal(result, so_far, consented=consented, quarter_hours_so_far=q_so_far)
 	if refusal:
 		frappe.throw(_(refusal))
 	if not result["extra"]:
@@ -80,8 +97,9 @@ def record(employee, work_date, hours, kind, reason=None):
 	})
 	doc.insert()
 	doc.submit()
-	month_total = so_far + Decimal(result["hours_in_monthly_cap"])
-	return {
+	added = Decimal(result["hours_in_monthly_cap"])
+	month_total = so_far + added
+	out = {
 		"ok": True,
 		"name": doc.name,
 		"amount": result["extra"],
@@ -90,3 +108,7 @@ def record(employee, work_date, hours, kind, reason=None):
 		"limit": labor_rules.EXTENSION_HOURS_PER_MONTH_WITH_CONSENT if consented else labor_rules.EXTENSION_HOURS_PER_MONTH,
 		"message": _("{0} 加班 {1} 小時，加發 NT${2:,}，會進 {3} 的薪資單。這個月計入上限 {4} 小時。").format(KINDS[kind], hrs, result["extra"], str(day)[:7], month_total),
 	}
+	if q_so_far is not None:
+		out["quarter_hours"] = str(q_so_far + added)
+		out["quarter_limit"] = labor_rules.EXTENSION_HOURS_PER_QUARTER_WITH_CONSENT
+	return out

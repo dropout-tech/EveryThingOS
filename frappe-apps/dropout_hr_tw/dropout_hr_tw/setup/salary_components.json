@@ -47,6 +47,17 @@
  },
  {
   "doctype": "Salary Component",
+  "salary_component": "特休未休折算",
+  "salary_component_abbr": "TW_UNUSED_LEAVE",
+  "type": "Earning",
+  "depends_on_payment_days": 0,
+  "is_tax_applicable": 0,
+  "round_to_the_nearest_integer": 1,
+  "remove_if_zero_valued": 1,
+  "description": "勞基法第38條第4項、施行細則第24條之1：年度終結或契約終止未休特休折發工資（最近一個月正常工作時間工資 ÷ 30 × 未休日數）。依財政部台財稅第16713號函，屬法定應發給之工資且不計入每月延長工時限度，免納所得稅。"
+ },
+ {
+  "doctype": "Salary Component",
   "salary_component": "勞保自付額",
   "salary_component_abbr": "TW_LI",
   "type": "Deduction",

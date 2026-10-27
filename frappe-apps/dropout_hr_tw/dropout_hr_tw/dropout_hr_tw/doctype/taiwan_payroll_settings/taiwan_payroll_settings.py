@@ -32,6 +32,8 @@ class TaiwanPayrollSettings(Document):
 	def validate(self):
 		if not 2000 <= cint(self.effective_year) <= 2100:
 			frappe.throw(_("適用年度要寫西元年，例如 {0}").format(frappe.utils.getdate().year))
+		if self.get("overtime_quarter_start_month") not in (None, "") and not 1 <= cint(self.overtime_quarter_start_month) <= 12:
+			frappe.throw(_("三個月 138 小時起算月份要在 1 到 12 之間"))
 		for field in PERCENT_FIELDS:
 			if not 0 <= flt(self.get(field)) <= 100:
 				frappe.throw(_("{0} 要在 0 到 100 之間").format(_(self.meta.get_label(field))))

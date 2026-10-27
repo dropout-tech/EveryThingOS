@@ -199,6 +199,15 @@ class OvertimeRefusal(unittest.TestCase):
 		self.assertIn("46", overtime_refusal(result, 44))
 		self.assertIsNone(overtime_refusal(result, 44, consented=True))
 		self.assertIn("54", overtime_refusal(result, 52, consented=True))
+		self.assertIsNone(overtime_refusal(result, 44, consented=True, quarter_hours_so_far=134))
+		self.assertIn("138", overtime_refusal(result, 44, consented=True, quarter_hours_so_far=135))
+
+	def test_quarter_window(self):
+		from dropout_hr_tw.labor_rules import quarter_window
+		self.assertEqual(quarter_window("2026-10-27", 1), (dt.date(2026, 10, 1), dt.date(2026, 12, 31)))
+		self.assertEqual(quarter_window("2026-01-15", 2), (dt.date(2025, 11, 1), dt.date(2026, 1, 31)))
+		with self.assertRaises(ValueError):
+			quarter_window("2026-10-27", 0)
 
 	def test_holiday_first_eight_hours_outside_cap(self):
 		from dropout_hr_tw.labor_rules import overtime_refusal

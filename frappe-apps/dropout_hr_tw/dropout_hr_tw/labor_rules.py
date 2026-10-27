@@ -124,11 +124,33 @@ def annual_leave_period(joining, on_date):
 	return begin, add_months(start, 12 * (years + 1)) - dt.timedelta(days=1), annual_leave_days(start, begin)
 
 
-def overtime_refusal(result, month_hours_so_far, *, consented=False):
+def quarter_window(on_date, start_month=1):
+	"""勞動基準法第32條第2項但書、勞動部勞動條3字第1070130322號令：
+	每三個月以每連續三個月為一週期，依曆計算，以勞資雙方約定之起迄日期認定。
+	start_month 是約定的起算月份（1 至 12，預設 1 月即 1–3、4–6、7–9、10–12 月）。
+	回傳這一天所在三個月週期的 (起日, 迄日)。
+	"""
+	day = as_date(on_date)
+	if day is None:
+		raise ValueError("需要計算日")
+	anchor = int(start_month)
+	if not 1 <= anchor <= 12:
+		raise ValueError("起算月份要在 1 到 12 之間")
+	abs_month = day.year * 12 + (day.month - 1)
+	offset = (abs_month - (anchor - 1)) % 3
+	first_abs = abs_month - offset
+	last_abs = first_abs + 2
+	start_year, start_m = first_abs // 12, first_abs % 12 + 1
+	end_year, end_m = last_abs // 12, last_abs % 12 + 1
+	end_last_day = calendar.monthrange(end_year, end_m)[1]
+	return dt.date(start_year, start_m, 1), dt.date(end_year, end_m, end_last_day)
+
+
+def overtime_refusal(result, month_hours_so_far, *, consented=False, quarter_hours_so_far=None):
 	"""記加班之前的法定上限檢查。可以記就回傳 None，否則回傳一句原因。
 
 	result 是 overtime_pay 的回傳。month_hours_so_far 是同一位員工這個月已記、計入第32條的時數。
-	每三個月 138 小時的起算由勞資約定，這裡不替公司決定，只檢查每月。
+	consented 為真且傳入 quarter_hours_so_far 時，一併檢查連續三個月 138 小時上限。
 	"""
 	if result["over_daily_cap"]:
 		return "超過一日 12 小時（勞動基準法第32條第2項），不能記。"
@@ -139,6 +161,10 @@ def overtime_refusal(result, month_hours_so_far, *, consented=False):
 	so_far = _hours(month_hours_so_far)
 	if add and so_far + add > limit:
 		return f"這個月已記 {so_far} 小時，再加 {add} 小時會超過每月 {limit} 小時（勞動基準法第32條第2項）。"
+	if add and consented and quarter_hours_so_far is not None:
+		q_so_far = _hours(quarter_hours_so_far)
+		if q_so_far + add > EXTENSION_HOURS_PER_QUARTER_WITH_CONSENT:
+			return f"這三個月已記 {q_so_far} 小時，再加 {add} 小時會超過每三個月 {EXTENSION_HOURS_PER_QUARTER_WITH_CONSENT} 小時（勞動基準法第32條第2項但書）。"
 	return None
 
 

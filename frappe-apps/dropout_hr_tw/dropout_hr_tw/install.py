@@ -68,6 +68,7 @@ CUSTOM_FIELDS = {
 		{"fieldname": "tw_ot_hours", "fieldtype": "Float", "label": "加班時數", "insert_after": "tw_ot_kind", "read_only": 1, "no_copy": 1},
 		{"fieldname": "tw_ot_cap_hours", "fieldtype": "Float", "label": "計入每月上限的時數", "insert_after": "tw_ot_hours", "read_only": 1, "no_copy": 1},
 		{"fieldname": "tw_ot_note", "fieldtype": "Small Text", "label": "倍數與依據", "insert_after": "tw_ot_cap_hours", "read_only": 1, "no_copy": 1},
+		{"fieldname": "tw_leave_allocation", "fieldtype": "Link", "options": "Leave Allocation", "label": "特休假別分配", "insert_after": "tw_ot_note", "read_only": 1, "no_copy": 1},
 	],
 	"Salary Slip": [
 		_section("tw_basis_section", "台灣扣繳基準", "deductions"),
@@ -164,10 +165,11 @@ def seed_settings():
 
 
 def default_auto_annual_leave():
-	"""Sites set up before the switch existed get it on once. A company that turned it off keeps it off."""
-	stored = frappe.db.sql("select value from `tabSingles` where doctype = %s and field = 'auto_annual_leave'", SETTINGS)
-	if not stored:
-		frappe.db.set_single_value(SETTINGS, "auto_annual_leave", 1)
+	"""Sites set up before the switches existed get them on once. A company that turned one off keeps it off."""
+	for field, value in (("auto_annual_leave", 1), ("auto_settle_unused_leave", 1), ("overtime_quarter_start_month", 1)):
+		stored = frappe.db.sql("select value from `tabSingles` where doctype = %s and field = %s", (SETTINGS, field))
+		if not stored:
+			frappe.db.set_single_value(SETTINGS, field, value)
 
 
 def _existing_roles():

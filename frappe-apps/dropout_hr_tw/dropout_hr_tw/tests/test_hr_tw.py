@@ -399,3 +399,24 @@ class TestAnnualLeave(FrappeTestCase):
 
 		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 0)
 		self.assertEqual(annual_leave.allocate_due(), [])
+
+	def test_settles_expired_unused_leave_once(self):
+		from dropout_hr_tw import annual_leave
+
+		install.ensure_setup()
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_annual_leave", 1)
+		frappe.db.set_single_value(payroll.SETTINGS, "auto_settle_unused_leave", 1)
+		joining = add_months(getdate(nowdate()), -25)
+		employee = make_employee("特休折算測試", date_of_joining=joining)
+		assign(employee, 30000)
+		frappe.db.delete("Leave Allocation", {"employee": employee})
+		frappe.db.delete("Additional Salary", {"employee": employee})
+		past_day = add_months(getdate(nowdate()), -12)
+		alloc = annual_leave.allocate_for(employee, joining, past_day)
+		self.assertTrue(alloc)
+		settled = annual_leave.settle_allocation(alloc, pay_date=nowdate())
+		self.assertTrue(settled)
+		doc = frappe.get_doc("Additional Salary", settled)
+		self.assertEqual(doc.salary_component, annual_leave.UNUSED_COMPONENT)
+		self.assertEqual(doc.amount, 7000)
+		self.assertIsNone(annual_leave.settle_allocation(alloc, pay_date=nowdate()))

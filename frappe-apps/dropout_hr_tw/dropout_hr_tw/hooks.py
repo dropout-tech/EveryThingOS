@@ -22,5 +22,8 @@ doc_events = {
 }
 
 scheduler_events = {
-	"daily": ["dropout_hr_tw.annual_leave.allocate_due"],
+	"daily": [
+		"dropout_hr_tw.annual_leave.allocate_due",
+		"dropout_hr_tw.annual_leave.settle_due",
+	],
 }
