@@ -6,6 +6,7 @@ import { ActionNote } from "./ActionNote";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { NextThing } from "./NextThing";
+import { OvertimeForm } from "./OvertimeForm";
 import { useConfirm } from "./ui/ConfirmDialog";
 import { formatTwd } from "@/lib/erp";
 import type { HrToday } from "@/lib/sources/types";
@@ -260,10 +261,20 @@ export function HrBoard({ data, live }: { data: HrToday; live: boolean }) {
         </section>
       ) : null}
 
+      {data.can.overtime ? (
+        <section className="glass space-y-3 p-5">
+          <div>
+            <h2 className="text-sm font-medium">記加班</h2>
+            <p className="mt-1 text-xs text-cream-dim">依勞基法第 24、39 條的倍數算加班費，寫進當月薪資單的「加班費」。</p>
+          </div>
+          <OvertimeForm staff={data.staff ?? []} today={data.date} live={live} run={action.run} busy={action.busy} onPractice={setNote} />
+        </section>
+      ) : null}
+
       <section className="glass space-y-2 p-5 text-sm">
         <h2 className="font-medium">請假與加班的法定基準</h2>
         <p className="text-cream-dim">
-          婚假 14 日、特休依年資、平日加班前兩小時是時薪的 4/3。加班費不從打卡自動算。勞健保費率每年仍要對公告，空白的項目不扣。
+          婚假 14 日、特休依年資、平日加班前兩小時是時薪的 4/3。特休在每個到職週年自動給。加班時數由人資輸入，不從打卡推算（休息、輪班、外勤要人判斷）。勞健保費率每年仍要對公告，空白的項目不扣。
         </p>
         <Link href="/help/module-hr" className="text-xs text-cream-dim underline underline-offset-2 hover:text-cream">
           看請假天數、加班倍數和免稅時數

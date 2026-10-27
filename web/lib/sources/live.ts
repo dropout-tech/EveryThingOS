@@ -201,6 +201,7 @@ type RawHr = {
   payroll: (Omit<NonNullable<HrToday["payroll"]>, "netPay"> & { net_pay: number }) | null;
   rates: HrToday["rates"];
   can: HrToday["can"];
+  staff?: HrToday["staff"];
   denied: string[];
 };
 
@@ -218,6 +219,7 @@ export async function liveHr(): Promise<HrToday> {
       : null,
     rates: raw.rates ? { ...raw.rates, href: link(raw.rates.href) } : null,
     can: raw.can,
+    staff: raw.staff ?? [],
     denied: raw.denied,
   };
 }

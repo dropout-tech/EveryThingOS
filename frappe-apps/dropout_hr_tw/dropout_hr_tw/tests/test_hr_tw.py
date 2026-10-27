@@ -289,6 +289,12 @@ class TestShell(FrappeTestCase):
 		shell.decide_leave(app.name, "approve")
 		self.assertIn("請假人", [r["name"] for r in shell.today()["on_leave"]])
 
+	def test_hr_sees_staff_to_record_overtime(self):
+		frappe.set_user("Administrator")
+		today = shell.today()
+		self.assertTrue(today["can"]["overtime"])
+		self.assertIn(self.staff_emp, [s["id"] for s in today["staff"]])
+
 	def test_permission_checks(self):
 		app = self.leave(5)
 		frappe.set_user(self.outsider)
@@ -297,6 +303,8 @@ class TestShell(FrappeTestCase):
 		self.assertEqual(today["approvals"], [])
 		self.assertIn("on_leave", today["denied"])
 		self.assertIsNone(today["me"]["employee"])
+		self.assertNotIn("staff", today)
+		self.assertFalse(today["can"]["overtime"])
 		self.assertRaises(frappe.ValidationError, shell.check_in, "IN")
 
 		frappe.set_user(self.staff)

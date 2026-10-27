@@ -27,7 +27,13 @@ function demo(): HrToday {
     ],
     payroll: { month: today.slice(0, 7), state: "slips", employees: 8, draft: 8, submitted: 0, netPay: 312_480, entries: [] },
     rates: { year: Number(today.slice(0, 4)), verified: false, current: true },
-    can: { approve: true, payroll: true },
+    can: { approve: true, payroll: true, overtime: true },
+    staff: [
+      { id: "HR-EMP-00001", name: "王小明" },
+      { id: "HR-EMP-00002", name: "林業務" },
+      { id: "HR-EMP-00003", name: "陳倉管" },
+      { id: "HR-EMP-00004", name: "李師傅" },
+    ],
   };
 }
 

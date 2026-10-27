@@ -84,7 +84,9 @@ export type HrToday = {
   approvals: { name: string; employee: string; leaveType: string; fromDate: string; toDate: string; days: number; reason: string; href?: string }[];
   payroll: { month: string; state: "not_started" | "started" | "slips" | "paid"; employees: number; draft: number; submitted: number; netPay: number; entries: { name: string; status: string; href?: string }[] } | null;
   rates: { year: number; verified: boolean; current: boolean; href?: string } | null;
-  can: { approve: boolean; payroll: boolean };
+  can: { approve: boolean; payroll: boolean; overtime?: boolean };
+  /** Active employees, only for HR roles (used to pick who worked overtime). */
+  staff?: { id: string; name: string }[];
   denied?: string[];
 };
 

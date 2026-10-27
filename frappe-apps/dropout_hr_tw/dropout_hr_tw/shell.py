@@ -183,8 +183,20 @@ def today():
 		out["denied"].append("payroll")
 	if roles & HR_ROLES:
 		out["rates"] = _rates(day)
-	out["can"] = {"approve": bool(roles & APPROVER_ROLES), "payroll": out["payroll"] is not None}
+		out["staff"] = _staff(company)
+	out["can"] = {"approve": bool(roles & APPROVER_ROLES), "payroll": out["payroll"] is not None, "overtime": bool(roles & HR_ROLES)}
 	return out
+
+
+def _staff(company):
+	rows = frappe.get_all(
+		"Employee",
+		filters={"company": company, "status": "Active"},
+		fields=["name", "employee_name"],
+		order_by="employee_name asc",
+		limit=500,
+	)
+	return [{"id": r.name, "name": r.employee_name} for r in rows]
 
 
 @frappe.whitelist(methods=["POST"])
