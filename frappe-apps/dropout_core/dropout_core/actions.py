@@ -62,6 +62,18 @@ def _next(doc):
 	return None
 
 
+def _over_credit(target):
+	if target.doctype != "Sales Order" or not target.customer:
+		return None
+	from dropout_core.credit import can_order
+
+	amount = flt(target.grand_total) or sum(flt(row.qty) * flt(row.rate) for row in target.items)
+	gate = can_order(target.customer, amount, target.company)
+	if not gate["ok"]:
+		return gate["message"]
+	return None
+
+
 def _below_safety(target):
 	if target.doctype != "Delivery Note":
 		return None
@@ -100,7 +112,7 @@ def advance(doctype, name):
 		target = _next(doc)
 		if target is None:
 			return {"ok": False, "message": _("這張單已經走完了")}
-		blocked = _below_safety(target)
+		blocked = _over_credit(target) or _below_safety(target)
 		if blocked:
 			return {"ok": False, "message": blocked}
 		target.insert()
@@ -170,6 +182,14 @@ def create_quotation(party_type, party, items, company=None, submit=1):
 			if src.get("rate") not in (None, ""):
 				row.rate = flt(src["rate"])
 				row.price_list_rate = row.price_list_rate or row.rate
+		if party_type == "Customer":
+			q.calculate_taxes_and_totals()
+			from dropout_core.credit import can_order
+
+			amount = flt(q.grand_total) or sum(flt(row.qty) * flt(row.rate) for row in q.items)
+			gate = can_order(party, amount, q.company)
+			if not gate["ok"]:
+				return {"ok": False, "message": gate["message"]}
 		q.insert()
 		if cint(submit):
 			q.submit()
