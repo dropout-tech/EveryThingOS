@@ -14,6 +14,7 @@ import {
   formatTwd,
   groupSales,
   makeQuote,
+  remainingQty,
   type SalesDoc,
 } from "@/lib/erp";
 import { nextSalesDoc, salesPlain } from "@/lib/next-thing";
@@ -212,6 +213,9 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     <p className="text-sm text-cream-dim">
                       {doc.item} × {doc.qty}
                     </p>
+                    {typeof doc.orderedQty === "number" && typeof doc.deliveredQty === "number" && doc.orderedQty > doc.deliveredQty ? (
+                      <p className="mt-1 text-xs text-cream-dim">還差 {remainingQty(doc)}</p>
+                    ) : null}
                     <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}{doc.taxable === false ? " · 未稅" : ""}</p>
                     {doc.deposit ? <p className="mt-1 text-xs text-cream-dim">訂金 {formatTwd(doc.deposit)}，尾款另計</p> : null}
                     {doc.kind === "change" ? <p className="mt-1 text-xs text-cream-dim">追加，原單 {doc.parentNo}</p> : null}

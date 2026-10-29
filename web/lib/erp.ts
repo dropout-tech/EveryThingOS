@@ -140,6 +140,10 @@ export type SalesDoc = {
   party: string;
   item: string;
   qty: number;
+  /** 訂了幾件。沒寫就不算還差多少。 */
+  orderedQty?: number;
+  /** 已經出了幾件。沒寫時，剩餘等於訂購數量。 */
+  deliveredQty?: number;
   amount: number;
   tax: number;
   /** false = 未稅報價，稅額是 0。沒寫則沿用營業稅 5%。 */
@@ -160,6 +164,12 @@ export type SalesDoc = {
   href?: string;
   doctype?: string;
 };
+
+export function remainingQty(doc: Pick<SalesDoc, "orderedQty" | "deliveredQty">) {
+  if (doc.orderedQty === undefined) return undefined;
+  if (doc.deliveredQty === undefined) return doc.orderedQty;
+  return doc.orderedQty - doc.deliveredQty;
+}
 
 export type PurchaseDoc = {
   no: string;
@@ -263,11 +273,13 @@ export function buildBooks(pack: IndustryPack): Books {
     const untaxed = step.id === "quote";
     const tax = untaxed ? 0 : Math.round(amount * 0.05);
     const deposit = trade.deposit && step.id === "quote" ? Math.round(amount * 0.3) : undefined;
+    const qty = pick(seed + index, 1, 6);
     return {
       no: `SO-${10400 + index}`,
       party: parties[index % parties.length],
       item: itemName,
-      qty: pick(seed + index, 1, 6),
+      qty,
+      ...(step.id === "order" ? { orderedQty: qty, deliveredQty: 0 } : {}),
       amount,
       tax,
       taxable: !untaxed,
@@ -503,8 +515,10 @@ export function advanceSalesDoc(
   let step = SALES_STEP_ORDER[index + 1];
   if (step === "invoice" && doc.invoiceable === false) step = "paid";
   const needsInvoice = doc.invoiceable !== false && (step === "invoice" || step === "paid");
+  const shipped = step === "fulfill" || step === "invoice" || step === "paid";
   return {
     ...doc,
+    deliveredQty: shipped && doc.orderedQty !== undefined ? doc.orderedQty : doc.deliveredQty,
     step,
     next: doc.invoiceable === false && step === "paid" ? "記入已收（不開發票）" : nextLabel(step, pack),
     overdueDays: step === "invoice" ? 0 : undefined,

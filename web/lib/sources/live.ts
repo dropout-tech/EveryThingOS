@@ -15,7 +15,7 @@ type RawBooks = {
   inventory_value: number;
   overdue_ar: number;
   vat_payable: number;
-  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string }[];
+  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string; ordered_qty?: number | null; delivered_qty?: number | null }[];
   purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string; doctype: string }[];
   stock: { sku: string; name: string; warehouse: string; on_hand: number; safety: number; href: string }[];
   course_boms?: { course_code: string; course_name: string; target_seats?: number; lines: { sku: string; name: string; qty_per_student: number; uom: string }[]; href?: string }[];
@@ -46,6 +46,8 @@ export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, 
       party: d.party,
       item: pack.itemType,
       qty: d.qty,
+      orderedQty: d.ordered_qty ?? undefined,
+      deliveredQty: d.delivered_qty ?? undefined,
       amount: d.amount,
       tax: d.tax,
       step: d.step,

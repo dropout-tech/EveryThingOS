@@ -65,7 +65,9 @@ def _sales(company, today, denied):
 		limit=LIMIT,
 	):
 		step = "fulfill" if flt(so.per_delivered) >= 100 else "order"
-		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "href": _desk("Sales Order", so.name)})
+		ordered = flt(so.total_qty)
+		delivered = ordered * flt(so.per_delivered) / 100
+		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "ordered_qty": ordered, "delivered_qty": delivered, "href": _desk("Sales Order", so.name)})
 	for si in _readable(
 		"Sales Invoice",
 		denied,
