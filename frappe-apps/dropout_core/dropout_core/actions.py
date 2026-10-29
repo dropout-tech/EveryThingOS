@@ -62,6 +62,20 @@ def _next(doc):
 	return None
 
 
+def _below_safety(target):
+	if target.doctype != "Delivery Note":
+		return None
+	from dropout_core.stock_guard import assert_can_ship
+
+	for row in target.items:
+		if not row.warehouse:
+			continue
+		gate = assert_can_ship(row.item_code, row.warehouse, row.qty)
+		if not gate["ok"]:
+			return gate["message"]
+	return None
+
+
 def _has_stock(doc):
 	codes = [i.item_code for i in doc.items]
 	return bool(frappe.get_all("Item", filters={"name": ["in", codes], "is_stock_item": 1}, limit=1))
@@ -86,6 +100,9 @@ def advance(doctype, name):
 		target = _next(doc)
 		if target is None:
 			return {"ok": False, "message": _("這張單已經走完了")}
+		blocked = _below_safety(target)
+		if blocked:
+			return {"ok": False, "message": blocked}
 		target.insert()
 		target.submit()
 	except frappe.PermissionError:
