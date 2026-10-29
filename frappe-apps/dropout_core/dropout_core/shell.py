@@ -264,7 +264,31 @@ def books(company=None):
 	month = get_first_day(today)
 	s = _Sections()
 	si_month = {"company": company, "docstatus": 1, "is_opening": "No", "posting_date": [">=", month]}
-	s.run("month_sales", lambda: _sum("Sales Invoice", "base_net_total", si_month), 0)
+
+	def month_sales():
+		def invoices():
+			return _sum("Sales Invoice", "base_net_total", si_month)
+
+		try:
+			income = frappe.db.get_value("Company", company, "default_income_account") if company else None
+			bounds = frappe.db.get_value("Account", income, ["lft", "rgt"], as_dict=True) if income else None
+			if not bounds:
+				return invoices()
+			total = frappe.db.sql(
+				"""select coalesce(sum(gle.credit), 0) - coalesce(sum(gle.debit), 0)
+				from `tabGL Entry` gle
+				where gle.is_cancelled = 0 and gle.company = %s
+				and gle.posting_date >= %s and gle.posting_date < %s
+				and gle.account in (
+					select name from `tabAccount`
+					where company = %s and lft >= %s and rgt <= %s)""",
+				(company, month, add_months(month, 1), company, bounds.lft, bounds.rgt),
+			)[0][0]
+			return flt(total)
+		except Exception:
+			return invoices()
+
+	s.run("month_sales", month_sales, 0)
 	s.run("month_cost", lambda: _sum("Purchase Invoice", "base_net_total", {**si_month}), 0)
 	s.run("ar", lambda: _sum("Sales Invoice", "outstanding_amount", {"company": company, "docstatus": 1}), 0)
 	s.run("ap", lambda: _sum("Purchase Invoice", "outstanding_amount", {"company": company, "docstatus": 1}), 0)
