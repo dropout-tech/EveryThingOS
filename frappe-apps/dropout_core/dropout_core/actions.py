@@ -40,9 +40,11 @@ def _next(doc):
 		so.delivery_date = so.delivery_date or add_days(nowdate(), 7)
 		for item in so.items:
 			item.delivery_date = item.delivery_date or so.delivery_date
+		if not _has_stock(so):
+			so.skip_delivery_note = 1
 		return so
 	if dt == "Sales Order":
-		if not doc.skip_delivery_note and flt(doc.per_delivered) < 100:
+		if not doc.skip_delivery_note and _has_stock(doc) and flt(doc.per_delivered) < 100:
 			return frappe.get_attr(f"{SO}.make_delivery_note")(doc.name)
 		if flt(doc.per_billed) < 100:
 			return frappe.get_attr(f"{SO}.make_sales_invoice")(doc.name)

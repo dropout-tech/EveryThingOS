@@ -308,16 +308,70 @@ class TestShellActions(FrappeTestCase):
 			if not step["ok"]:
 				break
 			chain.append((step["created"]["doctype"], step["created"]["name"]))
+			if chain[-1][0] == "Payment Entry":
+				break
 		kinds = [dt for dt, _n in chain]
 		self.assertEqual(kinds[0], "Quotation")
 		self.assertIn("Sales Order", kinds)
 		self.assertIn("Sales Invoice", kinds)
 		self.assertEqual(kinds[-1], "Payment Entry")
+		self.assertNotIn("Delivery Note", kinds)
 		invoice = next(n for dt, n in chain if dt == "Sales Invoice")
 		self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "outstanding_amount"), 0)
+		self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "total_taxes_and_charges"), 0)
+		order = next(n for dt, n in chain if dt == "Sales Order")
+		self.assertEqual(frappe.db.get_value("Sales Order", order, "status"), "Completed")
 		again = actions.advance("Sales Invoice", invoice)
 		self.assertFalse(again["ok"])
 		self.assertEqual(again["message"], "這張單已經走完了")
+
+	def test_stock_item_ships_then_pays_with_no_tax(self):
+		from dropout_core import actions
+
+		code = "DO-STOCK-QTC"
+		co = company()
+		warehouse = frappe.get_all("Warehouse", filters={"company": co, "is_group": 0}, pluck="name", limit=1)[0]
+		if not frappe.db.exists("Item", code):
+			item = frappe.get_doc(
+				{
+					"doctype": "Item",
+					"item_code": code,
+					"item_name": "測試傳動軸",
+					"item_group": leaf("Item Group"),
+					"stock_uom": "Nos",
+					"is_stock_item": 1,
+				}
+			)
+			item.append("item_defaults", {"company": co, "default_warehouse": warehouse})
+			item.insert()
+		customer = make_customer("出貨客人", email="ship-qtc@example.com")
+		receipt = frappe.get_doc(
+			{
+				"doctype": "Stock Entry",
+				"stock_entry_type": "Material Receipt",
+				"company": co,
+				"items": [{"item_code": code, "qty": 1, "t_warehouse": warehouse, "basic_rate": 680, "uom": "Nos"}],
+			}
+		)
+		receipt.insert()
+		receipt.submit()
+		quote = actions.create_quotation("Customer", customer, [{"item_code": code, "qty": 1, "rate": 1250}])
+		self.assertTrue(quote["ok"], quote)
+		self.assertEqual(quote["created"]["grand_total"], 1250)
+		chain = [("Quotation", quote["created"]["name"])]
+		for _ in range(5):
+			step = actions.advance(*chain[-1])
+			if not step["ok"]:
+				break
+			chain.append((step["created"]["doctype"], step["created"]["name"]))
+			if chain[-1][0] == "Payment Entry":
+				break
+		kinds = [dt for dt, _name in chain]
+		self.assertEqual(kinds, ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice", "Payment Entry"])
+		invoice = chain[3][1]
+		self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "outstanding_amount"), 0)
+		self.assertEqual(frappe.db.get_value("Sales Invoice", invoice, "total_taxes_and_charges"), 0)
+		self.assertEqual(frappe.db.get_value("Bin", {"item_code": code, "warehouse": warehouse}, "actual_qty"), 0)
 
 	def test_sales_user_cannot_take_payment(self):
 		from dropout_core import actions
