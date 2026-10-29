@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ActionNote } from "./ActionNote";
+import { DocSearch } from "./DocSearch";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
@@ -60,7 +61,6 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     setDocs([...incoming, ...stored]);
     writeDemoState(demoKey("inbox", pack.id), [] as SalesDoc[]);
   }, [live, pack.id, initial, setDocs]);
-  const columns = useMemo(() => groupSales(docs), [docs]);
   const focus = nextSalesDoc(docs);
 
   function onAdvance(doc: SalesDoc) {
@@ -194,8 +194,10 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           }
         />
       ) : null}
+      <DocSearch rows={docs}>
+        {(found) => (
       <div className="grid gap-3 lg:grid-cols-5">
-        {columns.map((column) => (
+        {groupSales(found).map((column) => (
           <section key={column.id} className="glass-well p-3" aria-label={`${column.plain}（${column.docs.length}）`}>
             <h2 className="flex items-baseline justify-between gap-2 text-sm font-medium">
               <span>
@@ -273,6 +275,8 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           </section>
         ))}
       </div>
+        )}
+      </DocSearch>
     </div>
   );
 }
