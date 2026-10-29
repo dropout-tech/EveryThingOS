@@ -42,6 +42,8 @@ export type ShopProfile = {
   nameLocked?: boolean;
   /** The shop unchecked modules on purpose. Switching industry keeps them. */
   customModules?: boolean;
+  /** Right-hand agent. Only the exact value "advanced" shows it. */
+  agent?: string;
 };
 
 function stageNames(script: { beats: readonly { step: string }[] }) {
@@ -159,6 +161,7 @@ export function parseShop(raw: string | undefined | null): ShopProfile | null {
       ...readLook(value),
       ...(value.customModules === true ? { customModules: true } : {}),
       ...(value.nameLocked === true ? { nameLocked: true } : {}),
+      ...(typeof value.agent === "string" && value.agent.trim() ? { agent: value.agent.trim() } : {}),
     };
   } catch {
     return null;

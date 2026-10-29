@@ -3,6 +3,7 @@ import { GuideProvider } from "@/components/GuideProvider";
 import { OsShell } from "@/components/OsShell";
 import { OnboardScreen } from "@/components/OnboardScreen";
 import { ADMIN_ROLE, canManageTeam, canSeeReports, featuresFor } from "@/lib/access";
+import { showAgent } from "@/lib/agent-tier";
 import { openInvoice } from "@/lib/billing";
 import { guideScope, roleFor } from "@/lib/guide";
 import { readSession } from "@/lib/session";
@@ -50,6 +51,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       reports={canSeeReports(roles)}
       notice={notice}
       canReset={!config.tenant?.profile}
+      agent={showAgent(shop.agent)}
     >
       <GuideProvider scope={guide.scope} role={guide.role}>
         {children}

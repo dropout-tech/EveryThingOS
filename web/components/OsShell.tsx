@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ToastRoot } from "./ActionNote";
+import { AgentDock } from "./AgentDock";
 import { AppearanceBar } from "./AppearanceBar";
 import { BrandMark } from "./BrandMark";
 import { SideNav, TabBar } from "./SideNav";
@@ -20,9 +21,11 @@ type OsShellProps = {
   /** Contract notice (trial, renewal, read-only). */
   notice?: { message: string; urgent: boolean; readOnly?: boolean; payUrl?: string } | null;
   canReset?: boolean;
+  /** Advanced tier only. The dock's own button is secondary. */
+  agent?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true }: OsShellProps) {
+export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true, agent = false }: OsShellProps) {
   const items = navItemsForShop(shop, { team, reports });
   const name = shop.name ?? company ?? industry.nameZh;
   const reset = canReset ? (
@@ -86,6 +89,11 @@ export function OsShell({ industry, shop, children, company, team = false, repor
           <div className="mx-auto w-full max-w-6xl">{children}</div>
         </main>
       </div>
+      {agent ? (
+        <div className="hidden w-80 shrink-0 p-4 lg:block">
+          <AgentDock open />
+        </div>
+      ) : null}
       <TabBar items={items} extras={reset} />
       <ToastRoot />
     </div>
