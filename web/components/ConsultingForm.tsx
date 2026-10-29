@@ -81,7 +81,7 @@ export function ConsultingForm({ demo, turnstileSiteKey, email }: { demo: boolea
         </p>
         <p className="text-sm text-cream-dim">
           等的時候可以先
-          <Link href="/" className="mx-1 underline underline-offset-4 hover:text-cream">
+          <Link href="/?setup=1" className="mx-1 underline underline-offset-4 hover:text-cream">
             看示範
           </Link>
           或

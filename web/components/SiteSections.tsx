@@ -15,7 +15,7 @@ export function SectionTitle({ kicker, title, children }: { kicker: string; titl
   );
 }
 
-export function SiteHero({ demoHref = "/", as: Heading = "h1" }: { demoHref?: string; as?: "h1" | "h2" }) {
+export function SiteHero({ demoHref = "/?setup=1", as: Heading = "h1" }: { demoHref?: string; as?: "h1" | "h2" }) {
   return (
     <section className="site-sheet p-6 sm:p-10" aria-labelledby="hero-title">
       <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">台灣中小企業的作業系統</p>

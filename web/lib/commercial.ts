@@ -16,6 +16,7 @@ export const SITE_NAV = [
   { href: "/pricing", label: "產品與價格" },
   { href: "/saas", label: "對照鼎新・億看" },
   { href: "/industries", label: "產業包" },
+  { href: "/blog", label: "部落格" },
   { href: "/consulting", label: "免費導入" },
   { href: "/help", label: "說明" },
 ] as const;

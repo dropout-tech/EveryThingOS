@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandMark } from "@/components/BrandMark";
+import { DemoLogin } from "@/components/DemoLogin";
 import { LoginButton } from "@/components/LoginButton";
 import { COMMERCIAL } from "@/lib/commercial";
 import { liveConfig, loginRequired } from "@/lib/sources/config";
@@ -66,17 +67,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             ) : null}
           </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-sm">
-              <span className="site-chip" data-tone="warn">
-                示範模式
-              </span>
-            </p>
-            <p className="text-sm text-cream-dim">這個網站沒有接公司的 ERPNext，不用登入。示範資料只留在你的瀏覽器。</p>
-            <Link href="/workspace" className="glass-cta inline-flex w-full justify-center rounded-full px-6 py-3 font-medium">
-              進入示範
-            </Link>
-          </div>
+          <DemoLogin />
         )}
         <nav aria-label="需要幫忙" className="flex flex-wrap justify-between gap-3 border-t border-[var(--line)] pt-4 text-sm text-cream-dim">
           <Link href="/help" className="hover:text-cream">
