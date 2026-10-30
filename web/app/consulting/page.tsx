@@ -24,19 +24,17 @@ export default async function ConsultingPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader primary={false} />
       <main id="main" className="site-scope mx-auto max-w-6xl space-y-14 px-5 py-10 sm:py-14">
         <div className="grid items-start gap-6 lg:grid-cols-[1fr_1.15fr]">
-          <header className="site-sheet p-6 sm:p-10">
-            <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">免費導入</p>
-            <h1 className="mt-3 text-3xl font-medium sm:text-4xl">顧問去現場，導入不另開帳單</h1>
+          <header>
+            <h1 className="site-display text-3xl sm:text-5xl">顧問去現場，導入不另開帳單</h1>
             <p className="mt-4 text-cream-dim">
-              年費已含到現場。我們不另外賣「導入專案」。懂生意的人跟第一線看同一筆資料，打開對的產業包，只改你們真正不一樣的地方。
+              免費導入。年費已含到現場。我們不另外賣「導入專案」。懂生意的人跟第一線看同一筆資料，打開對的產業包，只改你們真正不一樣的地方。
             </p>
-            <ul className="mt-6 space-y-3">
+            <ul className="site-ruled mt-6">
               {["第一次 30 分鐘，看現場、不推銷", "不用先簽約，也不用先給統編", `決定要用才開始算年費（${PRICE_LABEL}，未稅）`].map((line) => (
-                <li key={line} className="flex gap-3">
-                  <span aria-hidden className="text-cream-dim">✓</span>
+                <li key={line} className="py-3">
                   {line}
                 </li>
               ))}
@@ -63,11 +61,11 @@ export default async function ConsultingPage() {
               每一家的順序差不多；用不到的步驟會直接跳過。
             </SectionTitle>
           </div>
-          <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ol className="site-steps">
             {CONSULTING_STEPS.map((step) => (
-              <li key={step.id} className="site-sheet p-5">
-                <p className="display text-sm text-cream-dim">{step.id}</p>
-                <h3 className="mt-1 text-lg font-medium">{step.title}</h3>
+              <li key={step.id}>
+                <p className="site-step-no">{step.id}</p>
+                <h3 className="mt-2 text-lg font-medium">{step.title}</h3>
                 <p className="mt-2 text-sm text-cream-dim">{step.body}</p>
               </li>
             ))}

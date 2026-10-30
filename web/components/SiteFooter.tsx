@@ -15,10 +15,10 @@ export function SiteFooter() {
         <div>
           <BrandMark href="/" />
           <p className="mt-3">{COMMERCIAL.legalName}</p>
-          <p className="mt-1">{PRICE_LABEL}（未稅）· 免費顧問導入</p>
+          <p className="mt-1">{PRICE_LABEL}（未稅），免費顧問導入</p>
         </div>
         <nav aria-label="產品">
-          <p className="text-xs tracking-[0.18em] text-cream">產品</p>
+          <p className="text-sm font-medium text-cream">產品</p>
           <ul className="mt-3 space-y-2">
             {SITE_NAV.map((link) => (
               <li key={link.href}>
@@ -30,7 +30,7 @@ export function SiteFooter() {
           </ul>
         </nav>
         <nav aria-label="支援">
-          <p className="text-xs tracking-[0.18em] text-cream">支援</p>
+          <p className="text-sm font-medium text-cream">支援</p>
           <ul className="mt-3 space-y-2">
             {SUPPORT.map((link) => (
               <li key={link.href}>
@@ -47,7 +47,7 @@ export function SiteFooter() {
           </ul>
         </nav>
         <nav aria-label="條款與政策">
-          <p className="text-xs tracking-[0.18em] text-cream">條款與政策</p>
+          <p className="text-sm font-medium text-cream">條款與政策</p>
           <ul className="mt-3 space-y-2">
             {LEGAL_LINKS.map((link) => (
               <li key={link.href}>

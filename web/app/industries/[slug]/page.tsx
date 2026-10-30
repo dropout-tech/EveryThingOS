@@ -25,43 +25,45 @@ export default async function IndustryDetailPage({ params }: Props) {
 
   return (
     <>
-      <SiteHeader />
-      <main id="main" className="mx-auto max-w-3xl px-5 py-14">
-        <p className="text-sm text-cream-dim">{pack.group}</p>
-        <h1 className="mt-2 text-4xl font-medium">{pack.nameZh}</h1>
-        <p className="mt-3 text-cream-dim">{pack.tagline}</p>
-        <p className="mt-2 text-sm text-gold">
-          賣什麼：{pack.itemType} ／ 怎麼交：{pack.fulfillment}
-        </p>
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <SiteHeader primary={false} />
+      <main id="main" className="site-scope mx-auto max-w-3xl space-y-12 px-5 py-10 sm:py-14">
+        <header>
+          <p className="text-sm text-cream-dim">{pack.group}</p>
+          <h1 className="site-display mt-2 text-4xl">{pack.nameZh}</h1>
+          <p className="mt-3 text-cream-dim">{pack.tagline}</p>
+          <p className="mt-2 text-sm text-cream-dim">
+            賣什麼：{pack.itemType}。怎麼交：{pack.fulfillment}。
+          </p>
+        </header>
+        <div className="grid gap-10 md:grid-cols-2">
           <section>
-            <h2 className="text-sm text-teal">現場最痛的</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-cream-dim">
+            <h2 className="text-sm font-medium">現場最痛的</h2>
+            <ul className="site-ruled mt-3 text-cream-dim">
               {pack.pains.map((pain) => (
-                <li key={pain}>{pain}</li>
+                <li key={pain} className="py-3">{pain}</li>
               ))}
             </ul>
           </section>
           <section>
-            <h2 className="text-sm text-teal">每天看的數字</h2>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-cream-dim">
+            <h2 className="text-sm font-medium">每天看的數字</h2>
+            <ul className="site-ruled mt-3 text-cream-dim">
               {pack.kpis.map((kpi) => (
-                <li key={kpi}>{kpi}</li>
+                <li key={kpi} className="py-3">{kpi}</li>
               ))}
             </ul>
           </section>
         </div>
-        <section className="mt-8">
-          <h2 className="text-sm text-teal">客人怎麼往前走</h2>
+        <section>
+          <h2 className="text-sm font-medium">客人怎麼往前走</h2>
           <p className="mt-2">{pack.workflow.name}</p>
           <p className="mt-1 text-cream-dim">{pack.sampleLoop}</p>
         </section>
-        <section className="mt-8">
-          <h2 className="text-sm text-teal">這包會用到的生意功能</h2>
-          <p className="mt-2 text-cream-dim">{enabledErpLabels(pack).join(" · ")}</p>
+        <section>
+          <h2 className="text-sm font-medium">這包會用到的生意功能</h2>
+          <p className="mt-2 text-cream-dim">{enabledErpLabels(pack).join("、")}</p>
         </section>
-        <section className="mt-8">
-          <h2 className="text-sm text-teal">這包主要取代</h2>
+        <section>
+          <h2 className="text-sm font-medium">這包主要取代</h2>
           <p className="mt-2 text-sm text-cream-dim">{pack.saasReplaced.join("、")}</p>
         </section>
         <EnterWorkspaceButton industryId={pack.id} label={`用「${pack.nameZh}」開始今天`} />

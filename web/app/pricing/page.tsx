@@ -29,8 +29,8 @@ export default function PricingPage() {
             <h2 id="price" className="mt-2 text-4xl font-medium sm:text-5xl">
               NT${formatted}
             </h2>
-            <p className="mt-2 text-cream-dim">未稅・一間公司一份・第二年起同價</p>
-            <ul className="mt-6 space-y-3">
+            <p className="mt-2 text-cream-dim">未稅，一間公司一份，第二年起同價</p>
+            <ul className="site-ruled mt-6">
               {[
                 "上面所有功能，不另外加購",
                 "不收每人帳號費",
@@ -38,17 +38,16 @@ export default function PricingPage() {
                 "顧問到現場：看現場、搬資料、跑完一筆真實生意",
                 "更新、每日備份、顧問時數內的流程微調",
               ].map((line) => (
-                <li key={line} className="flex gap-3">
-                  <span aria-hidden className="text-cream-dim">✓</span>
+                <li key={line} className="py-3">
                   {line}
                 </li>
               ))}
             </ul>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/consulting#book" className="glass-cta rounded-full px-6 py-3 font-medium">
+              <Link href="/consulting#book" className="glass-pill px-5 py-2.5">
                 約免費導入
               </Link>
-              <Link href="/?setup=1" className="glass-pill px-6 py-3">
+              <Link href="/?setup=1" className="glass-pill px-5 py-2.5">
                 先看示範
               </Link>
             </div>
@@ -77,11 +76,11 @@ export default function PricingPage() {
         <OnboardingSteps />
         <TrustStrip />
         <FaqList />
-        <section className="site-sheet flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <section className="flex flex-col items-start gap-4 border-t border-[var(--text)] pt-8 sm:flex-row sm:items-end sm:justify-between">
           <SectionTitle kicker="下一步" title="先約 30 分鐘，看你們的現場">
             不用先簽約。看完覺得不適合，就不用往下走。
           </SectionTitle>
-          <Link href="/consulting#book" className="glass-cta shrink-0 rounded-full px-6 py-3 font-medium">
+          <Link href="/consulting#book" className="glass-pill shrink-0 px-5 py-2.5">
             約免費導入
           </Link>
         </section>

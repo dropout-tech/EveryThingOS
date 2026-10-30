@@ -105,7 +105,7 @@ export function IndustryPicker({ options, currentId, variant = "hero" }: Industr
       ) : (
         grouped.map((group) => (
           <section key={group.group} className="mb-2">
-            <p className="px-3 py-1 text-[11px] tracking-[0.16em] text-cream-dim uppercase">{group.group}</p>
+            <p className="px-3 py-1 text-sm text-cream-dim">{group.group}</p>
             <ul>
               {group.items.map((item) => {
                 const active = item.id === currentId;

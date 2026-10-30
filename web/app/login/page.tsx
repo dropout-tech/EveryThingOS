@@ -82,7 +82,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </nav>
       </div>
       <Link href="/" className="mt-6 text-sm text-cream-dim hover:text-cream">
-        ← 回 EveryThingOS 首頁
+        回 EveryThingOS 首頁
       </Link>
     </main>
   );

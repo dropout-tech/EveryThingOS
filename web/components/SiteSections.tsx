@@ -5,11 +5,10 @@ import { ERP_PARITY } from "@/lib/erp";
 
 const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: "muted" };
 
-export function SectionTitle({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
+export function SectionTitle({ title, children }: { kicker?: string; title: string; children?: ReactNode }) {
   return (
-    <div className="site-sheet inline-block max-w-2xl !rounded-3xl px-5 py-4 sm:px-6">
-      <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">{kicker}</p>
-      <h2 className="mt-2 text-2xl font-medium sm:text-3xl">{title}</h2>
+    <div className="max-w-2xl">
+      <h2 className="site-display text-2xl sm:text-3xl">{title}</h2>
       {children ? <p className="mt-3 text-cream-dim">{children}</p> : null}
     </div>
   );
@@ -17,29 +16,26 @@ export function SectionTitle({ kicker, title, children }: { kicker: string; titl
 
 export function SiteHero({ demoHref = "/?setup=1", as: Heading = "h1" }: { demoHref?: string; as?: "h1" | "h2" }) {
   return (
-    <section className="site-sheet p-6 sm:p-10" aria-labelledby="hero-title">
-      <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">台灣中小企業的作業系統</p>
-      <Heading id="hero-title" className="mt-3 text-2xl leading-tight font-medium sm:text-5xl">
-        客人、進銷存、帳、薪資，
-        <br />
-        一個登入做完。
-      </Heading>
-      <p className="mt-4 max-w-2xl text-cream-dim sm:text-lg">
-        {COMMERCIAL.audience}進銷存與帳對齊鼎新 A1／億看，畫面只問「下一步是什麼」。
+    <section className="site-hero" aria-labelledby="hero-title">
+      <div className="min-w-0">
+        <Heading id="hero-title" className="site-display text-4xl sm:text-6xl">
+          一個登入做完
+        </Heading>
+        <p className="mt-4 max-w-xl text-cream-dim">
+          客人、進銷存、帳、薪資。{COMMERCIAL.audience}進銷存與帳對齊鼎新 A1／億看，畫面只問「下一步是什麼」。
+        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <Link href={demoHref} className="glass-pill px-5 py-2.5">
+            先看示範
+          </Link>
+          <span className="text-sm text-cream-dim">示範不用登入，資料只留在你的瀏覽器。</span>
+        </div>
+      </div>
+      <p className="site-price min-w-0">
+        <span className="site-price-unit">NT$</span>
+        <span className="site-price-figure">{PRICE_YEAR_TWD.toLocaleString("zh-TW")}</span>
+        <span className="mt-3 block text-sm text-cream-dim">一年，未稅，一間公司，不限帳號，含顧問到現場導入</span>
       </p>
-      <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-3xl font-medium sm:text-4xl">NT${PRICE_YEAR_TWD.toLocaleString("zh-TW")}</p>
-        <p className="text-cream-dim">一年・未稅・一間公司・不限帳號・含顧問到現場導入</p>
-      </div>
-      <div className="mt-8 flex flex-wrap items-center gap-3">
-        <Link href="/consulting#book" className="glass-cta rounded-full px-6 py-3 font-medium">
-          約免費導入
-        </Link>
-        <Link href={demoHref} className="glass-pill px-6 py-3">
-          先看示範
-        </Link>
-        <span className="text-sm text-cream-dim">示範不用登入，資料只留在你的瀏覽器。</span>
-      </div>
     </section>
   );
 }
@@ -52,17 +48,17 @@ export function ModuleGrid() {
           狀態照實寫：「導入時接上」是要先有你們自己的外部帳號，「試行」是可以用、但先跟顧問確認合不合適。
         </SectionTitle>
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="site-ruled">
         {MODULES.map((m) => (
-          <li key={m.id} className="site-sheet flex flex-col gap-2 p-5">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-medium">{m.name}</h3>
-              <span className="site-chip" data-tone={TONE[m.status]} title={MODULE_STATUS[m.status].hint}>
-                {MODULE_STATUS[m.status].label}
-              </span>
+          <li key={m.id} className="site-row">
+            <h3 className="font-medium">{m.name}</h3>
+            <div className="min-w-0 text-sm text-cream-dim">
+              <p>{m.detail}</p>
+              {m.note ? <p className="mt-1 text-xs">＊{m.note}</p> : null}
             </div>
-            <p className="text-sm text-cream-dim">{m.detail}</p>
-            {m.note ? <p className="mt-auto pt-1 text-xs text-cream-dim">＊{m.note}</p> : null}
+            <span className="site-chip" data-tone={TONE[m.status]} title={MODULE_STATUS[m.status].hint}>
+              {MODULE_STATUS[m.status].label}
+            </span>
           </li>
         ))}
       </ul>
@@ -79,7 +75,7 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
           差別在畫面：用現場的話、這個行業用不到的欄位先藏起來，再加上它們沒有的對話與客人。
         </SectionTitle>
       </div>
-      <div className="site-sheet hidden overflow-hidden md:block">
+      <div className="site-ruled hidden md:block">
         <table className="w-full text-left text-sm">
           <thead className="text-cream-dim">
             <tr>
@@ -103,9 +99,9 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
           </tbody>
         </table>
       </div>
-      <ul className="space-y-3 md:hidden">
+      <ul className="site-ruled md:hidden">
         {rows.map((row) => (
-          <li key={row.capability} className="site-sheet p-4 text-sm">
+          <li key={row.capability} className="py-4 text-sm">
             <p className="font-medium">{row.capability}</p>
             <dl className="mt-2 grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-1">
               <dt className="text-cream-dim">鼎新 A1</dt>
@@ -125,7 +121,7 @@ export function ParityPreview({ full = false }: { full?: boolean }) {
         ))}
       </ul>
       {full ? null : (
-        <Link href="/saas" className="scene-type inline-block text-sm underline underline-offset-4 hover:text-cream">
+        <Link href="/saas" className="inline-block text-sm underline underline-offset-4 hover:text-cream">
           看完整對照（{ERP_PARITY.length} 項）與可以停掉的訂閱
         </Link>
       )}
@@ -141,11 +137,11 @@ export function OnboardingSteps() {
           導入含在年費裡，不另外開「導入專案」的帳單。
         </SectionTitle>
       </div>
-      <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ol className="site-steps">
         {ONBOARDING_FLOW.map((step) => (
-          <li key={step.id} className="site-sheet p-5">
-            <p className="display text-sm text-cream-dim">步驟 {step.id}</p>
-            <h3 className="mt-1 text-lg font-medium">{step.title}</h3>
+          <li key={step.id}>
+            <p className="site-step-no">{step.id}</p>
+            <h3 className="mt-2 text-lg font-medium">{step.title}</h3>
             <p className="mt-2 text-sm text-cream-dim">{step.body}</p>
           </li>
         ))}
@@ -157,15 +153,15 @@ export function OnboardingSteps() {
 export function TrustStrip() {
   return (
     <section aria-labelledby="trust" className="space-y-4">
-      <h2 id="trust" className="site-sheet inline-block !rounded-2xl px-4 py-2 text-lg font-medium">
+      <h2 id="trust" className="site-display text-2xl">
         簽約前可以先看的文件
       </h2>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="site-ruled">
         {TRUST_LINKS.map((t) => (
           <li key={t.href}>
-            <Link href={t.href} className="site-sheet block h-full p-4 hover:bg-ink-2">
-              <span className="font-medium">{t.label} →</span>
-              <span className="mt-1 block text-sm text-cream-dim">{t.detail}</span>
+            <Link href={t.href} className="site-row hover:text-cream">
+              <span className="font-medium">{t.label}</span>
+              <span className="text-sm text-cream-dim">{t.detail}</span>
             </Link>
           </li>
         ))}
@@ -181,12 +177,12 @@ export function FaqList() {
       <div id="faq">
         <SectionTitle kicker="常見問題" title="買之前大家會問的" />
       </div>
-      <div className="site-sheet divide-y divide-[var(--line)]">
+      <div className="site-ruled">
         {FAQ.map((item) => (
-          <details key={item.q} className="group px-5 py-4">
+          <details key={item.q} className="group py-4">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
               {item.q}
-              <span aria-hidden className="text-cream-dim transition group-open:rotate-45">
+              <span aria-hidden className="text-cream-dim transition-transform group-open:rotate-45">
                 +
               </span>
             </summary>

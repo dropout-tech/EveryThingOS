@@ -1,4 +1,8 @@
+/* Hallmark v2.0.0 · redesign: full · theme: ink, by request · direction: black and white · modes: light+dark · brand: Noto Sans TC, Outfit, the existing teal · hero: the price sits beside the line · signature: NT$100,000 */
+/* critique: a notice printed in ink; teal only marks a module that is ready; one filled button */
+/* waive 22 · these blacks and whites stay hueless, as the site already set them; teal is the brand and is not a second surface */
 @import "tailwindcss";
+@import "./tokens.css";
 
 @font-face {
   font-family: "jf open huninn";
@@ -12,8 +16,7 @@
    ------------------------------------------------------------------ */
 
 :root,
-html[data-theme="white"],
-html[data-theme="white"] [data-brand="everythingos"] {
+html[data-theme="white"] {
   color-scheme: light;
   --canvas: #f7f7f8;
   --surface: #ffffff;
@@ -38,10 +41,12 @@ html[data-theme="white"] [data-brand="everythingos"] {
   --shadow-md: 0 1px 2px rgba(16, 16, 20, 0.04), 0 8px 24px rgba(16, 16, 20, 0.06);
   --shadow-lg: 0 2px 6px rgba(16, 16, 20, 0.06), 0 24px 60px rgba(16, 16, 20, 0.14);
   --backdrop: rgba(16, 16, 20, 0.36);
+  --print-paper: #f7f7f8;
+  --print-ink: #18181b;
+  --print-mark: #fff3c4;
 }
 
-html[data-theme="black"],
-html[data-theme="black"] [data-brand="everythingos"] {
+html[data-theme="black"] {
   color-scheme: dark;
   --canvas: #0b0b0c;
   --surface: #141416;
@@ -66,50 +71,6 @@ html[data-theme="black"] [data-brand="everythingos"] {
   --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.4), 0 24px 60px rgba(0, 0, 0, 0.5);
   --backdrop: rgba(0, 0, 0, 0.6);
-}
-
-/* Store look: 米特製造所 — cream paper, navy ink, teal, round type. */
-html[data-theme="white"] [data-brand="meetplus"],
-:root:not([data-theme="black"]) [data-brand="meetplus"] {
-  --canvas: #fffbef;
-  --surface: #ffffff;
-  --surface-2: #fdf5e1;
-  --surface-3: #f6ead0;
-  --border: #ecdfc2;
-  --border-strong: #dccca6;
-  --text: #123f59;
-  --text-2: #24526d;
-  --muted: #5a7686;
-  --accent: #1597a0;
-  --accent-hover: #0f7f87;
-  --accent-soft: rgba(28, 179, 187, 0.12);
-  --accent-ring: rgba(28, 179, 187, 0.3);
-  --on-accent: #ffffff;
-  --warn: #a35f00;
-  --shadow-sm: 0 1px 0 rgba(18, 63, 89, 0.06);
-  --rail-bg: #fffdf6;
-  --glyph-bg: #123f59;
-  --glyph-fg: #fffbef;
-}
-
-html[data-theme="black"] [data-brand="meetplus"] {
-  --canvas: #0b2131;
-  --surface: #11304a;
-  --surface-2: #16395a;
-  --surface-3: #1d4466;
-  --border: #224a6a;
-  --border-strong: #2f5b7e;
-  --text: #fffbef;
-  --text-2: #f1e9d4;
-  --muted: #b5c3c9;
-  --accent: #3fc6cd;
-  --accent-hover: #67d6dc;
-  --accent-soft: rgba(63, 198, 205, 0.14);
-  --accent-ring: rgba(63, 198, 205, 0.34);
-  --on-accent: #062a33;
-  --warn: #f5c82f;
-  --glyph-bg: #f5c82f;
-  --glyph-fg: #123f59;
 }
 
 [data-brand="meetplus"] {
@@ -199,6 +160,7 @@ body {
   background: var(--canvas);
   color: var(--text);
   scroll-padding-top: 5rem;
+  overflow-x: clip;
 }
 
 body {
@@ -486,7 +448,6 @@ summary.glass-pill:hover {
   margin: 0.75rem 0 0.25rem;
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
   color: var(--muted);
 }
 
@@ -782,7 +743,7 @@ summary.glass-pill:hover {
     bottom: calc(1rem + env(safe-area-inset-bottom));
     z-index: 60;
     display: flex;
-    width: min(32rem, calc(100vw - 1.5rem));
+    width: min(32rem, calc(100% - 1.5rem));
     flex-direction: column;
     gap: 0.5rem;
     transform: translateX(-50%);
@@ -841,7 +802,7 @@ summary.glass-pill:hover {
 
   .dialog,
   .site-dialog {
-    width: min(28rem, calc(100vw - 2rem));
+    width: min(28rem, calc(100% - 2rem));
     margin: auto;
     padding: 0;
     border: 1px solid var(--border);
@@ -866,7 +827,7 @@ summary.glass-pill:hover {
 
   @media (min-width: 768px) {
     .dialog-sheet {
-      width: min(28rem, calc(100vw - 2rem));
+      width: min(28rem, calc(100% - 2rem));
       margin: auto;
       border-radius: var(--radius-xl);
     }
@@ -1214,10 +1175,17 @@ summary.glass-pill:hover {
 }
 
 .dash-tools button:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
   opacity: 0.35;
+  cursor: not-allowed;
 }
 
 /* ---------- Site pages ---------- */
+
+.site-scope details:not([open]) > :not(summary) {
+  display: none;
+}
 
 .site-scope :is(a, button, input, select, textarea, summary):focus-visible {
   outline: 2px solid var(--focus);
@@ -1225,8 +1193,135 @@ summary.glass-pill:hover {
   border-radius: 8px;
 }
 
+header.site-scope.glass-bar,
+footer.site-scope.glass-bar {
+  background: var(--canvas);
+  backdrop-filter: none;
+}
+
+.site-scope .site-sheet,
+.site-scope .glass-well {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.site-scope .glass-cta,
+.site-scope .glass-pill {
+  border-radius: 10px;
+}
+
+.site-scope .site-chip::before {
+  content: none;
+}
+
+.site-scope .site-chip {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--text-2);
+}
+
+.site-scope .site-chip[data-tone="ok"] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.site-hero {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+  min-width: 0;
+  padding: 0.25rem 0 2rem;
+  border-bottom: 1px solid var(--text);
+}
+
+.site-display {
+  font-weight: 700;
+  line-height: 1.05;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.site-price-unit,
+.site-price-figure {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.site-price-unit {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.site-price-figure {
+  font-size: clamp(3.25rem, 7vw, 5.25rem);
+  line-height: 0.92;
+}
+
+.site-ruled {
+  border-top: 1px solid var(--text);
+}
+
+.site-ruled > li,
+.site-ruled > details {
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+
+.site-row {
+  display: grid;
+  gap: 0.35rem 1.5rem;
+  align-items: baseline;
+  padding: 0.9rem 0;
+  min-width: 0;
+}
+
+.site-steps {
+  display: grid;
+  border-top: 1px solid var(--text);
+}
+
+.site-steps > li {
+  min-width: 0;
+  padding: 1rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-step-no {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
 .site-sheet {
   border-radius: var(--radius-xl);
+}
+
+@media (min-width: 800px) {
+  .site-hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 3rem;
+    align-items: end;
+  }
+
+  .site-row {
+    grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) auto;
+  }
+
+  .site-steps {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+
+  .site-steps > li {
+    padding-right: 1.25rem;
+    border-right: 1px solid var(--border);
+  }
 }
 
 .site-todo {
@@ -1278,7 +1373,10 @@ summary.glass-pill:hover {
   .skeleton,
   .spinner,
   .glass-lift,
-  .nav-link {
+  .glass-cta,
+  .nav-link,
+  .site-scope .transition,
+  .site-scope .transition-transform {
     animation: none;
     transition: none;
   }
@@ -1300,16 +1398,16 @@ summary.glass-pill:hover {
 
   html,
   body {
-    background: #fff !important;
-    color: #000 !important;
+    background: var(--print-paper) !important;
+    color: var(--print-ink) !important;
   }
 
   .site-print :is(h1, h2, h3, p, li, td, th, span, a, mark, dt, dd) {
-    color: #000 !important;
+    color: var(--print-ink) !important;
   }
 
   .site-print .site-todo {
-    background: #fff3c4 !important;
+    background: var(--print-mark) !important;
   }
 
   .site-print .site-sheet,

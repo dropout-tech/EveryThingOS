@@ -4,7 +4,7 @@ import { BrandMark } from "./BrandMark";
 import { SITE_NAV } from "@/lib/commercial";
 import { hasChosenIndustry } from "@/lib/workspace";
 
-export async function SiteHeader() {
+export async function SiteHeader({ primary = true }: { primary?: boolean } = {}) {
   const chosen = await hasChosenIndustry();
 
   return (
@@ -37,7 +37,7 @@ export async function SiteHeader() {
             <Link href={chosen ? "/workspace" : "/?setup=1"} className="hidden text-sm text-cream-dim hover:text-cream sm:inline">
               {chosen ? "回到今天" : "先看示範"}
             </Link>
-            <Link href="/consulting#book" className="glass-cta rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap">
+            <Link href="/consulting#book" className={primary ? "glass-cta px-4 py-2 text-sm font-medium whitespace-nowrap" : "text-sm text-cream-dim hover:text-cream"}>
               約免費導入
             </Link>
             <details className="relative lg:hidden">

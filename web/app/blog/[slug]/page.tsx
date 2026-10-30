@@ -25,9 +25,9 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
     <>
       <SiteHeader />
       <main id="main" className="site-scope mx-auto max-w-3xl px-5 py-10 sm:py-14">
-        <article className="site-sheet space-y-5 p-6 sm:p-8">
+        <article className="space-y-5">
           <nav aria-label="位置" className="text-sm text-cream-dim">
-            <Link href="/blog" className="hover:text-cream">
+            <Link href="/blog" className="underline underline-offset-4 hover:text-cream">
               部落格
             </Link>
           </nav>
@@ -35,7 +35,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
             <time dateTime={post.date} className="text-sm text-cream-dim">
               {formatPostDate(post.date)}
             </time>
-            <h1 className="text-3xl font-medium sm:text-4xl">{post.title}</h1>
+            <h1 className="site-display text-3xl sm:text-4xl">{post.title}</h1>
             <p className="text-cream-dim">{post.description}</p>
           </header>
           {post.paragraphs.map((paragraph) => (
@@ -44,15 +44,15 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
         </article>
         {more.length ? (
           <section className="mt-10 space-y-3" aria-labelledby="more-posts">
-            <h2 id="more-posts" className="text-sm text-cream-dim">
+            <h2 id="more-posts" className="text-sm font-medium">
               其他文章
             </h2>
-            <ul className="space-y-3">
+            <ul className="site-ruled">
               {more.map((item) => (
                 <li key={item.slug}>
-                  <Link href={`/blog/${item.slug}`} className="site-sheet block p-4">
+                  <Link href={`/blog/${item.slug}`} className="site-row">
                     <span className="font-medium">{item.title}</span>
-                    <span className="mt-1 block text-sm text-cream-dim">{formatPostDate(item.date)}</span>
+                    <span className="text-sm text-cream-dim">{formatPostDate(item.date)}</span>
                   </Link>
                 </li>
               ))}

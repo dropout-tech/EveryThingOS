@@ -20,9 +20,8 @@ export default function IndustriesPage() {
     <>
       <SiteHeader />
       <main id="main" className="site-scope mx-auto max-w-6xl px-5 py-10 sm:py-14">
-        <header className="site-sheet p-6 sm:p-10">
-          <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">產業包</p>
-          <h1 className="mt-3 text-3xl font-medium sm:text-4xl">{total} 種行業，選了才知道今天做什麼</h1>
+        <header className="max-w-2xl">
+          <h1 className="site-display text-3xl sm:text-5xl">{total} 種行業，選了才知道今天做什麼</h1>
           <p className="mt-4 max-w-2xl text-cream-dim">
             不用在一百張卡片裡用眼睛掃。先搜，點下去就開始示範。每一包都設定好在賣什麼、怎麼交給客人、每天看哪些數字；產業包可以隨時切換，不另外收費。
           </p>
@@ -37,13 +36,15 @@ export default function IndustriesPage() {
                 {group.group}
                 <span className="ml-2 text-sm text-cream-dim">{group.items.length}</span>
               </h2>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="site-ruled mt-4">
                 {group.items.map((item) => (
                   <li key={item.id}>
-                    <Link href={`/industries/${item.id}`} className="glass-well block h-full p-4 hover:bg-ink-2">
-                      <p className="font-medium">{item.nameZh}</p>
-                      <p className="mt-2 text-sm text-cream-dim">{item.tagline}</p>
-                      <p className="mt-2 text-xs text-cream-dim">{item.sampleLoop}</p>
+                    <Link href={`/industries/${item.id}`} className="site-row">
+                      <span className="font-medium">{item.nameZh}</span>
+                      <span className="min-w-0 text-sm text-cream-dim">
+                        {item.tagline}
+                        <span className="mt-1 block text-xs">{item.sampleLoop}</span>
+                      </span>
                     </Link>
                   </li>
                 ))}

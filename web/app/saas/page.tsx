@@ -16,13 +16,12 @@ export default function SaasPage() {
     <>
       <SiteHeader />
       <main id="main" className="site-scope mx-auto max-w-6xl space-y-14 px-5 py-10 sm:py-14">
-        <header className="site-sheet p-6 sm:p-10">
-          <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">現在付的那些帳</p>
-          <h1 className="mt-3 text-3xl font-medium sm:text-4xl">先取代鼎新 A1 或億看</h1>
-          <p className="mt-4 max-w-2xl text-cream-dim">
-            進銷存與帳，對齊台灣中小企業最常用的兩套。更好用的地方：用現場的話、這個行業用不到的欄位先藏起來、今天先做一件，以及它們沒有的對話與客人。
+        <header className="max-w-2xl">
+          <h1 className="site-display text-3xl sm:text-5xl">先取代鼎新 A1 或億看</h1>
+          <p className="mt-4 text-cream-dim">
+            現在付的那些帳。進銷存與帳，對齊台灣中小企業最常用的兩套。更好用的地方：用現場的話、這個行業用不到的欄位先藏起來、今天先做一件，以及它們沒有的對話與客人。
           </p>
-          <Link href="/consulting#book" className="glass-cta mt-6 inline-flex rounded-full px-6 py-3 font-medium">
+          <Link href="/consulting#book" className="glass-pill mt-6 inline-flex px-5 py-2.5">
             約顧問看我們現在的系統
           </Link>
         </header>
@@ -33,14 +32,12 @@ export default function SaasPage() {
               這些不是每一家都在用；列出來是讓你們對照現在付了哪些。
             </SectionTitle>
           </div>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="site-ruled">
             {SAAS_MATRIX.map((row) => (
-              <li key={row.category} className="site-sheet p-4 text-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-medium">{row.category}</p>
-                  <span className="site-chip shrink-0">{row.pillar}</span>
-                </div>
-                <p className="mt-2 text-cream-dim">{row.tools.join("、")}</p>
+              <li key={row.category} className="site-row text-sm">
+                <p className="font-medium">{row.category}</p>
+                <p className="text-cream-dim">{row.tools.join("、")}</p>
+                <span className="site-chip">{row.pillar}</span>
               </li>
             ))}
           </ul>

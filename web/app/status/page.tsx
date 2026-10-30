@@ -93,7 +93,7 @@ export default async function StatusPage() {
       <main id="main" className="site-scope mx-auto max-w-3xl space-y-6 px-5 py-10 sm:py-14">
         <section className="site-sheet p-6 sm:p-10" aria-live="polite">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">系統狀態</p>
+            <p className="text-sm text-cream-dim">系統狀態</p>
             {origin === "demo" ? (
               <span className="site-chip" data-tone="warn">
                 示範資料

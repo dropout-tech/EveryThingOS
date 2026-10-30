@@ -26,9 +26,9 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
     <>
       <SiteHeader />
       <main id="main" className="site-scope site-print mx-auto max-w-6xl px-5 py-10 sm:py-14">
-        <header className="site-sheet p-6 sm:p-10">
-          <p className="display text-xs tracking-[0.22em] text-cream-dim uppercase">{doc.kicker}</p>
-          <h1 className="mt-3 text-3xl font-medium sm:text-4xl">{doc.title}</h1>
+        <header className="border-b border-[var(--text)] pb-8">
+          <h1 className="site-display text-3xl sm:text-5xl">{doc.title}</h1>
+          <p className="mt-3 text-sm text-cream-dim">{doc.kicker}</p>
           <p className="mt-4 max-w-3xl text-cream-dim">{doc.summary}</p>
           <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
             <span className="site-chip" data-tone="warn">
@@ -56,7 +56,7 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
               </ol>
             </details>
             <div className="site-sheet hidden max-h-[calc(100vh-8rem)] overflow-y-auto p-5 lg:block">
-              <p className="text-xs tracking-[0.18em] text-cream-dim">目錄</p>
+              <p className="text-sm text-cream-dim">目錄</p>
               <ol className="mt-3 space-y-2 text-sm text-cream-dim">
                 {doc.sections.map((s, i) => (
                   <li key={s.heading}>
