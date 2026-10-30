@@ -126,6 +126,25 @@ function parseReturn(args: Record<string, unknown>): AgentCall {
   return { ok: true, tool: "return_against_delivery", args: { delivery_note, qty } };
 }
 
+/** Where a confirmed call is posted. This does not post it. */
+export function confirmRequest(call: AgentCall): { path: string; body: Record<string, unknown> } | null {
+  if (!call.ok) return null;
+  switch (call.tool) {
+    case "create_quotation":
+      return { path: "/api/erp/quotation", body: { party_type: "Customer", party: call.args.party, items: call.args.items } };
+    case "advance":
+      return { path: "/api/erp/advance", body: call.args };
+    case "record_deposit":
+      return { path: "/api/erp/deposit", body: call.args };
+    case "deliver_partial":
+      return { path: "/api/erp/partial", body: call.args };
+    case "return_against_delivery":
+      return { path: "/api/erp/return", body: call.args };
+    default:
+      return null;
+  }
+}
+
 export function parseAgentCall(input: unknown): AgentCall {
   if (!isRecord(input)) return fail(DENIED);
   const tool = typeof input.tool === "string" ? input.tool.trim() : "";

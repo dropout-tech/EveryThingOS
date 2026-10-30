@@ -1,6 +1,6 @@
 import frappe
 from frappe.tests.utils import FrappeTestCase
-from frappe.utils import add_days, nowdate
+from frappe.utils import add_days, flt, nowdate
 
 from dropout_core import api
 from dropout_core.checks import run_all, summary
@@ -237,7 +237,10 @@ class TestShellReadModels(FrappeTestCase):
 		books = shell.books()
 		self.assertEqual(books["denied"], [])
 		self.assertIn(order.name, [d["no"] for d in books["sales"]])
-		self.assertEqual(next(d for d in books["sales"] if d["no"] == order.name)["href"], f"/app/sales-order/{order.name}")
+		row = next(d for d in books["sales"] if d["no"] == order.name)
+		self.assertEqual(row["href"], f"/app/sales-order/{order.name}")
+		self.assertGreaterEqual(flt(row["previous_balance"]), 0)
+		self.assertNotIn("delivery_note", row)
 		for key in ("month_sales", "ar", "ap", "cash", "inventory_value", "stock", "ar_aging", "journals", "einvoices", "pnl"):
 			self.assertIn(key, books)
 		self.assertIn(customer, [p["party"] for p in shell.people()])

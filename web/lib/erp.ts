@@ -163,6 +163,10 @@ export type SalesDoc = {
   invoiceNo?: string;
   href?: string;
   doctype?: string;
+  /** 這張單之前，客人已開發票還沒收的錢。沒寫就不印前餘。 */
+  previousBalance?: number;
+  /** 這張訂單最近一張非退貨的出貨單。沒寫就沒有「退這次」。 */
+  deliveryNote?: string;
 };
 
 export function remainingQty(doc: Pick<SalesDoc, "orderedQty" | "deliveredQty">) {

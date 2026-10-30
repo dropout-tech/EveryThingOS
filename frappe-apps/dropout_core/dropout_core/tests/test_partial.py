@@ -3,6 +3,7 @@ from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, flt, nowdate
 
 from dropout_core.partial import deliver_partial
+from dropout_core.shell import books
 from dropout_core.tests.test_dropout_flow import company, leaf, make_customer
 
 
@@ -122,6 +123,9 @@ class TestPartialDelivery(FrappeTestCase):
 		self.assertEqual(flt(frappe.db.get_value("Delivery Note Item", {"parent": first["created"]["name"]}, "qty")), 6)
 		self.assertEqual(frappe.db.get_value("Delivery Note Item", {"parent": first["created"]["name"]}, "warehouse"), wh)
 		self._assert_no_tax(first["created"]["name"], 6 * rate)
+		listed = next(row for row in books()["sales"] if row["no"] == order)
+		self.assertEqual(listed["delivery_note"], first["created"]["name"])
+		self.assertGreaterEqual(flt(listed["previous_balance"]), 0)
 
 		over = deliver_partial(order, 5)
 		self.assertFalse(over["ok"], over)

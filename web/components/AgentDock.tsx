@@ -1,15 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { confirm, dismiss, stage, type Proposal } from "@/lib/agent-confirm";
+import { confirmRequest, parseAgentCall } from "@/lib/agent-tools";
 import { AgentPanel, type AgentTurn } from "./AgentPanel";
 
-/** Asks the shell agent and shows the reply. The reply never includes a created document. */
+type Held = Proposal & { args: Record<string, unknown> };
+
+/** Asks for one proposal, then posts it only after the staff confirms. */
 export function AgentDock({ open }: { open: boolean }) {
   const [busy, setBusy] = useState(false);
   const [transcript, setTranscript] = useState<AgentTurn[]>([]);
+  const [pending, setPending] = useState<Held | null>(null);
+
+  function say(role: AgentTurn["role"], text: string) {
+    setTranscript((current) => [...current, { role, text }]);
+  }
 
   async function onAsk(message: string) {
-    setTranscript((current) => [...current, { role: "staff", text: message }]);
+    say("staff", message);
     setBusy(true);
     try {
       const res = await fetch("/api/agent", {
@@ -17,15 +26,58 @@ export function AgentDock({ open }: { open: boolean }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ message }),
       });
-      const data = (await res.json()) as { message?: string };
-      const text = typeof data.message === "string" && data.message.trim() ? data.message : "這一步不會寫入單據。";
-      setTranscript((current) => [...current, { role: "agent", text }]);
+      const data = (await res.json()) as { message?: string; proposal?: Held };
+      const proposal = data.proposal;
+      if (res.ok && proposal?.id && proposal.tool && proposal.summary && proposal.args) {
+        setPending((current) => stage(current, proposal) as Held);
+        say("agent", proposal.summary);
+        return;
+      }
+      say("agent", typeof data.message === "string" && data.message.trim() ? data.message : "這一步不會寫入單據。");
     } catch {
-      setTranscript((current) => [...current, { role: "agent", text: "代理人還沒接上。單據仍然在 ERPNext。" }]);
+      say("agent", "代理人還沒接上。單據仍然在 ERPNext。");
     } finally {
       setBusy(false);
     }
   }
 
-  return <AgentPanel open={open} busy={busy} transcript={transcript} proposal={null} onAsk={onAsk} onConfirm={() => undefined} onDismiss={() => undefined} />;
+  async function onConfirm() {
+    if (!pending) return;
+    const decided = confirm(pending, pending.id);
+    setPending(decided.pending as Held | null);
+    const accepted = decided.accepted as Held | null;
+    if (!accepted) return;
+    const request = confirmRequest(parseAgentCall({ tool: accepted.tool, args: accepted.args }));
+    if (!request) {
+      say("agent", "這個動作不能從這裡做");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch(request.path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(request.body),
+      });
+      const data = (await res.json()) as { ok?: boolean; message?: string; created?: { name?: string } };
+      if (data.ok && data.created?.name) say("agent", `已寫入 ${data.created.name}`);
+      else say("agent", data.message?.trim() || "這一步不會寫入單據。");
+    } catch {
+      say("agent", "代理人還沒接上。單據仍然在 ERPNext。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AgentPanel
+      open={open}
+      busy={busy}
+      transcript={transcript}
+      proposal={pending ? { tool: pending.tool, summary: pending.summary } : null}
+      onAsk={onAsk}
+      onConfirm={() => void onConfirm()}
+      onDismiss={() => setPending(dismiss(pending))}
+    />
+  );
 }

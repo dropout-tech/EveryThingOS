@@ -6,6 +6,7 @@ import { hmacSha256, safeEqual, toBase64 } from "./crypto";
 import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent, type Job } from "./jobs";
 import { errorText, log } from "./log";
 import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
+import { staffProposal } from "./agent";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { healthResponse, monitorStore, statusResponse, uptime } from "./monitor";
 import type { MonitorStore } from "./monitor-store";
@@ -185,6 +186,13 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
   const tenantFor = async (site: string | null | undefined): Promise<Tenant | null> => (site ? store.getTenant(site) : null);
 
   if (parts[0] === "health") return healthResponse(env, app);
+  if (parts[0] === "agent" && !parts[1] && req.method === "POST") {
+    if (!caller(req, env)) return text("forbidden", 403);
+    const body = (await req.json().catch(() => ({}))) as { message?: unknown };
+    const message = typeof body.message === "string" ? body.message : "";
+    const proposed = await staffProposal(env.AI, env.SUMMARY_MODEL ?? "@cf/meta/llama-3.3-70b-instruct-fp8-fast", message);
+    return json(proposed, proposed.ok ? 200 : 409);
+  }
   if (parts[0] === "status" && !parts[1] && req.method === "GET") {
     const site = url.searchParams.get("site");
     if (site && !caller(req, env)) return text("forbidden", 403);

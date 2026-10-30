@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { ACTION_PROMPT, proposeAction } from "../src/agent";
+import { handle, type App, type Env } from "../src/app";
+import { ACTION_PROMPT, proposeAction, staffProposal } from "../src/agent";
 import type { Ai } from "../src/meetings";
+import { MemoryStore } from "../src/store";
 
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
 
@@ -50,6 +52,29 @@ describe("proposeAction", () => {
       response: "```json\n" + JSON.stringify({ tool: "record_deposit", args }) + "\n```",
     }));
     expect(await proposeAction(fake(run), MODEL, "SO-9 收訂金 500")).toEqual({ ok: true, tool: "record_deposit", args });
+  });
+
+  it("without a model, does not invent a document", async () => {
+    expect(await staffProposal(undefined, MODEL, "幫宏達開一張傳動軸")).toEqual({
+      ok: false,
+      message: "進階版的代理人還沒接上模型。這一步不會寫入單據。",
+    });
+  });
+
+  it("POST /agent says the model is missing and does not write", async () => {
+    const env = { JOBS: { send: async () => undefined }, TENANT_KEY: "x", ADMIN_TOKEN: "admin", SHELL_TOKEN: "shell" } as unknown as Env;
+    const app: App = { store: () => new MemoryStore(), fetcher: fetch };
+    const post = (authorization?: string) =>
+      new Request("https://glue.example/agent", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...(authorization ? { authorization } : {}) },
+        body: JSON.stringify({ message: "幫宏達開一張傳動軸" }),
+      });
+    const denied = await handle(post(), env, app);
+    expect(denied.status).toBe(403);
+    const res = await handle(post("Bearer admin"), env, app);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ ok: false, message: "進階版的代理人還沒接上模型。這一步不會寫入單據。" });
   });
 
   it("accepts a string response", async () => {

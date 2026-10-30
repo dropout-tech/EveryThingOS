@@ -45,53 +45,93 @@ def _readable(doctype, denied, **kwargs):
 		return []
 
 
+def _outstanding(company):
+	"""Submitted invoice balance still owed, once per customer."""
+	cache = {}
+
+	def of(customer):
+		if not customer:
+			return 0.0
+		if customer not in cache:
+			cache[customer] = flt(
+				frappe.db.sql(
+					"select coalesce(sum(outstanding_amount), 0) from `tabSales Invoice` where customer=%s and company=%s and docstatus=1",
+					(customer, company),
+				)[0][0]
+			)
+		return cache[customer]
+
+	return of
+
+
+def _latest_delivery(sales_order):
+	row = frappe.db.sql(
+		"""select dn.name from `tabDelivery Note Item` dni
+		inner join `tabDelivery Note` dn on dn.name = dni.parent
+		where dni.against_sales_order = %s and dn.docstatus = 1 and ifnull(dn.is_return, 0) = 0
+		order by dn.posting_date desc, dn.modified desc
+		limit 1""",
+		(sales_order,),
+	)
+	return row[0][0] if row else None
+
+
 def _sales(company, today, denied):
 	docs = []
+	owed = _outstanding(company)
 	for q in _readable(
 		"Quotation",
 		denied,
 		filters={"company": company, "docstatus": 1, "status": ["in", ["Open", "Replied"]]},
-		fields=["name", "party_name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty"],
+		fields=["name", "party_name", "quotation_to", "customer_name", "net_total", "total_taxes_and_charges", "total_qty"],
 		order_by="modified desc",
 		limit=LIMIT,
 	):
-		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "doctype": "Quotation", "href": _desk("Quotation", q.name)})
+		customer = q.party_name if q.quotation_to == "Customer" else None
+		docs.append({"no": q.name, "party": q.customer_name or q.party_name, "qty": q.total_qty, "amount": q.net_total, "tax": q.total_taxes_and_charges, "step": "quote", "doctype": "Quotation", "previous_balance": owed(customer), "href": _desk("Quotation", q.name)})
 	for so in _readable(
 		"Sales Order",
 		denied,
 		filters={"company": company, "docstatus": 1, "status": ["in", ["To Deliver and Bill", "To Deliver", "To Bill"]]},
-		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "per_delivered"],
+		fields=["name", "customer", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "per_delivered"],
 		order_by="modified desc",
 		limit=LIMIT,
 	):
 		step = "fulfill" if flt(so.per_delivered) >= 100 else "order"
 		ordered = flt(so.total_qty)
 		delivered = ordered * flt(so.per_delivered) / 100
-		docs.append({"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "ordered_qty": ordered, "delivered_qty": delivered, "href": _desk("Sales Order", so.name)})
+		row = {"no": so.name, "party": so.customer_name, "qty": so.total_qty, "amount": so.net_total, "tax": so.total_taxes_and_charges, "step": step, "doctype": "Sales Order", "ordered_qty": ordered, "delivered_qty": delivered, "previous_balance": owed(so.customer), "href": _desk("Sales Order", so.name)}
+		note = _latest_delivery(so.name)
+		if note:
+			row["delivery_note"] = note
+		docs.append(row)
 	for si in _readable(
 		"Sales Invoice",
 		denied,
 		filters={"company": company, "docstatus": 1, "is_opening": "No", "posting_date": [">=", add_months(today, -3)]},
-		fields=["name", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "outstanding_amount", "due_date", "dropout_einvoice_number"],
+		fields=["name", "customer", "customer_name", "net_total", "total_taxes_and_charges", "total_qty", "outstanding_amount", "due_date", "dropout_einvoice_number"],
 		order_by="posting_date desc",
 		limit=LIMIT,
 	):
 		paid = flt(si.outstanding_amount) <= 0
 		overdue = date_diff(today, si.due_date) if si.due_date and not paid else 0
-		docs.append(
-			{
-				"no": si.name,
-				"party": si.customer_name,
-				"qty": si.total_qty,
-				"amount": si.net_total,
-				"tax": si.total_taxes_and_charges,
-				"step": "paid" if paid else "invoice",
-				"overdue_days": overdue if overdue > 0 else None,
-				"invoice_no": si.dropout_einvoice_number,
-				"doctype": "Sales Invoice",
-				"href": _desk("Sales Invoice", si.name),
-			}
-		)
+		row = {
+			"no": si.name,
+			"party": si.customer_name,
+			"qty": si.total_qty,
+			"amount": si.net_total,
+			"tax": si.total_taxes_and_charges,
+			"step": "paid" if paid else "invoice",
+			"overdue_days": overdue if overdue > 0 else None,
+			"invoice_no": si.dropout_einvoice_number,
+			"doctype": "Sales Invoice",
+			"href": _desk("Sales Invoice", si.name),
+		}
+		# A paid or partly paid bill is not "前餘 + 本筆". Leave it off so the slip does not add money already received.
+		own = flt(si.outstanding_amount)
+		if flt(si.total_taxes_and_charges) == 0 and own == flt(si.net_total) and flt(si.total_qty) > 0:
+			row["previous_balance"] = owed(si.customer) - own
+		docs.append(row)
 	return docs
 
 
@@ -265,6 +305,8 @@ def books(company=None):
 	s = _Sections()
 	si_month = {"company": company, "docstatus": 1, "is_opening": "No", "posting_date": [">=", month]}
 
+	ledger = {"used": False}
+
 	def month_sales():
 		def invoices():
 			return _sum("Sales Invoice", "base_net_total", si_month)
@@ -284,6 +326,7 @@ def books(company=None):
 					where company = %s and lft >= %s and rgt <= %s)""",
 				(company, month, add_months(month, 1), company, bounds.lft, bounds.rgt),
 			)[0][0]
+			ledger["used"] = True
 			return flt(total)
 		except Exception:
 			return invoices()
@@ -313,7 +356,7 @@ def books(company=None):
 		"currency": frappe.get_cached_value("Company", company, "default_currency") if company else None,
 		**o,
 		"pnl": [
-			{"label": "本月銷貨（未稅）", "amount": o["month_sales"]},
+			{"label": "本月銷貨（未稅，總帳）" if ledger["used"] else "本月銷貨（未稅）", "amount": o["month_sales"]},
 			{"label": "本月進貨與費用（未稅）", "amount": -o["month_cost"]},
 			{"label": "本月差額", "amount": o["month_sales"] - o["month_cost"]},
 		],

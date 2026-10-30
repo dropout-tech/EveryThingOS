@@ -6,7 +6,9 @@ import { DocSearch } from "./DocSearch";
 import { DeskLink } from "./DeskLink";
 import { ActionOutcomeNote, AdvanceButton, useLiveAction } from "./LiveAction";
 import { LiveQuoteForm } from "./LiveQuoteForm";
+import { LiveSlipActions } from "./LiveSlipActions";
 import { NextThing } from "./NextThing";
+import { SlipText } from "./SlipText";
 import { buttonClass } from "./ui/Button";
 import { Field } from "./ui/Field";
 import { demoKey, peekDemoState, useBoardState, writeDemoState } from "@/lib/demo-state";
@@ -218,6 +220,9 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     {typeof doc.orderedQty === "number" && typeof doc.deliveredQty === "number" && doc.orderedQty > doc.deliveredQty ? (
                       <p className="mt-1 text-xs text-cream-dim">還差 {remainingQty(doc)}</p>
                     ) : null}
+                    {live && doc.tax === 0 && doc.qty > 0 && typeof doc.previousBalance === "number" ? (
+                      <SlipText party={doc.party} lines={[{ item: doc.item, qty: doc.qty, rate: doc.amount / doc.qty }]} previousBalance={doc.previousBalance} />
+                    ) : null}
                     <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}{doc.taxable === false ? " · 未稅" : ""}</p>
                     {doc.deposit ? <p className="mt-1 text-xs text-cream-dim">訂金 {formatTwd(doc.deposit)}，尾款另計</p> : null}
                     {doc.kind === "change" ? <p className="mt-1 text-xs text-cream-dim">追加，原單 {doc.parentNo}</p> : null}
@@ -234,6 +239,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     ) : null}
                     {live ? (
                       <>
+                        <LiveSlipActions doc={doc} run={action.run} busy={action.busy} />
                         {doc.next !== "完成" ? <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} /> : null}
                         <DeskLink href={doc.href} className={buttonClass({ variant: "ghost", size: "sm", block: true, className: "mt-1" })}>
                           打開

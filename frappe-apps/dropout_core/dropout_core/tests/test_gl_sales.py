@@ -48,13 +48,13 @@ def ledger_income_account(co):
 	return names[0] if names else root
 
 
-def submit_untaxed_invoice(amount=1000):
+def submit_untaxed_invoice(amount=1000, customer=None):
 	co = company()
 	income = ledger_income_account(co)
 	doc = frappe.get_doc(
 		{
 			"doctype": "Sales Invoice",
-			"customer": make_customer(f"未稅銷貨-{frappe.generate_hash(length=6)}"),
+			"customer": customer or make_customer(f"未稅銷貨-{frappe.generate_hash(length=6)}"),
 			"company": co,
 			"posting_date": nowdate(),
 			"due_date": nowdate(),
@@ -90,3 +90,24 @@ class TestGLSales(FrappeTestCase):
 		self.assertAlmostEqual(invoice.base_net_total, 1000)
 		self.assertAlmostEqual(after - before, invoice.base_net_total)
 		self.assertTrue(frappe.db.exists("GL Entry", {"voucher_type": "Sales Invoice", "voucher_no": invoice.name, "is_cancelled": 0}))
+		label = "本月銷貨（未稅，總帳）" if frappe.db.get_value("Company", invoice.company, "default_income_account") else "本月銷貨（未稅）"
+		self.assertEqual(books()["pnl"][0]["label"], label)
+
+	def test_open_invoice_previous_balance_excludes_itself(self):
+		customer = make_customer(f"前餘-{frappe.generate_hash(length=6)}")
+		first = submit_untaxed_invoice(1000, customer)
+		second = submit_untaxed_invoice(400, customer)
+		rows = {row["no"]: row for row in books()["sales"]}
+		self.assertAlmostEqual(rows[first.name]["previous_balance"], 400)
+		self.assertAlmostEqual(rows[second.name]["previous_balance"], 1000)
+		self.assertEqual(flt(rows[first.name]["tax"]), 0)
+		from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
+
+		payment = get_payment_entry("Sales Invoice", second.name)
+		payment.reference_no = second.name
+		payment.reference_date = nowdate()
+		payment.insert()
+		payment.submit()
+		after = {row["no"]: row for row in books()["sales"]}
+		self.assertNotIn("previous_balance", after[second.name])
+		self.assertAlmostEqual(after[first.name]["previous_balance"], 0)

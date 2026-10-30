@@ -39,6 +39,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** Proposes the next ERP tool call. Does not run it. */
+const NOT_CONNECTED = "進階版的代理人還沒接上模型。這一步不會寫入單據。";
+
+/** Propose when a model is bound. Without one, say so and do not invent a document. */
+export async function staffProposal(ai: Ai | undefined, model: string, message: string): Promise<ActionProposal> {
+  if (!ai) return { ok: false, message: NOT_CONNECTED };
+  return proposeAction(ai, model, message);
+}
+
 export async function proposeAction(ai: Ai, model: string, message: string): Promise<ActionProposal> {
   if (message.trim() === "") return { ok: false, message: NEED_MESSAGE };
   const out = await ai.run(model, {

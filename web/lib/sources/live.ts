@@ -15,7 +15,7 @@ type RawBooks = {
   inventory_value: number;
   overdue_ar: number;
   vat_payable: number;
-  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string; ordered_qty?: number | null; delivered_qty?: number | null }[];
+  sales: { no: string; party: string; qty: number; amount: number; tax: number; step: SalesStep; overdue_days?: number | null; invoice_no?: string | null; href: string; doctype: string; ordered_qty?: number | null; delivered_qty?: number | null; previous_balance?: number | null; delivery_note?: string | null }[];
   purchases: { no: string; vendor: string; item: string; amount: number; status: string; next: string; href: string; doctype: string }[];
   stock: { sku: string; name: string; warehouse: string; on_hand: number; safety: number; href: string }[];
   course_boms?: { course_code: string; course_name: string; target_seats?: number; lines: { sku: string; name: string; qty_per_student: number; uom: string }[]; href?: string }[];
@@ -56,6 +56,8 @@ export async function liveBooks(pack: IndustryPack, setup?: SetupStatus | null, 
       invoiceNo: d.invoice_no ?? undefined,
       href: link(d.href),
       doctype: d.doctype,
+      previousBalance: typeof d.previous_balance === "number" ? d.previous_balance : undefined,
+      deliveryNote: d.delivery_note || undefined,
     })),
     purchases: raw.purchases.map((p) => ({ ...p, item: p.item || pack.itemType, href: link(p.href) })),
     stock,

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { AGENT_TOOLS, parseAgentCall } from "./agent-tools.ts";
+import { AGENT_TOOLS, confirmRequest, parseAgentCall } from "./agent-tools.ts";
 
 const DENIED = "這個動作不能從這裡做";
 const TAX = "稅額不由這裡決定";
@@ -134,6 +134,12 @@ describe("代理人可做的動作", () => {
     for (const input of taxed) {
       assert.deepEqual(parseAgentCall(input), { ok: false, message: TAX });
     }
+  });
+
+  it("確認之後才知道要打哪一條寫入", () => {
+    const call = parseAgentCall({ tool: "record_deposit", args: { sales_order: "SO-1", amount: 300 } });
+    assert.deepEqual(confirmRequest(call), { path: "/api/erp/deposit", body: { sales_order: "SO-1", amount: 300 } });
+    assert.equal(confirmRequest({ ok: false, message: DENIED }), null);
   });
 
   it("不認識的動作即使帶了稅率，也是不能從這裡做", () => {
