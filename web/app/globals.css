@@ -1299,6 +1299,73 @@ footer.site-scope.glass-bar {
   letter-spacing: -0.04em;
 }
 
+.site-shot {
+  margin: 0;
+  min-width: 0;
+}
+
+.site-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+
+html[data-theme="white"] .site-shot-dark {
+  display: none;
+}
+
+html[data-theme="black"] .site-shot-light {
+  display: none;
+}
+
+.site-shots {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.site-tiers {
+  display: grid;
+  border-top: 1px solid var(--text);
+}
+
+.site-tiers > div {
+  min-width: 0;
+  padding: 1.25rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-flow-step {
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+.site-flow-step[data-tone="ok"] {
+  border-color: transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.site-flow-sep {
+  width: 1.25rem;
+  height: 1px;
+  background: var(--border-strong);
+}
+
 .site-sheet {
   border-radius: var(--radius-xl);
 }
@@ -1321,6 +1388,23 @@ footer.site-scope.glass-bar {
   .site-steps > li {
     padding-right: 1.25rem;
     border-right: 1px solid var(--border);
+  }
+
+  .site-shots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-tiers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-tiers > div:first-child {
+    padding-right: 2rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .site-tiers > div:last-child {
+    padding-left: 2rem;
   }
 }
 

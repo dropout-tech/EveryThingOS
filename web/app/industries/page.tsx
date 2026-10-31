@@ -19,36 +19,33 @@ export default function IndustriesPage() {
   return (
     <>
       <SiteHeader />
-      <main id="main" className="site-scope mx-auto max-w-6xl px-5 py-10 sm:py-14">
-        <header className="max-w-2xl">
-          <h1 className="site-display text-3xl sm:text-5xl">{total} 種行業，選了才知道今天做什麼</h1>
-          <p className="mt-4 max-w-2xl text-cream-dim">
-            不用在一百張卡片裡用眼睛掃。先搜，點下去就開始示範。每一包都設定好在賣什麼、怎麼交給客人、每天看哪些數字；產業包可以隨時切換，不另外收費。
-          </p>
-          <div className="mt-6 max-w-xl">
-            <IndustryPicker options={options} variant="hero" />
+      <main id="main" className="site-scope mx-auto max-w-6xl space-y-10 px-5 py-10 sm:py-14">
+        <header className="grid items-end gap-6 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <h1 className="site-display text-3xl sm:text-5xl">{total} 種行業</h1>
+            <div className="mt-5 max-w-xl">
+              <IndustryPicker options={options} variant="hero" />
+            </div>
           </div>
+          <figure className="site-shot">
+            <img src="/shots/today-white.png" alt="產業包工作畫面" width={1280} height={800} className="site-shot-light" />
+            <img src="/shots/today-black.png" alt="產業包工作畫面" width={1280} height={800} className="site-shot-dark" />
+          </figure>
         </header>
-        <div className="mt-12 space-y-12">
+        <div className="space-y-8">
           {groups.map((group) => (
-            <section key={group.group}>
-              <h2 className="scene-type text-xl">
+            <section key={group.group} className="border-t border-[var(--text)] pt-4">
+              <h2 className="scene-type text-base font-medium">
                 {group.group}
                 <span className="ml-2 text-sm text-cream-dim">{group.items.length}</span>
               </h2>
-              <ul className="site-ruled mt-4">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {group.items.map((item) => (
-                  <li key={item.id}>
-                    <Link href={`/industries/${item.id}`} className="site-row">
-                      <span className="font-medium">{item.nameZh}</span>
-                      <span className="min-w-0 text-sm text-cream-dim">
-                        {item.tagline}
-                        <span className="mt-1 block text-xs">{item.sampleLoop}</span>
-                      </span>
-                    </Link>
-                  </li>
+                  <Link key={item.id} href={`/industries/${item.id}`} className="glass-pill px-3 py-1.5 text-sm">
+                    {item.nameZh}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </section>
           ))}
         </div>

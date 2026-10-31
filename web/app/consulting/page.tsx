@@ -3,8 +3,7 @@ import { connection } from "next/server";
 import { ConsultingForm } from "@/components/ConsultingForm";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { SectionTitle } from "@/components/SiteSections";
-import { COMMERCIAL, CONSULTING_STEPS, PRICE_LABEL } from "@/lib/commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, CONSULTING_STEPS, PRICE_LABEL } from "@/lib/commercial";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta(
@@ -25,52 +24,44 @@ export default async function ConsultingPage() {
   return (
     <>
       <SiteHeader primary={false} />
-      <main id="main" className="site-scope mx-auto max-w-6xl space-y-14 px-5 py-10 sm:py-14">
-        <div className="grid items-start gap-6 lg:grid-cols-[1fr_1.15fr]">
-          <header>
-            <h1 className="site-display text-3xl sm:text-5xl">顧問去現場，導入不另開帳單</h1>
-            <p className="mt-4 text-cream-dim">
-              免費導入。不用 AI，系統免費，可以自己先用。AI 版的年費含到現場，不另外賣「導入專案」。現在 AI 用量不限。以後會限量，上限和開始日會先寫在價格頁。
-            </p>
-            <ul className="site-ruled mt-6">
-              {["第一次 30 分鐘，看現場、不推銷", "不用先簽約，也不用先給統編", `不用 AI，系統免費。${PRICE_LABEL}。現在用量不限，以後會限量。`].map((line) => (
-                <li key={line} className="py-3">
-                  {line}
-                </li>
+      <main id="main" className="site-scope mx-auto max-w-6xl space-y-12 px-5 py-10 sm:py-14">
+        <div className="grid items-start gap-8 lg:grid-cols-[1fr_1.15fr]">
+          <header className="space-y-4">
+            <h1 className="site-display text-3xl sm:text-5xl">顧問到現場導入</h1>
+            <div className="flex flex-wrap gap-2">
+              {["30 分鐘看現場", "不用 AI 免費", PRICE_LABEL, "現在不限量，以後限量先說"].map((tag) => (
+                <span key={tag} className="site-chip" data-tone="ok">
+                  {tag}
+                </span>
               ))}
-            </ul>
-            <p className="mt-6 text-sm text-cream-dim">
-              還在比較？先看
-              <Link href="/pricing" className="mx-1 underline underline-offset-4 hover:text-cream">
+            </div>
+            <p className="text-xs text-cream-dim">{AI_USAGE_NOTE}</p>
+            <figure className="site-shot pt-2">
+              <img src="/shots/today-white.png" alt="今天的工作畫面" width={1280} height={800} className="site-shot-light" />
+              <img src="/shots/today-black.png" alt="今天的工作畫面" width={1280} height={800} className="site-shot-dark" />
+            </figure>
+            <p className="text-sm text-cream-dim">
+              <Link href="/pricing" className="underline underline-offset-4 hover:text-cream">
                 產品與價格
               </Link>
-              或
-              <Link href="/saas" className="mx-1 underline underline-offset-4 hover:text-cream">
-                跟鼎新・億看的對照
+              <Link href="/saas" className="ml-4 underline underline-offset-4 hover:text-cream">
+                對照鼎新・億看
               </Link>
-              。
             </p>
           </header>
           <div id="book" className="scroll-mt-24">
             <ConsultingForm demo={demo} turnstileSiteKey={env("TURNSTILE_SITE_KEY")} email={COMMERCIAL.email} />
           </div>
         </div>
-        <section className="space-y-6" aria-labelledby="steps">
-          <div id="steps">
-            <SectionTitle kicker="導入怎麼走" title="從第一次見面到交給你們">
-              每一家的順序差不多；用不到的步驟會直接跳過。
-            </SectionTitle>
-          </div>
-          <ol className="site-steps">
-            {CONSULTING_STEPS.map((step) => (
-              <li key={step.id}>
-                <p className="site-step-no">{step.id}</p>
-                <h3 className="mt-2 text-lg font-medium">{step.title}</h3>
-                <p className="mt-2 text-sm text-cream-dim">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <ol className="site-steps" aria-label="導入步驟">
+          {CONSULTING_STEPS.map((step) => (
+            <li key={step.id}>
+              <p className="site-step-no">{step.id}</p>
+              <h2 className="mt-2 font-medium">{step.title}</h2>
+              <p className="mt-1 text-sm text-cream-dim">{step.body}</p>
+            </li>
+          ))}
+        </ol>
       </main>
       <SiteFooter />
     </>
