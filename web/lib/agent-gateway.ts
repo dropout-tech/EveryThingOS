@@ -1,4 +1,4 @@
-import { parseAgentCall, type AgentCall } from "./agent-tools.ts";
+import { parseAgentCall, type AgentCall } from "./agent-tools";
 
 /** A proposal is not a saved document. Writing happens only after the staff confirms, on another route. */
 
