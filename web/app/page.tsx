@@ -7,8 +7,8 @@ import { formatPostDate, listPosts } from "@/lib/blog";
 import { COMMERCIAL } from "@/lib/commercial";
 
 export const metadata = {
-  title: { absolute: "EveryThingOS｜台灣中小企業的 CRM、進銷存、財務與薪資，一年 NT$100,000" },
-  description: "客人、進銷存、帳、人事薪資、老闆報表、對話與電子報，一個登入做完。對齊鼎新 A1／億看，每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
+  title: { absolute: "EveryThingOS｜不用 AI 免費，AI 版一年含稅 NT$69,000" },
+  description: "客人、進銷存、帳、人事薪資可以免費使用。AI 版一年含稅 NT$69,000。現在 AI 用量不限，以後會限量，限量前會先寫在價格頁。",
   alternates: { canonical: "/" },
 };
 

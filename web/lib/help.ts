@@ -1,4 +1,4 @@
-import { PRICE_LABEL } from "./commercial";
+import { AI_USAGE_NOTE, PRICE_LABEL } from "./commercial";
 import { CHECKLIST, ROLES, ROLE_GUIDES } from "./guide";
 import { OCTALYSIS_DRIVES, OCTALYSIS_RULES } from "./octalysis";
 
@@ -503,7 +503,7 @@ export const HELP: HelpArticle[] = [
     summary: "年費多少、什麼時候開帳單、怎麼線上付款、到期沒付會怎樣。",
     keywords: ["續約", "付款", "年費", "帳單", "發票", "到期", "試用", "價錢", "綠界"],
     blocks: [
-      { p: `${PRICE_LABEL}（未稅），加 5% 營業稅，帳單金額 NT$105,000。含系統與免費顧問導入，不收人頭費，產業包不另外收費。LINE、金流、簡訊、電子發票加值中心、寄信服務是外部供應商，照他們的原價。` },
+      { p: `不用 AI，系統免費，不開發票。${PRICE_LABEL}。${AI_USAGE_NOTE}不收人頭費，產業包不另外收費。LINE、金流、簡訊、電子發票加值中心、寄信服務是外部供應商，照他們的原價。` },
       { h: "帳單與付款" },
       { list: ["到期前 60 天開這一期的帳單，續約提醒信附付款連結。", "老闆會在畫面上方的提醒條和「設定 → 方案與續約」看到「線上付款」（綠界，刷卡或 ATM）。", "付款成功就續約一年：準時付就接著原本的到期日；過期才付就從付款那天起算。", "付款後會開電子發票；有統編就開三聯式。", "匯款或支票也可以，DropOut 收到後標記已付款，一樣續約、開發票。"] },
       { h: "合約狀態" },

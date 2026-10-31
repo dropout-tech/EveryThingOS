@@ -15,7 +15,7 @@ export function SiteFooter() {
         <div>
           <BrandMark href="/" />
           <p className="mt-3">{COMMERCIAL.legalName}</p>
-          <p className="mt-1">{PRICE_LABEL}（未稅），免費顧問導入</p>
+          <p className="mt-1">不用 AI 免費。{PRICE_LABEL}。現在用量不限，以後會限量。</p>
         </div>
         <nav aria-label="產品">
           <p className="text-sm font-medium text-cream">產品</p>

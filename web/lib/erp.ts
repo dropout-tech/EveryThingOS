@@ -110,7 +110,7 @@ export const ERP_PARITY: ParityRow[] = [
     capability: "導入與價錢",
     a1: "進銷存、會計、發票常拆開月租，導入另計",
     ecount: "約 1,500／月全功能，畫面像傳統進銷存",
-    dropout: "NT$100,000／年含免費顧問導入",
+    dropout: "不用 AI 免費。AI 版一年含稅 NT$69,000。現在用量不限，以後會限量並先說",
     better: "一次講清楚，現場有人帶",
   },
 ];

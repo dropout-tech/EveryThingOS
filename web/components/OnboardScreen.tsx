@@ -11,7 +11,7 @@ export function OnboardScreen() {
           <BrandMark href="/" compact />
           <div className="flex items-center gap-3">
             <Link href="/pricing" className="hidden text-sm text-cream-dim hover:text-cream sm:inline">
-              NT$100,000
+              不用 AI 免費
             </Link>
             <AppearanceBar />
           </div>

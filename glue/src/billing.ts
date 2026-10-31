@@ -7,13 +7,23 @@ import { escapeHtml } from "./mail";
 import { ecpayCheckMacValue, ecpayVerify } from "./pay";
 import type { GatewayKeys, Invoice, Store } from "./store";
 
-/** The one place the price lives: NT$100,000 a year before 5% 營業稅 (web/lib/commercial.ts shows the same). */
-export const ANNUAL_NET_TWD = 100_000;
+/**
+ * AI plan only. The customer pays NT$69,000 with tax already inside (web/lib/commercial.ts).
+ * Companies not on this plan are free and are not invoiced.
+ * Usage is unlimited for now. A later cap will be announced before it starts; this number does not imply one.
+ */
+export const AI_PLAN = "ai";
+export const ANNUAL_TAX_INCLUDED_TWD = 69_000;
+/** Already the billing rate. Taken out of the tax-included total so net + tax equals what the customer pays. */
 export const TAX_RATE = 0.05;
 
+export function isAiPlan(plan: string | null | undefined) {
+  return plan?.trim().toLowerCase() === AI_PLAN;
+}
+
 export function annualPrice() {
-  const tax = Math.round(ANNUAL_NET_TWD * TAX_RATE);
-  return { net: ANNUAL_NET_TWD, tax, amount: ANNUAL_NET_TWD + tax };
+  const tax = Math.round((ANNUAL_TAX_INCLUDED_TWD * TAX_RATE) / (1 + TAX_RATE));
+  return { net: ANNUAL_TAX_INCLUDED_TWD - tax, tax, amount: ANNUAL_TAX_INCLUDED_TWD };
 }
 
 /** DropOut's own ECPay merchant and e-invoice account; customers' gateways stay in their tenant config. */
@@ -99,6 +109,7 @@ function randomId(length: number) {
  * an operator opening one by hand may reissue.
  */
 export async function openInvoice(store: Store, a: Account, actor: string, { now = new Date(), respectVoid = false } = {}) {
+  if (!isAiPlan(a.plan)) return { invoice: null, created: false };
   const period = invoicePeriod(a, now);
   const mine = (await store.listInvoices(a.site)).filter((i) => i.period === period);
   const live = mine.find((i) => i.status !== "void");
@@ -419,6 +430,7 @@ export async function billingAdmin(req: Request, url: URL, parts: string[], ctx:
       return json({ gateway: gatewayStatus(env), health: healthScore(a, invoices.filter((i) => i.status === "open")), invoices });
     }
     if (req.method === "POST") {
+      if (!isAiPlan(a.plan)) return text("不用 AI 的公司不開帳單", 409);
       const { invoice, created } = await openInvoice(store, a, ctx.actor);
       if (!invoice) return text("開不了帳單", 409);
       return json({ ok: true, created, invoice: await withLink(invoice) });

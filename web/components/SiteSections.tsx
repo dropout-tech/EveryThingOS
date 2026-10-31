@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { COMMERCIAL, FAQ, MODULE_STATUS, MODULES, ONBOARDING_FLOW, PRICE_YEAR_TWD, TRUST_LINKS, type ModuleStatus } from "@/lib/commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, FAQ, MODULE_STATUS, MODULES, ONBOARDING_FLOW, PRICE_YEAR_TWD, TRUST_LINKS, type ModuleStatus } from "@/lib/commercial";
 import { ERP_PARITY } from "@/lib/erp";
 
 const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: "muted" };
@@ -34,7 +34,8 @@ export function SiteHero({ demoHref = "/?setup=1", as: Heading = "h1" }: { demoH
       <p className="site-price min-w-0">
         <span className="site-price-unit">NT$</span>
         <span className="site-price-figure">{PRICE_YEAR_TWD.toLocaleString("zh-TW")}</span>
-        <span className="mt-3 block text-sm text-cream-dim">一年，未稅，一間公司，不限帳號，含顧問到現場導入</span>
+        <span className="mt-3 block max-w-xs text-sm text-cream-dim">AI 版，一年，含稅。不用 AI，免費。</span>
+        <span className="mt-2 block max-w-xs text-sm text-cream-dim">{AI_USAGE_NOTE}</span>
       </p>
     </section>
   );
@@ -44,7 +45,7 @@ export function ModuleGrid() {
   return (
     <section className="space-y-6" aria-labelledby="modules">
       <div id="modules">
-        <SectionTitle kicker="包含的功能" title="一年費用裡就有這些，不另外加購">
+        <SectionTitle kicker="包含的功能" title="這些系統功能不另外加購">
           狀態照實寫：「導入時接上」是要先有你們自己的外部帳號，「試行」是可以用、但先跟顧問確認合不合適。
         </SectionTitle>
       </div>

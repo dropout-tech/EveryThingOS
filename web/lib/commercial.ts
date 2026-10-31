@@ -1,6 +1,9 @@
-export const PRICE_YEAR_TWD = 100_000;
-export const PRICE_LABEL = "每年 NT$100,000";
-export const PRICE_NOTE = "未稅。含每天使用與顧問到現場，不另外加購功能。";
+/** What the customer pays for the AI plan. Tax is already inside this number. */
+export const PRICE_YEAR_TWD = 69_000;
+export const PRICE_LABEL = "AI 版每年含稅 NT$69,000";
+export const PRICE_NOTE = "不用 AI，系統免費，可以自己先用。AI 版含到現場導入，不另外賣導入專案。一間公司，不限帳號。";
+/** Said in full wherever the price appears. The cap is not a number yet. */
+export const AI_USAGE_NOTE = "現在 AI 用量不限。以後會限量。上限多少、從哪一天開始，會先寫在價格頁，並在到期前書面通知。這一期不會靜默改成限量。";
 
 export const COMMERCIAL = {
   product: "EveryThingOS",
@@ -49,7 +52,8 @@ export const ONBOARDING_FLOW = [
 ];
 
 export const FAQ = [
-  { q: "NT$100,000 包含什麼？", a: "一間公司一年的系統使用、顧問到現場導入、資料搬家、更新與備份。未稅。不收每人帳號費，模組不另外加購。" },
+  { q: "不用 AI 要錢嗎？", a: "不用。客人、進銷存、帳、薪資、報表可以免費使用，不收每人帳號費，模組不另外加購。" },
+  { q: "AI 版多少錢？用量會限嗎？", a: `${PRICE_LABEL}。${PRICE_NOTE}${AI_USAGE_NOTE}` },
   { q: "可以先試用嗎？", a: "可以。先約顧問看現場；決定要用之後開站，有試用期，試用期間資料都可以留下來接著用。" },
   { q: "跟鼎新 A1、億看差在哪？", a: "進銷存與帳的範圍對齊它們，但畫面只問「下一步是什麼」，並且把客人、對話、電子報、報表放在同一個登入裡。" },
   { q: "金流、簡訊、LINE、電子發票要另外付錢嗎？", a: "這些是外部服務，依各家原價收費，你們直接跟他們簽。我們負責接上，不抽成。" },

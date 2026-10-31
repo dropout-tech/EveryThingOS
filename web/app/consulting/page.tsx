@@ -30,10 +30,10 @@ export default async function ConsultingPage() {
           <header>
             <h1 className="site-display text-3xl sm:text-5xl">顧問去現場，導入不另開帳單</h1>
             <p className="mt-4 text-cream-dim">
-              免費導入。年費已含到現場。我們不另外賣「導入專案」。懂生意的人跟第一線看同一筆資料，打開對的產業包，只改你們真正不一樣的地方。
+              免費導入。不用 AI，系統免費，可以自己先用。AI 版的年費含到現場，不另外賣「導入專案」。現在 AI 用量不限。以後會限量，上限和開始日會先寫在價格頁。
             </p>
             <ul className="site-ruled mt-6">
-              {["第一次 30 分鐘，看現場、不推銷", "不用先簽約，也不用先給統編", `決定要用才開始算年費（${PRICE_LABEL}，未稅）`].map((line) => (
+              {["第一次 30 分鐘，看現場、不推銷", "不用先簽約，也不用先給統編", `不用 AI，系統免費。${PRICE_LABEL}。現在用量不限，以後會限量。`].map((line) => (
                 <li key={line} className="py-3">
                   {line}
                 </li>

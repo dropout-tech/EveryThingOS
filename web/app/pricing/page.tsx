@@ -2,15 +2,15 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { FaqList, ModuleGrid, OnboardingSteps, ParityPreview, SectionTitle, SiteHero, TrustStrip } from "@/components/SiteSections";
-import { PRICE_YEAR_TWD } from "@/lib/commercial";
+import { AI_USAGE_NOTE, PRICE_YEAR_TWD } from "@/lib/commercial";
 import { listIndustries } from "@/lib/industries";
 import { CONTRACT, SLA } from "@/lib/legal";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta(
   "/pricing",
-  "產品與價格：一年 NT$100,000",
-  "EveryThingOS 是給台灣中小企業的作業系統：CRM、進銷存、財務、人事薪資、報表、對話、電子報一個登入。每年 NT$100,000 未稅，不限帳號，含顧問到現場導入。",
+  "產品與價格：不用 AI 免費，AI 版一年含稅 NT$69,000",
+  "客人、進銷存、帳、薪資可以免費使用。AI 版一年含稅 NT$69,000。現在 AI 用量不限。以後會限量，上限和開始日會先寫在這一頁。",
 );
 
 export default function PricingPage() {
@@ -25,18 +25,18 @@ export default function PricingPage() {
         <ModuleGrid />
         <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]" aria-labelledby="price">
           <div className="site-sheet p-6 sm:p-8">
-            <p className="text-sm text-cream-dim">EveryThingOS 一年</p>
+            <p className="text-sm text-cream-dim">不用 AI，系統免費。AI 版一年，含稅</p>
             <h2 id="price" className="mt-2 text-4xl font-medium sm:text-5xl">
               NT${formatted}
             </h2>
-            <p className="mt-2 text-cream-dim">未稅，一間公司一份，第二年起同價</p>
+            <p className="mt-2 text-cream-dim">{AI_USAGE_NOTE}</p>
             <ul className="site-ruled mt-6">
               {[
-                "上面所有功能，不另外加購",
+                "不用 AI：客人、進銷存、帳、薪資、報表免費",
                 "不收每人帳號費",
                 `${n} 種產業包可以切換，跟客人的階段與每天看的數字可以改`,
-                "顧問到現場：看現場、搬資料、跑完一筆真實生意",
-                "更新、每日備份、顧問時數內的流程微調",
+                "AI 版含到現場導入，不另外賣導入專案",
+                "更新、每日備份",
               ].map((line) => (
                 <li key={line} className="py-3">
                   {line}
@@ -55,7 +55,7 @@ export default function PricingPage() {
           <div className="site-sheet space-y-4 p-6 text-sm sm:p-8">
             <h3 className="text-lg font-medium">刻意不收、也不包的</h3>
             <p className="text-cream-dim">金流、簡訊、LINE 官方帳號、電子發票是外部服務，依各家原價收費、你們直接跟他們簽。我們負責接上，不抽成。</p>
-            <p className="text-cream-dim">鼎新 A1 常把進銷存、會計、電子發票拆開月租；億看月費低但畫面密。這裡一個價格，功能不另開帳單。</p>
+            <p className="text-cream-dim">鼎新 A1 常把進銷存、會計、電子發票拆開月租；億看月費低但畫面密。這裡系統免費，AI 版一個含稅年費。現在不限量，以後會限量，並先寫在這一頁。</p>
             <h3 className="pt-2 text-lg font-medium">合約怎麼走</h3>
             <ul className="list-disc space-y-1.5 pl-5 text-cream-dim">
               <li>開站後有試用期（預設 {CONTRACT.trialDays} 天，依訂單）</li>

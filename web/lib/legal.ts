@@ -1,4 +1,4 @@
-import { COMMERCIAL, PRICE_LABEL, PRICE_NOTE, PRICE_YEAR_TWD } from "./commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, PRICE_LABEL, PRICE_NOTE, PRICE_YEAR_TWD } from "./commercial";
 
 export const LEGAL_VERSION = "2026-10-11";
 
@@ -124,7 +124,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "3. 費用與付款",
         items: [
-          `${PRICE_LABEL}。${PRICE_NOTE}`,
+          `${PRICE_LABEL}。${PRICE_NOTE}${AI_USAGE_NOTE}`,
           `年繳。DropOut 開立發票，付款期限 ${ENTITY.paymentDays}。`,
           `要調整下一年度的年費，DropOut 會在到期前 ${CONTRACT.noticeDays} 天書面通知；沒通知就照原價續約。`,
         ],

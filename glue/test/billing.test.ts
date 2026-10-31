@@ -50,7 +50,7 @@ function harness({ einvoice = "ok" as "ok" | "fail" | "off", ecpay = true } = {}
 const today = taiwanDate();
 
 function account(patch: Partial<Account> = {}): Account {
-  return { site: SITE, company: "琢奧精密製造", plan: "annual", state: "active", hosts: ["make.os.dropout.tw"], contact_email: "boss@make.tw", created_at: "", updated_at: "", ...patch };
+  return { site: SITE, company: "琢奧精密製造", plan: "ai", state: "active", hosts: ["make.os.dropout.tw"], contact_email: "boss@make.tw", created_at: "", updated_at: "", ...patch };
 }
 
 const call = (method: string, path: string, token: string, body?: unknown) =>
@@ -88,8 +88,8 @@ const paid = (fields: Record<string, string>, patch: Record<string, string> = {}
 });
 
 describe("price and renewal math", () => {
-  it("bills NT$100,000 plus 5% tax", () => {
-    expect(annualPrice()).toEqual({ net: 100_000, tax: 5_000, amount: 105_000 });
+  it("bills the AI plan at NT$69,000 tax included", () => {
+    expect(annualPrice()).toEqual({ net: 65_714, tax: 3_286, amount: 69_000 });
   });
 
   it("renews from the later of the end date and today", () => {
@@ -104,18 +104,20 @@ describe("price and renewal math", () => {
 describe("renewal invoices", () => {
   it("opens exactly one invoice per company per period, only inside the renewal window", async () => {
     const h = harness();
-    await h.store.putAccount(account({ renews_on: addDays(today, 59) }));
-    await h.store.putAccount(account({ site: "far", company: "遠", renews_on: addDays(today, 200) }));
-    await h.store.putAccount(account({ site: "trial", company: "試", trial_ends: addDays(today, 3) }));
-    await h.store.putAccount(account({ site: "paused", company: "停", state: "suspended", renews_on: addDays(today, 10) }));
-    await h.store.putAccount(account({ site: "late", company: "晚", renews_on: addDays(today, -20) }));
+    await h.store.putAccount(account({ plan: "ai", renews_on: addDays(today, 59) }));
+    await h.store.putAccount(account({ site: "far", company: "遠", plan: "ai", renews_on: addDays(today, 200) }));
+    await h.store.putAccount(account({ site: "trial", company: "試", plan: "ai", trial_ends: addDays(today, 3) }));
+    await h.store.putAccount(account({ site: "paused", company: "停", plan: "ai", state: "suspended", renews_on: addDays(today, 10) }));
+    await h.store.putAccount(account({ site: "late", company: "晚", plan: "ai", renews_on: addDays(today, -20) }));
+    await h.store.putAccount(account({ site: "free", company: "免", plan: "annual", renews_on: addDays(today, 10) }));
 
     expect(await billingDaily(h.ctx)).toMatchObject({ opened: 2 });
     expect(await billingDaily(h.ctx)).toMatchObject({ opened: 0 });
     await Promise.all([billingDaily(h.ctx), billingDaily(h.ctx)]);
     const invoices = await h.store.listInvoices();
     expect(invoices.map((i) => i.site).sort()).toEqual(["late", SITE]);
-    expect(invoices.find((i) => i.site === SITE)).toMatchObject({ status: "open", amount: 105_000, net: 100_000, tax: 5_000, buyer_name: "琢奧精密製造", period: addDays(today, 59) });
+    expect(invoices.find((i) => i.site === SITE)).toMatchObject({ status: "open", amount: 69_000, net: 65_714, tax: 3_286, buyer_name: "琢奧精密製造", period: addDays(today, 59) });
+    expect(invoices.find((i) => i.site === "free")).toBeUndefined();
     expect(h.store.events.filter((e) => e.action === "開帳單")).toHaveLength(2);
   });
 
@@ -143,7 +145,7 @@ describe("online payment", () => {
     const { html, fields } = await checkout(h, inv.id);
     expect(html).toContain("https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5");
     expect(html).toContain("測試環境");
-    expect(fields).toMatchObject({ MerchantID: "3002607", TotalAmount: "105000", ReturnURL: "https://glue.example/billing/ecpay", PaymentType: "aio", EncryptType: "1" });
+    expect(fields).toMatchObject({ MerchantID: "3002607", TotalAmount: "69000", ReturnURL: "https://glue.example/billing/ecpay", PaymentType: "aio", EncryptType: "1" });
     expect(fields.MerchantTradeNo).toMatch(/^[A-Z0-9]{1,20}$/);
     const { CheckMacValue, ...rest } = fields;
     expect(CheckMacValue).toBe(await ecpayCheckMacValue(rest, KEY, IV));
@@ -187,7 +189,7 @@ describe("online payment", () => {
     const issue = h.calls.filter((c) => c.url.endsWith("/B2CInvoice/Issue"));
     expect(issue).toHaveLength(1);
     const data = await ecpayInvoiceDecrypt(issue[0].body.Data, KEY, IV);
-    expect(data).toMatchObject({ CustomerIdentifier: "", CustomerEmail: "boss@make.tw", Print: "0", SalesAmount: 105000 });
+    expect(data).toMatchObject({ CustomerIdentifier: "", CustomerEmail: "boss@make.tw", Print: "0", SalesAmount: 69000 });
   });
 
   it("past due: renews one year from today; B2B e-invoice carries the 統編", async () => {
@@ -298,7 +300,7 @@ describe("operators and the shell", () => {
     const [inv] = await h.store.listInvoices(SITE);
     const res = await handle(call("GET", `/admin/tenants/${SITE}/billing`, "shell"), h.env, h.app);
     const body = (await res.json()) as any;
-    expect(body).toMatchObject({ online: true, invoice: { id: inv.id, amount: 105_000, pay_url: expect.stringContaining("https://glue.example/billing/pay/") } });
+    expect(body).toMatchObject({ online: true, invoice: { id: inv.id, amount: 69_000, pay_url: expect.stringContaining("https://glue.example/billing/pay/") } });
     expect(((await (await handle(call("GET", "/admin/tenants/other.site/billing", "shell"), h.env, h.app)).json()) as any).invoice).toBeNull();
     for (const [method, path] of [["GET", `/admin/accounts/${SITE}/invoices`], ["POST", `/admin/invoices/${inv.id}/paid`], ["POST", `/admin/invoices/${inv.id}/void`], ["GET", "/admin/billing"]]) {
       expect((await handle(call(method, path, "shell", method === "POST" ? { reference: "x" } : undefined), h.env, h.app)).status).toBe(403);
@@ -323,7 +325,7 @@ describe("operators and the shell", () => {
     await h.store.putAccount(account({ renews_on: addDays(today, 200), usage: { users: 5, active_users_7d: 4, invoices_30d: 20, invoices_prev_30d: 18 } }));
     const body = (await (await handle(call("GET", "/admin/billing", "admin"), h.env, h.app)).json()) as any;
     expect(body.accounts[SITE].health).toMatchObject({ score: 100, level: "ok" });
-    expect(body.price.amount).toBe(105_000);
+    expect(body.price.amount).toBe(69_000);
   });
 });
 
