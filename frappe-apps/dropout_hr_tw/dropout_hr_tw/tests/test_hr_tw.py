@@ -69,13 +69,14 @@ def submitted_structure():
 def assign(employee, base):
 	if frappe.db.exists("Salary Structure Assignment", {"employee": employee, "docstatus": 1}):
 		return
+	joining = getdate(frappe.db.get_value("Employee", employee, "date_of_joining"))
 	frappe.get_doc(
 		{
 			"doctype": "Salary Structure Assignment",
 			"employee": employee,
 			"salary_structure": submitted_structure(),
 			"company": company(),
-			"from_date": add_months(get_first_day(nowdate()), -1),
+			"from_date": max(getdate(add_months(get_first_day(nowdate()), -1)), joining),
 			"base": base,
 			"currency": frappe.get_cached_value("Company", company(), "default_currency"),
 		}
@@ -344,6 +345,7 @@ class TestOvertime(FrappeTestCase):
 		frappe.set_user("Administrator")
 		self.employee = make_employee("加班測試")
 		assign(self.employee, 30000)
+		frappe.db.delete("Additional Salary", {"employee": self.employee})
 		frappe.db.set_single_value(payroll.SETTINGS, "overtime_consent", 0)
 
 	def test_weekday_overtime_lands_on_the_slip(self):
