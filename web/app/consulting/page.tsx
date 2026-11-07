@@ -3,13 +3,13 @@ import { connection } from "next/server";
 import { ConsultingForm } from "@/components/ConsultingForm";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { AI_USAGE_NOTE, COMMERCIAL, CONSULTING_STEPS, PRICE_LABEL } from "@/lib/commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, CONSULTING_STEPS } from "@/lib/commercial";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta(
   "/consulting",
   "約免費顧問導入",
-  "顧問到現場看你們怎麼做事，選產業包、搬資料、帶你們跑完一筆真實生意。導入含在年費裡，不另外收費。留下聯絡方式，顧問會跟你約時間。",
+  "顧問到現場看你們怎麼做事，選產業包、搬資料、帶你們跑完一筆真實生意。導入含在月費、年費裡，不另外收費。留下聯絡方式，顧問會跟你約時間。",
 );
 
 function env(name: string) {
@@ -29,7 +29,7 @@ export default async function ConsultingPage() {
           <header className="space-y-4">
             <h1 className="site-display text-3xl sm:text-5xl">顧問到現場導入</h1>
             <div className="flex flex-wrap gap-2">
-              {["30 分鐘看現場", "不用 AI 免費", PRICE_LABEL, "現在不限量，以後限量先說"].map((tag) => (
+              {["30 分鐘看現場", "月費 NT$1,000", "AI 版一年 NT$69,000", "現在不限量，以後限量先說"].map((tag) => (
                 <span key={tag} className="site-chip" data-tone="ok">
                   {tag}
                 </span>

@@ -1,4 +1,4 @@
-import { AI_USAGE_NOTE, COMMERCIAL, PRICE_LABEL, PRICE_NOTE, PRICE_YEAR_TWD } from "./commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, PRICE_LABEL, PRICE_MONTH_TWD, PRICE_NOTE, PRICE_YEAR_TWD } from "./commercial";
 
 export const LEGAL_VERSION = "2026-10-11";
 
@@ -22,16 +22,17 @@ export const ENTITY = {
   backupRetention: todo("R2 備份保存天數"),
 };
 
-/** Mirrors glue/src/accounts.ts (NOTICE_DAYS, GRACE_DAYS) and the toolkit's --trial-days default. */
+/** Mirrors glue/src/plans.ts (noticeDays per plan), glue/src/accounts.ts (GRACE_DAYS) and the toolkit's --trial-days default. */
 export const CONTRACT = {
   trialDays: 30,
   noticeDays: 60,
+  monthlyNoticeDays: 7,
   graceDays: 14,
   exportDays: 90,
   exportPath: "設定 → 下載全部資料（客戶、商品、銷項發票 CSV，或整站 ERPNext 備份）",
 };
 
-const monthFee = Math.round(PRICE_YEAR_TWD / 12);
+const aiMonthFee = Math.round(PRICE_YEAR_TWD / 12);
 const twd = (n: number) => `NT$${Math.round(n).toLocaleString("zh-TW")}`;
 
 export const SLA = {
@@ -69,7 +70,7 @@ const lifecycleTable = {
   rows: [
     ["試用", `開站後 ${CONTRACT.trialDays} 天（依訂單）`, "可以", "可以"],
     ["使用中", "簽約付款後", "可以", "可以"],
-    ["快到期", `到期前 ${CONTRACT.noticeDays} 天內，開始寄續約提醒`, "可以", "可以"],
+    ["快到期", `到期前 ${CONTRACT.monthlyNoticeDays} 天內（月費版）或 ${CONTRACT.noticeDays} 天內（AI 版），開始寄續約提醒`, "可以", "可以"],
     ["寬限", `到期後 ${CONTRACT.graceDays} 天內`, "可以", "可以"],
     ["只能看", "寬限過了還沒續約", "不行", "可以"],
     ["暫停", "依第 6 條暫停", "不行", "可以"],
@@ -117,7 +118,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
         items: [
           `一家公司一個獨立站台：客人、生意（報價到收款、採購、庫存、帳）、電子報、官網、對話、會議紀錄，依訂單打開。`,
           "免費顧問導入：選定產業包、搬資料、一起跑完一筆真實生意。",
-          "不收每人帳號費，不另外加購功能；年費含更新。",
+          "不收每人帳號費，不另外加購功能；月費、年費都含更新。",
           "金流、簡訊、LINE 官方帳號、電子發票加值中心、寄信服務是外部服務，客戶依各家條款與收費自己簽約；DropOut 幫忙接上，不抽成。",
         ],
       },
@@ -125,8 +126,8 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
         heading: "3. 費用與付款",
         items: [
           `${PRICE_LABEL}。${PRICE_NOTE}${AI_USAGE_NOTE}`,
-          `年繳。DropOut 開立發票，付款期限 ${ENTITY.paymentDays}。`,
-          `要調整下一年度的年費，DropOut 會在到期前 ${CONTRACT.noticeDays} 天書面通知；沒通知就照原價續約。`,
+          `月費版按月繳，AI 版年繳。DropOut 開立發票，付款期限 ${ENTITY.paymentDays}。`,
+          `要調整價格，DropOut 會在新價格開始前 ${CONTRACT.noticeDays} 天書面通知；當期不改，沒通知就照原價續約。`,
         ],
       },
       {
@@ -138,7 +139,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "5. 期間、續約與到期",
         paragraphs: [
-          "合約一年一期，到期日當天台灣時間 23:59:59 才算過期。DropOut 會在到期前與到期後寄續約提醒給客戶聯絡人。",
+          "月費版一個月一期，AI 版一年一期，到期日當天台灣時間 23:59:59 才算過期。DropOut 會在到期前與到期後寄續約提醒給客戶聯絡人。",
         ],
         table: lifecycleTable,
       },
@@ -148,7 +149,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
           "DropOut 可以暫停服務的情形：逾期未付款超過寬限期、客戶帳號被用來發垃圾信或攻擊他人、發生資安事件需要隔離。暫停前會先通知，緊急資安情形除外，事後馬上通知。",
           "任一方可以在當期到期前 30 天書面通知不續約。",
           "一方嚴重違約，經書面通知 30 天內未改善，另一方可以終止。",
-          "DropOut 可歸責而終止時，退還未使用期間的年費。",
+          "DropOut 可歸責而終止時，退還未使用期間的費用。",
         ],
       },
       { heading: "7. 資料歸誰、到期與解約後怎麼辦", paragraphs: ["客戶放進系統的資料屬於客戶。DropOut 只依資料處理附約處理，不拿去賣、不拿去行銷。"], items: dataEnd },
@@ -356,11 +357,11 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "4. 沒做到怎麼補償",
         paragraphs: [
-          `以當月月費計算（年費 ÷ 12，約 ${twd(monthFee)}），從下一期年費扣抵，或解約時退還。補償合計最多當月月費 ${SLA.creditCap}%。`,
+          `以當月月費計算（月費版 ${twd(PRICE_MONTH_TWD)}；AI 版年費 ÷ 12，約 ${twd(aiMonthFee)}），從下一期扣抵，或解約時退還。補償合計最多當月月費 ${SLA.creditCap}%。`,
         ],
         table: {
-          head: ["當月可用率", "抵扣", "以年費換算約"],
-          rows: SLA.credits.map((c) => [`低於 ${c.below}`, `當月月費 ${c.percent}%`, twd((monthFee * c.percent) / 100)]),
+          head: ["當月可用率", "抵扣", "月費版", "AI 版約"],
+          rows: SLA.credits.map((c) => [`低於 ${c.below}`, `當月月費 ${c.percent}%`, twd((PRICE_MONTH_TWD * c.percent) / 100), twd((aiMonthFee * c.percent) / 100)]),
         },
         items: ["次月底前寫信申請，附上受影響的時間。", "抵扣是可用率未達標的唯一補償，但不影響服務條款第 11 條的責任。"],
       },

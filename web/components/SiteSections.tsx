@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { AI_USAGE_NOTE, COMMERCIAL, FAQ, MODULE_STATUS, MODULES, ONBOARDING_FLOW, PRICE_YEAR_TWD, TRUST_LINKS, type ModuleStatus } from "@/lib/commercial";
+import { AI_USAGE_NOTE, COMMERCIAL, FAQ, MODULE_STATUS, MODULES, ONBOARDING_FLOW, PRICE_MONTH_TWD, PRICE_YEAR_TWD, TRUST_LINKS, type ModuleStatus } from "@/lib/commercial";
 import { ERP_PARITY, SALES_STEPS } from "@/lib/erp";
 
 const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: "muted" };
@@ -37,8 +37,8 @@ export function SiteHero({ demoHref = "/?setup=1", as: Heading = "h1" }: { demoH
       </div>
       <p className="site-price min-w-0">
         <span className="site-price-unit">NT$</span>
-        <span className="site-price-figure">{PRICE_YEAR_TWD.toLocaleString("zh-TW")}</span>
-        <span className="mt-2 block max-w-xs text-sm text-cream-dim">AI 版，一年，含稅。不用 AI，免費。</span>
+        <span className="site-price-figure">{PRICE_MONTH_TWD.toLocaleString("zh-TW")}</span>
+        <span className="mt-2 block max-w-xs text-sm text-cream-dim">每月，含稅。AI 版一年 NT${PRICE_YEAR_TWD.toLocaleString("zh-TW")}。</span>
         <span className="mt-1 block max-w-xs text-xs text-cream-dim">{AI_USAGE_NOTE}</span>
       </p>
     </section>
@@ -49,10 +49,10 @@ export function TierCompare() {
   return (
     <section aria-label="方案對照" className="site-tiers">
       <div>
-        <p className="text-sm text-cream-dim">不用 AI</p>
-        <p className="site-price-figure mt-2">NT$0</p>
+        <p className="text-sm text-cream-dim">月費版（每月，含稅）</p>
+        <p className="site-price-figure mt-2">NT${PRICE_MONTH_TWD.toLocaleString("zh-TW")}</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {["CRM 客人", "進銷存", "財務與稅", "人事薪資", "老闆報表", "100 種產業包", "不限帳號"].map((item) => (
+          {["CRM 客人", "進銷存", "財務與稅", "人事薪資", "老闆報表", "100 種產業包", "不限帳號", "免費導入"].map((item) => (
             <span key={item} className="site-chip" data-tone="ok">
               {item}
             </span>
@@ -63,7 +63,7 @@ export function TierCompare() {
         <p className="text-sm text-cream-dim">AI 版（一年，含稅）</p>
         <p className="site-price-figure mt-2">NT${PRICE_YEAR_TWD.toLocaleString("zh-TW")}</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {["包含免費版全部", "右側 AI 代理人", "顧問到現場導入", "現在用量不限", "以後限量會先說"].map((item) => (
+          {["月費版全部", "右側 AI 代理人", "會議紀錄摘要", "現在用量不限", "以後限量會先說"].map((item) => (
             <span key={item} className="site-chip" data-tone="ok">
               {item}
             </span>

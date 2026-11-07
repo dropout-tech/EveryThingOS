@@ -1,7 +1,10 @@
-/** What the customer pays for the AI plan. Tax is already inside this number. */
+/** The two prices, tax included. Same numbers as glue/src/plans.ts, which bills them. */
+export const PRICE_MONTH_TWD = 1_000;
 export const PRICE_YEAR_TWD = 69_000;
-export const PRICE_LABEL = "AI 版每年含稅 NT$69,000";
-export const PRICE_NOTE = "不用 AI，免費。AI 版含到現場導入。";
+export const MONTHLY_LABEL = "月費版每月含稅 NT$1,000";
+export const AI_LABEL = "AI 版每年含稅 NT$69,000";
+export const PRICE_LABEL = `${MONTHLY_LABEL}；${AI_LABEL}`;
+export const PRICE_NOTE = "兩種都含現場導入，不收人頭費。";
 /** Said wherever the price appears. The cap is not a number yet. */
 export const AI_USAGE_NOTE = "現在 AI 用量不限；以後會限量，先寫在價格頁、到期前通知，當期不改。";
 
@@ -52,8 +55,8 @@ export const ONBOARDING_FLOW = [
 ];
 
 export const FAQ = [
-  { q: "不用 AI 要錢嗎？", a: "不用。客人、進銷存、帳、薪資、報表免費，不限帳號。" },
-  { q: "AI 版多少錢？會限量嗎？", a: `${PRICE_LABEL}。${AI_USAGE_NOTE}` },
+  { q: "不用 AI 多少錢？", a: `${MONTHLY_LABEL}。客人、進銷存、帳、薪資、報表都有，不限帳號。` },
+  { q: "AI 版多少錢？會限量嗎？", a: `${AI_LABEL}。${AI_USAGE_NOTE}` },
   { q: "可以先試用嗎？", a: "可以。試用期資料直接留下來用。" },
   { q: "跟鼎新 A1、億看差在哪？", a: "進銷存與帳對齊它們，畫面只留這一步的按鈕。" },
   { q: "金流、LINE、電子發票另外算嗎？", a: "外部服務照各家原價，我們接上、不抽成。" },

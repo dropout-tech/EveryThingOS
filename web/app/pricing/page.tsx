@@ -7,8 +7,8 @@ import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta(
   "/pricing",
-  "產品與價格：不用 AI 免費，AI 版一年含稅 NT$69,000",
-  "客人、進銷存、帳、薪資可以免費使用。AI 版一年含稅 NT$69,000。現在 AI 用量不限。以後會限量，上限和開始日會先寫在這一頁。",
+  "產品與價格：月費 NT$1,000，AI 版一年 NT$69,000",
+  "客人、進銷存、帳、薪資：月費版每月含稅 NT$1,000，AI 版一年含稅 NT$69,000。現在 AI 用量不限。以後會限量，上限和開始日會先寫在這一頁。",
 );
 
 export default function PricingPage() {

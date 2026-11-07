@@ -110,7 +110,7 @@ export const ERP_PARITY: ParityRow[] = [
     capability: "價格",
     a1: "分模組月租",
     ecount: "月租",
-    dropout: "不用 AI 免費／AI 版 69,000 含稅",
+    dropout: "月費 1,000／AI 版一年 69,000，都含稅",
     better: "現在不限量，以後限量先說",
   },
 ];

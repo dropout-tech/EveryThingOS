@@ -117,7 +117,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <div id="plan">
             <p className="text-sm text-cream-dim">方案與續約</p>
             <p className="mt-1">
-              {account.company} · 年約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
+              {account.company} · 合約{account.lifecycle.ends ? ` · 到 ${account.lifecycle.ends}` : ""}
             </p>
             {account.lifecycle.message ? <p className="mt-1 text-sm text-cream-dim">{account.lifecycle.message}</p> : null}
             {invoice ? (
