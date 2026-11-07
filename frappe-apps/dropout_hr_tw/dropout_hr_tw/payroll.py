@@ -143,7 +143,9 @@ def fill_slip(doc, method=None):
 		return
 	employee = frappe.get_cached_doc("Employee", doc.employee)
 	start, end = _period(doc)
-	values = basis(settings(), employee, monthly_wage(doc.employee, start), start)
+	# A mid-month hire's assignment can only start on the joining date.
+	wage_date = max(start, getdate(employee.date_of_joining or start))
+	values = basis(settings(), employee, monthly_wage(doc.employee, wage_date), start)
 	bonus = period_bonus(doc.employee, start, end)
 	supplement_rate = Decimal(repr(flt(settings().supplementary_premium_rate))) / 100
 	base, premium = supplement_premium(ytd_bonus(doc.employee, start), bonus, values["tw_hi_salary"], supplement_rate)
