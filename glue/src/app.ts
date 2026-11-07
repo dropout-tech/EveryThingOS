@@ -13,6 +13,7 @@ import type { MonitorStore } from "./monitor-store";
 import { ecpayVerify, newebpayDecode } from "./pay";
 import type { ApiStore } from "./apiStore";
 import { apiStoreFor, isIntegrationRoute, manageIntegrations, publicApi } from "./publicApi";
+import { isAiPlan, planOf } from "./plans";
 import { D1Store, type Store, type Tenant } from "./store";
 
 export type Env = BillingEnv & {
@@ -190,9 +191,14 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
 
   if (parts[0] === "health") return healthResponse(env, app);
   if (parts[0] === "agent" && !parts[1] && req.method === "POST") {
-    if (!caller(req, env)) return text("forbidden", 403);
-    const body = (await req.json().catch(() => ({}))) as { message?: unknown };
+    const who = caller(req, env);
+    if (!who) return text("forbidden", 403);
+    const body = (await req.json().catch(() => ({}))) as { message?: unknown; site?: unknown };
     const message = typeof body.message === "string" ? body.message : "";
+    if (who === "shell") {
+      const account = typeof body.site === "string" && body.site ? await store.getAccount(body.site) : null;
+      if (!isAiPlan(account?.plan)) return json({ ok: false, message: "AI 版才有代理人。單據仍然照原本的按鈕做。" }, 409);
+    }
     const proposed = await staffProposal(env.AI, env.SUMMARY_MODEL ?? "@cf/meta/llama-3.3-70b-instruct-fp8-fast", message);
     return json(proposed, proposed.ok ? 200 : 409);
   }
@@ -388,6 +394,8 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
       company: a.company,
       profile: a.profile ?? null,
       lifecycle: lifecycle(a),
+      plan: planOf(a.plan).id,
+      ai: isAiPlan(a.plan),
       erpnext: { url: t.erpnext_url, site: t.site, oauth: t.shell_oauth_client_id ? { client_id: t.shell_oauth_client_id, client_secret: t.shell_oauth_client_secret ?? null } : null },
       chatwoot: t.chatwoot_url ? { url: t.chatwoot_url, account_id: t.chatwoot_account_id ?? null } : null,
     });
@@ -598,7 +606,7 @@ export async function scheduleMeetings(env: Env, app: App = defaultApp, now = ne
     const t = await store.getTenant(site);
     if (!t?.vexa || !t.calendars?.length) return;
     const account = await store.getAccount(site);
-    if (account && !lifecycle(account, now).bots) return;
+    if (!account || !isAiPlan(account.plan) || !lifecycle(account, now).bots) return;
     for (const ics of t.calendars) {
       let body: string;
       try {

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { mergeAccount } from "../src/accounts";
 import { putTranscript, transcriptKey } from "../src/files";
 import { runJob, type Deps } from "../src/jobs";
 import { MemoryStore, type Tenant } from "../src/store";
@@ -25,6 +26,7 @@ describe("transcript files", () => {
       vexa: { url: "https://vexa.example", api_key: "vk", webhook_token: "vt" },
     };
     store.tenants.set(tenant.site, tenant);
+    await store.putAccount(mergeAccount(tenant.site, null, { company: "琢奧精密製造", plan: "ai" }));
     await store.saveMeeting({ site: tenant.site, platform: "zoom", meeting_id: "99", title: "週會", attendees: [], started_at: "2026-10-26T02:00:00Z" });
     const puts: { key: string; body: string }[] = [];
     const files = {
@@ -46,5 +48,9 @@ describe("transcript files", () => {
     await runJob({ kind: "meeting_done", site: tenant.site, platform: "zoom", meeting_id: "99" }, deps);
 
     expect(puts).toEqual([{ key: "meetings/make.dropout.tw/zoom-99.txt", body: "王：下週出貨" }]);
+
+    await store.putAccount(mergeAccount(tenant.site, null, { company: "琢奧精密製造", plan: "monthly" }));
+    expect(await runJob({ kind: "meeting_done", site: tenant.site, platform: "zoom", meeting_id: "99" }, deps)).toEqual({ skipped: "not on the AI plan" });
+    expect(puts).toHaveLength(1);
   });
 });

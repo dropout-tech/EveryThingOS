@@ -3,6 +3,7 @@ import { ECPayInvoice, type EInvoiceProvider, type InvoiceInput } from "./einvoi
 import { putTranscript } from "./files";
 import { sendConfirmation, type MailEvent, type SendEmail } from "./mail";
 import { summarize, Vexa, type Ai, type MeetingLink } from "./meetings";
+import { isAiPlan } from "./plans";
 import type { ApiStore } from "./apiStore";
 import type { Store, Tenant } from "./store";
 import { deliver, fanOut, type WebhookJob } from "./webhooks";
@@ -145,6 +146,7 @@ export async function runJob(job: Job, deps: Deps): Promise<unknown> {
 
     case "meeting_done": {
       if (!tenant.vexa || !deps.ai) throw new PermanentError("meeting bot or AI not configured");
+      if (!isAiPlan((await deps.store.getAccount(job.site))?.plan)) return { skipped: "not on the AI plan" };
       const meeting = await deps.store.getMeeting(job.site, job.platform, job.meeting_id);
       const { text } = await new Vexa(tenant.vexa, deps.fetcher).transcript(job.platform, job.meeting_id);
       if (!text.trim()) return { skipped: "empty transcript" };

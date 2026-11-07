@@ -8,7 +8,8 @@ export type Stage = "trial" | "active" | "due_soon" | "past_due" | "read_only" |
 export type Lifecycle = { stage: Stage; days: number | null; ends: string | null; writable: boolean; bots: boolean; message: string };
 
 /** The company this request belongs to, when one deployment serves many companies. */
-export type Tenancy = { site: string; company: string; host: string; lifecycle: Lifecycle; profile: ShopProfile | null };
+/** `ai`: the company is on the AI plan, so the right-hand agent and meeting summaries are on. */
+export type Tenancy = { site: string; company: string; host: string; lifecycle: Lifecycle; profile: ShopProfile | null; ai: boolean };
 
 /**
  * Which systems this request is connected to. Each one switches from demo to
@@ -82,6 +83,7 @@ type Directory = {
   company: string;
   profile: unknown;
   lifecycle: Lifecycle;
+  ai?: boolean;
   erpnext: { url: string; site: string; oauth: { client_id: string; client_secret: string | null } | null };
   chatwoot: { url: string; account_id: number | null } | null;
 };
@@ -128,7 +130,7 @@ async function fleetConfig(): Promise<LiveConfig> {
     glue: { url: trimSlash(env("GLUE_URL")!), adminToken: env("SHELL_TOKEN")!, site: d.site },
     chatwoot: d.chatwoot ? { url: trimSlash(d.chatwoot.url), platformToken: env("CHATWOOT_PLATFORM_TOKEN"), accountId: d.chatwoot.account_id ? String(d.chatwoot.account_id) : undefined } : undefined,
     sessionSecret: env("SESSION_SECRET"),
-    tenant: { site: d.site, company: d.company, host, lifecycle: d.lifecycle, profile: parseShop(d.profile ? JSON.stringify(d.profile) : null) },
+    tenant: { site: d.site, company: d.company, host, lifecycle: d.lifecycle, profile: parseShop(d.profile ? JSON.stringify(d.profile) : null), ai: d.ai === true },
   };
 }
 

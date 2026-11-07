@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { aesCbcEncrypt, hmacSha256, seal, toBase64, toHex, unseal } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt, inclusiveLines } from "../src/einvoice";
-import { addYears, lifecycle, reminderFor, taiwanDate } from "../src/accounts";
+import { addMonths, addYears, lifecycle, mergeAccount, reminderFor, taiwanDate } from "../src/accounts";
 import { consume, daily, handle, MAX_ATTEMPTS, scheduleMeetings, scheduled, type App, type Env } from "../src/app";
 import { runJob, type Deps, type Job } from "../src/jobs";
 import { unsubscribeSignature, verifySvix } from "../src/mail";
@@ -288,6 +288,9 @@ describe("meetings", () => {
       "basic.ics": () => new Response(ics),
       "/transcripts/google_meet/abc-defg-hij": () => ({ segments: [{ speaker: "安安", text: "試產延到下週" }] }),
     });
+    await h.store.putAccount(mergeAccount(tenant.site, null, { company: "琢奧精密製造", plan: "monthly" }));
+    expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(0);
+    await h.store.putAccount(mergeAccount(tenant.site, null, { company: "琢奧精密製造", plan: "ai" }));
     expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(1);
     expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T02:03:00Z"))).toBe(0);
     await runJob(h.sent[0], h.deps);
@@ -302,6 +305,7 @@ describe("meetings", () => {
 
   it("lists upcoming meetings for the shell and skips the ones staff turned off", async () => {
     const h = harness({ "basic.ics": () => new Response(ics) });
+    await h.store.putAccount(mergeAccount(tenant.site, null, { company: "琢奧精密製造", plan: "ai" }));
     vi.useFakeTimers({ now: new Date("2026-10-12T01:00:00Z"), toFake: ["Date"] });
     try {
       const get = () => new Request(`https://glue.example/admin/tenants/${tenant.site}/meetings?hours=6`, { headers: { authorization: "Bearer admin" } });
@@ -361,7 +365,9 @@ describe("accounts", () => {
     expect(lifecycle({ state: "active", trial_ends: "2026-10-20" }, now)).toMatchObject({ stage: "trial", writable: true, message: "試用還有 9 天（到 2026-10-20）。" });
     expect(lifecycle({ state: "active", trial_ends: "2026-10-11" }, now).message).toBe("試用今天到期（到 2026-10-11）。");
     expect(lifecycle({ state: "active", renews_on: "2027-10-10" }, now)).toMatchObject({ stage: "active", message: "" });
-    expect(lifecycle({ state: "active", renews_on: "2026-11-30" }, now)).toMatchObject({ stage: "due_soon", writable: true });
+    expect(lifecycle({ state: "active", plan: "ai", renews_on: "2026-11-30" }, now)).toMatchObject({ stage: "due_soon", writable: true, message: "年約 2026-11-30 到期，還有 50 天。續約後不會中斷。" });
+    expect(lifecycle({ state: "active", plan: "monthly", renews_on: "2026-11-30" }, now).stage).toBe("active");
+    expect(lifecycle({ state: "active", plan: "monthly", renews_on: "2026-10-15" }, now)).toMatchObject({ stage: "due_soon", message: "月約 2026-10-15 到期，還有 4 天。續約後不會中斷。" });
     expect(lifecycle({ state: "active", renews_on: "2026-10-11" }, now).stage).toBe("due_soon");
     expect(lifecycle({ state: "active", renews_on: "2026-10-01" }, now)).toMatchObject({ stage: "past_due", writable: true, bots: true });
     expect(lifecycle({ state: "active", renews_on: "2026-09-01" }, now)).toMatchObject({ stage: "read_only", writable: false, bots: false });
@@ -380,16 +386,21 @@ describe("accounts", () => {
     res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", hosts: ["make.os.dropout.tw"] }), h.env, h.app);
     expect(res.status).toBe(409);
 
+    res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", plan: "annual" }), h.env, h.app);
+    expect(res.status).toBe(400);
+
+    res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", {}), h.env, h.app);
+    expect(((await res.json()) as any).account.renews_on).toBe(addMonths(taiwanDate(), 1));
     res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", { years: 1, reference: "ACC-SINV-0001" }), h.env, h.app);
     const renewed = ((await res.json()) as any).account;
-    expect(renewed.renews_on).toBe(addYears(taiwanDate(), 1));
+    expect(renewed.renews_on).toBe(addYears(addMonths(taiwanDate(), 1), 1));
     expect(renewed.lifecycle.stage).toBe("active");
 
     res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "帳款未付" }), h.env, h.app);
     expect(((await res.json()) as any).account.lifecycle).toMatchObject({ stage: "suspended", writable: false });
 
     const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
-    expect(detail.events.map((e: any) => e.action)).toEqual(["暫停", "續約", "建立"]);
+    expect(detail.events.map((e: any) => e.action)).toEqual(["暫停", "續約", "續約", "建立"]);
     expect(detail.events[0].actor).toBe("ops@dropout.tw");
   });
 
@@ -400,7 +411,7 @@ describe("accounts", () => {
 
     const dir = await handle(req("GET", "/shell/tenant?host=make.os.dropout.tw", "shell"), h.env, h.app);
     const body = (await dir.json()) as any;
-    expect(body).toMatchObject({ site: tenant.site, company: "琢奧精密製造", erpnext: { url: "https://erp.example", oauth: { client_id: "cid" } }, chatwoot: { account_id: 3 }, lifecycle: { stage: "active" } });
+    expect(body).toMatchObject({ site: tenant.site, company: "琢奧精密製造", plan: "monthly", ai: false, erpnext: { url: "https://erp.example", oauth: { client_id: "cid" } }, chatwoot: { account_id: 3 }, lifecycle: { stage: "active" } });
     for (const secret of ["erpnext_secret", "erpnext_key", "hook-secret", "unsub-secret", "path-token", '"cw"', "vk"]) expect(JSON.stringify(body)).not.toContain(secret);
     expect((await handle(req("GET", "/shell/tenant?host=nobody.example", "shell"), h.env, h.app)).status).toBe(404);
     expect((await handle(req("GET", "/shell/tenant?host=make.os.dropout.tw", "wrong"), h.env, h.app)).status).toBe(403);
@@ -419,7 +430,7 @@ describe("accounts", () => {
   it("stops meeting bots for read-only companies; daily refreshes usage and forgets old keys", async () => {
     const ics = ["BEGIN:VCALENDAR", "BEGIN:VEVENT", "UID:z", "SUMMARY:週會", "DTSTART:20261012T020000Z", "LOCATION:https://meet.google.com/abc-defg-hij", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
     const h = harness({ "basic.ics": () => new Response(ics), "dropout_core.team.usage": () => ({ message: { users: 7, db_mb: 120 } }) });
-    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", renews_on: "2026-09-01" }), h.env, h.app);
+    await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", plan: "ai", renews_on: "2026-09-01" }), h.env, h.app);
     expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(0);
     await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", {}), h.env, h.app);
     expect(await scheduleMeetings(h.env, h.app, new Date("2026-10-12T01:58:00Z"))).toBe(1);
@@ -436,7 +447,7 @@ describe("accounts", () => {
   });
 
   it("reminds on set days before and after the end date", () => {
-    const a = { site: "s", company: "安安", plan: "annual", state: "active" as const, hosts: [], created_at: "", updated_at: "" };
+    const a = { site: "s", company: "安安", plan: "ai", state: "active" as const, hosts: [], created_at: "", updated_at: "" };
     const at = (d: string) => new Date(`${d}T18:01:00Z`);
     expect(reminderFor({ ...a, trial_ends: "2026-10-20" }, at("2026-10-12"))).toMatchObject({ key: "remind:s:trial:2026-10-20:7", subject: "EveryThingOS 試用還有 7 天（安安）" });
     expect(reminderFor({ ...a, trial_ends: "2026-10-21" }, at("2026-10-12"))).toBeNull();
@@ -444,6 +455,10 @@ describe("accounts", () => {
     expect(reminderFor({ ...a, renews_on: "2026-10-12" }, at("2026-10-12"))!.subject).toContain("寬限期");
     expect(reminderFor({ ...a, renews_on: "2026-09-28" }, at("2026-10-12"))!.subject).toContain("只能看");
     expect(reminderFor({ ...a, state: "suspended", renews_on: "2026-10-20" }, at("2026-10-12"))).toBeNull();
+    const m = { ...a, plan: "monthly" };
+    expect(reminderFor({ ...m, renews_on: "2026-11-12" }, at("2026-10-12"))).toBeNull();
+    expect(reminderFor({ ...m, renews_on: "2026-10-20" }, at("2026-10-12"))).toBeNull();
+    expect(reminderFor({ ...m, renews_on: "2026-10-19" }, at("2026-10-12"))).toMatchObject({ key: "remind:s:due_soon:2026-10-19:6", subject: "EveryThingOS 月約還有 6 天到期（安安）" });
   });
 
   it("daily pushes the contract status to ERPNext and mails each reminder once; state changes push right away", async () => {

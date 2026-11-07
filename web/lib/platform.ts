@@ -140,7 +140,7 @@ export type PlatformInvoice = {
 
 export type BillingSummary = {
   gateway: GatewayStatus;
-  price: { net: number; tax: number; amount: number };
+  prices: Record<"monthly" | "ai", { net: number; tax: number; amount: number }>;
   accounts: Record<string, { health: Health; open: { id: string; amount: number; created_at: string } | null; einvoice_failed: boolean }>;
 };
 

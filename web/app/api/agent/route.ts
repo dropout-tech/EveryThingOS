@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
           const res = await fetch(`${glue.url}/agent`, {
             method: "POST",
             headers: { authorization: `Bearer ${glue.adminToken}`, "content-type": "application/json" },
-            body: JSON.stringify({ message }),
+            body: JSON.stringify({ message, site: glue.site }),
           });
           return res.json();
         }

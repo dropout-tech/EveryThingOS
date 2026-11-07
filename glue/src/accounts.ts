@@ -1,7 +1,10 @@
+import { DEFAULT_PLAN, isPlanId, planOf } from "./plans";
+
 /** A customer company's contract with EveryThingOS. Dates are YYYY-MM-DD in Taiwan time. */
 export type Account = {
   site: string;
   company: string;
+  /** "monthly" or "ai" (glue/src/plans.ts). */
   plan: string;
   state: "active" | "suspended" | "cancelled";
   state_reason?: string | null;
@@ -38,7 +41,6 @@ export type Lifecycle = {
   message: string;
 };
 
-export const NOTICE_DAYS = 60;
 export const GRACE_DAYS = 14;
 const DAY = 86_400_000;
 
@@ -58,12 +60,22 @@ export function addDays(date: string, days: number) {
   return new Date(new Date(`${date}T12:00:00Z`).getTime() + days * DAY).toISOString().slice(0, 10);
 }
 
-/** A renewal adds whole years to the current end date, or to today once it has passed. */
-export function renewalEnd(renewsOn: string | null | undefined, today: string, years = 1) {
-  return addYears(renewsOn && renewsOn > today ? renewsOn : today, years);
+/** Same day of the month, or the month's last day when it has fewer days (01-31 + 1 → 02-28). */
+export function addMonths(date: string, months: number) {
+  const [y, m, d] = date.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1 + months, 1));
+  const last = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
+  first.setUTCDate(Math.min(d, last));
+  return first.toISOString().slice(0, 10);
 }
 
-export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_ends" | "renews_on">, now = new Date()): Lifecycle {
+/** A renewal adds whole months to the current end date, or to today once it has passed. */
+export function renewalEnd(renewsOn: string | null | undefined, today: string, months = 1) {
+  return addMonths(renewsOn && renewsOn > today ? renewsOn : today, months);
+}
+
+export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_ends" | "renews_on"> & { plan?: string }, now = new Date()): Lifecycle {
+  const { term, noticeDays } = planOf(a.plan);
   if (a.state === "cancelled") {
     return { stage: "cancelled", days: null, ends: a.renews_on ?? null, writable: false, bots: false, message: "已解約。資料保留，可以看和匯出；要回來請聯絡我們。" };
   }
@@ -77,20 +89,19 @@ export function lifecycle(a: Pick<Account, "state" | "state_reason" | "trial_end
   if (days >= 0) {
     const left = days === 0 ? "今天到期" : `還有 ${days} 天`;
     if (!paid) return { stage: "trial", days, ends, writable: true, bots: true, message: `試用${left}（到 ${ends}）。` };
-    if (days < NOTICE_DAYS) return { stage: "due_soon", days, ends, writable: true, bots: true, message: `年約 ${ends} 到期，${left}。續約後不會中斷。` };
+    if (days < noticeDays) return { stage: "due_soon", days, ends, writable: true, bots: true, message: `${term} ${ends} 到期，${left}。續約後不會中斷。` };
     return { stage: "active", days, ends, writable: true, bots: true, message: "" };
   }
   const late = -days;
   if (late <= GRACE_DAYS) {
     const left = GRACE_DAYS - late + 1;
-    return { stage: "past_due", days, ends, writable: true, bots: true, message: `${paid ? "年約" : "試用"}已在 ${ends} 到期。${left} 天後改成只能看；續約後馬上恢復。` };
+    return { stage: "past_due", days, ends, writable: true, bots: true, message: `${paid ? term : "試用"}已在 ${ends} 到期。${left} 天後改成只能看；續約後馬上恢復。` };
   }
-  return { stage: "read_only", days, ends, writable: false, bots: false, message: `${paid ? "年約" : "試用"}已在 ${ends} 到期。資料都在，可以看和匯出，不能新增或修改；續約後馬上恢復。` };
+  return { stage: "read_only", days, ends, writable: false, bots: false, message: `${paid ? term : "試用"}已在 ${ends} 到期。資料都在，可以看和匯出，不能新增或修改；續約後馬上恢復。` };
 }
 
 const REMIND_AT: Partial<Record<Stage, number[]>> = {
   trial: [7, 3, 1, 0],
-  due_soon: [59, 30, 14, 7, 1, 0],
   past_due: [-1, -7, -GRACE_DAYS],
   read_only: [-(GRACE_DAYS + 1)],
 };
@@ -101,10 +112,12 @@ const REMIND_AT: Partial<Record<Stage, number[]>> = {
  */
 export function reminderFor(a: Account, now = new Date(), payUrl?: string | null): { key: string; subject: string; text: string } | null {
   const l = lifecycle(a, now);
-  if (l.days === null || !REMIND_AT[l.stage]?.includes(l.days)) return null;
+  const plan = planOf(a.plan);
+  const at = l.stage === "due_soon" ? plan.remindAt : REMIND_AT[l.stage];
+  if (l.days === null || !at?.includes(l.days)) return null;
   const subject = {
     trial: `EveryThingOS 試用${l.days === 0 ? "今天到期" : `還有 ${l.days} 天`}`,
-    due_soon: `EveryThingOS 年約${l.days === 0 ? "今天到期" : `還有 ${l.days} 天到期`}`,
+    due_soon: `EveryThingOS ${plan.term}${l.days === 0 ? "今天到期" : `還有 ${l.days} 天到期`}`,
     past_due: "EveryThingOS 已到期，寬限期內仍可正常使用",
     read_only: "EveryThingOS 已改成只能看",
   }[l.stage as "trial" | "due_soon" | "past_due" | "read_only"];
@@ -121,7 +134,7 @@ export function mergeAccount(site: string, current: Account | null, patch: Parti
   const base: Account = current ?? {
     site,
     company: patch.company ?? site,
-    plan: "annual",
+    plan: DEFAULT_PLAN,
     state: "active",
     hosts: [],
     created_at: stamp,
@@ -131,6 +144,7 @@ export function mergeAccount(site: string, current: Account | null, patch: Parti
   for (const key of ["company", "plan", "state", "state_reason", "trial_ends", "renews_on", "contact_email", "tax_id", "billing_address", "profile", "hosts"] as const) {
     if (patch[key] !== undefined) (next as Record<string, unknown>)[key] = patch[key];
   }
+  if (patch.plan === undefined) next.plan = planOf(next.plan).id;
   next.hosts = [...new Set((next.hosts ?? []).map((h) => normalizeHost(h)).filter(Boolean))];
   next.cancelled_at = next.state !== "cancelled" ? null : base.state === "cancelled" && base.cancelled_at ? base.cancelled_at : stamp;
   return next;
@@ -155,6 +169,7 @@ export function normalizeHost(host: string) {
 
 export function validAccount(a: Account): string | null {
   if (!a.company) return "company 不能空白";
+  if (!isPlanId(a.plan)) return "plan 只能是 monthly（月費）或 ai（AI 版年約）";
   if (!["active", "suspended", "cancelled"].includes(a.state)) return "state 只能是 active、suspended、cancelled";
   for (const d of [a.trial_ends, a.renews_on]) if (d && !/^\d{4}-\d{2}-\d{2}$/.test(d)) return "日期要寫成 YYYY-MM-DD";
   if (a.hosts.some((h) => !/^[a-z0-9.-]+$/.test(h))) return "網址只能有英數、點和連字號";

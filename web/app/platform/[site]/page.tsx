@@ -114,7 +114,8 @@ export default async function PlatformAccountPage({ params }: PageProps<"/platfo
             <dl className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
               <Fact label="到期">{life.ends ?? "—"}</Fact>
               <Fact label="試用到">{account.trial_ends ?? "—"}</Fact>
-              <Fact label="年約到">{account.renews_on ?? "—"}</Fact>
+              <Fact label="方案">{account.plan === "ai" ? "AI 版年約" : "月費"}</Fact>
+              <Fact label="合約到">{account.renews_on ?? "—"}</Fact>
               <Fact label="聯絡人">{account.contact_email ?? "—"}</Fact>
               <Fact label="統編">{account.tax_id ?? "—"}</Fact>
               <Fact label="網址">{account.hosts.join("、") || "—"}</Fact>

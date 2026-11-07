@@ -104,7 +104,7 @@ export function PlatformInvoices({ site, invoices, gateway }: { site: string; in
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-cream-dim">還沒有帳單。年約到期前 60 天會自動開。</p>
+        <p className="text-sm text-cream-dim">還沒有帳單。月費到期前 7 天、AI 版年約到期前 60 天會自動開。</p>
       )}
     </div>
   );

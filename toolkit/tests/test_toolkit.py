@@ -347,6 +347,6 @@ class TestFleet(unittest.TestCase):
 	def test_cli_parses_fleet_commands(self):
 		p = cli.build_parser()
 		a = p.parse_args(["fleet", "renew", "acme.local", "--years", "2", "--glue-url", "https://g", "--glue-admin-token", "t"])
-		self.assertEqual((a.fleet_cmd, a.site, a.years), ("renew", "acme.local", 2))
+		self.assertEqual((a.fleet_cmd, a.site, a.years, a.months), ("renew", "acme.local", 2, None))
 		a = p.parse_args(["fleet", "bootstrap", "f.csv", "--concurrency", "4"])
 		self.assertEqual(a.concurrency, 4)

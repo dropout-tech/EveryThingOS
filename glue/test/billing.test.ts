@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { addDays, addYears, renewalEnd, taiwanDate, type Account } from "../src/accounts";
+import { addDays, addMonths, addYears, renewalEnd, taiwanDate, type Account } from "../src/accounts";
 import { daily, handle, type App, type Env } from "../src/app";
-import { annualPrice, billingDaily, merchantTradeDate, paySignature, type BillingCtx } from "../src/billing";
+import { billingDaily, merchantTradeDate, paySignature, type BillingCtx } from "../src/billing";
 import { toBase64 } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt } from "../src/einvoice";
 import { healthScore } from "../src/health";
 import { ecpayCheckMacValue } from "../src/pay";
+import { planForAmount, planOf, priceOf } from "../src/plans";
 import { MemoryStore, type Tenant } from "../src/store";
 
 const KEY = "pwFHCqoQZGmho4w6";
@@ -88,15 +89,23 @@ const paid = (fields: Record<string, string>, patch: Record<string, string> = {}
 });
 
 describe("price and renewal math", () => {
-  it("bills the AI plan at NT$69,000 tax included", () => {
-    expect(annualPrice()).toEqual({ net: 65_714, tax: 3_286, amount: 69_000 });
+  it("bills NT$1,000 a month or NT$69,000 a year for AI, tax included", () => {
+    expect(priceOf("monthly")).toEqual({ net: 952, tax: 48, amount: 1_000 });
+    expect(priceOf("ai")).toEqual({ net: 65_714, tax: 3_286, amount: 69_000 });
+    expect(planOf("annual").id).toBe("monthly");
+    expect(planOf(" AI ").id).toBe("ai");
+    expect(planForAmount(69_000, "monthly").months).toBe(12);
+    expect(planForAmount(1_000, "ai").months).toBe(1);
   });
 
   it("renews from the later of the end date and today", () => {
-    expect(renewalEnd("2027-03-01", "2026-12-01")).toBe("2028-03-01");
-    expect(renewalEnd("2026-11-01", "2026-12-01")).toBe("2027-12-01");
-    expect(renewalEnd(null, "2026-12-01")).toBe("2027-12-01");
-    expect(renewalEnd("2028-02-29", "2026-12-01")).toBe("2029-03-01");
+    expect(renewalEnd("2027-03-01", "2026-12-01", 12)).toBe("2028-03-01");
+    expect(renewalEnd("2026-11-01", "2026-12-01", 12)).toBe("2027-12-01");
+    expect(renewalEnd(null, "2026-12-01")).toBe("2027-01-01");
+    expect(renewalEnd("2028-02-29", "2026-12-01", 12)).toBe("2029-02-28");
+    expect(addMonths("2027-01-31", 1)).toBe("2027-02-28");
+    expect(addMonths("2026-12-15", 1)).toBe("2027-01-15");
+    expect(addYears("2026-12-15", 1)).toBe("2027-12-15");
     expect(merchantTradeDate(new Date("2026-10-11T16:30:05Z"))).toBe("2026/10/12 00:30:05");
   });
 });
@@ -109,16 +118,17 @@ describe("renewal invoices", () => {
     await h.store.putAccount(account({ site: "trial", company: "試", plan: "ai", trial_ends: addDays(today, 3) }));
     await h.store.putAccount(account({ site: "paused", company: "停", plan: "ai", state: "suspended", renews_on: addDays(today, 10) }));
     await h.store.putAccount(account({ site: "late", company: "晚", plan: "ai", renews_on: addDays(today, -20) }));
-    await h.store.putAccount(account({ site: "free", company: "免", plan: "annual", renews_on: addDays(today, 10) }));
+    await h.store.putAccount(account({ site: "month", company: "月", plan: "monthly", renews_on: addDays(today, 5) }));
+    await h.store.putAccount(account({ site: "month-far", company: "月遠", plan: "monthly", renews_on: addDays(today, 10) }));
 
-    expect(await billingDaily(h.ctx)).toMatchObject({ opened: 2 });
+    expect(await billingDaily(h.ctx)).toMatchObject({ opened: 3 });
     expect(await billingDaily(h.ctx)).toMatchObject({ opened: 0 });
     await Promise.all([billingDaily(h.ctx), billingDaily(h.ctx)]);
     const invoices = await h.store.listInvoices();
-    expect(invoices.map((i) => i.site).sort()).toEqual(["late", SITE]);
+    expect(invoices.map((i) => i.site).sort()).toEqual(["late", SITE, "month"].sort());
     expect(invoices.find((i) => i.site === SITE)).toMatchObject({ status: "open", amount: 69_000, net: 65_714, tax: 3_286, buyer_name: "琢奧精密製造", period: addDays(today, 59) });
-    expect(invoices.find((i) => i.site === "free")).toBeUndefined();
-    expect(h.store.events.filter((e) => e.action === "開帳單")).toHaveLength(2);
+    expect(invoices.find((i) => i.site === "month")).toMatchObject({ amount: 1_000, net: 952, tax: 48, period: addDays(today, 5) });
+    expect(h.store.events.filter((e) => e.action === "開帳單")).toHaveLength(3);
   });
 
   it("does not reopen a voided invoice by itself, but an operator can", async () => {
@@ -190,6 +200,23 @@ describe("online payment", () => {
     expect(issue).toHaveLength(1);
     const data = await ecpayInvoiceDecrypt(issue[0].body.Data, KEY, IV);
     expect(data).toMatchObject({ CustomerIdentifier: "", CustomerEmail: "boss@make.tw", Print: "0", SalesAmount: 69000 });
+  });
+
+  it("monthly plan: NT$1,000 renews one month, even if the plan changed before payment", async () => {
+    const h = harness();
+    const ends = addDays(today, 5);
+    await h.store.putAccount(account({ plan: "monthly", renews_on: ends }));
+    await billingDaily(h.ctx);
+    const [inv] = await h.store.listInvoices(SITE);
+    const { fields } = await checkout(h, inv.id);
+    expect(fields).toMatchObject({ TotalAmount: "1000", TradeDesc: "EveryThingOS 月費" });
+    expect(fields.ItemName).toContain("EveryThingOS 月費一個月");
+    await h.store.putAccount(account({ plan: "ai", renews_on: ends }));
+    await notify(h, paid(fields, { TradeAmt: "1000" }));
+    expect((await h.store.getAccount(SITE))!.renews_on).toBe(addMonths(ends, 1));
+    const data = await ecpayInvoiceDecrypt(h.calls.find((c) => c.url.endsWith("/B2CInvoice/Issue"))!.body.Data, KEY, IV);
+    expect(data).toMatchObject({ SalesAmount: 1000 });
+    expect(data.Items[0]).toMatchObject({ ItemName: "EveryThingOS 月費", ItemWord: "月" });
   });
 
   it("past due: renews one year from today; B2B e-invoice carries the 統編", async () => {
@@ -325,7 +352,7 @@ describe("operators and the shell", () => {
     await h.store.putAccount(account({ renews_on: addDays(today, 200), usage: { users: 5, active_users_7d: 4, invoices_30d: 20, invoices_prev_30d: 18 } }));
     const body = (await (await handle(call("GET", "/admin/billing", "admin"), h.env, h.app)).json()) as any;
     expect(body.accounts[SITE].health).toMatchObject({ score: 100, level: "ok" });
-    expect(body.price.amount).toBe(69_000);
+    expect(body.prices).toEqual({ monthly: { net: 952, tax: 48, amount: 1_000 }, ai: { net: 65_714, tax: 3_286, amount: 69_000 } });
   });
 });
 

@@ -5,26 +5,8 @@ import { ECPayInvoice, type EInvoiceProvider } from "./einvoice";
 import { healthScore } from "./health";
 import { escapeHtml } from "./mail";
 import { ecpayCheckMacValue, ecpayVerify } from "./pay";
+import { planForAmount, planOf, PLANS, priceOf } from "./plans";
 import type { GatewayKeys, Invoice, Store } from "./store";
-
-/**
- * AI plan only. The customer pays NT$69,000 with tax already inside (web/lib/commercial.ts).
- * Companies not on this plan are free and are not invoiced.
- * Usage is unlimited for now. A later cap will be announced before it starts; this number does not imply one.
- */
-export const AI_PLAN = "ai";
-export const ANNUAL_TAX_INCLUDED_TWD = 69_000;
-/** Already the billing rate. Taken out of the tax-included total so net + tax equals what the customer pays. */
-export const TAX_RATE = 0.05;
-
-export function isAiPlan(plan: string | null | undefined) {
-  return plan?.trim().toLowerCase() === AI_PLAN;
-}
-
-export function annualPrice() {
-  const tax = Math.round((ANNUAL_TAX_INCLUDED_TWD * TAX_RATE) / (1 + TAX_RATE));
-  return { net: ANNUAL_TAX_INCLUDED_TWD - tax, tax, amount: ANNUAL_TAX_INCLUDED_TWD };
-}
 
 /** DropOut's own ECPay merchant and e-invoice account; customers' gateways stay in their tenant config. */
 export type BillingEnv = {
@@ -81,8 +63,10 @@ function page(title: string, body: string, status = 200) {
 }
 
 /** Renew one company. The admin route and payments both come through here, so history reads the same. */
-export async function renewAccount(store: Store, a: Account, opts: { years?: number; until?: string; reference?: string }, actor: string, now = new Date()) {
-  const until = opts.until && /^\d{4}-\d{2}-\d{2}$/.test(opts.until) ? opts.until : renewalEnd(a.renews_on, taiwanDate(now), Math.min(Math.max(Number(opts.years ?? 1), 1), 5));
+/** `months` wins over `years`; neither means one period of the company's plan. At most five years. */
+export async function renewAccount(store: Store, a: Account, opts: { months?: number; years?: number; until?: string; reference?: string }, actor: string, now = new Date()) {
+  const months = Math.min(Math.max(Math.floor(Number(opts.months ?? (opts.years !== undefined ? Number(opts.years) * 12 : planOf(a.plan).months))) || 1, 1), 60);
+  const until = opts.until && /^\d{4}-\d{2}-\d{2}$/.test(opts.until) ? opts.until : renewalEnd(a.renews_on, taiwanDate(now), months);
   const next = mergeAccount(a.site, a, { renews_on: until, state: "active", state_reason: null }, now);
   await store.putAccount(next);
   await store.addAccountEvent(a.site, actor, "續約", `${a.renews_on ?? "（試用）"} → ${until}${opts.reference ? `；${opts.reference}` : ""}`);
@@ -109,13 +93,13 @@ function randomId(length: number) {
  * an operator opening one by hand may reissue.
  */
 export async function openInvoice(store: Store, a: Account, actor: string, { now = new Date(), respectVoid = false } = {}) {
-  if (!isAiPlan(a.plan)) return { invoice: null, created: false };
   const period = invoicePeriod(a, now);
   const mine = (await store.listInvoices(a.site)).filter((i) => i.period === period);
   const live = mine.find((i) => i.status !== "void");
   if (live) return { invoice: live, created: false };
   if (respectVoid && mine.length) return { invoice: null, created: false };
-  const price = annualPrice();
+  const plan = planOf(a.plan);
+  const price = priceOf(plan.id);
   const inv: Invoice = {
     id: `DO-${period.slice(0, 4)}-${randomId(6)}`,
     site: a.site,
@@ -142,7 +126,7 @@ export async function openInvoice(store: Store, a: Account, actor: string, { now
     const again = (await store.listInvoices(a.site)).find((i) => i.period === period && i.status !== "void");
     return { invoice: again ?? null, created: false };
   }
-  await store.addAccountEvent(a.site, actor, "開帳單", `${inv.id} ${ntd(inv.amount)}（含稅），${a.renews_on ? `${period} 到期後` : "從付款日起"}續一年`);
+  await store.addAccountEvent(a.site, actor, "開帳單", `${inv.id} ${plan.name} ${ntd(inv.amount)}（含稅），${a.renews_on ? `${period} 到期後` : "從付款日起"}續${plan.period}`);
   return { invoice: inv, created: true };
 }
 
@@ -168,14 +152,15 @@ export function merchantTradeDate(now = new Date()) {
 
 /** AIO checkout fields for one attempt. The amount always comes from the invoice row. */
 export async function checkoutFields(cfg: { keys: GatewayKeys }, inv: Invoice, tradeNo: string, origin: string, backUrl: string, now = new Date()) {
+  const plan = planForAmount(inv.amount, null);
   const fields: Record<string, string> = {
     MerchantID: cfg.keys.merchant_id,
     MerchantTradeNo: tradeNo,
     MerchantTradeDate: merchantTradeDate(now),
     PaymentType: "aio",
     TotalAmount: String(inv.amount),
-    TradeDesc: "EveryThingOS 年約",
-    ItemName: `EveryThingOS 年約一年 ${inv.id}`,
+    TradeDesc: plan.name,
+    ItemName: `${plan.name}${plan.period} ${inv.id}`,
     ReturnURL: `${origin.replace(/\/+$/, "")}/billing/ecpay`,
     ClientBackURL: backUrl,
     ChoosePayment: "ALL",
@@ -221,6 +206,7 @@ export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Dat
   };
   if (inv.buyer_tax_id && !inv.buyer_address) return fail("有統編要填發票地址");
   if (!inv.buyer_tax_id && !inv.buyer_email) return fail("沒有聯絡人 Email，開不了 B2C 發票");
+  const plan = planForAmount(inv.amount, a?.plan);
   try {
     const issued = await withTimeout(
       provider.issue({
@@ -231,7 +217,7 @@ export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Dat
         address: inv.buyer_address,
         grand_total: inv.amount,
         net_total: inv.net,
-        items: [{ item_name: "EveryThingOS 年約", qty: 1, uom: "年", amount: inv.net }],
+        items: [{ item_name: plan.name, qty: 1, uom: plan.uom, amount: inv.net }],
       }),
       10_000,
     );
@@ -246,7 +232,7 @@ export async function issueEinvoice(ctx: BillingCtx, inv: Invoice, now = new Dat
 type Settlement = { via: "ecpay" | "offline"; actor: string; trade_no?: string; gateway_txn?: string; reference?: string };
 
 /**
- * Mark an open invoice paid, renew the company one year and issue the e-invoice.
+ * Mark an open invoice paid, renew the company one period of the plan it was billed for, and issue the e-invoice.
  * Safe to call again with the same payment: each step checks whether it already happened.
  */
 export async function settleInvoice(ctx: BillingCtx, id: string, s: Settlement, now = new Date()): Promise<{ ok: boolean; message: string; voided?: boolean; account?: Account; invoice?: Invoice }> {
@@ -275,7 +261,7 @@ export async function settleInvoice(ctx: BillingCtx, id: string, s: Settlement, 
     try {
       const earlier = account.renews_on && account.renews_on > inv.period ? `；注意：付款前已續約到 ${account.renews_on}，請確認是否重複收款` : "";
       const paidBy = s.via === "ecpay" ? `綠界 ${s.trade_no}` : `線下付款${s.reference ? ` ${s.reference}` : ""}`;
-      account = await renewAccount(store, account, { years: 1, reference: `${inv.id}；${paidBy}${earlier}` }, s.actor, now);
+      account = await renewAccount(store, account, { months: planForAmount(inv.amount, account.plan).months, reference: `${inv.id}；${paidBy}${earlier}` }, s.actor, now);
       await store.updateInvoice(inv.id, null, { renewed_until: account.renews_on ?? null });
     } catch (e) {
       await store.release(`billing-renew:${inv.id}`);
@@ -345,8 +331,9 @@ export async function billingRoute(req: Request, url: URL, parts: string[], ctx:
     if (!safeEqual(sig, await paySignature(env, id))) return page("連結無效", "<p>這個付款連結不完整，請回覆續約通知信，我們再寄一次。</p>", 400);
     const inv = await store.getInvoice(id);
     if (!inv) return page("找不到帳單", "<p>這張帳單不存在，請回覆續約通知信。</p>", 404);
-    const head = `<p>${escapeHtml(inv.buyer_name)} · 帳單 ${escapeHtml(inv.id)}<br>EveryThingOS 年約一年 ${ntd(inv.net)} ＋ 營業稅 ${ntd(inv.tax)} ＝ <b>${ntd(inv.amount)}</b></p>`;
-    if (inv.status === "paid") return page("已經付款", `${head}<p>${inv.paid_at?.slice(0, 10)} 收到款項，${inv.renewed_until ? `年約到 ${inv.renewed_until}` : "續約處理中"}。謝謝！</p>`);
+    const plan = planForAmount(inv.amount, null);
+    const head = `<p>${escapeHtml(inv.buyer_name)} · 帳單 ${escapeHtml(inv.id)}<br>${plan.name}${plan.period} ${ntd(inv.net)} ＋ 營業稅 ${ntd(inv.tax)} ＝ <b>${ntd(inv.amount)}</b></p>`;
+    if (inv.status === "paid") return page("已經付款", `${head}<p>${inv.paid_at?.slice(0, 10)} 收到款項，${inv.renewed_until ? `${plan.term}到 ${inv.renewed_until}` : "續約處理中"}。謝謝！</p>`);
     if (inv.status === "void") return page("帳單已作廢", `${head}<p>這張帳單已作廢，請回覆續約通知信，我們寄新的給您。</p>`);
     const cfg = ecpayConfig(env);
     if (!cfg) return page("線上付款還沒開", `${head}<p>請直接回覆續約通知信，我們提供匯款資料。</p>`, 503);
@@ -419,7 +406,7 @@ export async function billingAdmin(req: Request, url: URL, parts: string[], ctx:
         einvoice_failed: invoices.some((i) => i.site === a.site && i.status === "paid" && !i.einvoice_number && i.einvoice_error),
       };
     }
-    return json({ gateway: gatewayStatus(env), price: annualPrice(), accounts });
+    return json({ gateway: gatewayStatus(env), prices: Object.fromEntries(Object.values(PLANS).map((p) => [p.id, priceOf(p.id)])), accounts });
   }
 
   if (parts[1] === "accounts" && parts[2] && parts[3] === "invoices" && !parts[4]) {
@@ -430,7 +417,6 @@ export async function billingAdmin(req: Request, url: URL, parts: string[], ctx:
       return json({ gateway: gatewayStatus(env), health: healthScore(a, invoices.filter((i) => i.status === "open")), invoices });
     }
     if (req.method === "POST") {
-      if (!isAiPlan(a.plan)) return text("不用 AI 的公司不開帳單", 409);
       const { invoice, created } = await openInvoice(store, a, ctx.actor);
       if (!invoice) return text("開不了帳單", 409);
       return json({ ok: true, created, invoice: await withLink(invoice) });
@@ -461,12 +447,13 @@ export async function billingAdmin(req: Request, url: URL, parts: string[], ctx:
       const a = await store.getAccount(inv.site);
       const link = await payUrl(env, origin, inv.id);
       const to = a?.contact_email;
+      const plan = planForAmount(inv.amount, a?.plan);
       const sent = to
         ? await mailCustomer(
             ctx,
             to,
-            `EveryThingOS 年約付款連結（${inv.buyer_name}）`,
-            `${inv.buyer_name} 您好，\n\n這是 EveryThingOS 年約的付款連結，金額 ${ntd(inv.amount)}（含 5% 營業稅）：\n${link}\n\n可以刷卡或 ATM 轉帳。付款後馬上續約一年，電子發票會寄到這個信箱。\n有問題直接回覆這封信即可。\n\nEveryThingOS`,
+            `${plan.name}付款連結（${inv.buyer_name}）`,
+            `${inv.buyer_name} 您好，\n\n這是${plan.name}的付款連結，金額 ${ntd(inv.amount)}（含 5% 營業稅）：\n${link}\n\n可以刷卡或 ATM 轉帳。付款後馬上續約${plan.period}，電子發票會寄到這個信箱。\n有問題直接回覆這封信即可。\n\nEveryThingOS`,
           )
         : false;
       await store.addAccountEvent(inv.site, ctx.actor, "寄付款連結", sent ? `${inv.id} 寄給 ${to}` : `${inv.id} 沒有寄出（${to ? "寄信沒有設定或失敗" : "沒有聯絡人 Email"}），連結交給營運自己貼`);

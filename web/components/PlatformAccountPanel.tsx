@@ -20,6 +20,7 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
     hosts: account.hosts.join(", "),
     trial_ends: account.trial_ends ?? "",
     renews_on: account.renews_on ?? "",
+    plan: account.plan === "ai" ? "ai" : "monthly",
   });
   const describe = (r: { message?: string }) => String(r.message ?? "已更新");
 
@@ -31,8 +32,8 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
           收款單號（記在紀錄裡）
           <input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="ACC-SINV-…" className={`${field} w-48`} />
         </label>
-        <button type="button" disabled={action.busy} onClick={() => action.run(path, { action: "renew", years: 1, reference }, describe)} className="glass-cta rounded-full px-4 py-2 text-sm disabled:opacity-50">
-          續約一年
+        <button type="button" disabled={action.busy} onClick={() => action.run(path, { action: "renew", reference }, describe)} className="glass-cta rounded-full px-4 py-2 text-sm disabled:opacity-50">
+          {account.plan === "ai" ? "續約一年" : "續約一個月"}
         </button>
         <span className="mx-1 hidden h-8 w-px bg-[var(--line)] sm:block" aria-hidden />
         {account.state === "active" ? (
@@ -83,6 +84,7 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
                 hosts: form.hosts.split(/[,\s]+/).filter(Boolean),
                 trial_ends: form.trial_ends || null,
                 renews_on: form.renews_on || null,
+                plan: form.plan,
               },
               describe,
             );
@@ -96,7 +98,7 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
               ["billing_address", "發票地址（有統編必填）", "text"],
               ["hosts", "網址（逗號分隔）", "text"],
               ["trial_ends", "試用到", "date"],
-              ["renews_on", "年約到", "date"],
+              ["renews_on", "合約到", "date"],
             ] as const
           ).map(([key, label, type]) => (
             <label key={key} className="text-xs text-cream-dim">
@@ -104,6 +106,13 @@ export function PlatformAccountPanel({ account }: { account: PlatformAccount }) 
               <input type={type} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className={field} />
             </label>
           ))}
+          <label className="text-xs text-cream-dim">
+            方案
+            <select value={form.plan} onChange={(e) => setForm({ ...form, plan: e.target.value === "ai" ? "ai" : "monthly" })} className={field}>
+              <option value="monthly">月費 NT$1,000（含稅）</option>
+              <option value="ai">AI 版年約 NT$69,000（含稅）</option>
+            </select>
+          </label>
           <div className="flex items-end">
             <button type="submit" disabled={action.busy} className="glass-cta rounded-full px-5 py-2 text-sm disabled:opacity-50">
               {action.busy ? "儲存中…" : "儲存"}

@@ -139,7 +139,8 @@ def list_accounts(a, out=print):
 def change(a, out=print):
 	site = a.site
 	if a.fleet_cmd == "renew":
-		data = _glue(a, "POST", f"/admin/accounts/{site}/renew", {"years": a.years, "reference": a.reference})
+		body = {"months": a.months, "years": a.years, "reference": a.reference}
+		data = _glue(a, "POST", f"/admin/accounts/{site}/renew", {k: v for k, v in body.items() if v is not None})
 	else:
 		state = {"suspend": "suspended", "resume": "active", "cancel": "cancelled"}[a.fleet_cmd]
 		data = _glue(a, "POST", f"/admin/accounts/{site}/state", {"state": state, "reason": getattr(a, "reason", None)})
