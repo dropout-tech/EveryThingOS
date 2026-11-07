@@ -37,8 +37,8 @@ export default async function ConsultingPage() {
             </div>
             <p className="text-xs text-cream-dim">{AI_USAGE_NOTE}</p>
             <figure className="site-shot pt-2">
-              <img src="/shots/today-white.png" alt="今天的工作畫面" width={1280} height={800} className="site-shot-light" />
-              <img src="/shots/today-black.png" alt="今天的工作畫面" width={1280} height={800} className="site-shot-dark" />
+              <img src="/shots/today-white.webp" alt="今天的工作畫面" width={1280} height={800} className="site-shot-light" />
+              <img src="/shots/today-black.webp" alt="今天的工作畫面" width={1280} height={800} className="site-shot-dark" />
             </figure>
             <p className="text-sm text-cream-dim">
               <Link href="/pricing" className="underline underline-offset-4 hover:text-cream">

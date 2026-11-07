@@ -28,8 +28,8 @@ export default function IndustriesPage() {
             </div>
           </div>
           <figure className="site-shot">
-            <img src="/shots/today-white.png" alt="產業包工作畫面" width={1280} height={800} className="site-shot-light" />
-            <img src="/shots/today-black.png" alt="產業包工作畫面" width={1280} height={800} className="site-shot-dark" />
+            <img src="/shots/today-white.webp" alt="產業包工作畫面" width={1280} height={800} className="site-shot-light" />
+            <img src="/shots/today-black.webp" alt="產業包工作畫面" width={1280} height={800} className="site-shot-dark" />
           </figure>
         </header>
         <div className="space-y-8">

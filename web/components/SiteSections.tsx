@@ -6,10 +6,10 @@ import { ERP_PARITY, SALES_STEPS } from "@/lib/erp";
 const TONE: Record<ModuleStatus, string> = { ready: "ok", setup: "warn", pilot: "muted" };
 
 const SHOTS = [
-  { id: "sales", label: "生意：一張單一個按鈕", light: "/shots/sales-white.png", dark: "/shots/sales-black.png" },
-  { id: "reports", label: "儀表板：營收、毛利、前十大客人", light: "/shots/reports-white.png", dark: "/shots/reports-black.png" },
-  { id: "finance", label: "收錢：帳齡與營業稅", light: "/shots/finance-white.png", dark: "/shots/finance-black.png" },
-  { id: "hr", label: "人事：打卡、請假、核准", light: "/shots/hr-white.png", dark: "/shots/hr-black.png" },
+  { id: "sales", label: "生意：一張單一個按鈕", light: "/shots/sales-white.webp", dark: "/shots/sales-black.webp" },
+  { id: "reports", label: "儀表板：營收、毛利、前十大客人", light: "/shots/reports-white.webp", dark: "/shots/reports-black.webp" },
+  { id: "finance", label: "收錢：帳齡與營業稅", light: "/shots/finance-white.webp", dark: "/shots/finance-black.webp" },
+  { id: "hr", label: "人事：打卡、請假、核准", light: "/shots/hr-white.webp", dark: "/shots/hr-black.webp" },
 ] as const;
 
 export function SectionTitle({ title, children }: { kicker?: string; title: string; children?: ReactNode }) {
