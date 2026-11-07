@@ -89,6 +89,8 @@ jobs:
       - name: MariaDB client and character set
         run: |
           sudo apt-get update && sudo apt-get install -y mariadb-client
+          # The 11.x client demands TLS by default; the mariadb:10.6 service has none.
+          printf '[client]\nskip-ssl\n' > ~/.my.cnf
           mariadb --host 127.0.0.1 --port 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'; SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
       - name: Bench with ERPNext, Payments, Webshop, HRMS (version-15)
         run: |
