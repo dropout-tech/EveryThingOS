@@ -58,7 +58,7 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 | 介面：設計 token 與共用元件、手機底部選單、載入與錯誤畫面、確認對話框、WCAG AA 對比、減少動態；官網價值主張、免費導入預約表單、SEO（sitemap、OG 圖） | `web/components/ui`、`web/app/globals.css`、`web/app/consulting` | [docs/UI-GUIDE.md](docs/UI-GUIDE.md) |
 | 信任文件：服務條款、隱私權政策、資料處理附約、SLA、資安說明 | `web/app/{terms,privacy,dpa,sla,security}` | **草稿**，公司資料待填、簽約前請律師審閱（[docs/TRUST.md](docs/TRUST.md)） |
 | 部署：ERPNext 映像、Chatwoot、Cloudflare Tunnel、Vexa | `deploy/` | 設定檔已寫，**尚未在真主機跑過** |
-| 公開預覽網址 | https://dropout-os.vercel.app | production 追 GitHub `main` |
+| 正式網址 | https://os.dropout.tw（Cloudflare Worker `dropout-os`，各公司 `*.os.dropout.tw`） | 決定搬到 Cloudflare；部署後才會通。在那之前 https://dropout-os.vercel.app 仍追 GitHub `main` |
 
 下一動：照 [docs/RELIABILITY.md](docs/RELIABILITY.md) 的上線清單，在 info@dropout.tw 的 Cloudflare 帳號建 D1、Queues 與 R2 bucket `dropout-backups`、套用 `glue/migrations` 0001–0006、部署膠水與殼。公司附件與備份、會議逐字稿、膠水匯出都進這一個 bucket。帳本、庫存、對話索引仍在主機上的 ERPNext 與 Chatwoot。需要在 Cursor Dashboard → Cloud Agents → Secrets 加上 `CLOUDFLARE_API_TOKEN` 與 `CLOUDFLARE_ACCOUNT_ID`。
 

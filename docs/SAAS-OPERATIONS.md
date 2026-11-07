@@ -49,7 +49,7 @@
 | LINE 官方帳號、WhatsApp | 對話 | LINE 超過免費則數要升級方案；WhatsApp 依對話計費 |
 | 綠界、藍新 | 官網收款 | 交易手續費 |
 | 電子發票加值中心、簡訊 | 開發票、簡訊 | 依合約 |
-| Vercel | 目前的預覽網址 `dropout-os.vercel.app` | Hobby 方案不能商用，正式要 Pro 或把殼移到 Cloudflare（`npm run deploy`） |
+| Vercel | 搬到 Cloudflare 前的預覽網址 `dropout-os.vercel.app` | 已決定殼搬到 Cloudflare（`os.dropout.tw`）；上線後停掉 Vercel 專案 |
 
 ## 模組現在能不能用
 

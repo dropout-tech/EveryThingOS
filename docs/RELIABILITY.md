@@ -239,7 +239,9 @@ Chatwoot、Vexa 裡這家的資料不在這個指令裡，要在那兩邊的後�
 **殼**
 
 - [ ] secrets：`GLUE_URL`、`SHELL_TOKEN`、`SESSION_SECRET`（32 字元以上）；有 Chatwoot 再加 `CHATWOOT_PLATFORM_TOKEN`
-- [ ] `npm run deploy`；網域 `*.os.dropout.tw` 指到 Worker `dropout-os`
+- [ ] `dropout.tw` 的 DNS 加一筆 `*.os` AAAA `100::`（橘雲，Proxied），各公司網址才進得了 Worker；`os.dropout.tw` 與 `glue.dropout.tw` 部署時自動建立（`web/wrangler.jsonc`、`glue/wrangler.jsonc` 的 `routes`）
+- [ ] 部署（Actions「Deploy to Cloudflare」或 `npm run deploy`）；`curl https://os.dropout.tw/api/health` 回 `ok: true`
+- [ ] 確認 Cloudflare 上正常後，Vercel 專案 `dropout-os` 停掉（Hobby 方案不能商用）
 - [ ] `curl https://<任一殼網址>/api/health` 回 `ok: true` 且 `glue.ok: true`
 - [ ] `/status` 不再顯示「示範資料」
 
