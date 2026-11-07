@@ -389,11 +389,13 @@ def _same(left, right):
 
 
 def leave_field_upgrade(name, values):
-	"""公司沒改過的舊婚假（8 日、原文說明）才升到 14 日。改過任一邊就回傳 None。"""
+	"""公司沒改過的舊婚假（8 日、原文說明）才升到 14 日。改過任一邊就回傳 None。
+	values 沒帶的欄位（該版 HRMS 沒有）不比對。"""
 	for row in SHIPPED_LEAVE_EDITS:
 		if row["leave_type_name"] != name:
 			continue
-		if all(_same(values.get(key), expected) for key, expected in row["match"].items()):
+		checked = [key for key in row["match"] if key in values]
+		if checked and all(_same(values[key], row["match"][key]) for key in checked):
 			return dict(row["set"])
 	return None
 

@@ -148,6 +148,9 @@ class LeaveDays(unittest.TestCase):
 		self.assertIsNone(leave_field_upgrade("婚假", {**old, "max_leaves_allowed": 10}))
 		self.assertIsNone(leave_field_upgrade("婚假", {**old, "max_leaves_allowed": "8.0", "description": "公司自訂"}))
 		self.assertEqual(leave_field_upgrade("婚假", {**old, "max_leaves_allowed": "8.0"})["max_leaves_allowed"], 14)
+		self.assertEqual(leave_field_upgrade("婚假", {"max_leaves_allowed": 8})["max_leaves_allowed"], 14)
+		self.assertIsNone(leave_field_upgrade("婚假", {"max_leaves_allowed": 10}))
+		self.assertIsNone(leave_field_upgrade("婚假", {}))
 
 
 class EmployerSupplement(unittest.TestCase):

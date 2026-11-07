@@ -241,11 +241,12 @@ def upgrade_shipped_text():
 	"""舊的法定文字才改。公司改過天數或說明就留著。"""
 	changed = []
 	if frappe.db.exists("Leave Type", "婚假"):
-		current = {
-			"max_leaves_allowed": frappe.db.get_value("Leave Type", "婚假", "max_leaves_allowed"),
-			"description": frappe.db.get_value("Leave Type", "婚假", "description"),
-		}
+		# HRMS v15 Leave Type has no description field.
+		meta = frappe.get_meta("Leave Type")
+		fields = [f for f in ("max_leaves_allowed", "description") if meta.has_field(f)]
+		current = frappe.db.get_value("Leave Type", "婚假", fields, as_dict=True) or {}
 		update = labor_rules.leave_field_upgrade("婚假", current)
+		update = {k: v for k, v in (update or {}).items() if k in fields}
 		if update:
 			frappe.db.set_value("Leave Type", "婚假", update)
 			changed.append("婚假")
