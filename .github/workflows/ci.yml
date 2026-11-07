@@ -25,7 +25,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run build
+      - name: Build as a Cloudflare Worker (OpenNext runs next build, no deploy)
+        run: npx opennextjs-cloudflare build && npx wrangler deploy --dry-run --outdir /tmp/worker
 
   glue:
     runs-on: ubuntu-latest
@@ -42,6 +43,8 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Cloudflare Worker bundle (no deploy)
+        run: npx wrangler deploy --dry-run --outdir /tmp/worker
 
   toolkit:
     runs-on: ubuntu-latest
