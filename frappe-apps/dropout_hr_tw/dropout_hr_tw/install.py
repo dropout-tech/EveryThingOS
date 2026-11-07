@@ -152,6 +152,7 @@ def ensure_setup():
 	create_custom_fields(CUSTOM_FIELDS, update=True)
 	seed_settings()
 	default_auto_annual_leave()
+	allow_split_shifts()
 	created = {"salary_components": [], "leave_types": []}
 	for row in _load("salary_components.json"):
 		if not frappe.db.exists("Salary Component", row["salary_component"]):
@@ -187,6 +188,14 @@ def default_auto_annual_leave():
 		stored = frappe.db.sql("select value from `tabSingles` where doctype = %s and field = %s", (SETTINGS, field))
 		if not stored:
 			frappe.db.set_single_value(SETTINGS, field, value)
+
+
+def allow_split_shifts():
+	"""A teacher can take a morning and an afternoon class. schedule.assign does its own
+	overlap checks per teacher and room, so HRMS's one-assignment-per-day rule must be off."""
+	field = "allow_multiple_shift_assignments"
+	if frappe.get_meta("HR Settings").has_field(field) and not frappe.db.get_single_value("HR Settings", field):
+		frappe.db.set_single_value("HR Settings", field, 1)
 
 
 def _existing_roles():
