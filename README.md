@@ -25,8 +25,10 @@ cd web && npm run preview   # 本機用 Workers 執行環境跑一次
 cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_API_TOKEN 與 CLOUDFLARE_ACCOUNT_ID
 ```
 
+每個 PR 的 CI 都會用 OpenNext 建一次 Worker 並 `wrangler deploy --dry-run`（不部署）。正式部署走 GitHub Actions「Deploy to Cloudflare」，手動按，先膠水再殼；一次性設定見 [docs/RELIABILITY.md](docs/RELIABILITY.md) 上線清單。
+
 - `/` 現場 → 規模 → 功能。選過的人會直接進今天（`/?setup=1` 重設）
-- `/pricing` 一年十萬
+- `/pricing` 不用 AI 免費；AI 版一年含稅 NT$69,000
 - `/consulting` 免費導入
 - `/industries` 一百個產業包（給想對照的人，不是進站必經）
 - `/workspace` 今天這一件

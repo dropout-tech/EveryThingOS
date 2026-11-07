@@ -215,12 +215,14 @@ Chatwoot、Vexa 裡這家的資料不在這個指令裡，要在那兩邊的後�
 **Cloudflare 帳號**
 
 - [ ] Workers Paid 方案（膠水用 Queues 就要）
-- [ ] API token（Workers、D1、Queues、R2 權限），放在 CI 或 Cursor Secrets，不進 git
+- [ ] API token（Workers、D1、Queues、R2 權限），放在 GitHub Secrets `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`（只能是 DropOut 的帳號），不進 git
+- [ ] 之後每次部署：Actions →「Deploy to Cloudflare」→ Run workflow（`.github/workflows/deploy-cloudflare.yml`，先跑膠水的 D1 migration 再部署膠水、殼）。下面的一次性設定要先做完
 
 **膠水（先部署，殼要用它）**
 
-- [ ] `npx wrangler d1 create dropout-glue`，把 `database_id` 填進 `glue/wrangler.jsonc`
+- [ ] `npx wrangler d1 create dropout-glue`，把 `database_id` 填進 `glue/wrangler.jsonc`（還是 0000… 時部署流程會停下）
 - [ ] `npx wrangler queues create dropout-jobs`、`npx wrangler queues create dropout-jobs-dlq`
+- [ ] `npx wrangler r2 bucket create dropout-backups`（膠水綁定 `FILES`）
 - [ ] `npm run db:migrate`（`0001`–`0006` 都要是 ✅）
 - [ ] secrets：`TENANT_KEY`（`openssl rand -base64 32`，另外存一份在密碼管理器，掉了所有公司的金鑰都解不開）、`ADMIN_TOKEN`、`SHELL_TOKEN`、`ALERT_WEBHOOK_URL`；選用 `RESEND_API_KEY`、`TURNSTILE_SECRET`、`ALERT_WEBHOOK_TOKEN`
 - [ ] vars：`PLATFORM_MAIL_FROM`、`PLATFORM_NOTIFY`（在 Email Routing 驗證過）

@@ -1,0 +1,84 @@
+# Deploy the glue (D1 migrations first) and the shell to Cloudflare Workers.
+# Manual only: Actions → Deploy to Cloudflare → Run workflow. Moving production off
+# Vercel and pointing *.os.dropout.tw at the Worker are separate decisions.
+#
+# Repository secrets: CLOUDFLARE_API_TOKEN (Workers Scripts Edit, D1 Edit, Queues Edit,
+# Workers R2 Storage Edit), CLOUDFLARE_ACCOUNT_ID — the DropOut account only.
+# One-time setup before the first run is in docs/RELIABILITY.md (上線檢查清單): create the
+# D1 database, queues and the dropout-backups bucket, put the real database_id into
+# glue/wrangler.jsonc, and set the Worker secrets with `wrangler secret put`.
+
+name: Deploy to Cloudflare
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What to deploy
+        type: choice
+        options: [both, glue, web]
+        default: both
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Credentials and D1 id
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (DropOut account) in repository secrets"
+            exit 1
+          fi
+          if grep -q '00000000-0000-0000-0000-000000000000' glue/wrangler.jsonc; then
+            echo "::error::glue/wrangler.jsonc still has the placeholder database_id; run 'npx wrangler d1 create dropout-glue' and paste the id"
+            exit 1
+          fi
+
+  glue:
+    needs: check
+    if: inputs.target != 'web'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: glue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: glue/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck && npm test
+      - run: npx wrangler d1 migrations apply dropout-glue --remote
+      - run: npx wrangler deploy
+
+  web:
+    needs: [check, glue]
+    if: ${{ !failure() && !cancelled() && inputs.target != 'glue' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run deploy
