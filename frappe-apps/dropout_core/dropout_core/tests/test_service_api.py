@@ -501,13 +501,20 @@ class TestDodoServiceAPI(FrappeTestCase):
 		activity.summary = "unauthorized rewrite"
 		with self.assertRaises(frappe.PermissionError):
 			activity.save(ignore_permissions=True)
+		# save() updates the in-memory modified timestamp before validation.
+		# A rejected save must not make the next guard test a stale-write test.
+		activity = frappe.get_doc(ACTIVITY, "dodo-" + operation)
+		activity.summary = "unauthorized rewrite"
 		activity.flags.ignore_validate = True
 		with self.assertRaises(frappe.PermissionError):
 			activity.save(ignore_permissions=True)
+		activity = frappe.get_doc(ACTIVITY, "dodo-" + operation)
+		activity.summary = "unauthorized rewrite"
 		with self.assertRaises(frappe.PermissionError):
 			activity.db_update()
 		with self.assertRaises(frappe.PermissionError):
 			frappe.delete_doc(ACTIVITY, activity.name, force=True, ignore_permissions=True)
+		self.assertEqual(frappe.db.get_value(ACTIVITY, activity.name, "summary"), _payload()["summary"])
 		self.assertEqual(service_api.get_operation(operation), {"ok": True, "receipt": result["receipt"]})
 
 	def test_corrupt_stored_receipt_is_not_returned_as_success_or_leaked(self):
