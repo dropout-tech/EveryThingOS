@@ -1,9 +1,11 @@
+import type { ApiKeyScope } from "./api-key-scopes";
+
 export type ApiKeyRow = {
   id: string;
   prefix: string;
   display: string;
   label: string;
-  scopes: ("read" | "write")[];
+  scopes: ApiKeyScope[];
   created_by: string;
   created_at: string;
   last_used_at: string | null;

@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  title: EveryThingOS Dodo Service API
+  version: "1.0.0"
+  description: |
+    Draft receiver contract. Deployment and real Dodo integration remain separate acceptance gates.
+    The API key selects the ERPNext site. Generic read/write scopes grant no service access.
+    See DODO-SERVICE-API.md for normalization, transaction, replay and acceptance rules.
+servers:
+  - url: https://glue.example.tw/v1
+security:
+  - apiKey: []
+paths:
+  /party-candidates:
+    post:
+      tags: [service]
+      operationId: findServicePartyCandidates
+      summary: Find candidates without creating or verifying a person
+      description: Requires service:read. Phone is in the body to avoid URL logging. No query parameters. At most 10 candidates; one match is not identity verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [phone]
+              properties:
+                phone: { $ref: "#/components/schemas/Phone" }
+      responses:
+        "200":
+          description: Bounded candidate result
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, has_more]
+                properties:
+                  data:
+                    type: array
+                    maxItems: 10
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [party_type, id, display_name]
+                      properties:
+                        party_type: { type: string, enum: [Customer, Lead] }
+                        id: { type: string, minLength: 1, maxLength: 140 }
+                        display_name: { type: string, minLength: 1, maxLength: 140 }
+                  has_more: { type: boolean }
+        default: { $ref: "#/components/responses/Error" }
+  /service-activities:
+    post:
+      tags: [service]
+      operationId: createDodoServiceActivity
+      summary: Atomically record one service activity and optional follow-up
+      description: |
+        Requires service:write; no query parameters. Maximum JSON body 16384 UTF-8 bytes.
+        Operation uniqueness is in the ERPNext transaction, independent of the API key ID.
+        Same normalized body and UUID replays the original receipt; changed body returns 409.
+        Locked accounts return 423 even for POST replay; GET receipt remains available.
+        Any transport failure is uncertain. Do not retry with a different UUID.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { $ref: "#/components/schemas/OperationId" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ActivityInput" }
+      responses:
+        "201":
+          description: Transaction created the activity, optional ToDo and receipt
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WriteResult" }
+        "200":
+          description: Original committed receipt, replayed true, no additional business records
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WriteResult" }
+        default: { $ref: "#/components/responses/Error" }
+  /operations/{operationId}:
+    get:
+      tags: [service]
+      operationId: getDodoServiceOperation
+      summary: Read a committed Dodo receipt in the authenticated site
+      description: Requires service:read. No query parameters. A 404 is not evidence an in-flight write was never committed. No request body or contact details are returned.
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/OperationId" }
+      responses:
+        "200":
+          description: Original committed receipt
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data]
+                properties:
+                  data: { $ref: "#/components/schemas/Receipt" }
+        default: { $ref: "#/components/responses/Error" }
+components:
+  securitySchemes:
+    apiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: dok_live_
+  responses:
+    Error:
+      description: Sanitized error; 400 invalid request, 401 unauthorized, 403 scope, 404 absent, 409 content conflict, 423 account locked, 429 limited, 502/503 upstream unavailable or invalid. Contains X-Request-Id; 429 also contains Retry-After.
+      content:
+        application/json:
+          schema: { $ref: "./openapi.yaml#/components/schemas/Error" }
+  schemas:
+    OperationId:
+      type: string
+      pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    SourceId:
+      type: string
+      pattern: "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,99}$"
+    Phone:
+      type: string
+      pattern: "^\\+[1-9][0-9]{6,14}$"
+      maxLength: 16
+    Timestamp:
+      type: string
+      format: date-time
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    Party:
+      type: object
+      additionalProperties: false
+      required: [party_type, id, confirmed]
+      properties:
+        party_type: { type: string, enum: [Customer, Lead] }
+        id: { type: string, minLength: 1, maxLength: 140 }
+        confirmed: { const: true }
+    Handoff:
+      type: object
+      additionalProperties: false
+      required: [description, priority]
+      properties:
+        description: { type: string, minLength: 1, maxLength: 2000 }
+        priority: { type: string, enum: [normal, urgent] }
+        contact_name: { type: [string, "null"], maxLength: 140 }
+        contact_phone:
+          anyOf: [{ $ref: "#/components/schemas/Phone" }, { type: "null" }]
+        contact_email: { type: [string, "null"], format: email, minLength: 1, maxLength: 140 }
+        preferred_contact_window: { type: [string, "null"], maxLength: 200 }
+    ActivityInput:
+      type: object
+      additionalProperties: false
+      required: [schema_version, source, source_tenant_id, source_project_id, source_record_id, source_record_type, occurred_at, summary, outcome]
+      properties:
+        schema_version: { type: integer, const: 1 }
+        source: { const: dodo }
+        source_tenant_id: { $ref: "#/components/schemas/SourceId" }
+        source_project_id: { $ref: "#/components/schemas/SourceId" }
+        source_record_id: { $ref: "#/components/schemas/SourceId" }
+        source_record_type: { type: string, enum: [voice_call, handoff] }
+        occurred_at: { $ref: "#/components/schemas/Timestamp" }
+        summary: { type: string, minLength: 1, maxLength: 2000 }
+        outcome: { type: string, enum: [needs_followup, resolved, no_contact, unknown] }
+        party:
+          anyOf: [{ $ref: "#/components/schemas/Party" }, { type: "null" }]
+        handoff:
+          anyOf: [{ $ref: "#/components/schemas/Handoff" }, { type: "null" }]
+      allOf:
+        - if: { properties: { outcome: { const: needs_followup } } }
+          then:
+            required: [handoff]
+            properties: { handoff: { $ref: "#/components/schemas/Handoff" } }
+        - if: { properties: { outcome: { const: no_contact } } }
+          then: { properties: { handoff: { type: "null" } } }
+    RecordLink:
+      type: object
+      additionalProperties: false
+      required: [id, path]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 140 }
+        path: { type: string, pattern: "^/app/[^?#]+$" }
+    Receipt:
+      type: object
+      additionalProperties: false
+      required: [schema_version, source, operation_id, request_hash, state, activity, handoff, committed_at]
+      properties:
+        schema_version: { type: integer, const: 1 }
+        source: { const: dodo }
+        operation_id: { $ref: "#/components/schemas/OperationId" }
+        request_hash: { type: string, pattern: "^[0-9a-f]{64}$" }
+        state: { const: completed }
+        activity: { $ref: "#/components/schemas/RecordLink" }
+        handoff:
+          anyOf: [{ $ref: "#/components/schemas/RecordLink" }, { type: "null" }]
+        committed_at: { $ref: "#/components/schemas/Timestamp" }
+    WriteResult:
+      type: object
+      additionalProperties: false
+      required: [data, replayed]
+      properties:
+        data: { $ref: "#/components/schemas/Receipt" }
+        replayed: { type: boolean }

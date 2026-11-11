@@ -1,0 +1,41 @@
+{
+  "description": "Synthetic contract vector: Unicode, literal text, missing optionals and property-order independence. Not a customer record.",
+  "input": {
+    "summary": "客服測試🙂\n確認 <需求> 與\t下一步。",
+    "occurred_at": "2026-11-11T00:00:00.000Z",
+    "source_record_type": "voice_call",
+    "source_record_id": "synthetic-call-1",
+    "source_project_id": "synthetic-project-1",
+    "source_tenant_id": "synthetic-tenant-1",
+    "outcome": "needs_followup",
+    "source": "dodo",
+    "schema_version": 1,
+    "handoff": {
+      "priority": "normal",
+      "description": "測試用待辦，不聯絡真人。",
+      "contact_name": ""
+    }
+  },
+  "normalized": {
+    "schema_version": 1,
+    "source": "dodo",
+    "source_tenant_id": "synthetic-tenant-1",
+    "source_project_id": "synthetic-project-1",
+    "source_record_id": "synthetic-call-1",
+    "source_record_type": "voice_call",
+    "occurred_at": "2026-11-11T00:00:00.000Z",
+    "summary": "客服測試🙂\n確認 <需求> 與\t下一步。",
+    "outcome": "needs_followup",
+    "party": null,
+    "handoff": {
+      "description": "測試用待辦，不聯絡真人。",
+      "priority": "normal",
+      "contact_name": "",
+      "contact_phone": null,
+      "contact_email": null,
+      "preferred_contact_window": null
+    }
+  },
+  "canonical": "{\"handoff\":{\"contact_email\":null,\"contact_name\":\"\",\"contact_phone\":null,\"description\":\"測試用待辦，不聯絡真人。\",\"preferred_contact_window\":null,\"priority\":\"normal\"},\"occurred_at\":\"2026-11-11T00:00:00.000Z\",\"outcome\":\"needs_followup\",\"party\":null,\"schema_version\":1,\"source\":\"dodo\",\"source_project_id\":\"synthetic-project-1\",\"source_record_id\":\"synthetic-call-1\",\"source_record_type\":\"voice_call\",\"source_tenant_id\":\"synthetic-tenant-1\",\"summary\":\"客服測試🙂\\n確認 <需求> 與\\t下一步。\"}",
+  "sha256": "65e340981729bc6b9f38e19407a2b8a402d2591a3f48cf4fb7f4d3e50f140663"
+}

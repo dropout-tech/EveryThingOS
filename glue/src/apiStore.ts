@@ -1,6 +1,6 @@
 import { seal, unseal } from "./crypto";
 
-export type Scope = "read" | "write";
+export type Scope = "read" | "write" | "service:read" | "service:write";
 
 export type ApiKey = {
   id: string;
