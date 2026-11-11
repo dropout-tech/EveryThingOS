@@ -6,6 +6,7 @@ import { useConfirm } from "./ui/ConfirmDialog";
 import { ActionOutcomeNote, useLiveAction } from "./LiveAction";
 import { EmptyState } from "./EmptyState";
 import { DOCS_URL, EVENT_LABEL, type Integrations } from "@/lib/integrations";
+import { apiKeyScopeLabel, type ApiKeyPurpose } from "@/lib/api-key-scopes";
 
 const field = "field";
 
@@ -40,7 +41,7 @@ function OnceSecret({ title, secret, onDone }: { title: string; secret: string; 
 /** Keys for other systems to read and write, and webhooks that tell them when something happens. `live` false is the 示範 view: nothing is sent. */
 export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) {
   const action = useLiveAction();
-  const [keyForm, setKeyForm] = useState({ label: "", write: false });
+  const [keyForm, setKeyForm] = useState({ label: "", write: false, purpose: "general" as ApiKeyPurpose });
   const [hookForm, setHookForm] = useState({ url: "", label: "", events: ["sales_order.submitted"] as string[] });
   const [secret, setSecret] = useState<{ title: string; value: string } | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) 
     const r = await action.run("/api/integrations/keys", keyForm, () => `已新增金鑰「${keyForm.label}」。`);
     if (r?.ok && typeof r.secret === "string") {
       setSecret({ title: `「${keyForm.label}」的 API 金鑰`, value: r.secret });
-      setKeyForm({ label: "", write: false });
+      setKeyForm({ label: "", write: false, purpose: "general" });
     }
   }
 
@@ -100,7 +101,7 @@ export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) 
                 <span>
                   {k.label} <code className="text-xs text-cream-dim">{k.display}</code>
                   <span className="block text-xs text-cream-dim">
-                    {k.scopes.includes("write") ? "可以讀和寫" : "只能讀"} · {k.created_by} 開的 · 最近使用 {when(k.last_used_at)}
+                    {apiKeyScopeLabel(k.scopes)} · {k.created_by} 開的 · 最近使用 {when(k.last_used_at)}
                     {k.revoked_at ? ` · ${when(k.revoked_at)} 停用` : ""}
                   </span>
                 </span>
@@ -126,15 +127,30 @@ export function ApiBoard({ data, live }: { data: Integrations; live: boolean }) 
         <form onSubmit={createKey} className="flex flex-wrap items-end gap-3">
           <label className="w-full text-sm sm:w-auto">
             <span className="field-label">給誰用</span>
-            <input required maxLength={80} value={keyForm.label} onChange={(e) => setKeyForm({ ...keyForm, label: e.target.value })} placeholder="蝦皮同步" className={`${field} sm:w-48`} />
+            <input required disabled={action.busy} maxLength={80} value={keyForm.label} onChange={(e) => setKeyForm({ ...keyForm, label: e.target.value })} placeholder="蝦皮同步" className={`${field} sm:w-48`} />
+          </label>
+          <label className="w-full text-sm sm:w-auto">
+            <span className="field-label">資料範圍</span>
+            <select
+              value={keyForm.purpose}
+              disabled={action.busy}
+              onChange={(e) => setKeyForm({ ...keyForm, purpose: e.target.value === "service" ? "service" : "general", write: false })}
+              className={field}
+            >
+              <option value="general">一般業務資料</option>
+              <option value="service">Dodo 客服紀錄</option>
+            </select>
           </label>
           <label className="flex items-center gap-2 pb-2 text-sm">
-            <input type="checkbox" checked={keyForm.write} onChange={(e) => setKeyForm({ ...keyForm, write: e.target.checked })} />
-            也可以新增客戶和潛在客人
+            <input type="checkbox" disabled={action.busy} checked={keyForm.write} onChange={(e) => setKeyForm({ ...keyForm, write: e.target.checked })} />
+            {keyForm.purpose === "service" ? "也可以建立服務紀錄與人工待辦" : "也可以新增客戶和潛在客人"}
           </label>
           <button type="submit" disabled={disabled || activeKeys.length >= data.maxKeys} className="btn btn-primary">
             {action.busy ? "處理中…" : "開一把金鑰"}
           </button>
+          <p className="w-full text-xs text-cream-dim">
+            {keyForm.purpose === "service" ? "可查找來電客戶及查看同步結果；勾選後才可建立客服紀錄與人工待辦。" : "可以讀取客戶、商品、訂單與發票；需要建立客戶或潛客時，再勾選新增權限。"}
+          </p>
           <p className="w-full text-xs text-cream-dim">
             最多 {data.maxKeys} 把有效金鑰，每把每分鐘 120 次。只能看的公司（合約到期、暫停）金鑰還能讀，不能寫。
           </p>

@@ -5,6 +5,7 @@ import { ERPNext, UpstreamError } from "./clients";
 import { safeEqual, sha256Hex, toHex } from "./crypto";
 import type { Store, Tenant } from "./store";
 import { manageWebhooks } from "./webhooks";
+import { handleServiceApi, serviceRoute, ServiceApiError } from "./serviceApi";
 
 export const KEY_PREFIX = "dok_live_";
 export const MAX_KEYS = 10;
@@ -275,7 +276,7 @@ async function authenticate(req: Request, env: Env, api: ApiStore): Promise<ApiK
 }
 
 function requireScope(key: ApiKey, scope: Scope) {
-  if (!key.scopes.includes(scope)) throw new ApiError(403, "insufficient_scope", `這把金鑰沒有 ${scope} 權限`);
+  if (!key.scopes.includes(scope) && !(scope === "service:read" && key.scopes.includes("service:write"))) throw new ApiError(403, "insufficient_scope", `這把金鑰沒有 ${scope} 權限`);
 }
 
 async function requireWritable(store: Store, site: string) {
@@ -324,6 +325,29 @@ export async function publicApi(req: Request, env: Env, app: App): Promise<Respo
     if (!key.last_used_at || now - Date.parse(key.last_used_at) > TOUCH_EVERY_MS) await api.touchKey(key.id, new Date(now).toISOString());
 
     const url = new URL(req.url);
+    const service = serviceRoute(url.pathname);
+    if (service) {
+      const allow = service.kind === "operations" ? "GET" : "POST";
+      if (req.method !== allow) throw new ApiError(405, "method_not_allowed", `這個 API 只接受 ${allow}`, { allow });
+      const scope = service.kind === "service-activities" ? "service:write" : "service:read";
+      requireScope(key, scope);
+      const tenant = await store.getTenant(key.site);
+      if (!tenant || tenant.site !== key.site) throw new ApiError(503, "not_configured", "這家公司的 ERPNext 還沒接上");
+      const authorize = async () => {
+        const current = await authenticate(req, env, api);
+        if (current.id !== key.id || current.site !== key.site) throw new ApiError(401, "unauthorized", "API 金鑰授權已變更");
+        requireScope(current, scope);
+      };
+      const writable = async () => {
+        const account = await store.getAccount(key.site);
+        if (account) {
+          const state = lifecycle(account);
+          if (!state.writable) throw new ApiError(423, "account_locked", "這家公司目前只能讀取，不能送出服務紀錄", { stage: state.stage });
+        }
+      };
+      const result = await handleServiceApi(req, service, { tenant, fetcher: app.fetcher, authorize, writable });
+      return respond(requestId, result.body, result.status);
+    }
     const parts = url.pathname.split("/").filter(Boolean);
     const resource = parts[1] ?? "";
     if (parts.length !== 2 || (!RESOURCES[resource] && !WRITES[resource])) throw new ApiError(404, "not_found", "沒有這個 API；請看 docs/PUBLIC-API.md");
@@ -353,6 +377,7 @@ export async function publicApi(req: Request, env: Env, app: App): Promise<Respo
     }
     throw new ApiError(405, "method_not_allowed", `這個 API 只接受 ${allow}`, { allow });
   } catch (e) {
+    if (e instanceof ServiceApiError) return errorResponse(requestId, new ApiError(e.status, e.code, e.message));
     return errorResponse(requestId, e instanceof ApiError ? e : upstream(e));
   }
 }
@@ -384,8 +409,9 @@ export async function manageIntegrations(req: Request, env: Env, app: App, parts
     const label = typeof body?.label === "string" ? body.label.trim().slice(0, 80) : "";
     if (!label) return Response.json({ error: "請幫金鑰取個名字，例如「蝦皮同步」" }, { status: 400 });
     const scopes = Array.isArray(body?.scopes) ? [...new Set(body.scopes)] : ["read"];
-    if (!scopes.length || scopes.some((s) => s !== "read" && s !== "write")) return Response.json({ error: "權限只能是 read 或 write" }, { status: 400 });
+    if (!scopes.length || scopes.some((s) => typeof s !== "string" || !["read", "write", "service:read", "service:write"].includes(s))) return Response.json({ error: "權限只能是 read、write、service:read 或 service:write" }, { status: 400 });
     if (scopes.includes("write") && !scopes.includes("read")) scopes.unshift("read");
+    if (scopes.includes("service:write") && !scopes.includes("service:read")) scopes.unshift("service:read");
     const active = (await api.listKeys(site)).filter((k) => !k.revoked_at).length;
     if (active >= MAX_KEYS) return Response.json({ error: `每家公司最多 ${MAX_KEYS} 把有效金鑰，先停用不用的` }, { status: 409 });
     const secret = `${KEY_PREFIX}${toHex(crypto.getRandomValues(new Uint8Array(24)))}`;

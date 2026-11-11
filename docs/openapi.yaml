@@ -27,6 +27,12 @@ tags:
     description: 潛在客人（ERPNext Lead）
 
 paths:
+  /party-candidates:
+    $ref: "./dodo-service.openapi.yaml#/paths/~1party-candidates"
+  /service-activities:
+    $ref: "./dodo-service.openapi.yaml#/paths/~1service-activities"
+  /operations/{operationId}:
+    $ref: "./dodo-service.openapi.yaml#/paths/~1operations~1{operationId}"
   /customers:
     get:
       tags: [customers]

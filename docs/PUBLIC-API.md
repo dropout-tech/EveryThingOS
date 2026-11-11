@@ -14,7 +14,7 @@
 | 東西 | 規則 |
 | --- | --- |
 | API 金鑰 | `dok_live_` 開頭，只在開的時候出現一次；我們只存 SHA-256，畫面上只看得到前幾碼（例：`dok_live_3f9a1c…`）。弄丟了就停用再開一把 |
-| 權限 | `read`（只能讀）或 `read` + `write`（也能新增客戶、潛在客人） |
+| 權限 | 一般業務資料：`read` 或 `read` + `write`；Dodo 客服紀錄：`service:read` 或 `service:read` + `service:write`，兩種資料範圍分開授權 |
 | 數量 | 每家公司最多 10 把有效金鑰、5 個 Webhook |
 | 誰能管 | 只有 System Manager；開、停用都記在公司歷史（營運後台看得到） |
 
@@ -39,10 +39,15 @@ Authorization: Bearer dok_live_…
 | `GET` | `/v1/sales-orders` | read | 訂單 |
 | `GET` | `/v1/invoices` | read | 銷項發票 |
 | `POST` | `/v1/leads` | write | 新增潛在客人 |
+| `POST` | `/v1/party-candidates` | service:read | 唯讀電話候選查詢，不建檔、不確認本人 |
+| `POST` | `/v1/service-activities` | service:write | 原子建立客服服務紀錄、可選人工待辦及操作收據 |
+| `GET` | `/v1/operations/{operationId}` | service:read | 查回已提交的 Dodo 操作收據 |
+
+Dodo 端點的契約與部署驗收限制見 [DODO-SERVICE-API.md](DODO-SERVICE-API.md)；機器規格見 [dodo-service.openapi.yaml](dodo-service.openapi.yaml)。它們需要專用權限，既有一般 `read`／`write` 金鑰不會自動取得。電話放在 JSON 本文，避免進入查詢網址；所有客服端點拒絕查詢參數。服務紀錄必須使用固定 UUID 的 `Idempotency-Key`，由 ERPNext 交易保存可查證的結果；這與下方既有客戶／潛客 API 的去重標記不同，不能混用語意。
 
 ### 讀：分頁與篩選
 
-所有 `GET` 都一樣：
+下列一般業務資料列表的 `GET` 使用相同分頁參數；客服操作收據不使用分頁：
 
 | 參數 | 說明 |
 | --- | --- |
