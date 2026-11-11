@@ -378,30 +378,36 @@ describe("accounts", () => {
   });
 
   it("registers a company, maps its host, renews and suspends with a history", async () => {
-    const h = harness();
-    let res = await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["https://Make.OS.dropout.tw/"], trial_ends: "2026-11-10", profile: { scene: "make", size: "small", modules: ["sales"] } }), h.env, h.app);
-    expect(res.status).toBe(200);
-    expect(((await res.json()) as any).account).toMatchObject({ hosts: ["make.os.dropout.tw"], lifecycle: { stage: "trial" } });
+    // Exercise the intended trial lifecycle independently of the day CI runs.
+    vi.useFakeTimers({ now, toFake: ["Date"] });
+    try {
+      const h = harness();
+      let res = await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["https://Make.OS.dropout.tw/"], trial_ends: "2026-11-10", profile: { scene: "make", size: "small", modules: ["sales"] } }), h.env, h.app);
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as any).account).toMatchObject({ hosts: ["make.os.dropout.tw"], lifecycle: { stage: "trial" } });
 
-    res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", hosts: ["make.os.dropout.tw"] }), h.env, h.app);
-    expect(res.status).toBe(409);
+      res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", hosts: ["make.os.dropout.tw"] }), h.env, h.app);
+      expect(res.status).toBe(409);
 
-    res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", plan: "annual" }), h.env, h.app);
-    expect(res.status).toBe(400);
+      res = await handle(req("PUT", "/admin/accounts/other.dropout.tw", "admin", { company: "別家", plan: "annual" }), h.env, h.app);
+      expect(res.status).toBe(400);
 
-    res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", {}), h.env, h.app);
-    expect(((await res.json()) as any).account.renews_on).toBe(addMonths(taiwanDate(), 1));
-    res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", { years: 1, reference: "ACC-SINV-0001" }), h.env, h.app);
-    const renewed = ((await res.json()) as any).account;
-    expect(renewed.renews_on).toBe(addYears(addMonths(taiwanDate(), 1), 1));
-    expect(renewed.lifecycle.stage).toBe("active");
+      res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", {}), h.env, h.app);
+      expect(((await res.json()) as any).account.renews_on).toBe(addMonths(taiwanDate(), 1));
+      res = await handle(req("POST", `/admin/accounts/${tenant.site}/renew`, "admin", { years: 1, reference: "ACC-SINV-0001" }), h.env, h.app);
+      const renewed = ((await res.json()) as any).account;
+      expect(renewed.renews_on).toBe(addYears(addMonths(taiwanDate(), 1), 1));
+      expect(renewed.lifecycle.stage).toBe("active");
 
-    res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "帳款未付" }), h.env, h.app);
-    expect(((await res.json()) as any).account.lifecycle).toMatchObject({ stage: "suspended", writable: false });
+      res = await handle(req("POST", `/admin/accounts/${tenant.site}/state`, "admin", { state: "suspended", reason: "帳款未付" }), h.env, h.app);
+      expect(((await res.json()) as any).account.lifecycle).toMatchObject({ stage: "suspended", writable: false });
 
-    const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
-    expect(detail.events.map((e: any) => e.action)).toEqual(["暫停", "續約", "續約", "建立"]);
-    expect(detail.events[0].actor).toBe("ops@dropout.tw");
+      const detail = (await (await handle(req("GET", `/admin/accounts/${tenant.site}`, "admin"), h.env, h.app)).json()) as any;
+      expect(detail.events.map((e: any) => e.action)).toEqual(["暫停", "續約", "續約", "建立"]);
+      expect(detail.events[0].actor).toBe("ops@dropout.tw");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("the shell token resolves hosts and reads one company, but cannot touch accounts or secrets", async () => {
