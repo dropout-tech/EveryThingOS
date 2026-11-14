@@ -66,6 +66,8 @@ cd web && npm run deploy    # 部署成 Worker `dropout-os`，需要 CLOUDFLARE_
 
 第二版架構：Cloudflare（殼、同步、檔案、交易信、AI）＋ 一台主機（ERPNext、Chatwoot、Vexa，Coolify 管理）。Mautic、OpenReply、Shlink、Keycloak 為選配。員工看不到原廠皮。
 
+OpenProject 與 ERPNext Projects **並存**，當獨立服務，不取代 ERP。只參考社群版的協作能力（工作包、甘特排程、看板與 Scrum、工作分解、專案 Wiki、會議連到工作包），不在 ERP 重做。帳、請款與成本留在 ERPNext。正典 [opf/openproject](https://github.com/opf/openproject)，部署配方 [docker compose `stable/17`](https://github.com/opf/openproject-docker-compose/tree/stable/17)。原始碼不進這個 repo，不加 Enterprise token，這次也不部署。取捨見 [docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md) §1.1。
+
 - 架構：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 開源盤點：[docs/OPEN-SOURCE-CATALOG.md](docs/OPEN-SOURCE-CATALOG.md)
 - 對話、電子報、客人、生意四系統規劃：[docs/FOUR-SYSTEMS-PLAN.md](docs/FOUR-SYSTEMS-PLAN.md)

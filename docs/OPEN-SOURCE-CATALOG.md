@@ -6,6 +6,7 @@
 圖例：
 
 - **建議採用**：第一期就組進來
+- **並存（獨立服務）**：不取代現有系統；用官方映像另跑，原始碼不進這個 repo
 - **候選**：有明確需求再上
 - **暫緩**：會讓「一個工具」變複雜，或授權不適合當產品核心
 - **不用**：看起來像開源、實際會卡住商業化或維運
@@ -26,6 +27,45 @@
 
 **為什麼預設 ERPNext，而不是 Odoo：**  
 EveryThingOS 的前提是「全部開源、一個工具」。Odoo 的進階會計、Studio、部分行銷與行動 App 落在專有 Enterprise，之後很容易被迫付費或自己重做。ERPNext 的會計與庫存在 GPL 社群版就是完整的，比較符合本專案宣言。
+
+專案的**帳**（客人、訂單、工時請款、成本、毛利）留在 ERPNext。專案的**協作畫面**另見 §1.1，不在這裡重做。
+
+---
+
+## 1.1 專案協作（與 ERPNext 並存，不取代）
+
+產品決定：OpenProject 與 ERPNext Projects **並存**。它不取代 ERP。客人、訂單、請款與成本仍以 ERPNext 為準。OpenProject 當獨立服務，只參考社群版裡明顯好用的協作能力，不在 ERP 重做一套。
+
+| 專案 | 授權 | 定位 | 決定 |
+| --- | --- | --- | --- |
+| [OpenProject](https://github.com/opf/openproject) | GPL-3.0 | 可自架的專案協作：工作包、甘特、看板、待辦、Wiki | **並存（獨立服務）** |
+| ERPNext Projects／Timesheet | GPL-3.0 | 專案連到客人、訂單、可計費工時、請款與成本 | **建議採用（帳與主檔留在這裡）** |
+
+正典 repo：[opf/openproject](https://github.com/opf/openproject)。部署配方在 [opf/openproject-docker-compose](https://github.com/opf/openproject-docker-compose) 的 [`stable/17`](https://github.com/opf/openproject-docker-compose/tree/stable/17)。不要做成這個 repo 的子模組，也不要把原始碼 clone 進來（git 物件約 3 GB）。上游預設分支是 `dev`，正式不要跟 `dev`。社群版即可。**不要加付費 Enterprise token。** 這份目錄只登記；不在主機部署、不改 `deploy/`。
+
+對照以 OpenProject 公開定價表的社群版為準（2026-11-14）。下表六項都在社群版，而且比 ERPNext 的 Project／Task 好用，值得參考做法，不值得在 Frappe 重寫。
+
+| 能力 | 為什麼值得參考 | 標成 |
+| --- | --- | --- |
+| 工作包與關聯 | 任務、里程碑、階段、功能、缺陷是不同類型；父子、前後置、阻擋列在同一張表。ERPNext Task 只有上層任務與一條薄弱的依賴 | **參考、不重做** |
+| 甘特與排程 | 自動與手動排程、工作週，改一個前置會帶動後續。ERPNext 甘特只是任務起迄的檢視 | **參考、不重做** |
+| 看板與 Scrum | 狀態看板、產品待辦、衝刺板、故事點、燃盡。ERPNext 只有 Task 狀態的一般看板 | **參考、不重做** |
+| 工作分解結構 | 由上而下先有階段，任務還沒齊也能排。ERPNext 的 Project Template 是建立時複製的任務清單 | **參考、不重做** |
+| 專案 Wiki | 說明、慣例、手冊跟該專案放在一起。ERPNext Projects 沒有專案維基 | **參考、不重做** |
+| 會議連到工作包 | 議程與會議紀錄直接連到工作包。這是規劃用的會議，不是進會議室的機器人 | **參考、不重做** |
+
+**繼續留在 ERP，不要在 OpenProject 再做一份：**
+
+- 客人、統編、報價、訂單
+- 里程碑請款、發票、收款
+- 可計費工時與薪資（Timesheet）
+- 專案成本、費用、採購、毛利（傳票）
+- 庫存、領料、BOM
+- 導入進度用的 Project Template（見 [ONBOARDING-TOOLKIT.md](ONBOARDING-TOOLKIT.md)）
+
+OpenProject 社群版也有工時、成本與預算畫面。那些只參考「怎麼填」，數字進帳仍只寫 ERPNext。兩套同時記帳會變成兩本真相。進 Zoom／Google Meet／Teams 的逐字稿仍走 Vexa，不改用 OpenProject 的會議模組取代。
+
+**不參考、也不買：** 團隊規劃器、資源管理、專案組合、任意日期的基線比對、單一登入、自訂主題、甘特 PDF 等在 Enterprise 附加元件，要付費 token。不裝 token，也不把這些列成我們要做的功能。
 
 ---
 
@@ -187,6 +227,8 @@ Mautic 本身會改寫信件內連結以追蹤開啟與點擊。Shlink 負責**�
 - 自研拖放漏斗畫布（ClickFunnels clone）
 - 自研留言轉私訊機器人（用 OpenReply）
 - 第二套 CRM（Twenty + ERPNext 並行）
+- 在 ERPNext 裡重做 OpenProject 的甘特、看板、衝刺或 Wiki（§1.1，參考即可）
+- OpenProject Enterprise token（團隊規劃器、資源管理、專案組合、單一登入等）
 - n8n 當正式膠水（授權）
 - 把 Odoo Enterprise 當「以後再買」的隱性依賴
 - AI 客服、自動寫信、預測庫存（YAGNI；底座穩定再說）
@@ -208,5 +250,7 @@ Keycloak
 ```
 
 這十個專案覆蓋四支柱與社群接單。官網用 Frappe Builder 算在 ERPNext 生態內，不另找建站系統。Chatwoot（LINE／IG／FB 人工收件匣）、產業包、金流是加乘，不是骨架。
+
+OpenProject 不在這張第一期骨架裡。它與 ERPNext 並存、另行自架（§1.1），不取代 Projects，也不把原始碼放進這個 repo。
 
 儀表板與公司流程：**不要另選一套 BPM 產品。** Frappe Workspace + Workflow 就是對標 Odoo Studio 的開源能力；跨系統（Mautic ↔ ERPNext）才走 Activepieces。
