@@ -51,7 +51,8 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       reports={canSeeReports(roles)}
       notice={notice}
       canReset={!config.tenant?.profile}
-      agent={showAgent(shop.agent) && (config.tenant ? config.tenant.ai : true)}
+      agent={config.tenant ? config.tenant.ai : true}
+      slip={showAgent(shop.agent) && (config.tenant ? config.tenant.ai : true)}
     >
       <GuideProvider scope={guide.scope} role={guide.role}>
         {children}

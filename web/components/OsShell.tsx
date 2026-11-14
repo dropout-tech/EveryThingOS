@@ -21,11 +21,13 @@ type OsShellProps = {
   /** Contract notice (trial, renewal, read-only). */
   notice?: { message: string; urgent: boolean; readOnly?: boolean; payUrl?: string } | null;
   canReset?: boolean;
-  /** Advanced tier only. The dock's own button is secondary. */
+  /** AI plan (demo counts). Shows the right-hand agent list. */
   agent?: boolean;
+  /** Advanced tier. Adds the slip agent beside OpenWhisper. */
+  slip?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true, agent = false }: OsShellProps) {
+export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true, agent = false, slip = false }: OsShellProps) {
   const items = navItemsForShop(shop, { team, reports });
   const name = shop.name ?? company ?? industry.nameZh;
   const reset = canReset ? (
@@ -35,18 +37,18 @@ export function OsShell({ industry, shop, children, company, team = false, repor
   ) : null;
 
   return (
-    <div className="os-shell flex min-h-screen text-cream" data-brand={shop.brand ?? DEFAULT_BRAND}>
+    <div className="os-shell grid min-h-screen grid-cols-1 text-cream md:grid-cols-[15rem_minmax(0,1fr)] lg:grid-cols-[15rem_minmax(0,1fr)_20rem]" data-brand={shop.brand ?? DEFAULT_BRAND}>
       <a href="#main" className="skip-link">
         跳到內容
       </a>
-      <aside className="os-rail sticky top-0 hidden h-screen w-60 shrink-0 flex-col md:flex">
+      <aside className="os-rail sticky top-0 hidden h-screen flex-col md:col-start-1 md:row-start-1 md:flex">
         <div className="flex h-14 items-center px-5">
           <BrandMark href="/workspace" compact />
         </div>
         <p className="nav-section">工作</p>
         <SideNav items={items} />
       </aside>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-col md:col-start-2 md:row-start-1">
         <header className="os-top sticky top-0 z-30">
           <div className="flex h-14 items-center justify-between gap-3 px-4 md:px-10">
             <p className="flex min-w-0 items-center gap-2.5 text-sm font-semibold" title={name}>
@@ -90,8 +92,8 @@ export function OsShell({ industry, shop, children, company, team = false, repor
         </main>
       </div>
       {agent ? (
-        <div className="hidden w-80 shrink-0 p-4 lg:block">
-          <AgentDock open />
+        <div className="os-agent p-4 md:col-start-2 md:row-start-2 lg:col-start-3 lg:row-start-1 lg:w-80">
+          <AgentDock slip={slip} />
         </div>
       ) : null}
       <TabBar items={items} extras={reset} />

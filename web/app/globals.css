@@ -1475,6 +1475,7 @@ html[data-theme="black"] .site-shot-light {
   .site-noprint,
   .glass-bar,
   .os-rail,
+  .os-agent,
   .os-top,
   .tabbar {
     display: none !important;

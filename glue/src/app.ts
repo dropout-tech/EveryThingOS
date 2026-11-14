@@ -7,6 +7,7 @@ import { isRetryable, onGiveUp, PermanentError, runJob, type Deps, type ErpEvent
 import { errorText, log } from "./log";
 import { escapeHtml, parseGeneric, parseResend, unsubscribeSignature, verifyGeneric, verifySvix, type SendEmail } from "./mail";
 import { staffProposal } from "./agent";
+import { openWhisperTurn } from "./openwhisper";
 import { eventsInWindow, type Ai, type CalendarEvent } from "./meetings";
 import { healthResponse, monitorStore, statusResponse, uptime } from "./monitor";
 import type { MonitorStore } from "./monitor-store";
@@ -201,6 +202,17 @@ export async function handle(req: Request, env: Env, app: App = defaultApp): Pro
     }
     const proposed = await staffProposal(env.AI, env.SUMMARY_MODEL ?? "@cf/meta/llama-3.3-70b-instruct-fp8-fast", message);
     return json(proposed, proposed.ok ? 200 : 409);
+  }
+  if (parts[0] === "openwhisper" && !parts[1] && req.method === "POST") {
+    const who = caller(req, env);
+    if (!who) return text("forbidden", 403);
+    const body = (await req.json().catch(() => ({}))) as { agent?: unknown; message?: unknown; audio?: unknown; site?: unknown };
+    if (who === "shell") {
+      const account = typeof body.site === "string" && body.site ? await store.getAccount(body.site) : null;
+      if (!isAiPlan(account?.plan)) return json({ ok: false, message: "AI 版才有 OpenWhisper。這一回合不會寫單。" }, 409);
+    }
+    const turn = await openWhisperTurn(env.AI, body);
+    return json(turn, turn.ok ? 200 : 409);
   }
   if (parts[0] === "status" && !parts[1] && req.method === "GET") {
     const site = url.searchParams.get("site");
