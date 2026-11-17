@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { exerciseRemainingLocalFlows } from "./local-flows";
 
 const shotDir = process.env.E2E_SHOT_DIR ?? path.join(process.cwd(), "e2e", "artifacts");
 mkdirSync(shotDir, { recursive: true });
@@ -30,12 +31,30 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
   watch(page);
 
   await page.goto("/login");
+  const refused = await page.evaluate(async () => {
+    const res = await fetch("/api/erp/quotation", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        party_type: "Customer",
+        party: "E2E",
+        items: [{ item_code: "E2E", qty: 1, rate: 1 }],
+      }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { message?: string };
+    return { status: res.status, message: body.message ?? "" };
+  });
+  expect(refused.status).toBe(409);
+  expect(refused.message).toContain("還沒接上");
+
   await expect(page.getByRole("heading", { name: "用公司的 ERPNext 帳號登入" })).toBeVisible();
   await expect(page.getByText("還沒接上 ERPNext 時，登入不會核對帳號。可以先看示範。")).toBeVisible();
   await page.getByLabel("Email").fill("e2e-quote@example.com");
   await page.getByLabel("密碼").fill("practice-only");
   await page.getByRole("button", { name: "登入" }).click();
   await expect(page.getByText("帳號與密碼留在這一頁，沒有送出，也不會建立登入。")).toBeVisible();
+  const cookies = await page.context().cookies();
+  expect(cookies.some((cookie) => cookie.name === "dropout_session" || cookie.name === "dropout_login")).toBe(false);
   await shot(page, "01-login-demo.png");
 
   await page.goto("/?setup=1");
@@ -144,12 +163,21 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
     await shot(page, file);
   }
 
-  const forbidden = posts.filter((line) => /\/api\/(erp|letter|crm|meetings|hr|booking|platform)\b/.test(line));
+  const flows = await exerciseRemainingLocalFlows(page, posts, shot);
+  const forbidden = posts.filter((line) => {
+    if (/\/api\/(letter|crm|meetings|hr|platform|team|integrations)\b/.test(line)) return true;
+    if (/\/api\/erp\/(?!quotation\b)/.test(line)) return true;
+    return false;
+  });
+  const bookingPosts = posts.filter((line) => line.startsWith("POST /api/booking"));
+  const quotationPosts = posts.filter((line) => line.startsWith("POST /api/erp/quotation"));
   writeFileSync(
     path.join(shotDir, "e2e-result.json"),
-    JSON.stringify({ party: PARTY, posts, offHost, forbidden, pages }, null, 2),
+    JSON.stringify({ party: PARTY, quotationRefused: refused, flows, posts, offHost, forbidden, bookingPosts, quotationPosts, pages }, null, 2),
   );
   expect(offHost, `離開本機的請求：${offHost.join(", ")}`).toEqual([]);
   expect(forbidden, `不該送出的寫入：${forbidden.join(", ")}`).toEqual([]);
+  expect(bookingPosts).toEqual(["POST /api/booking"]);
+  expect(quotationPosts).toEqual(["POST /api/erp/quotation"]);
   expect(posts.some((line) => line.startsWith("POST /api/shop"))).toBe(true);
 });
