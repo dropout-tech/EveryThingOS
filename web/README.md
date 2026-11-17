@@ -9,6 +9,14 @@ npm run dev
 
 開啟 http://localhost:3000
 
+報價到收款的瀏覽器測試只打本機示範殼（不設 ERPNext、膠水、寄信）。它會自己開開發伺服器，登入表單不會送出，單據只寫在這個瀏覽器的 sessionStorage：
+
+```bash
+npm run test:e2e
+```
+
+不要把 `E2E_BASE_URL` 指到會寫真實帳本的網址。
+
 ## 畫面
 
 | 路徑 | 內容 |
