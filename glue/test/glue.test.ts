@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { aesCbcEncrypt, hmacSha256, seal, toBase64, toHex, unseal } from "../src/crypto";
 import { ecpayInvoiceDecrypt, ecpayInvoiceEncrypt, inclusiveLines } from "../src/einvoice";
-import { addMonths, addYears, lifecycle, mergeAccount, reminderFor, taiwanDate } from "../src/accounts";
+import { addDays, addMonths, addYears, lifecycle, mergeAccount, reminderFor, taiwanDate } from "../src/accounts";
 import { consume, daily, handle, MAX_ATTEMPTS, scheduleMeetings, scheduled, type App, type Env } from "../src/app";
 import { runJob, type Deps, type Job } from "../src/jobs";
 import { unsubscribeSignature, verifySvix } from "../src/mail";
@@ -379,7 +379,8 @@ describe("accounts", () => {
 
   it("registers a company, maps its host, renews and suspends with a history", async () => {
     const h = harness();
-    let res = await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["https://Make.OS.dropout.tw/"], trial_ends: "2026-11-10", profile: { scene: "make", size: "small", modules: ["sales"] } }), h.env, h.app);
+    const trialEnds = addDays(taiwanDate(), 30);
+    let res = await handle(req("PUT", `/admin/accounts/${tenant.site}`, "admin", { company: "琢奧精密製造", hosts: ["https://Make.OS.dropout.tw/"], trial_ends: trialEnds, profile: { scene: "make", size: "small", modules: ["sales"] } }), h.env, h.app);
     expect(res.status).toBe(200);
     expect(((await res.json()) as any).account).toMatchObject({ hosts: ["make.os.dropout.tw"], lifecycle: { stage: "trial" } });
 
