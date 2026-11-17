@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/e2e/artifacts
+/test-results
+/playwright-report
+/blob-report
 
 # next.js
 /.next/

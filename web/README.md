@@ -9,6 +9,12 @@ npm run dev
 
 開啟 http://localhost:3000
 
+報價到收款的瀏覽器測試只打本機示範殼。它會自己開開發伺服器，並把 ERPNext、膠水、寄信、工作階段這些變數設成空字串。空字串才擋得住 `.env.local`：變數若是被拿掉，Next 會把檔案裡的網址填回來。登入表單不會送出，單據只寫在這個瀏覽器的 sessionStorage。`E2E_BASE_URL` 不是 `127.0.0.1` 或 `localhost` 時，設定檔會在開瀏覽器前拒絕。
+
+```bash
+npm run test:e2e
+```
+
 ## 畫面
 
 | 路徑 | 內容 |
