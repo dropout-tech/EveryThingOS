@@ -4,18 +4,18 @@
 
 ## Logo
 
-EveryThingOS 的標是**玻璃水滴 + 海面漣漪**，黑白都能用。
+EveryThingOS 的標是一顆**實心水滴**，放在介面那塊青綠圓角方塊裡（深色畫面是 `#4fc4b8` 底、`#04241f` 水滴）。沒有高光、沒有漣漪，縮到瀏覽器分頁還認得。頁面上的水滴跟字色走，黑白兩套都不用另畫。
 
 | 檔 | 用途 |
 | --- | --- |
 | `web/app/icon.svg` | 瀏覽器分頁 |
 | `web/app/apple-icon.png` | 加到主畫面 |
-| `web/public/brand/dropout-mark.svg` | 簡潔標（深底） |
+| `web/public/brand/dropout-mark.svg` | 跟分頁圖示同一顆 |
 | `web/public/brand/dropout-app-icon.png` | App 圖示 |
 | `web/public/brand/og-dropout-os.png` | 分享圖 |
 | `branding/logo/` | 同一套，給套皮與對外 |
 
-頁首用 `BrandMark`：水滴在玻璃方塊裡，旁邊是 EveryThingOS。琢奧舊的青綠「do」字標仍留在 `logo-full.png`，那是公司字，不是 OS 產品標。
+頁首用 `BrandMark`：水滴在青綠方塊裡，旁邊是 EveryThingOS。琢奧舊的青綠「do」字標仍留在 `logo-full.png`，那是公司字，不是 OS 產品標。
 
 | 系統 | 主題位置 | 怎麼掛 |
 | --- | --- | --- |
