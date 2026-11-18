@@ -1,7 +1,6 @@
 import "server-only";
-import { cookies, headers } from "next/headers";
-import { SESSION_COOKIE, cookieOptions, readSession, seal, type Session } from "../session";
-import { liveConfig, loginRequired, type LiveConfig } from "./config";
+import { erpIdentityRefusal } from "../erp-identity";
+import { liveConfig, type LiveConfig } from "./config";
 
 export class SourceError extends Error {
   constructor(
@@ -18,45 +17,8 @@ function hostHeader(erp: Erp): Record<string, string> {
   return erp.site ? { "X-Frappe-Site-Name": erp.site } : {};
 }
 
-export async function exchangeToken(erp: Erp, body: Record<string, string>) {
-  const res = await fetch(`${erp.url}/api/method/frappe.integrations.oauth2.get_token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", ...hostHeader(erp) },
-    body: new URLSearchParams({ client_id: erp.oauth!.clientId, ...(erp.oauth!.clientSecret ? { client_secret: erp.oauth!.clientSecret } : {}), ...body }),
-    cache: "no-store",
-  });
-  if (!res.ok) throw new SourceError(`ERPNext 登入失敗（${res.status}）`, "login");
-  return (await res.json()) as { access_token: string; refresh_token?: string; expires_in?: number };
-}
-
 async function authHeader(config: LiveConfig): Promise<string> {
-  const erp = config.erpnext!;
-  if (loginRequired(config)) {
-    let session = await readSession(config.sessionSecret, config.tenant?.site);
-    if (!session) throw new SourceError("請先用 ERPNext 帳號登入", "login");
-    if (session.expiresAt - 60_000 < Date.now()) session = await refresh(config, session);
-    return `Bearer ${session.accessToken}`;
-  }
-  if (erp.apiKey && erp.apiSecret) return `token ${erp.apiKey}:${erp.apiSecret}`;
-  throw new SourceError("ERPNext 沒有設定登入方式：ERPNEXT_OAUTH_CLIENT_ID 或 ERPNEXT_API_KEY", "login");
-}
-
-async function refresh(config: LiveConfig, session: Session): Promise<Session> {
-  if (!session.refreshToken) throw new SourceError("登入已過期，請重新登入", "login");
-  const token = await exchangeToken(config.erpnext!, { grant_type: "refresh_token", refresh_token: session.refreshToken });
-  const next: Session = {
-    ...session,
-    accessToken: token.access_token,
-    refreshToken: token.refresh_token ?? session.refreshToken,
-    expiresAt: Date.now() + (token.expires_in ?? 3600) * 1000,
-  };
-  try {
-    const proto = (await headers()).get("x-forwarded-proto")?.split(",")[0].trim();
-    (await cookies()).set(SESSION_COOKIE, await seal(next, config.sessionSecret!), cookieOptions(undefined, proto ? `${proto}:` : undefined));
-  } catch {
-    /* Server Components cannot set cookies; the refreshed token is still used for this request. */
-  }
-  return next;
+  throw new SourceError(erpIdentityRefusal(config.erpnext), "login");
 }
 
 async function call<T>(method: string, args: Record<string, unknown>, config: LiveConfig, post: boolean): Promise<T> {
@@ -106,7 +68,7 @@ async function upstreamMessage(res: Response) {
   return `ERPNext 回應 ${res.status}`;
 }
 
-/** Calls a whitelisted method as the logged-in ERPNext user (or the integration user when no login is set up). */
+/** Calls a whitelisted method. Identity is not ERPNext, and a missing OAuth client does not use the shared integration key. */
 export async function erpMethod<T>(method: string, args: Record<string, unknown> = {}, config?: LiveConfig): Promise<T> {
   return call<T>(method, args, config ?? (await liveConfig()), false);
 }

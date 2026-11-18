@@ -1,6 +1,6 @@
 import { AI_USAGE_NOTE, COMMERCIAL, PRICE_LABEL, PRICE_MONTH_TWD, PRICE_NOTE, PRICE_YEAR_TWD } from "./commercial";
 
-export const LEGAL_VERSION = "2026-10-11";
+export const LEGAL_VERSION = "2026-11-17";
 
 const todo = (label: string) => `【待填：${label}】`;
 
@@ -156,7 +156,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "8. 客戶要做的事",
         items: [
-          "保管帳號密碼；建議在團隊頁替全員打開兩步驟登入。",
+          "保管自己的 Google 帳號。平台不另存密碼，也不另寄兩步驟驗證碼。",
           "放進系統的客人個資，要依《個人資料保護法》合法蒐集；寄行銷信要有對方同意。",
           "不用本服務寄垃圾信、侵害他人權利或做違法的事。",
           "遵守自己接上的 LINE、Meta、金流、電子發票等外部服務的條款。",
@@ -396,31 +396,27 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "1. 登入",
         items: [
-          "只用 ERPNext 帳號登入（OAuth2 授權碼加 PKCE）。DropOut 外殼不另存密碼。",
-          "登入狀態用加密的 Cookie（AES-GCM）保存，而且綁定那一家公司的站台；拿 A 公司的登入去開 B 公司，會被要求重新登入。",
-          "兩步驟登入：驗證器 App 或 Email。老闆在團隊頁一鍵替全員打開。",
-          "密碼強度：打開 ERPNext 密碼政策，太弱的密碼不能用。",
-          "連續輸錯 5 次鎖住帳號，一段時間後才能再試。",
-          "閒置自動登出，時間由老闆在團隊頁設定。",
-          "停用一個人時，他的登入馬上失效，外殼拿到的授權也一併撤銷。",
+          "用 Google 登入（授權碼加 PKCE）。平台不存密碼，也不把 ERPNext 當成登入身份。",
+          "帳號、職務與邀請記在平台自己的 Cloudflare D1（本機庫名 everythingos-accounts）。這不是年費帳單那顆庫。",
+          "登入狀態用加密的 Cookie（AES-GCM）保存，而且綁定那一家公司；拿 A 公司的登入去開 B 公司，會被要求重新登入。",
+          "兩步驟用 Google 帳號自己的驗證。平台不另寄驗證碼。",
+          "第一位用 Google 登入的人是老闆。之後的人要老闆邀請同一個 Google 信箱。",
+          "老闆可停用同事、改職務。公司至少留一位老闆。停用後，那個 Google 帳號不能再進來。",
+          "邀請信若沒有接上寄信，狀態是未寄出，不會寄到外面。",
         ],
-        paragraphs: ["兩步驟、密碼強度、鎖帳號、閒置登出都是 ERPNext 內建設定，由老闆在團隊頁打開。"],
+        paragraphs: ["還沒設定 Google 用戶端時，登入按鈕停在這一頁，不會改用密碼，也不會改用 ERPNext 或共用整合帳號。"],
       },
       {
         heading: "2. 誰能看什麼",
         items: [
-          "職務：老闆、主管、業務、倉管、採購、會計、客服、行銷，對應 ERPNext 的 Role Profile。公司可以自己調。",
-          "選單照職務顯示，但能不能讀寫最後由 ERPNext 判斷，外殼不另開後門。",
-          "只有老闆能管人和安全設定；系統不讓公司沒有老闆。",
+          "職務存在平台帳號庫：老闆可以管人，一般同事不行。選單照職務顯示。",
+          "只有老闆能邀請、停用、改權限；系統不讓公司沒有老闆。",
         ],
       },
       {
         heading: "3. 紀錄",
         items: [
-          "誰登入、登出、登入失敗（ERPNext Activity Log，含 IP）。",
-          "誰改了哪張單（ERPNext Version）。",
-          "誰匯出資料（ERPNext Access Log）。",
-          "老闆在團隊頁的「最近紀錄」看得到。續約、暫停等合約變更記在 DropOut 營運後台，記下是誰做的。",
+          "誰登入、誰邀請、誰被停用、誰改了職務，記在平台帳號庫的紀錄，老闆在團隊頁看得到。",
         ],
       },
       {

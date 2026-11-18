@@ -7,9 +7,7 @@ import { deskUrl, erpPost, SourceError } from "./sources/erpnext";
 export type ActionResult = { ok: boolean; message?: string; created?: { doctype: string; name: string; href?: string }; href?: string; [key: string]: unknown };
 
 /**
- * Write routes only accept same-origin JSON. With API-key mode there is no
- * session cookie to protect, so the Origin check is what stops another site
- * from posting through the integration user.
+ * Write routes only accept same-origin JSON.
  */
 export function sameOrigin(request: NextRequest, { json = true } = {}) {
   const origin = request.headers.get("origin");

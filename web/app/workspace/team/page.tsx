@@ -53,13 +53,13 @@ export default async function TeamPage() {
   const rows = audit.origin === "live" ? audit.data : audit.origin === "demo" ? DEMO_AUDIT : [];
 
   return (
-    <ModuleFrame kicker="團隊" title="誰能看什麼、做什麼" hint="職務就是 ERPNext 的角色組合；改職務立刻生效，停用的人馬上登出。">
+    <ModuleFrame kicker="團隊" title="誰能看什麼、做什麼" hint="職務存在平台裡。老闆可以邀請、停用、改權限。同事用同一個 Google 信箱登入。">
       <Hint id="team" help="module-team" />
       {live && team.data && team.data.users.filter((u) => u.enabled && u.email !== team.data?.me).length === 0 ? (
         <EmptyState
           compact
           title="公司裡現在只有你"
-          detail="在下面加同事的 Email、選職務，他會收到設定密碼的信；職務決定他看得到哪些畫面。"
+          detail="在下面加同事的 Google 信箱和職務。邀請信若還沒寄出，請對方直接用那個 Google 帳號登入。"
           help="roles"
         />
       ) : null}

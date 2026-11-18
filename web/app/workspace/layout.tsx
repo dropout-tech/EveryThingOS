@@ -6,9 +6,8 @@ import { ADMIN_ROLE, canManageTeam, canSeeReports, featuresFor } from "@/lib/acc
 import { showAgent } from "@/lib/agent-tier";
 import { openInvoice } from "@/lib/billing";
 import { guideScope, roleFor } from "@/lib/guide";
-import { readSession } from "@/lib/session";
 import { getMe } from "@/lib/sources";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
+import { liveConfig } from "@/lib/sources/config";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
 function Unavailable({ title, detail }: { title: string; detail: string }) {
@@ -24,19 +23,19 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   const config = await liveConfig();
   if (config.directoryError) return <Unavailable title="暫時連不上" detail={`${config.directoryError}。資料都在，請過幾分鐘再開。`} />;
   if (config.unknownHost) return <Unavailable title="這個網址還沒開通" detail={`${config.unknownHost} 還沒有對應的公司。請確認網址，或聯絡 EveryThingOS 導入顧問。`} />;
-  const personal = loginRequired(config);
-  if (personal && !(await readSession(config.sessionSecret, config.tenant?.site))) redirect("/login");
   const shop = await currentShop();
   if (!shop) return <OnboardScreen />;
   const industry = await currentIndustry();
 
+  const me = await getMe();
+  if (me.origin === "error" && me.kind === "login") redirect("/login");
+  if (me.origin === "error") return <Unavailable title="帳號庫讀不到" detail={me.message} />;
   let roles: string[] | null = null;
   let guide = { scope: guideScope(null), role: null as string | null };
-  if (personal) {
-    const me = await getMe();
-    if (me.origin === "error" && me.kind === "login") redirect("/login");
-    roles = me.origin === "live" && me.data ? me.data.roles : [];
-    if (me.origin === "live" && me.data) guide = { scope: guideScope(me.data.user), role: roleFor(me.data.profile, roles) };
+  const signedIn = me.origin === "live" && Boolean(me.data);
+  if (signedIn && me.data) {
+    roles = me.data.roles;
+    guide = { scope: guideScope(me.data.user), role: roleFor(me.data.profile, roles) };
   }
   const life = config.tenant?.lifecycle;
   const invoice = life?.message && roles?.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
@@ -52,6 +51,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       notice={notice}
       canReset={!config.tenant?.profile}
       agent={showAgent(shop.agent) && (config.tenant ? config.tenant.ai : true)}
+      signedIn={signedIn}
     >
       <GuideProvider scope={guide.scope} role={guide.role}>
         {children}

@@ -3,7 +3,7 @@ import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import type { Sourced } from "@/lib/sources/types";
 
-const SYSTEM_LABEL = { erpnext: "ERPNext", glue: "系統同步", chatwoot: "Chatwoot" } as const;
+const SYSTEM_LABEL = { erpnext: "ERPNext", glue: "系統同步", chatwoot: "Chatwoot", platform: "平台帳號" } as const;
 
 const DENIED_LABEL: Record<string, string> = {
   month_sales: "本月銷貨",
@@ -72,8 +72,8 @@ export function SourceFailure({ source, next = "/workspace" }: { source: Extract
       <h2 className="text-2xl font-medium">{source.kind === "login" ? "要先登入" : "現在拿不到資料"}</h2>
       <p className="text-sm text-cream-dim">{source.message}</p>
       {source.kind === "login" ? (
-        <a href={`/api/auth/login?next=${encodeURIComponent(next)}`} className={buttonClass({ variant: "primary" })}>
-          用 ERPNext 帳號登入
+        <a href={`/login?next=${encodeURIComponent(next)}`} className={buttonClass({ variant: "primary" })}>
+          用 Google 登入
         </a>
       ) : (
         <p className="text-sm text-cream-dim">

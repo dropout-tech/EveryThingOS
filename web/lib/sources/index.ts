@@ -2,9 +2,12 @@ import "server-only";
 import { buildBooks } from "../erp";
 import type { IndustryPack } from "../types";
 import { demoRecords } from "../workspace";
+import { readActor } from "../accounts/guard";
+import { accountsDb } from "../accounts/d1";
+import { auditFor, teamFor } from "../accounts/service";
 import { liveConfig } from "./config";
 import { SourceError } from "./erpnext";
-import { liveAudit, liveBooks, liveCatalog, liveChecklist, liveDeadLetters, liveHr, liveHygiene, liveLetter, liveMe, liveMeetingSummaries, livePeople, liveSetup, liveTeam, liveUpcomingMeetings, liveWebsite } from "./live";
+import { liveBooks, liveCatalog, liveChecklist, liveDeadLetters, liveHr, liveHygiene, liveLetter, liveMeetingSummaries, livePeople, liveSetup, liveUpcomingMeetings, liveWebsite } from "./live";
 import type { AuditRow, Books, Catalog, Checklist, DeadLetter, HrToday, HygieneRow, LetterOverview, Me, Meetings, Person, SetupStatus, Sourced, SystemId, Team, WebsiteOverview } from "./types";
 
 export type { Sourced } from "./types";
@@ -15,6 +18,7 @@ function failed(system: SystemId, error: unknown): Sourced<never> {
 }
 
 export async function isLive(system: SystemId) {
+  if (system === "platform") return false;
   const config = await liveConfig();
   return Boolean(system === "erpnext" ? config.erpnext : system === "glue" ? config.glue : config.chatwoot);
 }
@@ -78,12 +82,21 @@ export async function getLetter(): Promise<Sourced<LetterOverview | null>> {
 }
 
 export async function getMe(): Promise<Sourced<Me | null>> {
-  if (!(await isLive("erpnext"))) return { origin: "demo", data: null };
-  try {
-    return { origin: "live", system: "erpnext", data: await liveMe() };
-  } catch (error) {
-    return failed("erpnext", error);
-  }
+  const actor = await readActor();
+  if (actor.status === "anonymous") return { origin: "demo", data: null };
+  if (actor.status === "error") return { origin: "error", system: "platform", message: actor.message, kind: actor.kind };
+  const config = await liveConfig();
+  return {
+    origin: "live",
+    system: "platform",
+    data: {
+      user: actor.account.email,
+      fullName: actor.account.name,
+      company: config.tenant?.company ?? "這家公司",
+      roles: actor.account.roles,
+      profile: actor.account.profile,
+    },
+  };
 }
 
 /** Items and parties for the live quotation form; null in demo mode. */
@@ -145,22 +158,30 @@ export async function getHygiene(): Promise<Sourced<HygieneRow[] | null>> {
   }
 }
 
-/** People and permissions; null in practice mode, where the page shows a sample team. */
+/** People and permissions. Without a platform session the page keeps the sample team. */
 export async function getTeam(): Promise<Sourced<Team | null>> {
-  if (!(await isLive("erpnext"))) return { origin: "demo", data: null };
+  const actor = await readActor();
+  if (actor.status === "anonymous") return { origin: "demo", data: null };
+  if (actor.status === "error") return { origin: "error", system: "platform", message: actor.message, kind: actor.kind };
+  if (actor.account.role !== "owner") return { origin: "error", system: "platform", message: "只有老闆可以管人", kind: "denied" };
   try {
-    return { origin: "live", system: "erpnext", data: await liveTeam(), deskUrl: (await liveConfig()).erpnext?.url };
+    const team = await teamFor(await accountsDb(), actor.account.id);
+    if (!team.ok) return { origin: "error", system: "platform", message: team.message, kind: team.status === 403 ? "denied" : "upstream" };
+    return { origin: "live", system: "platform", data: team.team };
   } catch (error) {
-    return failed("erpnext", error);
+    return failed("platform", error);
   }
 }
 
 export async function getAudit(): Promise<Sourced<AuditRow[]>> {
-  if (!(await isLive("erpnext"))) return { origin: "demo", data: [] };
+  const actor = await readActor();
+  if (actor.status !== "ok" || actor.account.role !== "owner") return { origin: "demo", data: [] };
   try {
-    return { origin: "live", system: "erpnext", data: await liveAudit() };
+    const audit = await auditFor(await accountsDb(), actor.account.id);
+    if (!audit.ok) return { origin: "demo", data: [] };
+    return { origin: "live", system: "platform", data: audit.rows };
   } catch (error) {
-    return failed("erpnext", error);
+    return failed("platform", error);
   }
 }
 

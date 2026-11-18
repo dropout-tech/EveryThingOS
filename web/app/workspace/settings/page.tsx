@@ -13,9 +13,8 @@ import { SetupProgress } from "@/components/SetupProgress";
 import { workspaceGuide } from "@/lib/guide-server";
 import { FEATURES, SIZES, sceneById } from "@/lib/shop";
 import { getDeadLetters, getMe, getSetup, isLive } from "@/lib/sources";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
+import { liveConfig } from "@/lib/sources/config";
 import { deskUrl } from "@/lib/sources/erpnext";
-import { liveBackup, type BackupStatus } from "@/lib/sources/live";
 import type { SystemId } from "@/lib/sources/types";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
@@ -48,18 +47,6 @@ const SYNC_NOTICE: Record<string, string> = {
   "not-connected": "系統同步還沒接上。",
 };
 
-const when = (iso: string) => new Date(iso).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
-const size = (bytes?: number) => `${((bytes ?? 0) / 1048576).toFixed(1)} MB`;
-
-function backupLine(b: BackupStatus | null) {
-  if (!b) return "讀不到";
-  const o = b.offsite;
-  const parts = [o.taken_at ? `異地 ${when(o.taken_at)}（${size(o.bytes)}）` : !o.enabled ? "沒有設定異地備份" : o.error ? "讀不到異地備份" : "異地還沒有備份"];
-  if (b.local) parts.push(`本機 ${when(b.local.taken_at)}`);
-  if (b.encrypted) parts.push("有加密");
-  return parts.join(" · ");
-}
-
 export default async function SettingsPage({ searchParams }: PageProps<"/workspace/settings">) {
   const shop = await currentShop();
   const pack = await currentIndustry();
@@ -68,8 +55,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   const account = config.tenant;
   const invoice = account && me.origin === "live" && me.data?.roles.includes(ADMIN_ROLE) ? await openInvoice(config) : null;
   const exportUrl = deskUrl("/app/backups", config);
-  const owner = Boolean(exportUrl) && loginRequired(config) && me.origin === "live" && Boolean(me.data?.roles.includes(ADMIN_ROLE));
-  const backup = owner ? await liveBackup().catch(() => null) : null;
+  const signedIn = me.origin === "live" && Boolean(me.data);
   const { sync } = await searchParams;
   const notice = typeof sync === "string" ? SYNC_NOTICE[sync] : null;
   const scene = sceneById(shop?.scene);
@@ -158,7 +144,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <Link href="/pricing" className={buttonClass({ variant: "ghost", size: "sm" })}>
             {PRICE_LABEL}
           </Link>
-          {loginRequired(config) ? (
+          {signedIn ? (
             <form action="/api/auth/logout" method="post">
               <button type="submit" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 登出
@@ -173,20 +159,8 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
       {exportUrl ? (
         <section id="export" className="glass-well space-y-3 p-5">
           <h2 className="font-medium">下載全部資料</h2>
-          <p className="text-sm text-cream-dim">資料是你的。只能看、暫停、解約後 90 天內都可以下載。</p>
-          {owner ? (
-            <>
-              <div className="flex flex-wrap gap-2">
-                <a href="/api/export?kind=customers" className={buttonClass({ variant: "secondary", size: "sm" })}>客戶（CSV）</a>
-                <a href="/api/export?kind=items" className={buttonClass({ variant: "secondary", size: "sm" })}>商品（CSV）</a>
-                <a href="/api/export?kind=invoices" className={buttonClass({ variant: "secondary", size: "sm" })}>銷項發票（CSV）</a>
-                <a href={exportUrl} className={buttonClass({ variant: "secondary", size: "sm" })}>完整備份（ERPNext 備份頁，含附件）</a>
-              </div>
-              <p className="text-sm text-cream-dim">最近備份：{backupLine(backup)}</p>
-            </>
-          ) : (
-            <p className="text-sm">請老闆（System Manager）用自己的帳號登入後下載；沒有開個人登入時，請到 ERPNext 備份頁下載。</p>
-          )}
+          <p className="text-sm text-cream-dim">資料是你的。</p>
+          <p className="text-sm">下載不再走 ERPNext，也不使用共用整合帳號。</p>
         </section>
       ) : null}
 

@@ -1,8 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { LOGIN_COOKIE, SESSION_COOKIE, cookieOptions, seal, unseal, type PendingLogin, type Session } from "@/lib/session";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
-import { exchangeToken } from "@/lib/sources/erpnext";
+import { accountsDb } from "@/lib/accounts/d1";
+import { googleConfig, googleProfile } from "@/lib/accounts/google";
+import { acceptGoogle, companyKey, sessionSeconds } from "@/lib/accounts/service";
+import { resolveSessionSecret } from "@/lib/accounts/secret";
 import { here, publicOrigin, redirectUri } from "@/lib/auth";
+import { LOGIN_COOKIE, SESSION_COOKIE, cookieOptions, seal, unseal, type PendingLogin, type Session } from "@/lib/session";
+import { liveConfig } from "@/lib/sources/config";
 
 function fail(request: NextRequest, reason: string) {
   const url = here("/login", request);
@@ -13,38 +16,41 @@ function fail(request: NextRequest, reason: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const config = await liveConfig();
-  if (!loginRequired(config)) return NextResponse.redirect(here("/workspace", request));
+  const google = googleConfig();
+  const secret = resolveSessionSecret();
+  if (!google || !secret) return fail(request, google ? "secret" : "google");
   const params = request.nextUrl.searchParams;
-  const pending = await unseal<PendingLogin>(request.cookies.get(LOGIN_COOKIE)?.value, config.sessionSecret!);
+  const pending = await unseal<PendingLogin & { companyId?: string }>(request.cookies.get(LOGIN_COOKIE)?.value, secret);
   if (!pending || !params.get("state") || params.get("state") !== pending.state) return fail(request, "state");
   const code = params.get("code");
   if (!code) return fail(request, params.get("error") ?? "denied");
 
-  const erp = config.erpnext!;
-  let token;
-  try {
-    token = await exchangeToken(erp, { grant_type: "authorization_code", code, redirect_uri: redirectUri(request), code_verifier: pending.verifier });
-  } catch {
-    return fail(request, "token");
-  }
-  const profileRes = await fetch(`${erp.url}/api/method/frappe.integrations.oauth2.openid_profile`, {
-    headers: { Authorization: `Bearer ${token.access_token}`, ...(erp.site ? { "X-Frappe-Site-Name": erp.site } : {}) },
-    cache: "no-store",
+  const profile = await googleProfile({
+    code,
+    verifier: pending.verifier,
+    redirectUri: redirectUri(request),
+    clientId: google.clientId,
+    clientSecret: google.clientSecret,
   });
-  if (!profileRes.ok) return fail(request, "profile");
-  const profile = (await profileRes.json()) as { sub?: string; email?: string; name?: string };
+  if (!profile.ok) return fail(request, profile.error);
 
+  const config = await liveConfig();
+  const companyId = pending.companyId ?? companyKey(config.tenant?.site);
+  const db = await accountsDb();
+  const accepted = await acceptGoogle(db, { companyId, profile: profile.profile });
+  if (!accepted.ok) return fail(request, accepted.code ?? "denied");
+
+  const maxAge = await sessionSeconds(db, companyId);
   const session: Session = {
-    user: profile.email ?? profile.sub ?? "",
-    site: config.tenant?.site,
-    name: profile.name,
-    accessToken: token.access_token,
-    refreshToken: token.refresh_token,
-    expiresAt: Date.now() + (token.expires_in ?? 3600) * 1000,
+    accountId: accepted.account.id,
+    user: accepted.account.email,
+    name: accepted.account.name,
+    role: accepted.account.role,
+    site: companyId,
+    expiresAt: Date.now() + maxAge * 1000,
   };
   const response = NextResponse.redirect(here(pending.next, request));
   response.cookies.delete(LOGIN_COOKIE);
-  response.cookies.set(SESSION_COOKIE, await seal(session, config.sessionSecret!), cookieOptions(undefined, publicOrigin(request)));
+  response.cookies.set(SESSION_COOKIE, await seal(session, secret), cookieOptions(maxAge, publicOrigin(request)));
   return response;
 }

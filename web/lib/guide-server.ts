@@ -4,7 +4,6 @@ import { buildBooks } from "./erp";
 import { checklistFor, resolveChecklist, type ChecklistItem } from "./guide";
 import { navItemsForShop } from "./shop";
 import { getChecklist, getMe } from "./sources";
-import { liveConfig, loginRequired } from "./sources/config";
 import type { IndustryPack } from "./types";
 import { currentShop } from "./workspace";
 
@@ -17,12 +16,9 @@ export type WorkspaceGuide = {
 };
 
 export async function workspaceGuide(pack: IndustryPack): Promise<WorkspaceGuide> {
-  const [shop, config] = await Promise.all([currentShop(), liveConfig()]);
-  let roles: string[] | null = null;
-  if (loginRequired(config)) {
-    const me = await getMe();
-    roles = me.origin === "live" && me.data ? me.data.roles : [];
-  }
+  const shop = await currentShop();
+  const me = await getMe();
+  const roles = me.origin === "live" && me.data ? me.data.roles : null;
   const modules = featuresFor(shop?.modules ?? [], roles);
   const allowed = navItemsForShop({ scene: shop?.scene ?? "other", size: shop?.size ?? "small", modules }, { team: canManageTeam(roles), reports: canSeeReports(roles) }).map((item) => item.href);
   const steps = checklistFor(shop);

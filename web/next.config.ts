@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  serverExternalPackages: ["wrangler"],
   async redirects() {
     return [
       { source: "/workspace/reply", destination: "/workspace/chat", permanent: true },

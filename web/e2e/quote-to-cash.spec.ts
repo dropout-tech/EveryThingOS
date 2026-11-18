@@ -47,12 +47,10 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
   expect(refused.status).toBe(409);
   expect(refused.message).toContain("還沒接上");
 
-  await expect(page.getByRole("heading", { name: "用公司的 ERPNext 帳號登入" })).toBeVisible();
-  await expect(page.getByText("還沒接上 ERPNext 時，登入不會核對帳號。可以先看示範。")).toBeVisible();
-  await page.getByLabel("Email").fill("e2e-quote@example.com");
-  await page.getByLabel("密碼").fill("practice-only");
-  await page.getByRole("button", { name: "登入" }).click();
-  await expect(page.getByText("帳號與密碼留在這一頁，沒有送出，也不會建立登入。")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "用 Google 登入 EveryThingOS" })).toBeVisible();
+  await page.getByRole("link", { name: "用 Google 登入" }).click();
+  await expect(page.getByText("還沒設定 Google 登入。")).toBeVisible();
+  await expect(page.getByText("不會改用密碼，也不會改用 ERPNext。")).toBeVisible();
   const cookies = await page.context().cookies();
   expect(cookies.some((cookie) => cookie.name === "dropout_session" || cookie.name === "dropout_login")).toBe(false);
   await shot(page, "01-login-demo.png");

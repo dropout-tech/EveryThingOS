@@ -1,26 +1,38 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { LOGIN_COOKIE, cookieOptions, pkceChallenge, randomToken, seal } from "@/lib/session";
+import { accountsDb } from "@/lib/accounts/d1";
+import { googleAuthorizeUrl, googleConfig } from "@/lib/accounts/google";
+import { companyKey } from "@/lib/accounts/service";
+import { resolveSessionSecret } from "@/lib/accounts/secret";
 import { here, publicOrigin, redirectUri, safeNext } from "@/lib/auth";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
+import { LOGIN_COOKIE, cookieOptions, pkceChallenge, randomToken, seal } from "@/lib/session";
+import { liveConfig } from "@/lib/sources/config";
 
 export async function GET(request: NextRequest) {
-  const config = await liveConfig();
   const next = safeNext(request.nextUrl.searchParams.get("next"));
-  if (!loginRequired(config)) return NextResponse.redirect(here(next, request));
-  const erp = config.erpnext!;
+  const back = (error: string) => {
+    const url = here("/login", request);
+    url.searchParams.set("error", error);
+    if (next !== "/workspace") url.searchParams.set("next", next);
+    return NextResponse.redirect(url);
+  };
+  const google = googleConfig();
+  if (!google) return back("google");
+  const secret = resolveSessionSecret();
+  if (!secret) return back("secret");
+  const config = await liveConfig();
   const state = randomToken(16);
   const verifier = randomToken(48);
-  const authorize = new URL(`${erp.url}/api/method/frappe.integrations.oauth2.authorize`);
-  authorize.search = new URLSearchParams({
-    client_id: erp.oauth!.clientId,
-    response_type: "code",
-    scope: "all openid",
-    redirect_uri: redirectUri(request),
+  const authorize = googleAuthorizeUrl({
+    clientId: google.clientId,
+    redirectUri: redirectUri(request),
     state,
-    code_challenge: await pkceChallenge(verifier),
-    code_challenge_method: "S256",
-  }).toString();
+    challenge: await pkceChallenge(verifier),
+  });
   const response = NextResponse.redirect(authorize);
-  response.cookies.set(LOGIN_COOKIE, await seal({ state, verifier, next }, config.sessionSecret!), cookieOptions(600, publicOrigin(request)));
+  response.cookies.set(
+    LOGIN_COOKIE,
+    await seal({ state, verifier, next, companyId: companyKey(config.tenant?.site) }, secret),
+    cookieOptions(600, publicOrigin(request)),
+  );
   return response;
 }

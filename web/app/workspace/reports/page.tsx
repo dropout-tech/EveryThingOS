@@ -5,7 +5,6 @@ import { SourceFailure, SourceNote } from "@/components/SourceNote";
 import { canSeeReports } from "@/lib/access";
 import { parseMonths } from "@/lib/reports";
 import { getMe } from "@/lib/sources";
-import { liveConfig, loginRequired } from "@/lib/sources/config";
 import { getReports } from "@/lib/sources/reports";
 import { currentIndustry } from "@/lib/workspace";
 
@@ -15,15 +14,13 @@ export default async function ReportsPage({ searchParams }: PageProps<"/workspac
   const months = parseMonths((await searchParams).months);
   const frame = { kicker: "儀表板", title: "生意整體怎麼樣", hint: "營收、毛利、誰欠錢、誰買最多、成交率、快不夠的貨。數字都從 ERPNext 來。按「自訂儀表板」挑卡片、排順序。" };
 
-  if (loginRequired(await liveConfig())) {
-    const me = await getMe();
-    if (!canSeeReports(me.origin === "live" && me.data ? me.data.roles : [])) {
-      return (
-        <ModuleFrame {...frame}>
-          <p className="glass p-5 text-sm text-cream-dim">儀表板只有老闆、主管、會計看得到。需要的話，請老闆到「團隊」調整你的職務。</p>
-        </ModuleFrame>
-      );
-    }
+  const me = await getMe();
+  if (me.origin === "live" && !canSeeReports(me.data ? me.data.roles : [])) {
+    return (
+      <ModuleFrame {...frame}>
+        <p className="glass p-5 text-sm text-cream-dim">儀表板只有老闆、主管、會計看得到。需要的話，請老闆到「團隊」調整你的職務。</p>
+      </ModuleFrame>
+    );
   }
 
   const source = await getReports(await currentIndustry(), months);

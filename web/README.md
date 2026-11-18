@@ -25,7 +25,7 @@ npm run test:e2e
 | `/consulting` | 免費導入步驟 |
 | `/saas` | 取代哪些雲端工具 |
 | `/status` | 服務狀態：畫面、系統同步、ERPNext 整體是否正常、近 30 天可用率、近 14 天事故；不顯示任何公司名稱或網址。多公司模式在公司自己的網址打開時，多一塊「這個網址的公司」 |
-| `/login` | 用 ERPNext 帳號登入（只有開了登入才會用到） |
+| `/login` | 用 Google 登入。還沒設定 Google 用戶端時，按鈕不會改走密碼或 ERPNext |
 | `/workspace` | 今天這一件；接上 ERPNext 時顯示導入進度 |
 | `/workspace/erp/{sales,purchase,stock,finance}` | 生意：同一張單往下走 |
 | `/workspace/crm` | 客人（ERPNext Lead／Customer 與通道身分） |
@@ -43,8 +43,8 @@ npm run test:e2e
 | API | 用途 |
 | --- | --- |
 | `GET /api/health` | 殼活著就回 `ok: true`；設了 `GLUE_URL` 時一併回報膠水 `/health` 連不連得到（膠水的監看與外部監看都打這裡） |
-| `GET /api/auth/login` → `GET /api/auth/callback` | ERPNext OAuth2（Authorization Code + PKCE S256） |
-| `POST /api/auth/logout` | 撤銷 token、清 session |
+| `GET /api/auth/login` → `GET /api/auth/callback` | Google 登入（授權碼 + PKCE）。沒有 `GOOGLE_CLIENT_ID` 時停在登入頁 |
+| `POST /api/auth/logout` | 清掉平台 session |
 | `GET /api/chat/open` | 以登入者對應的 Chatwoot 使用者單一登入，沒有對應就說明原因 |
 | `GET /api/shop/profile` | 下載 ShopProfile（導入工具 `plan`／`provision` 的輸入） |
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
@@ -59,10 +59,10 @@ npm run test:e2e
 | `POST /api/hr/checkin`、`POST /api/hr/leave` | 替自己打卡；核准或退回假單 |
 | `POST /api/hr/overtime` | 人資記加班：依勞基法倍數寫成「加班費」額外薪資，超過每日或每月上限會被擋（`dropout_hr_tw.overtime.record`） |
 | `POST /api/hr/schedule` | 師資／人員排班：檢查老師衝堂、教室衝突與請假撞課後，寫入 Frappe HRMS `Shift Assignment`（`dropout_hr_tw.schedule.assign`） |
-| `POST /api/team/{invite,profile,enabled,security}` | 邀請、換職務、停用／恢復、登入安全（`dropout_core.team.*`，限 System Manager） |
+| `POST /api/team/{invite,profile,enabled,security}` | 邀請、換職務、停用／恢復、閒置時間。寫進平台 D1，不呼叫 ERPNext。老闆才可以。邀請信沒寄出時標成未寄出 |
 | `POST /api/platform/accounts/[site]` | 營運：續約、暫停／恢復／解約、改公司資料 |
 
-寫入的 API 只收同網域送來的 JSON（檢查 `Origin`）；公司在只能看、暫停、解約時回 423 並說明原因（團隊管理除外）；權限照 ERPNext：登入模式是那個人自己的權限，固定金鑰模式是整合帳號的權限（例如要寄電子報，整合帳號要有 Newsletter Manager）。ERPNext 拒絕時畫面顯示原因，不會假裝成功。
+寫入的 API 只收同網域送來的 JSON（檢查 `Origin`）；公司在只能看、暫停、解約時回 423 並說明原因（團隊管理除外）。誰能管人看平台帳號的職務，不看 ERPNext，也不使用共用整合帳號。
 
 ## 資料來源：每個系統各自示範或真實
 
@@ -71,29 +71,22 @@ npm run test:e2e
 | 變數 | 系統 | 說明 |
 | --- | --- | --- |
 | `ERPNEXT_URL`、`ERPNEXT_SITE` | ERPNext | 站台網址；多站同機時用 `X-Frappe-Site-Name` 指定 |
-| `ERPNEXT_API_KEY`、`ERPNEXT_API_SECRET` | ERPNext | 固定金鑰模式（見下） |
-| `ERPNEXT_OAUTH_CLIENT_ID`、`ERPNEXT_OAUTH_CLIENT_SECRET` | ERPNext | 登入模式 |
-| `SESSION_SECRET` | 殼 | 32 字元以上；封裝 session cookie（AES-GCM） |
-| `SHELL_URL` | 殼 | 對外網址，用來組 OAuth 回呼 |
+| `ERPNEXT_API_KEY`、`ERPNEXT_API_SECRET` | ERPNext | 不再拿來當登入身份。沒有 OAuth client 時，呼叫不會改用這組共用金鑰 |
+| `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET` | 殼 | Google 登入。兩個都要有，登入才會前往 Google |
+| `SESSION_SECRET` | 殼 | 16 字元以上；封裝 session cookie（AES-GCM）。沒設時，本機會在 `web/.data/session-secret` 產生一把，不進 git |
+| `ACCOUNT` 庫 | 殼 | 本機 wrangler D1，綁定 `ACCOUNTS`，庫名 `everythingos-accounts`。設定在 `wrangler.accounts.jsonc`，只對本機套 migration：`npx wrangler d1 migrations apply ACCOUNTS --local --config wrangler.accounts.jsonc` |
 | `GLUE_URL`、`GLUE_ADMIN_TOKEN`、`GLUE_SITE` | 膠水 | 導入進度、同步失敗清單與重送；`/status` 只要 `GLUE_URL`（沒設就是示範資料） |
 | `CHATWOOT_URL`、`CHATWOOT_PLATFORM_TOKEN`、`CHATWOOT_ACCOUNT_ID` | Chatwoot | 對話單一登入 |
 
-三種模式：
+登入是 Google。職務在平台自己的 D1。設了 `ERPNEXT_URL` 也不把 ERPNext 當身份；沒有 OAuth client 時，不會改用共用整合帳號。
 
-1. **示範**：什麼都不設。
-2. **固定金鑰**：設 `ERPNEXT_API_KEY`／`SECRET`，所有人用同一個整合帳號讀。**只用在本機或放在 Cloudflare Access 後面**，不要直接公開。
-3. **登入**：設 OAuth 兩個值加 `SESSION_SECRET`。每個人用自己的 ERPNext 帳號登入，權限照 ERPNext 走。OAuth client 用導入工具建立：
-
-```bash
-dropout-onboard provision shop.json --site acme.erp.dropout.tw --company 安安顧問 \
-  --admin-email boss@acme.tw --shell-url https://os.acme.tw --apply
-```
-
-它會呼叫 `dropout_core.provisioning.create_oauth_client`，最後印出要貼進殼的環境變數。
+1. **示範**：沒登入。工作區仍是練習資料。
+2. **Google 登入**：設 `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`。第一位登入的人是老闆，之後由老闆邀請。
+3. **帳號庫**：本機 D1 `everythingos-accounts`。不要把這張表寫進 `dropout-glue` 的年費 `invoices`，也不要寫 DoBusiness 的庫。這個設定檔沒有 `os.dropout.tw` 的路由，不要拿它部署。
 
 ## 多公司模式
 
-設 `GLUE_URL`、`SHELL_TOKEN`、`SESSION_SECRET`（Chatwoot 單一登入再加 `CHATWOOT_PLATFORM_TOKEN`）就是一個部署服務所有公司：打開的網址（`Host`／`X-Forwarded-Host`）向膠水 `GET /shell/tenant` 查是哪一家，拿到那家的 ERPNext 網址、OAuth client、Chatwoot 帳戶與合約狀態。不需要也不接受共用的 ERPNext API key；每個人用自己的 ERPNext 帳號登入，session 綁那一家。這時 `ERPNEXT_*`、`SHELL_URL`、`GLUE_SITE` 不用設。公司用 `dropout-onboard provision --shell-url https://<slug>.os.dropout.tw` 登記網址。
+設 `GLUE_URL`、`SHELL_TOKEN`、`SESSION_SECRET` 時，打開的網址仍向膠水查是哪一家。登入是 Google，session 綁那一家的 site。不使用 ERPNext OAuth，也不使用共用的 ERPNext API key。
 
 ## 營運後台
 

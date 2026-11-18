@@ -2,8 +2,8 @@ import "server-only";
 import type { NextRequest } from "next/server";
 import { readJson, refuse, reply, sameOrigin } from "./actions";
 import type { DeliveryRow, Integrations } from "./integrations";
-import { fleetMode, liveConfig, loginRequired, type LiveConfig } from "./sources/config";
-import { liveMe } from "./sources/live";
+import { fleetMode, liveConfig, type LiveConfig } from "./sources/config";
+import { getMe } from "./sources";
 
 type Access = { ok: true; glue: NonNullable<LiveConfig["glue"]>; actor: string } | { ok: false; status: number; message: string };
 
@@ -14,17 +14,14 @@ type Access = { ok: true; glue: NonNullable<LiveConfig["glue"]>; actor: string }
 export async function integrationAccess(): Promise<Access> {
   const config = await liveConfig();
   if (!config.glue) return { ok: false, status: 409, message: "系統同步還沒接上，現在是示範" };
-  let actor = "殼";
-  if (fleetMode() || loginRequired(config)) {
-    try {
-      const me = await liveMe();
-      if (!me.roles.includes("System Manager")) return { ok: false, status: 403, message: "只有老闆可以管 API 金鑰和 Webhook" };
-      actor = me.user;
-    } catch {
-      return { ok: false, status: 401, message: "請先登入" };
-    }
+  const me = await getMe();
+  if (me.origin === "error" && me.kind === "login") return { ok: false, status: 401, message: "請先用 Google 登入" };
+  if (me.origin === "live") {
+    if (!me.data?.roles.includes("System Manager")) return { ok: false, status: 403, message: "只有老闆可以管 API 金鑰和 Webhook" };
+    return { ok: true, glue: config.glue, actor: me.data.user };
   }
-  return { ok: true, glue: config.glue, actor };
+  if (fleetMode()) return { ok: false, status: 401, message: "請先用 Google 登入" };
+  return { ok: true, glue: config.glue, actor: "殼" };
 }
 
 function glueFetch(access: Extract<Access, { ok: true }>, path: string, init: RequestInit = {}) {

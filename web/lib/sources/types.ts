@@ -1,7 +1,7 @@
 import type { Books } from "../erp";
 import type { ShiftSlot } from "../schedule";
 
-export type SystemId = "erpnext" | "glue" | "chatwoot";
+export type SystemId = "erpnext" | "glue" | "chatwoot" | "platform";
 
 /**
  * Every read the pages make returns one of these. Demo data is always labelled;

@@ -38,7 +38,7 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
       {!live ? (
         <p className="flex flex-wrap items-center gap-2 text-xs text-cream-dim">
           <Badge tone="practice" />
-          這是範例團隊，按鈕先關著。接上 ERPNext 之後，這裡改的就是真的帳號與權限。
+          這是範例團隊，按鈕先關著。用 Google 以老闆登入後，這裡管的是平台裡的同事。
         </p>
       ) : null}
       <ActionOutcomeNote outcome={action.outcome} />
@@ -132,7 +132,7 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
           {action.busy ? <span className="spinner" aria-hidden="true" /> : null}
           {action.busy ? "處理中…" : "邀請"}
         </button>
-        <p className="w-full text-xs text-cream-dim">對方會收到設定密碼的信。不收人頭費，要幾個帳號就開幾個。</p>
+        <p className="w-full text-xs text-cream-dim">帳號建在平台裡。沒有寄出邀請信時，請對方用這個 Google 信箱登入。</p>
       </form>
 
       <section className="grid gap-3 md:grid-cols-2">

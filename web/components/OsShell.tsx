@@ -23,9 +23,10 @@ type OsShellProps = {
   canReset?: boolean;
   /** Advanced tier only. The dock's own button is secondary. */
   agent?: boolean;
+  signedIn?: boolean;
 };
 
-export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true, agent = false }: OsShellProps) {
+export function OsShell({ industry, shop, children, company, team = false, reports = false, notice, canReset = true, agent = false, signedIn = false }: OsShellProps) {
   const items = navItemsForShop(shop, { team, reports });
   const name = shop.name ?? company ?? industry.nameZh;
   const reset = canReset ? (
@@ -57,6 +58,17 @@ export function OsShell({ industry, shop, children, company, team = false, repor
               <span className="truncate">{name}</span>
             </p>
             <div className="flex shrink-0 items-center gap-1.5">
+              {signedIn ? (
+                <form action="/api/auth/logout" method="post">
+                  <button type="submit" className={buttonClass({ variant: "ghost", size: "sm" })}>
+                    登出
+                  </button>
+                </form>
+              ) : (
+                <Link href="/login" className={buttonClass({ variant: "ghost", size: "sm" })}>
+                  登入
+                </Link>
+              )}
               <Link href="/help" className={buttonClass({ variant: "ghost", size: "sm" })}>
                 <span aria-hidden className="font-medium">?</span>
                 說明

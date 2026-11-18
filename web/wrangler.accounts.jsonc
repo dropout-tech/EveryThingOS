@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "everythingos-accounts-local",
+  "compatibility_date": "2026-10-11",
+  "compatibility_flags": ["nodejs_compat"],
+  // Local accounts only. This file has no route and is not the os.dropout.tw worker.
+  // database_id stays a placeholder so nothing here creates or writes a remote D1.
+  "d1_databases": [
+    {
+      "binding": "ACCOUNTS",
+      "database_name": "everythingos-accounts",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "d1/migrations"
+    }
+  ]
+}

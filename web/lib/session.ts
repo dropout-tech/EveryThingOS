@@ -5,14 +5,14 @@ export const SESSION_COOKIE = "dropout_session";
 export const LOGIN_COOKIE = "dropout_login";
 const MAX_AGE = 60 * 60 * 24 * 14;
 
-/** Holds the ERPNext OAuth tokens, so the cookie is encrypted, not only signed. */
+/** Platform account sealed into the cookie. Google tokens are not stored here. */
 export type Session = {
+  accountId: string;
   user: string;
-  /** ERPNext site the tokens belong to; a session never crosses companies. */
+  /** Company this login belongs to. A session never crosses companies. */
   site?: string;
   name?: string;
-  accessToken: string;
-  refreshToken?: string;
+  role: "owner" | "member";
   expiresAt: number;
 };
 
@@ -73,6 +73,8 @@ export async function readSession(secret: string | undefined, site?: string): Pr
   if (!secret) return null;
   const jar = await cookies();
   const session = await unseal<Session>(jar.get(SESSION_COOKIE)?.value, secret);
-  if (session && site && session.site !== site) return null;
+  if (!session?.accountId || !session.user || !session.expiresAt) return null;
+  if (session.expiresAt < Date.now()) return null;
+  if (site && session.site !== site) return null;
   return session;
 }

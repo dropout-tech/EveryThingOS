@@ -136,9 +136,9 @@ async function fleetConfig(): Promise<LiveConfig> {
 
 export const liveConfig = cache(async (): Promise<LiveConfig> => (fleetMode() ? fleetConfig() : envConfig()));
 
-/** Login is required as soon as ERPNext OAuth is configured. */
-export function loginRequired(config: LiveConfig) {
-  return Boolean(config.erpnext?.oauth && config.sessionSecret);
+/** ERPNext OAuth is not the identity, even when ERPNEXT_URL is set. */
+export function loginRequired(_config: LiveConfig) {
+  return false;
 }
 
 /** Why this company may not create or change anything right now, or null. */
