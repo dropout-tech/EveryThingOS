@@ -29,11 +29,9 @@ async function collectAndUpload(page: Page, shot: Shot): Promise<string> {
   await page.getByRole("button", { name: "催收並入帳" }).first().click();
   await expect(page.getByText(/已收 .+。開單就入帳/)).toBeVisible();
   await shot(page, "25-finance-collect-local.png");
-  await page.getByRole("button", { name: "上傳加值中心" }).first().click();
-  const note = page.getByText(/已交給加值中心上傳/);
-  await expect(note).toBeVisible();
+  await expect(page.getByRole("button", { name: "上傳加值中心" })).toHaveCount(0);
   await shot(page, "26-einvoice-upload-local.png");
-  return (await note.innerText()).trim();
+  return "測試帳本沒有上傳加值中心";
 }
 
 async function payPurchase(page: Page, shot: Shot): Promise<string> {
@@ -101,9 +99,10 @@ async function convertLeadLocally(page: Page, shot: Shot): Promise<string> {
     await button.click();
     if (label.includes("轉成一筆生意")) {
       await page.waitForURL(/\/workspace\/erp\/sales/);
-      await expect(page.getByText(lead).first()).toBeVisible();
+      await expect(page.getByText("測試帳本").first()).toBeVisible();
+      await expect(page.getByRole("listitem").filter({ hasText: lead })).toHaveCount(0);
       await shot(page, "33-crm-to-quote.png");
-      return `${lead} 轉成報價，留在這台瀏覽器`;
+      return `${lead} 的練習轉換沒有寫進測試帳本`;
     }
     await expect(page.getByText(`${lead} →`)).toBeVisible();
   }

@@ -14,9 +14,11 @@ type FinanceBoardProps = {
   packId: string;
   books: Books;
   live?: boolean;
+  /** 測試帳本不提供只改字的上傳。 */
+  hideUpload?: boolean;
 };
 
-export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps) {
+export function FinanceBoard({ packId, books, live = false, hideUpload = false }: FinanceBoardProps) {
   const [aging, setAging] = useBoardState(demoKey("aging", packId), books.arAging, live);
   const [invoices, setInvoices] = useBoardState(demoKey("einvoices", packId), books.einvoices, live);
   const [note, setNote] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
             )
           }
         />
-      ) : pendingInvoice ? (
+      ) : pendingInvoice && !hideUpload ? (
         <NextThing
           title={`${pendingInvoice.no} 還沒上傳`}
           detail="發票已經開了，還沒交給加值中心。帳上的這一步做完，今天就少一件卡住的事。"
@@ -197,7 +199,7 @@ export function FinanceBoard({ packId, books, live = false }: FinanceBoardProps)
                   <DeskLink href={row.href} className={buttonClass({ variant: "ghost", size: "sm" })}>
                     打開
                   </DeskLink>
-                ) : row.status !== "已上傳" ? (
+                ) : hideUpload ? null : row.status !== "已上傳" ? (
                   <button type="button" onClick={() => onUpload(row.no)} className={buttonClass({ variant: "secondary", size: "sm" })}>
                     上傳加值中心
                   </button>

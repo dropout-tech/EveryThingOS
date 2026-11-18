@@ -163,6 +163,8 @@ export type SalesDoc = {
   invoiceNo?: string;
   href?: string;
   doctype?: string;
+  /** 平台測試帳本的發票狀態。這一刀固定是尚未開統一發票。 */
+  invoiceStatus?: string;
   /** 這張單之前，客人已開發票還沒收的錢。沒寫就不印前餘。 */
   previousBalance?: number;
   /** 這張訂單最近一張非退貨的出貨單。沒寫就沒有「退這次」。 */

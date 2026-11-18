@@ -1,0 +1,108 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import test from "node:test";
+import { priceLines } from "./money.ts";
+import { advanceQuote, createQuote, listHeads, recordPayment, tenantOf } from "./store.ts";
+import { INVOICE_STATUS, LEDGER_TENANT_ID, type LedgerDb } from "./types.ts";
+
+const webRoot = path.join(import.meta.dirname, "../..");
+
+async function database() {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy<{ DB: LedgerDb }>({
+    configPath: path.join(webRoot, "wrangler.jsonc"),
+    remoteBindings: false,
+    persist: false,
+  });
+  try {
+    const sql = readFileSync(path.join(webRoot, "migrations/0001_ledger.sql"), "utf8")
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n");
+    for (const statement of sql.split(";").map((part) => part.trim()).filter(Boolean)) {
+      await proxy.env.DB.prepare(statement).run();
+    }
+  } catch (error) {
+    await proxy.dispose();
+    throw error;
+  }
+  return proxy;
+}
+
+test("報價寫進本機 D1，再讀還是同一單號與餘額", async () => {
+  const proxy = await database();
+  try {
+    const priced = priceLines([{ itemCode: "專案人天", qty: 1, rate: 12000 }]);
+    assert.equal(priced.ok, true);
+    if (!priced.ok) return;
+    const created = await createQuote(proxy.env.DB, { party: "E2E測報價客戶", partyType: "Customer", priced });
+    assert.match(created.no, /^QT-\d{4}$/);
+    assert.equal(created.total, 12600);
+    assert.equal(created.tax, 600);
+    assert.equal(created.balance, 12600);
+    assert.equal(created.received, 0);
+    assert.equal(created.invoiceStatus, INVOICE_STATUS);
+    assert.equal(await tenantOf(proxy.env.DB, created.no), LEDGER_TENANT_ID);
+
+    const first = await listHeads(proxy.env.DB);
+    const again = await listHeads(proxy.env.DB);
+    assert.equal(first[0]?.no, created.no);
+    assert.equal(again[0]?.no, created.no);
+    assert.equal(again[0]?.balance, 12600);
+    assert.equal(again[0]?.party, "E2E測報價客戶");
+    assert.equal(again[0]?.invoiceStatus, "尚未開統一發票");
+
+    const lines = await proxy.env.DB.prepare("SELECT item_code, amount FROM ledger_lines WHERE tenant_id = ?1").bind(LEDGER_TENANT_ID).all<{ item_code: string; amount: number }>();
+    assert.equal(lines.results.length, 1);
+    assert.equal(lines.results[0]?.amount, 12000);
+  } finally {
+    await proxy.dispose();
+  }
+});
+
+test("轉訂單、開發票、記入已收之後，單號不變，餘額歸零", async () => {
+  const proxy = await database();
+  try {
+    const priced = priceLines([{ itemCode: "專案人天", qty: 1, rate: 12000 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    const quote = await createQuote(proxy.env.DB, { party: "走完的客人", partyType: "Customer", priced });
+    const order = await advanceQuote(proxy.env.DB, quote.no, "Quotation");
+    assert.equal(order.no, quote.no);
+    assert.equal(order.doctype, "Sales Order");
+    const delivered = await advanceQuote(proxy.env.DB, quote.no, "Sales Order");
+    assert.equal(delivered.doctype, "Delivery Note");
+    const invoice = await advanceQuote(proxy.env.DB, quote.no, "Delivery Note");
+    assert.equal(invoice.doctype, "Sales Invoice");
+    assert.equal(invoice.invoiceStatus, "尚未開統一發票");
+    assert.equal(invoice.balance, 12600);
+    const paid = await advanceQuote(proxy.env.DB, quote.no, "Sales Invoice");
+    assert.equal(paid.no, quote.no);
+    assert.equal(paid.doctype, "Payment Entry");
+    assert.equal(paid.received, 12600);
+    assert.equal(paid.balance, 0);
+    assert.equal(paid.invoiceStatus, "尚未開統一發票");
+    const head = (await listHeads(proxy.env.DB)).find((row) => row.no === quote.no);
+    assert.equal(head?.balance, 0);
+    assert.equal(head?.received, 12600);
+  } finally {
+    await proxy.dispose();
+  }
+});
+
+test("部分收款不能超過餘額，也不重算稅", async () => {
+  const proxy = await database();
+  try {
+    const priced = priceLines([{ itemCode: "專案人天", qty: 1, rate: 1000 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    const quote = await createQuote(proxy.env.DB, { party: "收一部分", partyType: "Customer", priced });
+    assert.equal(quote.total, 1050);
+    const paid = await recordPayment(proxy.env.DB, quote.no, 500.4);
+    assert.equal(paid.received, 500);
+    assert.equal(paid.balance, 550);
+    assert.equal(paid.tax, 50);
+    await assert.rejects(recordPayment(proxy.env.DB, quote.no, 600), /不能超過餘額/);
+  } finally {
+    await proxy.dispose();
+  }
+});

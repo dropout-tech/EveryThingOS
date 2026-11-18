@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -10,4 +11,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default (async () => {
+  if (process.env.NODE_ENV === "development") {
+    await initOpenNextCloudflareForDev({ remoteBindings: false, persist: true });
+  }
+  return nextConfig;
+})();

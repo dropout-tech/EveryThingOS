@@ -27,11 +27,11 @@ function watch(page: Page) {
   });
 }
 
-test("示範環境從登入走到報價收款，不送出帳本或信件", async ({ page }) => {
+test("本機從登入走到報價收款，帳寫進測試庫，不送出信件", async ({ page }) => {
   watch(page);
 
   await page.goto("/login");
-  const refused = await page.evaluate(async () => {
+  const opened = await page.evaluate(async () => {
     const res = await fetch("/api/erp/quotation", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -39,13 +39,18 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
         party_type: "Customer",
         party: "E2E",
         items: [{ item_code: "E2E", qty: 1, rate: 1 }],
+        grand_total: 99999,
       }),
     });
-    const body = (await res.json().catch(() => ({}))) as { message?: string };
-    return { status: res.status, message: body.message ?? "" };
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; created?: { name?: string; grand_total?: number; invoice_status?: string } };
+    return { status: res.status, ok: body.ok ?? false, message: body.message ?? "", name: body.created?.name ?? "", total: body.created?.grand_total ?? null, invoice: body.created?.invoice_status ?? "" };
   });
-  expect(refused.status).toBe(409);
-  expect(refused.message).toContain("還沒接上");
+  expect(opened.status).toBe(200);
+  expect(opened.ok).toBe(true);
+  expect(opened.name).toMatch(/^QT-\d{4}$/);
+  expect(opened.total).toBe(1);
+  expect(opened.invoice).toBe("尚未開統一發票");
+  expect(opened.message).not.toContain("ERPNext");
 
   await expect(page.getByRole("heading", { name: "用公司的 ERPNext 帳號登入" })).toBeVisible();
   await expect(page.getByText("還沒接上 ERPNext 時，登入不會核對帳號。可以先看示範。")).toBeVisible();
@@ -70,27 +75,47 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
   await shot(page, "03-today.png");
 
   await page.goto("/workspace/erp/sales");
-  await expect(page.getByText("示範資料", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("測試帳本").first()).toBeVisible();
   await page.getByLabel("誰在問").fill(PARTY);
   await page.getByLabel("未稅金額").fill("12000");
-  await page.getByRole("checkbox", { name: "這張加 5% 營業稅" }).check();
   await page.getByRole("button", { name: "開一張報價" }).click();
-  await expect(page.getByText(/已開 SO-\d+。含 5% 營業稅。/)).toBeVisible();
-  const card = page.locator("li").filter({ hasText: PARTY });
+  const note = page.getByText(/已開 QT-\d+。含 5% 營業稅。/);
+  await expect(note).toBeVisible();
+  const quoteNo = ((await note.innerText()).match(/QT-\d{4}/) ?? [""])[0];
+  expect(quoteNo).toMatch(/^QT-\d{4}$/);
+  const card = page.locator("li").filter({ hasText: quoteNo });
+  await expect(card).toContainText(PARTY);
   await expect(card).toContainText("NT$12,600");
+  await expect(card).toContainText("尚未開統一發票");
   await shot(page, "04-sales-quote.png");
 
+  await page.goto("/workspace/erp/finance");
+  const openRow = page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) });
+  await expect(openRow).toContainText(PARTY);
+  await expect(openRow).toContainText("NT$12,600");
+  await expect(openRow).toContainText("尚未開統一發票");
+  await page.reload();
+  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$12,600");
+
+  await page.goto("/workspace/erp/sales");
+  const again = page.locator("li").filter({ hasText: quoteNo });
   for (const label of ["轉成訂單", "交付里程碑", "開立發票", "記入已收"]) {
-    const button = card.getByRole("button", { name: label, exact: true });
+    const button = again.getByRole("button", { name: label, exact: true });
     await expect(button).toBeEnabled();
     await button.click();
+    await expect(again).toContainText(quoteNo);
   }
-  await expect(card.getByRole("button", { name: "完成", exact: true })).toBeDisabled();
-  await expect(card).toContainText(/發票 AB-/);
+  await expect(again.getByRole("button", { name: "完成", exact: true })).toBeDisabled();
+  await expect(again).toContainText("尚未開統一發票");
   await shot(page, "05-sales-paid.png");
 
-  const stored = await page.evaluate((party) => sessionStorage.getItem("dropout:sales:consulting-firm")?.includes(party) ?? false, PARTY);
-  expect(stored).toBe(true);
+  await page.goto("/workspace/erp/finance");
+  const paidRow = page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) });
+  await expect(paidRow).toContainText("NT$12,600");
+  await expect(paidRow).toContainText("NT$0");
+  await expect(paidRow).toContainText("尚未開統一發票");
+  await page.reload();
+  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$0");
 
   await page.goto("/workspace/practice");
   await expect(page.getByRole("heading", { name: "第一筆生意，先走一次" })).toBeVisible();
@@ -107,7 +132,7 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
 
   await page.goto("/workspace/erp/finance");
   await expect(page.getByText("示範資料", { exact: true }).first()).toBeVisible();
-  await expect(page.getByText(PARTY)).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText(PARTY);
   await expect(page.getByText(`練習・${PRACTICE_PARTY}`)).toHaveCount(0);
   await shot(page, "08-finance-not-linked.png");
 
@@ -129,6 +154,7 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
 
   await page.goto("/workspace/settings");
   await expect(page.getByText("示範資料，只在這台電腦走")).toBeVisible();
+  await expect(page.getByText("測試帳本", { exact: true })).toBeVisible();
   await expect(page.getByText("對話（Chatwoot）")).toBeVisible();
   await expect(page.getByText("還沒接").first()).toBeVisible();
   await shot(page, "12-settings-not-connected.png");
@@ -166,18 +192,18 @@ test("示範環境從登入走到報價收款，不送出帳本或信件", async
   const flows = await exerciseRemainingLocalFlows(page, posts, shot);
   const forbidden = posts.filter((line) => {
     if (/\/api\/(letter|crm|meetings|hr|platform|team|integrations)\b/.test(line)) return true;
-    if (/\/api\/erp\/(?!quotation\b)/.test(line)) return true;
+    if (/\/api\/erp\/(?!quotation\b|advance\b)/.test(line)) return true;
     return false;
   });
   const bookingPosts = posts.filter((line) => line.startsWith("POST /api/booking"));
   const quotationPosts = posts.filter((line) => line.startsWith("POST /api/erp/quotation"));
   writeFileSync(
     path.join(shotDir, "e2e-result.json"),
-    JSON.stringify({ party: PARTY, quotationRefused: refused, flows, posts, offHost, forbidden, bookingPosts, quotationPosts, pages }, null, 2),
+    JSON.stringify({ party: PARTY, quotationOpened: opened, flows, posts, offHost, forbidden, bookingPosts, quotationPosts, pages }, null, 2),
   );
   expect(offHost, `離開本機的請求：${offHost.join(", ")}`).toEqual([]);
   expect(forbidden, `不該送出的寫入：${forbidden.join(", ")}`).toEqual([]);
   expect(bookingPosts).toEqual(["POST /api/booking"]);
-  expect(quotationPosts).toEqual(["POST /api/erp/quotation"]);
+  expect(quotationPosts).toEqual(["POST /api/erp/quotation", "POST /api/erp/quotation"]);
   expect(posts.some((line) => line.startsWith("POST /api/shop"))).toBe(true);
 });
