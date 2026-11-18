@@ -1,4 +1,5 @@
 import "server-only";
+import { readActor } from "../accounts/guard";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { LedgerUnavailable } from "./errors";
 import { listHeads } from "./store";
@@ -20,7 +21,9 @@ export async function openLedger(): Promise<LedgerDb> {
 
 export async function readLedger(): Promise<{ rows: LedgerHead[]; error: string | null }> {
   try {
-    return { rows: await listHeads(await openLedger()), error: null };
+    const actor = await readActor();
+    if (actor.status !== "ok") return { rows: [], error: actor.status === "error" ? actor.message : null };
+    return { rows: await listHeads(await openLedger(), actor.account.companyId), error: null };
   } catch (error) {
     return { rows: [], error: error instanceof Error ? error.message : "測試帳本讀不到" };
   }

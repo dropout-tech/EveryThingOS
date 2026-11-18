@@ -129,8 +129,8 @@ export async function acceptGoogle(db: AccountDb, input: { companyId: string; pr
     await audit(db, input.companyId, existing.name, "登入", profile.email);
     return { ok: true, account: toPublic({ ...existing, google_sub: profile.sub, last_login: last }) };
   }
-  const count = await db.prepare("SELECT COUNT(*) AS n FROM accounts WHERE company_id = ?").bind(input.companyId).first<{ n: number }>();
-  if ((count?.n ?? 0) > 0) return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。請老闆在團隊頁邀請這個信箱。" };
+  const allowed = (process.env.OWNER_BOOTSTRAP_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase());
+  if (!allowed.includes(profile.email.toLowerCase())) return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。請老闆在團隊頁邀請這個信箱。" };
   const now = new Date().toISOString();
   const created: AccountRecord = {
     id: id(),
@@ -144,9 +144,15 @@ export async function acceptGoogle(db: AccountDb, input: { companyId: string; pr
     created_at: now,
     last_login: stamp(),
   };
-  await db.prepare(
-    "INSERT INTO accounts (id, company_id, email, name, google_sub, role, profile, enabled, created_at, last_login) VALUES (?, ?, ?, ?, ?, 'owner', '老闆', 1, ?, ?)",
-  ).bind(created.id, created.company_id, created.email, created.name, created.google_sub, created.created_at, created.last_login).run();
+  try {
+    await db.batch([
+      db.prepare("INSERT INTO company_founders (company_id, account_id) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM accounts WHERE company_id = ?)").bind(created.company_id, created.id, created.company_id),
+      db.prepare("INSERT INTO accounts (id, company_id, email, name, google_sub, role, profile, enabled, created_at, last_login) SELECT ?, ?, ?, ?, ?, 'owner', '老闆', 1, ?, ? WHERE EXISTS (SELECT 1 FROM company_founders WHERE company_id = ? AND account_id = ?)").bind(created.id, created.company_id, created.email, created.name, created.google_sub, created.created_at, created.last_login, created.company_id, created.id),
+    ]);
+  } catch {
+    return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。" };
+  }
+  if (!(await byId(db, created.id))) return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。" };
   await audit(db, input.companyId, created.name, "註冊", created.email);
   return { ok: true, account: toPublic(created) };
 }

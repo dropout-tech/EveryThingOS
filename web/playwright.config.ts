@@ -29,7 +29,7 @@ export default defineConfig({
     ? undefined
     : {
         command: blankDemoEnvCommand(
-          `sh -c ${JSON.stringify(`npx wrangler d1 migrations apply dropout-ledger-test --local && npm run dev -- --hostname 127.0.0.1 --port ${port}`)}`,
+          `env SESSION_SECRET=local-e2e-only-session-secret OWNER_BOOTSTRAP_EMAILS=e2e@example.invalid LOCAL_E2E_LOGIN=1 SHELL_URL=http://127.0.0.1:3017 sh -c ${JSON.stringify(`npx wrangler d1 migrations apply dropout-ledger-test --local && npm run dev -- --hostname 127.0.0.1 --port ${port}`)}`,
         ),
         url: baseURL,
         reuseExistingServer: false,

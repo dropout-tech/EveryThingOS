@@ -15,10 +15,10 @@ export type AccountDb = {
 };
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const migrationPath = path.join(root, "d1", "migrations", "0001_accounts.sql");
+const migrationPaths = ["0001_accounts.sql", "0002_company_founders.sql"].map((name) => path.join(root, "d1", "migrations", name));
 
 export function accountStatements() {
-  return readFileSync(migrationPath, "utf8")
+  return migrationPaths.map((file) => readFileSync(file, "utf8")).join("\n")
     .split(";")
     .map((part) => part.replace(/--[^\n]*/g, "").trim())
     .filter(Boolean);
