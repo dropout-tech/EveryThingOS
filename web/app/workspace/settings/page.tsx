@@ -21,16 +21,16 @@ import { currentIndustry, currentShop } from "@/lib/workspace";
 export const metadata = { title: "設定" };
 
 const SYSTEMS: [SystemId, string, string][] = [
-  ["erpnext", "帳本與客人（ERPNext）", "示範資料，只在這台電腦走"],
-  ["chatwoot", "對話（Chatwoot）", "還沒接"],
-  ["glue", "系統同步、寄信、金流、會議紀錄", "還沒接"],
+  ["erpnext", "帳本與客人", "示範資料，只在這台電腦走"],
+  ["chatwoot", "對話", "本機示範"],
+  ["glue", "系統同步、寄信、金流、會議紀錄", "本機示範"],
 ];
 
 const KIND_LABEL: Record<string, string> = {
   chatwoot: "新對話",
   form: "官網表單",
   unsubscribe: "退訂",
-  erpnext_event: "ERPNext 事件",
+  erpnext_event: "帳本事件",
   mail: "寄信事件",
   payment: "金流通知",
   meeting_start: "派會議機器人",
@@ -42,9 +42,9 @@ const KIND_LABEL: Record<string, string> = {
 const SYNC_NOTICE: Record<string, string> = {
   replayed: "已重送。",
   failed: "重送失敗，看上面的原因。",
-  denied: "只有 ERPNext 的 System Manager 可以重送。",
+  denied: "目前無法重送。",
   "bad-id": "找不到這筆。",
-  "not-connected": "系統同步還沒接上。",
+  "not-connected": "系統同步本機示範上。",
 };
 
 export default async function SettingsPage({ searchParams }: PageProps<"/workspace/settings">) {
@@ -83,7 +83,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
         <div>
           <p className="text-sm text-cream-dim">帳本</p>
           <p className="mt-1">測試帳本</p>
-          <p className="mt-1 text-xs text-cream-dim">報價到收款寫在本機測試庫，不經 ERPNext。發票狀態是尚未開統一發票。</p>
+          <p className="mt-1 text-xs text-cream-dim">報價到收款寫在本機測試庫，。發票狀態是尚未開統一發票。</p>
         </div>
         <div>
           <p className="text-sm text-cream-dim">連線</p>
@@ -91,7 +91,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             {SYSTEMS.map(([id, label, demo]) => (
               <li key={id} className="flex flex-wrap items-center gap-2">
                 <span>{label}</span>
-                {live[id] ? <Badge tone="ok">已接上</Badge> : <Badge>{demo}</Badge>}
+                <Badge>{demo}</Badge>
               </li>
             ))}
           </ul>
@@ -165,7 +165,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
         <section id="export" className="glass-well space-y-3 p-5">
           <h2 className="font-medium">下載全部資料</h2>
           <p className="text-sm text-cream-dim">資料是你的。</p>
-          <p className="text-sm">下載不再走 ERPNext，也不使用共用整合帳號。</p>
+          <p className="text-sm">資料下載目前未開放。</p>
         </section>
       ) : null}
 

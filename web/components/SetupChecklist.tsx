@@ -66,8 +66,8 @@ export function SetupChecklist({ items, practice, variant = "today" }: Props) {
           </h3>
           <p className="mt-1 text-xs text-cream-dim">
             {practice
-              ? "練習：導入後會照你們 ERPNext 裡真的資料打勾。現在只有報價和收款跟著你的練習走。"
-              : "每一項都看 ERPNext 裡真的資料，做完就自動打勾，不能手動勾。"}
+              ? "練習：現在只有報價和收款跟著你在測試帳本上做的走。"
+              : "每一項都看本機資料，做完就自動打勾，不能手動勾。"}
           </p>
         </div>
         <p className="display text-sm" aria-hidden>
@@ -107,7 +107,7 @@ export function SetupChecklist({ items, practice, variant = "today" }: Props) {
                   row.external ? (
                     <a href={row.href} target="_blank" rel="noreferrer" className={`${isNext ? "glass-cta" : "glass-pill"} rounded-full px-3 py-1 text-xs`}>
                       {row.cta}
-                      <span className="sr-only">（在 ERPNext 打開）</span>
+                      <span className="sr-only">（打開明細）</span>
                     </a>
                   ) : (
                     <Link href={row.href} className={`${isNext ? "glass-cta" : "glass-pill"} rounded-full px-3 py-1 text-xs`}>

@@ -114,15 +114,16 @@ test("租戶隔離及並發收款明細一致", async () => {
   const quote = await createQuote(proxy.env.DB, "a", { party: "A", partyType: "Customer", priced });
   assert.deepEqual(await listHeads(proxy.env.DB, "b"), []);
   await assert.rejects(recordPayment(proxy.env.DB, "b", quote.no, 1), /找不到/);
-  const results = await Promise.allSettled([recordPayment(proxy.env.DB, "a", quote.no, 525), recordPayment(proxy.env.DB, "a", quote.no, 525)]);
-  assert.equal(results.filter((r) => r.status === "fulfilled").length, 2);
-  await assert.rejects(recordPayment(proxy.env.DB, "a", quote.no, 100), /不能超過餘額/);
+  const results = await Promise.allSettled(Array.from({ length: 3 }, () => recordPayment(proxy.env.DB, "a", quote.no, 600)));
+  assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+  assert.equal(results.filter((r) => r.status === "rejected").length, 2);
+  await assert.rejects(recordPayment(proxy.env.DB, "a", quote.no, 600), /不能超過餘額/);
   const head = (await listHeads(proxy.env.DB, "a"))[0]!;
   const payments = await proxy.env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM ledger_payments WHERE tenant_id = ?").bind("a").first<{total: number}>();
   const counter = await proxy.env.DB.prepare("SELECT n FROM ledger_counters WHERE tenant_id = ? AND name = 'n'").bind("a").first<{n: number}>();
   assert.equal(head.received + head.balance, head.total);
   assert.equal(payments?.total, head.received);
-  assert.equal(counter?.n, 3);
+  assert.equal(counter?.n, 2);
  } finally { await proxy.dispose(); }
 });
 

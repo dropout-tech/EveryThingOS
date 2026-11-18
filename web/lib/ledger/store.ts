@@ -89,12 +89,14 @@ async function latest(db: LedgerDb, tenant: string, chainId: string): Promise<He
 export async function createQuote(
   db: LedgerDb,
   tenant: string,
-  input: { party: string; partyType: "Customer" | "Lead"; priced: PricedQuote },
+  input: { party: string; partyId?: string; partyType: "Customer" | "Lead"; priced: PricedQuote },
 ): Promise<StoredDoc> {
-  const party = cleanPartyName(input.party);
+  const existing = input.partyId ? await db.prepare("SELECT id, name FROM ledger_parties WHERE tenant_id = ?1 AND id = ?2").bind(tenant, input.partyId).first<{ id: string; name: string }>() : null;
+  if (input.partyId && !existing) throw new LedgerError("找不到客人", 404);
+  const party = cleanPartyName(existing?.name ?? input.party);
   if (!party) throw new LedgerError("請填客戶名稱");
   if (!input.priced.ok) throw new LedgerError("金額不對");
-  const id = partyId(party);
+  const id = existing?.id ?? partyId(party);
   const stamp = now();
   const lines = input.priced.lines.map((line, index) =>
     db
@@ -259,7 +261,7 @@ export async function recordPayment(db: LedgerDb, tenant: string, chainId: strin
       SELECT ?1, printf('RC-%04d', n), ?2, ?3 FROM ledger_counters
       WHERE tenant_id = ?1 AND name = 'n' AND changes() = 1`).bind(tenant, current.id, amount),
   ]);
-  if (!(results[0]?.meta?.changes ?? 0)) throw new LedgerError("收款不能超過餘額或單據已變更");
+  if (results.length !== 4 || results.some((result) => result.meta?.changes !== 1)) throw new LedgerError("收款不能超過餘額或單據已變更");
   const row = await latest(db, tenant, chainId);
   if (!row) throw new LedgerError("找不到這張單", 500);
   return stored(row);

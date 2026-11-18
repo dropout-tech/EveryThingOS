@@ -68,7 +68,7 @@ export async function verifyAccessJwt(token: string, team: string, audience: str
 }
 
 export function platformEnabled() {
-  return Boolean(env("GLUE_URL") && env("GLUE_ADMIN_TOKEN") && env("PLATFORM_ADMINS") && env("CF_ACCESS_TEAM_DOMAIN") && env("CF_ACCESS_AUD"));
+  return false;
 }
 
 /** The signed-in DropOut staff member, or null. */

@@ -1,5 +1,8 @@
 # Open Chat
 
+> **2026-11-19（Asia/Taipei）起：** EveryThingOS 改為全程自建。舊的 ERPNext、Chatwoot、glue 整合程式與導入工具已自本分支移除；帳本、客人、任務與文件寫在本機 D1。請不要再依下文去安裝、串接或搬資料進那些外部系統。路徑與 API 仍可使用 CRM／ERP 作為對內名稱。下文若仍描述舊組裝，僅供對照，不作為操作步驟。
+
+
 Open Chat 是一個收件匣：LINE 官方帳號、IG 私訊、FB 粉專、官網小工具。人回的訊息用 Chatwoot。殼只帶員工進去，不重做整套收件匣。
 
 這不是 LINE 社群的 OpenChat。LINE 群組沒有官方 API，這版不讀、不回。

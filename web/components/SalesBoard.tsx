@@ -41,6 +41,9 @@ export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: 
   const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live || ledgerMode);
   const trade: Trade = tradeOf(pack);
   const [party, setParty] = useState("");
+  const [customers, setCustomers] = useState<{id:string;name:string}[]>([]);
+  const [partyId, setPartyId] = useState("");
+  useEffect(() => { if (ledgerMode) void fetch("/api/crm/customers").then(r => r.ok ? r.json() : {items: []}).then(d => setCustomers(d.items)); }, [ledgerMode]);
   const [amount, setAmount] = useState("");
   const [taxable, setTaxable] = useState(false);
   const [invoiceable, setInvoiceable] = useState(true);
@@ -96,11 +99,12 @@ export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: 
     setFormError(null);
     const result = await action.run(
       "/api/erp/quotation",
-      { party_type: "Customer", party: party.trim(), items: [{ item_code: pack.itemType, qty: 1, rate: parsed }] },
+      { party_type: "Customer", party: party.trim(), party_id: partyId || undefined, items: [{ item_code: pack.itemType, qty: 1, rate: parsed }] },
       (response) => `已開 ${response.created!.name}。含 5% 營業稅。`,
     );
     if (result?.ok) {
       setParty("");
+      setPartyId("");
       setAmount("");
     }
   }
@@ -138,7 +142,8 @@ export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: 
       {ledgerMode ? (
       <form onSubmit={onCreateLedger} noValidate className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-end">
         <Field label="誰在問" className="sm:w-48" error={formError && !party.trim() ? formError : null}>
-          <input value={party} onChange={(event) => setParty(event.target.value)} maxLength={40} placeholder="客戶名稱" autoComplete="off" className="field" />
+          <div><input value={party} onChange={(event) => { setParty(event.target.value); setPartyId(""); }} maxLength={40} placeholder="客戶名稱" autoComplete="off" className="field" />
+          <select aria-label="選擇主檔客人" className="field" value={partyId} onChange={e => { setPartyId(e.target.value); setParty(customers.find(c => c.id === e.target.value)?.name ?? ""); }}><option value="">輸入姓名或選擇客人</option>{customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
         </Field>
         <Field label="未稅金額" className="sm:w-36" error={formError && party.trim() ? formError : null}>
           <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="12000" className="field" />
@@ -151,7 +156,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: 
       ) : live ? (
         <div className="glass space-y-2 p-4">
           {catalog ? <LiveQuoteForm catalog={catalog} action={action} emphasis={focus ? "secondary" : "primary"} /> : null}
-          <p className="text-xs text-cream-dim">報價、下一步、收款寫進測試帳本，不送到 ERPNext。</p>
+          <p className="text-xs text-cream-dim">報價、下一步、收款寫進本機測試帳本。</p>
         </div>
       ) : (
       <form onSubmit={onCreate} noValidate className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-end">

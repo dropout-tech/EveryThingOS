@@ -3,7 +3,7 @@ import { Badge } from "./ui/Badge";
 import { buttonClass } from "./ui/Button";
 import type { Sourced } from "@/lib/sources/types";
 
-const SYSTEM_LABEL = { erpnext: "ERPNext", glue: "系統同步", chatwoot: "Chatwoot", platform: "平台帳號" } as const;
+const SYSTEM_LABEL = { erpnext: "帳本", glue: "系統同步", chatwoot: "對話", platform: "平台帳號" } as const;
 
 const DENIED_LABEL: Record<string, string> = {
   month_sales: "本月銷貨",

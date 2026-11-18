@@ -5,7 +5,7 @@ import { COMMERCIAL } from "@/lib/commercial";
 export const metadata = { title: "登入", description: "用 Google 帳號登入 EveryThingOS。", robots: { index: false } };
 
 const REASONS: Record<string, { title: string; next: string }> = {
-  google: { title: "還沒設定 Google 登入。", next: "不會改用密碼，也不會改用 ERPNext。" },
+  google: { title: "還沒設定 Google 登入。", next: "請聯絡管理員設定登入。" },
   secret: { title: "登入密鑰不夠長。", next: "SESSION_SECRET 至少要 16 個字。" },
   state: { title: "登入逾時，或是從另一個分頁開始的。", next: "再按一次「用 Google 登入」。" },
   token: { title: "Google 沒有完成登入。", next: "再試一次。" },
@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <div className="space-y-3">
           <p className="text-sm text-cream-dim">登入</p>
           <h1 className="text-2xl font-medium">用 Google 登入 EveryThingOS</h1>
-          <p className="text-sm text-cream-dim">帳號是 Google。職務和誰能管人存在這套平台自己的資料庫，不看 ERPNext。</p>
+          <p className="text-sm text-cream-dim">帳號是 Google。職務和誰能管人存在這套平台自己的資料庫。</p>
         </div>
         {reason ? (
           <div role="alert" className="rounded-2xl border border-[var(--line)] p-4 text-sm">

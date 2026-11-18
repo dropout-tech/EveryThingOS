@@ -1,3 +1,4 @@
+import { WorkspaceRecords } from "@/components/WorkspaceRecords";
 import { CrmBoard } from "@/components/CrmBoard";
 import { Hint } from "@/components/Hint";
 import { ModuleFrame } from "@/components/ModuleFrame";
@@ -27,6 +28,7 @@ export default async function CrmPage({ searchParams }: PageProps<"/workspace/cr
       kicker="客人"
       title="一步一步跟到答應"
     >
+      <WorkspaceRecords kind="customers" />
       <Hint id="crm" help="module-crm" />
       <CrmBoard
         pack={{

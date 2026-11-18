@@ -22,6 +22,12 @@
   // 不要部署、不要建立 os.dropout.tw、不要把單據放進 R2。R2 只放檔案。
   "d1_databases": [
     {
+      "binding": "ACCOUNTS",
+      "database_name": "everythingos-accounts",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "d1/migrations"
+    },
+    {
       "binding": "DB",
       "database_name": "dropout-ledger-test",
       "database_id": "00000000-0000-0000-0000-000000000000",

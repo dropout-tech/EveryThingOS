@@ -17,7 +17,7 @@ export default async function WebsitePage() {
 
   if (source.origin === "demo" || !source.data) {
     return (
-      <ModuleFrame kicker="官網" title={`${pack.nameZh} 官方網站`} hint="商品目錄與結帳用 ERPNext Webshop；留資料的表單送到系統同步，先確認信箱再進客人。">
+      <ModuleFrame kicker="官網" title={`${pack.nameZh} 官方網站`} hint="官網商店尚未完全自建。留資料的練習表單不會送到外部系統。">
         <div className="glass glass-hero max-w-xl p-8">
           <p className="display text-xs tracking-[0.2em] text-cream-dim uppercase">官方網站</p>
           <h2 className="mt-3 text-3xl">{pack.nameZh}</h2>
@@ -25,7 +25,7 @@ export default async function WebsitePage() {
           <button type="button" className="btn btn-primary mt-6">
             留下資料（練習）
           </button>
-          <p className="mt-4 text-xs text-cream-dim">接上 ERPNext 後，這裡會顯示上架的商品、網路訂單與表單名單。</p>
+          <p className="mt-4 text-xs text-cream-dim">這裡呈現商品、網路訂單與表單名單的示範。</p>
         </div>
         <SourceNote source={source} />
       </ModuleFrame>
@@ -47,7 +47,7 @@ export default async function WebsitePage() {
     : null;
 
   return (
-    <ModuleFrame kicker="官網" title="客人看得到的這一面" hint="商品在 ERPNext 上架就出現在官網；網路訂單直接變成生意裡的一張單。">
+    <ModuleFrame kicker="官網" title="客人看得到的這一面" hint="上架商品與網路訂單的自建流程尚未完成；示範資料會標示。">
       <div className="grid gap-3 md:grid-cols-3">
         <a href={site.shopUrl} target="_blank" rel="noreferrer" className="glass block p-5">
           <p className="text-sm text-cream-dim">上架商品</p>
@@ -109,7 +109,7 @@ export default async function WebsitePage() {
             ))}
           </ul>
         ) : (
-          <EmptyState compact title="還沒有上架的商品" detail="導入工具的 provision 會把商品上架，也可以在 ERPNext 的 Website Item 勾「發布」。" help="module-website" />
+          <EmptyState compact title="還沒有上架的商品" detail="商品上架的自建流程尚未完成。" help="module-website" />
         )}
       </section>
 

@@ -12,6 +12,8 @@ export async function resolve(specifier, context, nextResolve) {
       importAttributes: { ...context.importAttributes, type: "json" },
     };
   }
+  if (specifier === "server-only") return { url: "data:text/javascript,export%20default%20%7B%7D", shortCircuit: true };
+  if (specifier === "next/headers") return nextResolve("next/headers.js", context);
   if (!specifier.startsWith("./") && !specifier.startsWith("../")) {
     return nextResolve(specifier, context);
   }

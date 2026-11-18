@@ -113,7 +113,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "看「倉庫」裡快不夠的貨", detail: "低於安全量會變橘色。", href: "/workspace/erp/stock" },
       { title: "缺貨就按「請購」", detail: "同一頁點過去開請購，採購接著下單。", href: "/workspace/erp/stock" },
-      { title: "出貨、收貨照單做", detail: "出貨單、收貨單在 ERPNext；怎麼做看說明。", href: "/help/module-stock" },
+      { title: "出貨、收貨照單做", detail: "出貨與收貨怎麼做看說明。尚未自建的部分會標示示範。", href: "/help/module-stock" },
     ],
   },
   採購: {
@@ -122,7 +122,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "看「進貨」每張單的下一步", detail: "已下單待到貨、已到貨待請款、待付款，一行一個按鈕。", href: "/workspace/erp/purchase" },
       { title: "到貨就按「到貨入庫」", detail: "入庫和應付在同一條，不必另開一張進貨單。", href: "/workspace/erp/purchase" },
-      { title: "廠商資料在 ERPNext", detail: "新增廠商、改付款條件，看說明怎麼做。", href: "/help/module-purchase" },
+      { title: "廠商資料", detail: "新增廠商與付款條件的自建畫面尚未完成，看說明。", href: "/help/module-purchase" },
     ],
   },
   會計: {
@@ -131,7 +131,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "看「收錢」的帳齡", detail: "誰欠多久一眼看完，逾期的排前面。", href: "/workspace/erp/finance" },
       { title: "在「生意」開發票、記收款", detail: "同一張單按「開立發票」「記入已收」，開單就入帳。", href: "/workspace/erp/sales" },
-      { title: "對「儀表板」的營收和毛利", detail: "數字直接用 ERPNext 原生報表，要明細就點「在 ERPNext 打開」。", href: "/workspace/reports" },
+      { title: "對「儀表板」的營收和毛利", detail: "要明細就在儀表板打開該段。", href: "/workspace/reports" },
     ],
   },
   客服: {
@@ -157,7 +157,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     who: "員工資料、請假核准、打卡、薪資",
     three: [
       { title: "看「人事」今天誰請假", detail: "打卡、核准假單在同一頁做完。", href: "/workspace/hr" },
-      { title: "月底跑薪資", detail: "在 ERPNext 開「薪資發放」，系統替每個人產生薪資單。", href: "/help/module-hr" },
+      { title: "月底跑薪資", detail: "薪資發放的自建流程尚未完成，看說明。", href: "/help/module-hr" },
       { title: "每年核對費率", detail: "勞健保、勞退、扣繳每年會變，第一次發薪前一定要核對。", href: "/help/module-hr" },
     ],
   },
@@ -185,7 +185,7 @@ export const HINTS = {
   finance: { title: "先看橘色", body: "最上面是逾期最久的那位。帳齡超過 60 天才算逾期；電子發票開好後交給加值中心上傳。" },
   team: { title: "職務決定看得到什麼", body: "換職務立刻生效；停用的人馬上登出。公司至少要留一位老闆。" },
   letter: { title: "只寄給說好的人", body: "最上面是還沒寄出的草稿；沒有草稿，就是還沒點確認信的人。退訂一次，所有行銷通道一起關。" },
-  hr: { title: "上下班各按一次", body: "有假單在等，最上面就是那一張。沒有假單，最上面是下一筆打卡。員工資料、排班、薪資結構在 ERPNext 人事後台。" },
+  hr: { title: "上下班各按一次", body: "有假單在等，最上面就是那一張。沒有假單，最上面是下一筆打卡。員工資料、排班、薪資結構的自建後台尚未完成。" },
 } as const;
 
 export type HintId = keyof typeof HINTS;

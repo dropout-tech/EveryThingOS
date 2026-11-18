@@ -40,35 +40,5 @@ export async function POST(request: NextRequest) {
   const errors = validateLead(lead);
   if (Object.keys(errors).length) return reply({ ok: false, message: "有幾個欄位要再看一下", errors }, 400);
 
-  const glue = env("GLUE_URL");
-  const site = env("CONSULTING_FORM_SITE");
-  if (!glue || !site) return reply({ ok: true, demo: true });
-
-  try {
-    const res = await fetch(`${glue.replace(/\/+$/, "")}/forms/${encodeURIComponent(site)}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        form_id: crypto.randomUUID(),
-        email: lead.email,
-        name: lead.name,
-        phone: lead.contact,
-        consent: lead.updates ? "1" : "",
-        wording_version: CONSULTING_WORDING,
-        source: `${COMMERCIAL.siteUrl}/consulting`,
-        message: leadMessage(lead),
-        utm_source: typeof raw.utm_source === "string" ? raw.utm_source.slice(0, 80) : undefined,
-        utm_medium: typeof raw.utm_medium === "string" ? raw.utm_medium.slice(0, 80) : undefined,
-        utm_campaign: typeof raw.utm_campaign === "string" ? raw.utm_campaign.slice(0, 80) : undefined,
-        "cf-turnstile-response": typeof raw["cf-turnstile-response"] === "string" ? raw["cf-turnstile-response"] : undefined,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (res.status === 400) return refuse((await res.text()).slice(0, 200) || "驗證沒有通過，請重新整理再送一次", 400);
-    if (!res.ok) throw new Error(String(res.status));
-    return reply({ ok: true, demo: false });
-  } catch {
-    return refuse(`現在送不出去，請直接寫信到 ${COMMERCIAL.email}，我們一樣會回`, 502);
-  }
+  return reply({ ok: true, demo: true });
 }

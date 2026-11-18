@@ -10,7 +10,7 @@ describe("agentReply", () => {
 
   it("沒接上時單據仍在 ERPNext", () => {
     const result = agentReply(false, "開報價單給王小明");
-    assert.deepEqual(result, { ok: false, message: "代理人還沒接上。單據仍然在 ERPNext。" });
+    assert.deepEqual(result, { ok: false, message: "代理人還沒接上。單據在本機測試帳本。" });
     assert.equal("created" in result, false);
   });
 

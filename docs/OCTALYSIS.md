@@ -1,5 +1,8 @@
 # 八角框架：整個系統怎麼讓人把事做完
 
+> **2026-11-19（Asia/Taipei）起：** EveryThingOS 改為全程自建。舊的 ERPNext、Chatwoot、glue 整合程式與導入工具已自本分支移除；帳本、客人、任務與文件寫在本機 D1。請不要再依下文去安裝、串接或搬資料進那些外部系統。路徑與 API 仍可使用 CRM／ERP 作為對內名稱。下文若仍描述舊組裝，僅供對照，不作為操作步驟。
+
+
 狀態：互動設計的決策。技術邊界仍以 [ARCHITECTURE.md](ARCHITECTURE.md) 第 0、0.3 節為準；本文件只定「員工為什麼願意在這個畫面把一件事做完」  
 出處：周郁凱（Yu-kai Chou）的八角框架（Octalysis）。八個驅力的名字用他的公開架構。EveryThingOS 的對照、取捨與禁止項是我們自己的，不重製他的圖表或教材  
 程式裡的同一份清單：`web/lib/octalysis.ts`。說明中心 `/help/octalysis` 讀它，給老闆與同事看

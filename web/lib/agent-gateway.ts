@@ -8,7 +8,7 @@ export function agentReply(connected: boolean, message: string, call?: unknown):
     const parsed = parseAgentCall(call);
     if (!parsed.ok) return { ok: false, message: parsed.message };
   }
-  if (!connected) return { ok: false, message: "代理人還沒接上。單據仍然在 ERPNext。" };
+  if (!connected) return { ok: false, message: "代理人還沒接上。單據在本機測試帳本。" };
   return { ok: false, message: "進階版的代理人還沒接上模型。這一步不會寫入單據。" };
 }
 
@@ -41,7 +41,7 @@ export async function askAgent(input: { connected: boolean; message: string; cal
   try {
     raw = await input.propose();
   } catch {
-    return { ok: false, message: "代理人還沒接上。單據仍然在 ERPNext。" };
+    return { ok: false, message: "代理人還沒接上。單據在本機測試帳本。" };
   }
   if (raw !== null && typeof raw === "object" && "ok" in raw && raw.ok === false && "message" in raw && typeof raw.message === "string") {
     return { ok: false, message: raw.message };

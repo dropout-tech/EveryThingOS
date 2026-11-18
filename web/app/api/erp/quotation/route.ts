@@ -8,7 +8,7 @@ import { cleanPartyName, createQuote } from "@/lib/ledger/store";
 
 export const dynamic = "force-dynamic";
 
-type Body = { party_type?: string; party?: string; items?: { item_code?: string; qty?: number; rate?: number | null }[] };
+type Body = { party_id?: string; party_type?: string; party?: string; items?: { item_code?: string; qty?: number; rate?: number | null }[] };
 
 /** 開一張報價進測試帳本。合計只信伺服器，不呼叫 ERPNext。 */
 export async function POST(request: NextRequest) {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const body = await readJson<Body>(request);
   const party = cleanPartyName(body?.party ?? "");
   const partyType = body?.party_type === "Lead" ? "Lead" : body?.party_type === "Customer" ? "Customer" : null;
-  if (!party || !partyType) return refuse("請選客人");
+  if ((!party && !body?.party_id) || !partyType) return refuse("請選客人");
   const items = (body?.items ?? []).slice(0, 50).map((item) => ({
     itemCode: item.item_code,
     qty: Number(item.qty),
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   const priced = priceLines(items);
   if (!priced.ok) return refuse(priced.error);
   try {
-    const created = await createQuote(await openLedger(), actor.account.companyId, { party, partyType, priced });
+    const created = await createQuote(await openLedger(), actor.account.companyId, { party: party ?? "", partyId: body?.party_id, partyType, priced });
     return reply({
       ok: true,
       created: {

@@ -117,7 +117,7 @@ export default async function MeetingsPage() {
         )}
       </section>
 
-      <SourceNote source={source} demoText="示範資料。接上 ERPNext 與會議機器人後換成你們的會。" />
+      <SourceNote source={source} demoText="示範資料，會議內容僅供參考。" />
     </ModuleFrame>
   );
 }
