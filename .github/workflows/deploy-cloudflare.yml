@@ -1,4 +1,4 @@
-# Manual web deployment workflow. Do not run without a separate deployment decision.
+# Manual web-only deployment. Do not run without prior deployment approval.
 name: Deploy to Cloudflare
 
 on:
@@ -16,7 +16,46 @@ env:
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Verify credentials and deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "Cloudflare credentials are required"; exit 1; }
+          if grep -E '"database_id"[[:space:]]*:[[:space:]]*"00000000-0000-0000-0000-000000000000"' wrangler.jsonc; then
+            echo "Placeholder database ID is forbidden"; exit 1
+          fi
+          if grep -F '*.os.dropout.tw' wrangler.jsonc; then
+            echo "Wildcard domain is forbidden"; exit 1
+          fi
+      - run: npm ci
+      - name: Check remote migrations without applying them
+        shell: bash
+        run: |
+          set -euo pipefail
+          for db in everythingos-accounts dropout-ledger-test; do
+            output=$(npx wrangler d1 migrations list "$db" --remote 2>&1) || { echo "$output"; exit 1; }
+            echo "$output"
+            if printf '%s\n' "$output" | grep -Eiq 'unapplied|not[[:space:]]+applied|待套用|⌛|Migrations to be applied'; then
+              echo "Pending migrations detected for $db"; exit 1
+            fi
+            if ! printf '%s\n' "$output" | grep -Fq 'No migrations to apply!'; then
+              echo "Unrecognized migration status for $db"; exit 1
+            fi
+          done
   web:
+    needs: check
     runs-on: ubuntu-latest
     defaults:
       run:

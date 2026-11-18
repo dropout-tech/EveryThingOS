@@ -8,11 +8,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  // os.dropout.tw is created on deploy. Company sites use the wildcard route, which needs a proxied
-  // DNS record "*.os" (AAAA 100::) in the dropout.tw zone; the glue maps each host to its company.
+  // The custom domain is created on deploy. Wildcard routes require host-to-company mapping first.
   "routes": [
-    { "pattern": "os.dropout.tw", "custom_domain": true },
-    { "pattern": "*.os.dropout.tw/*", "zone_name": "dropout.tw" }
+    { "pattern": "os.dropout.tw", "custom_domain": true }
   ],
   "observability": {
     "enabled": true,

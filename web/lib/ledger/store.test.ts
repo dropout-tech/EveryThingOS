@@ -200,3 +200,16 @@ test("部分收款先完成時，舊資料的結清必須失敗，重試不會�
     await proxy.dispose();
   }
 });
+
+test("既有客人的類型不會被報價覆寫", async () => {
+  const proxy = await database();
+  try {
+    const db = proxy.env.DB;
+    await db.prepare("INSERT INTO ledger_parties (tenant_id,id,name,party_type,created_at) VALUES ('test','existing','客人','Customer','2026')").run();
+    const priced = priceLines([{ itemCode: "服務", qty: 1, rate: 100 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    await createQuote(db, "test", { party: "客人", partyId: "existing", partyType: "Lead", priced });
+    const row = await db.prepare("SELECT party_type FROM ledger_parties WHERE tenant_id = 'test' AND id = 'existing'").first<{party_type: string}>();
+    assert.equal(row?.party_type, "Customer");
+  } finally { await proxy.dispose(); }
+});

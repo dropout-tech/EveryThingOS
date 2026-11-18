@@ -144,27 +144,7 @@ export type BillingSummary = {
   accounts: Record<string, { health: Health; open: { id: string; amount: number; created_at: string } | null; einvoice_failed: boolean }>;
 };
 
-/**
- * Calls the glue admin API as the signed-in operator. It checks the operator
- * itself because Next renders pages in parallel with their layout, so a
- * layout-level gate does not stop a page from fetching.
- */
-export async function glueAdmin<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<{ ok: boolean; status: number; data: T | null; text: string; operator: string | null }> {
-  const operator = await platformOperator();
-  if (!operator) return { ok: false, status: 403, data: null, text: "只有 DropOut 營運人員可以看", operator };
-  const res = await fetch(`${env("GLUE_URL")!.replace(/\/+$/, "")}${path}`, {
-    method: init.method ?? "GET",
-    headers: { authorization: `Bearer ${env("GLUE_ADMIN_TOKEN")}`, "content-type": "application/json", "x-actor": operator },
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
-    cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
-  });
-  const text = await res.text();
-  let data: T | null = null;
-  try {
-    data = JSON.parse(text) as T;
-  } catch {
-    /* plain-text error */
-  }
-  return { ok: res.ok, status: res.status, data, text, operator };
+/** The platform administration backend is unavailable. */
+export async function glueAdmin<T>(_path: string, _init: { method?: string; body?: unknown } = {}): Promise<{ ok: boolean; status: number; data: T | null; text: string; operator: string | null }> {
+  return { ok: false, status: 403, data: null, text: "營運後台尚未啟用", operator: null };
 }

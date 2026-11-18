@@ -3,13 +3,14 @@ import { LedgerError } from '../ledger/errors';
 
 export type Kind = 'customers' | 'tasks' | 'documents';
 const tables: Record<Kind, string> = { customers: 'ledger_parties', tasks: 'workspace_tasks', documents: 'workspace_docs' };
+const fields: Record<Kind, string> = { customers: 'id, name, party_type, created_at, phone, email, notes', tasks: 'id, title, assignee, completed, party_id, quote_id, created_at', documents: 'id, title, body, party_id, created_at' };
 export function kindOf(value: string): Kind | null { return Object.hasOwn(tables, value) ? value as Kind : null; }
 const clean = (v: unknown, max: number) => typeof v === 'string' ? v.trim().slice(0, max) : '';
 export async function list(db: LedgerDb, tenant: string, kind: Kind) {
-  return (await db.prepare(`SELECT * FROM ${tables[kind]} WHERE tenant_id = ?1 ORDER BY created_at DESC`).bind(tenant).all<Record<string, unknown>>()).results;
+  return (await db.prepare(`SELECT ${fields[kind]} FROM ${tables[kind]} WHERE tenant_id = ?1 ORDER BY created_at DESC`).bind(tenant).all<Record<string, unknown>>()).results;
 }
 export async function get(db: LedgerDb, tenant: string, kind: Kind, id: string) {
-  return db.prepare(`SELECT * FROM ${tables[kind]} WHERE tenant_id = ?1 AND id = ?2`).bind(tenant, id).first<Record<string, unknown>>();
+  return db.prepare(`SELECT ${fields[kind]} FROM ${tables[kind]} WHERE tenant_id = ?1 AND id = ?2`).bind(tenant, id).first<Record<string, unknown>>();
 }
 export async function create(db: LedgerDb, tenant: string, kind: Kind, input: Record<string, unknown>) {
   const id = crypto.randomUUID(), stamp = new Date().toISOString();

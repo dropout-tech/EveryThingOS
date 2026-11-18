@@ -113,7 +113,7 @@ export async function createQuote(
       .prepare(
         `INSERT INTO ledger_parties (tenant_id, id, name, party_type, created_at)
          VALUES (?1, ?2, ?3, ?4, ?5)
-         ON CONFLICT(tenant_id, id) DO UPDATE SET name = excluded.name, party_type = excluded.party_type`,
+         ON CONFLICT(tenant_id, id) DO UPDATE SET name = excluded.name`,
       )
       .bind(tenant, id, party, input.partyType, stamp),
     db

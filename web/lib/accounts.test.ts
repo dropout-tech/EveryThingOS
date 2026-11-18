@@ -4,6 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, it } from "node:test";
+import type { AccountDb } from "./accounts/d1.ts";
 import { accountStatements, openAccountsAt } from "./accounts/local.ts";
 import { googleAuthorizeUrl, googleConfig, googleProfile } from "./accounts/google.ts";
 import { acceptGoogle, inviteAccount, outboxFor, setAccountEnabled, setAccountProfile } from "./accounts/service.ts";
@@ -134,4 +135,30 @@ describe("ERPNext 不再是身份", () => {
     assert.equal(erpIdentityRefusal({}), "沒有 OAuth client，不再使用共用整合帳號");
     assert.match(erpIdentityRefusal({ oauth: { clientId: "cid" } }), /平台帳號/);
   });
+});
+
+it("首位老闆同時登入時只有一人成功", async () => {
+  const opened = await openAccountsAt(mkdtempSync(path.join(tmpdir(), "founder-race-")));
+  const previous = process.env.OWNER_BOOTSTRAP_EMAILS;
+  try {
+    process.env.OWNER_BOOTSTRAP_EMAILS = "boss@example.com:race,amy@example.com:race";
+    let arrived = 0;
+    let release!: () => void;
+    const barrier = new Promise<void>((resolve) => { release = resolve; });
+    const db: AccountDb = {
+      prepare: (sql) => opened.db.prepare(sql),
+      batch: async (statements) => { if (++arrived === 2) release(); await barrier; return opened.db.batch(statements); },
+    };
+    const results = await Promise.all([acceptGoogle(db, { companyId: "race", profile: boss }), acceptGoogle(db, { companyId: "race", profile: colleague })]);
+    assert.equal(arrived, 2);
+    assert.equal(results.filter((result) => result.ok && result.account.role === "owner").length, 1);
+    assert.equal(results.filter((result) => !result.ok).length, 1);
+    const founders = await opened.db.prepare("SELECT * FROM company_founders WHERE company_id = ?").bind("race").all();
+    const owners = await opened.db.prepare("SELECT * FROM accounts WHERE company_id = ? AND role = 'owner'").bind("race").all();
+    assert.equal(founders.results?.length, 1);
+    assert.equal(owners.results?.length, 1);
+  } finally {
+    if (previous === undefined) delete process.env.OWNER_BOOTSTRAP_EMAILS; else process.env.OWNER_BOOTSTRAP_EMAILS = previous;
+    await opened.dispose();
+  }
 });
