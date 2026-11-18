@@ -125,3 +125,77 @@ test("租戶隔離及並發收款明細一致", async () => {
   assert.equal(counter?.n, 3);
  } finally { await proxy.dispose(); }
 });
+
+// 在轉單讀取後暫停批次，讓部分收款先完成。
+function pauseBatch(db: LedgerDb) {
+  let signalReady!: () => void;
+  let resume!: () => void;
+  const ready = new Promise<void>((resolve) => { signalReady = resolve; });
+  const resumed = new Promise<void>((resolve) => { resume = resolve; });
+  const paused: LedgerDb = {
+    prepare: (sql) => db.prepare(sql),
+    exec: (sql) => db.exec(sql),
+    batch: async (statements) => {
+      signalReady();
+      await resumed;
+      return db.batch(statements);
+    },
+  };
+  return { db: paused, ready, resume };
+}
+
+test("部分收款先完成時，舊資料的轉單必須失敗並可重試", async () => {
+  const proxy = await database();
+  try {
+    const db = proxy.env.DB;
+    const priced = priceLines([{ itemCode: "專案人天", qty: 1, rate: 1000 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    const quote = await createQuote(db, "test", { party: "轉單交錯", partyType: "Customer", priced });
+    const pause = pauseBatch(db);
+    const advancing = advanceQuote(pause.db, "test", quote.no, "Quotation");
+    await pause.ready;
+    await recordPayment(db, "test", quote.no, 400);
+    pause.resume();
+    await assert.rejects(advancing, /單據已變更.*重試/);
+    const documents = await db.prepare("SELECT COUNT(*) AS count FROM ledger_documents WHERE tenant_id = ?1").bind("test").first<{ count: number }>();
+    const lines = await db.prepare("SELECT COUNT(*) AS count FROM ledger_lines WHERE tenant_id = ?1").bind("test").first<{ count: number }>();
+    assert.equal(documents?.count, 1);
+    assert.equal(lines?.count, 1);
+    const order = await advanceQuote(db, "test", quote.no, "Quotation");
+    assert.equal(order.received, 400);
+    assert.equal(order.balance, 650);
+    assert.equal((await listHeads(db, "test"))[0]?.received, 400);
+  } finally {
+    await proxy.dispose();
+  }
+});
+
+test("部分收款先完成時，舊資料的結清必須失敗，重試不會超收", async () => {
+  const proxy = await database();
+  try {
+    const db = proxy.env.DB;
+    const priced = priceLines([{ itemCode: "專案人天", qty: 1, rate: 1000 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    const quote = await createQuote(db, "test", { party: "結清交錯", partyType: "Customer", priced });
+    for (const type of ["Quotation", "Sales Order", "Delivery Note"]) {
+      await advanceQuote(db, "test", quote.no, type);
+    }
+    const pause = pauseBatch(db);
+    const settling = advanceQuote(pause.db, "test", quote.no, "Sales Invoice");
+    await pause.ready;
+    await recordPayment(db, "test", quote.no, 400);
+    pause.resume();
+    await assert.rejects(settling, /單據已變更.*重試/);
+    const beforeRetry = await db.prepare("SELECT COUNT(*) AS count, COALESCE(SUM(amount), 0) AS total FROM ledger_payments WHERE tenant_id = ?1").bind("test").first<{ count: number; total: number }>();
+    assert.deepEqual(beforeRetry, { count: 1, total: 400 });
+    const paid = await advanceQuote(db, "test", quote.no, "Sales Invoice");
+    const payments = await db.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM ledger_payments WHERE tenant_id = ?1").bind("test").first<{ total: number }>();
+    const allocations = await db.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM ledger_allocations WHERE tenant_id = ?1").bind("test").first<{ total: number }>();
+    assert.equal(paid.received + paid.balance, paid.total);
+    assert.equal(paid.received, 1050);
+    assert.equal(payments?.total, paid.received);
+    assert.equal(allocations?.total, paid.received);
+  } finally {
+    await proxy.dispose();
+  }
+});

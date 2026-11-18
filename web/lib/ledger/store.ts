@@ -156,36 +156,27 @@ async function copyForward(db: LedgerDb, tenant: string, current: HeadRow, kind:
            tenant_id, id, seq, chain_id, kind, upstream_id, party_id, party_name,
            untaxed, tax, total, received, balance, invoice_status, created_at
          )
-         SELECT ?1, ?2, n, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14
-         FROM ledger_counters WHERE tenant_id = ?1 AND name = 'n'
+         SELECT ?1, ?2, c.n, d.chain_id, ?3, d.id, d.party_id, d.party_name,
+                d.untaxed, d.tax, d.total, d.received, d.balance, ?4, ?5
+         FROM ledger_counters c JOIN ledger_documents d ON d.tenant_id = c.tenant_id
+         WHERE c.tenant_id = ?1 AND c.name = 'n' AND d.id = ?6
+           AND d.received = ?7 AND d.balance = ?8
+           AND d.seq = (SELECT MAX(seq) FROM ledger_documents WHERE tenant_id = ?1 AND chain_id = d.chain_id)
          RETURNING id, seq, chain_id, kind, party_id, party_name, untaxed, tax, total, received, balance, invoice_status`,
       )
-      .bind(
-        tenant,
-        id,
-        current.chain_id,
-        kind,
-        current.id,
-        current.party_id,
-        current.party_name,
-        current.untaxed,
-        current.tax,
-        current.total,
-        current.received,
-        current.balance,
-        INVOICE_STATUS,
-        stamp,
-      ),
+      .bind(tenant, id, kind, INVOICE_STATUS, stamp, current.id, current.received, current.balance),
     db
       .prepare(
         `INSERT INTO ledger_lines (tenant_id, document_id, line_no, item_code, item_name, qty, rate, amount)
          SELECT tenant_id, ?1, line_no, item_code, item_name, qty, rate, amount
-         FROM ledger_lines WHERE tenant_id = ?2 AND document_id = ?3`,
+         FROM ledger_lines WHERE tenant_id = ?2 AND document_id = ?3
+           AND EXISTS (SELECT 1 FROM ledger_documents d JOIN ledger_counters c ON c.tenant_id = d.tenant_id
+                       WHERE d.tenant_id = ?2 AND d.id = ?1 AND c.name = 'n' AND d.seq = c.n)`,
       )
       .bind(id, tenant, current.id),
   ]);
   const row = results[2]?.results?.[0] as HeadRow | undefined;
-  if (!row?.chain_id) throw new LedgerError("下一步沒有寫進測試帳本", 500);
+  if (!row?.chain_id) throw new LedgerError("單據已變更，請重新整理後重試");
   return stored({ ...row, item_name: current.item_name, qty: current.qty });
 }
 
@@ -194,7 +185,6 @@ async function settle(db: LedgerDb, tenant: string, current: HeadRow): Promise<S
   if (current.balance <= 0) throw new LedgerError("這張單沒有餘額");
   const id = `${current.chain_id}:receipt`;
   const stamp = now();
-  const received = current.received + current.balance;
   const results = await db.batch([
     ...bump(db, tenant),
     db
@@ -203,48 +193,48 @@ async function settle(db: LedgerDb, tenant: string, current: HeadRow): Promise<S
            tenant_id, id, seq, chain_id, kind, upstream_id, party_id, party_name,
            untaxed, tax, total, received, balance, invoice_status, created_at
          )
-         SELECT ?1, ?2, n, ?3, 'receipt', ?4, ?5, ?6, ?7, ?8, ?9, ?10, 0, ?11, ?12
-         FROM ledger_counters WHERE tenant_id = ?1 AND name = 'n'
+         SELECT ?1, ?2, c.n, d.chain_id, 'receipt', d.id, d.party_id, d.party_name,
+                d.untaxed, d.tax, d.total, d.received + d.balance, 0, ?3, ?4
+         FROM ledger_counters c JOIN ledger_documents d ON d.tenant_id = c.tenant_id
+         WHERE c.tenant_id = ?1 AND c.name = 'n' AND d.id = ?5
+           AND d.received = ?6 AND d.balance = ?7 AND d.balance > 0
+           AND d.seq = (SELECT MAX(seq) FROM ledger_documents WHERE tenant_id = ?1 AND chain_id = d.chain_id)
          RETURNING id, seq, chain_id, kind, party_id, party_name, untaxed, tax, total, received, balance, invoice_status`,
       )
-      .bind(
-        tenant,
-        id,
-        current.chain_id,
-        current.id,
-        current.party_id,
-        current.party_name,
-        current.untaxed,
-        current.tax,
-        current.total,
-        received,
-        INVOICE_STATUS,
-        stamp,
-      ),
+      .bind(tenant, id, INVOICE_STATUS, stamp, current.id, current.received, current.balance),
     db
       .prepare(
         `INSERT INTO ledger_lines (tenant_id, document_id, line_no, item_code, item_name, qty, rate, amount)
          SELECT tenant_id, ?1, line_no, item_code, item_name, qty, rate, amount
-         FROM ledger_lines WHERE tenant_id = ?2 AND document_id = ?3`,
+         FROM ledger_lines WHERE tenant_id = ?2 AND document_id = ?3
+           AND EXISTS (SELECT 1 FROM ledger_documents d JOIN ledger_counters c ON c.tenant_id = d.tenant_id
+                       WHERE d.tenant_id = ?2 AND d.id = ?1 AND c.name = 'n' AND d.seq = c.n)`,
       )
       .bind(id, tenant, current.id),
     db
       .prepare(
         `INSERT INTO ledger_payments (tenant_id, id, party_id, amount, created_at)
-         SELECT ?1, printf('RC-%04d', n), ?2, ?3, ?4
-         FROM ledger_counters WHERE tenant_id = ?1 AND name = 'n'`,
+         SELECT ?1, printf('RC-%04d', c.n), d.party_id, d.balance, ?4
+         FROM ledger_counters c
+         JOIN ledger_documents r ON r.tenant_id = c.tenant_id AND r.id = ?2 AND r.seq = c.n
+         JOIN ledger_documents d ON d.tenant_id = r.tenant_id AND d.id = r.upstream_id
+         WHERE c.tenant_id = ?1 AND c.name = 'n' AND d.id = ?3`,
       )
-      .bind(tenant, current.party_id, current.balance, stamp),
+      .bind(tenant, id, current.id, stamp),
     db
       .prepare(
         `INSERT INTO ledger_allocations (tenant_id, payment_id, document_id, amount)
-         SELECT ?1, printf('RC-%04d', n), ?2, ?3
-         FROM ledger_counters WHERE tenant_id = ?1 AND name = 'n'`,
+         SELECT ?1, p.id, d.id, p.amount
+         FROM ledger_counters c
+         JOIN ledger_documents r ON r.tenant_id = c.tenant_id AND r.id = ?2 AND r.seq = c.n
+         JOIN ledger_documents d ON d.tenant_id = r.tenant_id AND d.id = r.upstream_id
+         JOIN ledger_payments p ON p.tenant_id = c.tenant_id AND p.id = printf('RC-%04d', c.n)
+         WHERE c.tenant_id = ?1 AND c.name = 'n' AND d.id = ?3`,
       )
-      .bind(tenant, current.id, current.balance),
+      .bind(tenant, id, current.id),
   ]);
   const row = results[2]?.results?.[0] as HeadRow | undefined;
-  if (!row?.chain_id) throw new LedgerError("收款沒有寫進測試帳本", 500);
+  if (!row?.chain_id) throw new LedgerError("單據已變更，請重新整理後重試");
   return stored({ ...row, item_name: current.item_name, qty: current.qty });
 }
 
