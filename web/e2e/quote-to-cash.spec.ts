@@ -58,6 +58,10 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   const cookies = await page.context().cookies();
   expect(cookies.some((cookie) => cookie.name === "dropout_session" || cookie.name === "dropout_login")).toBe(false);
   await shot(page, "01-login-demo.png");
+  const stranger = await page.request.post("/api/test-login?as=stranger");
+  expect(stranger.status()).toBe(403);
+  expect((await stranger.json()).code).toBe("denied");
+  expect((await page.context().cookies()).some((cookie) => cookie.name === "dropout_session")).toBe(false);
   const login = await page.request.post("/api/test-login");
   expect(login.status()).toBe(200);
 
@@ -95,6 +99,30 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   await expect(openRow).toContainText("尚未開統一發票");
   await page.reload();
   await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$12,600");
+
+  // A separate browser session belongs to another local test company.
+  const other = await page.context().browser()!.newContext();
+  const otherPage = await other.newPage();
+  watch(otherPage);
+  await otherPage.goto("/login");
+  expect((await otherPage.request.post("/api/test-login?as=company-b")).status()).toBe(200);
+  await otherPage.goto("/workspace/erp/finance");
+  await expect(otherPage.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toHaveCount(0);
+  for (const [endpoint, data] of [
+    ["deposit", { sales_order: quoteNo, amount: 100 }],
+    ["advance", { doctype: "Quotation", name: quoteNo }],
+  ] as const) {
+    const response = await otherPage.request.post(`/api/erp/${endpoint}`, { data, headers: { origin: new URL(otherPage.url()).origin } });
+    expect(response.ok()).toBe(false);
+    expect((await response.json()).message).toContain("找不到");
+  }
+  await other.close();
+
+  const partial = await page.request.post("/api/erp/deposit", { data: { sales_order: quoteNo, amount: 3000 }, headers: { origin: new URL(page.url()).origin } });
+  expect(partial.status()).toBe(200);
+  expect((await partial.json()).created.balance).toBe(9600);
+  await page.reload();
+  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$9,600");
 
   await page.goto("/workspace/erp/sales");
   const again = page.locator("li").filter({ hasText: quoteNo });
@@ -192,14 +220,14 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   const flows = await exerciseRemainingLocalFlows(page, posts, shot);
   const forbidden = posts.filter((line) => {
     if (/\/api\/(letter|crm|meetings|hr|platform|team|integrations)\b/.test(line)) return true;
-    if (/\/api\/erp\/(?!quotation\b|advance\b)/.test(line)) return true;
+    if (/\/api\/erp\/(?!quotation\b|advance\b|deposit\b)/.test(line)) return true;
     return false;
   });
   const bookingPosts = posts.filter((line) => line.startsWith("POST /api/booking"));
   const quotationPosts = posts.filter((line) => line.startsWith("POST /api/erp/quotation"));
   writeFileSync(
     path.join(shotDir, "e2e-result.json"),
-    JSON.stringify({ party: PARTY, quotationOpened: opened, flows, posts, offHost, forbidden, bookingPosts, quotationPosts, pages }, null, 2),
+    JSON.stringify({ party: PARTY, quotationOpened: opened, quoteNo, journeys: ["unauthorized founder rejected", "company isolation: read, payment, advance", "partial payment: 3000, balance: 9600", "settled and persisted"], flows, posts, offHost, forbidden, bookingPosts, quotationPosts, pages }, null, 2),
   );
   expect(offHost, `離開本機的請求：${offHost.join(", ")}`).toEqual([]);
   expect(forbidden, `不該送出的寫入：${forbidden.join(", ")}`).toEqual([]);
