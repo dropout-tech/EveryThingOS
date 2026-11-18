@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-type Row = { id:string; name?:string; title?:string; body?:string; assignee?:string; completed?:number; phone?:string; email?:string; notes?:string };
+type Row = { id:string; name?:string; title?:string; body?:string; assignee?:string; completed?:number; phone?:string; email?:string; notes?:string; quote_id?:string; party_id?:string };
 export function WorkspaceRecords({kind}: {kind:'customers'|'tasks'|'documents'}) {
  const [rows,setRows]=useState<Row[]>([]), [customers,setCustomers]=useState<Row[]>([]), [message,setMessage]=useState('');
  const refresh=async()=>{const r=await fetch(`/api/crm/${kind}`); if(r.ok) setRows((await r.json()).items); else setMessage('請先登入');};
@@ -12,5 +12,5 @@ export function WorkspaceRecords({kind}: {kind:'customers'|'tasks'|'documents'})
  {kind==='tasks'&&<><label className="block">指派給 <input name="assignee" className="text-black" /></label><label className="block">報價單號 <input name="quote_id" className="text-black" /></label></>}
  {kind==='documents'&&<label className="block">內容 <textarea name="body" className="text-black" /></label>}
  <button className="rounded bg-white px-3 py-2 text-black">建立{kind==='customers'?'客人':kind==='tasks'?'任務':'文件'}</button></form><p>{message}</p>
- <ul className="space-y-3">{rows.map(row=><li key={row.id} className="rounded border p-3"><strong>{row.name||row.title}</strong>{row.phone&&<p>電話：{row.phone}</p>}{row.email&&<p>Email：{row.email}</p>}{row.notes&&<p>備註：{row.notes}</p>}{row.assignee&&<span> · {row.assignee}</span>}{row.body&&<pre className="whitespace-pre-wrap">{row.body}</pre>}{kind==='tasks'&&(row.completed?' · 已完成':<button className="ml-3 underline" onClick={async()=>{await fetch(`/api/crm/tasks/${row.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:'{}'});await refresh();}}>完成</button>)}</li>)}</ul></section>;
+ <ul className="space-y-3">{rows.map(row=><li key={row.id} className="rounded border p-3"><strong>{row.name||row.title}</strong>{row.phone&&<p>電話：{row.phone}</p>}{row.email&&<p>Email：{row.email}</p>}{row.notes&&<p>備註：{row.notes}</p>}{row.assignee&&<span> · {row.assignee}</span>}{row.quote_id&&<p>報價 {row.quote_id}</p>}{row.body&&<pre className="whitespace-pre-wrap">{row.body}</pre>}{kind==='tasks'&&(row.completed?' · 已完成':<button className="ml-3 underline" onClick={async()=>{await fetch(`/api/crm/tasks/${row.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:'{}'});await refresh();}}>完成</button>)}</li>)}</ul></section>;
 }

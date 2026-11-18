@@ -103,13 +103,20 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   await shot(page, "04-sales-quote.png");
 
   await page.goto("/workspace/tasks");
-  await page.getByLabel("標題").fill("跟進報價");
+  await page.getByLabel("標題").fill(`跟進報價 ${quoteNo}`);
   await page.getByLabel("客人", { exact: true }).selectOption(customerId);
   await page.getByLabel("指派給").fill("小明");
+  await page.getByLabel("報價單號").fill(quoteNo);
   await page.getByRole("button", { name: "建立任務" }).click();
-  await expect(page.getByText("跟進報價").first()).toBeVisible();
+  const taskTitle = `跟進報價 ${quoteNo}`;
+  await expect(page.getByText(taskTitle).first()).toBeVisible();
+  const taskRow = page.locator("li").filter({ hasText: taskTitle });
+  await expect(taskRow).toHaveCount(1);
+  await expect(taskRow).toContainText(quoteNo);
+  await taskRow.getByRole("button", { name: "完成" }).click();
+  await expect(taskRow).toContainText("已完成");
   const tasks = await (await page.request.get("/api/crm/tasks")).json();
-  const taskId = tasks.items.find((t: {title:string}) => t.title === "跟進報價").id;
+  const taskId = tasks.items.find((t: {title:string}) => t.title === taskTitle).id;
   await page.goto("/workspace/documents");
   await page.getByLabel("標題").fill("客人紀錄");
   await page.getByLabel("客人", { exact: true }).selectOption(customerId);
@@ -149,6 +156,13 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
     expect((await otherPage.request.patch(`/api/crm/${kind}/${id}`, {data: {}, headers: {origin: new URL(otherPage.url()).origin}})).ok()).toBe(false);
   }
   expect((await otherPage.request.patch(`/api/crm/tasks/${taskId}`, {data: {}, headers: {origin: new URL(otherPage.url()).origin}})).status()).toBe(404);
+  const origin = new URL(otherPage.url()).origin;
+  const stolenTask = await otherPage.request.post("/api/crm/tasks", { data: { title: "不該建立", party_id: customerId, quote_id: quoteNo }, headers: { origin, "content-type": "application/json" } });
+  expect(stolenTask.ok()).toBe(false);
+  expect((await stolenTask.json()).message).toMatch(/找不到/);
+  const stolenDoc = await otherPage.request.post("/api/crm/documents", { data: { title: "不該建立", party_id: customerId, body: "x" }, headers: { origin, "content-type": "application/json" } });
+  expect(stolenDoc.ok()).toBe(false);
+  expect((await stolenDoc.json()).message).toMatch(/找不到/);
   await other.close();
 
   await page.goto("/workspace/erp/sales");
