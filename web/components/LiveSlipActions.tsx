@@ -6,10 +6,10 @@ import { Button } from "./ui/Button";
 import type { useLiveAction } from "./LiveAction";
 
 /** Extra writes on a live sales order. These buttons stay ghost, so the page keeps its one primary. */
-export function LiveSlipActions({ doc, run, busy }: { doc: SalesDoc; run: ReturnType<typeof useLiveAction>["run"]; busy: boolean }) {
+export function LiveSlipActions({ doc, run, busy, ledger = false }: { ledger?: boolean; doc: SalesDoc; run: ReturnType<typeof useLiveAction>["run"]; busy: boolean }) {
   const [amount, setAmount] = useState("");
   const [qty, setQty] = useState("");
-  if (doc.doctype !== "Sales Order") return null;
+  if (ledger ? !(typeof doc.balance === "number" && doc.balance > 0) : doc.doctype !== "Sales Order") return null;
   const deposit = Number(amount.replace(/[,，\s]/g, ""));
   const ship = Number(qty.replace(/[,，\s]/g, ""));
   const waiting = typeof doc.orderedQty === "number" && typeof doc.deliveredQty === "number" && doc.orderedQty > doc.deliveredQty;
@@ -27,7 +27,7 @@ export function LiveSlipActions({ doc, run, busy }: { doc: SalesDoc; run: Return
           收訂金
         </Button>
       </div>
-      {waiting || canReturn ? (
+      {!ledger && (waiting || canReturn) ? (
         <div className="flex flex-wrap items-center gap-2">
           <input value={qty} onChange={(event) => setQty(event.target.value)} inputMode="decimal" placeholder="這次數量" aria-label="這次數量" className="field w-24" />
           {waiting ? (

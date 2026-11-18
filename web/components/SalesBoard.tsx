@@ -272,13 +272,17 @@ export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: 
                       <p className="mt-1 text-xs text-warn">已逾期 {doc.overdueDays} 天</p>
                     ) : null}
                     {ledgerMode ? (
-                      doc.next === "完成" ? (
+                      <>
+                      <LiveSlipActions doc={doc} run={action.run} busy={action.busy} ledger />
+                      {typeof doc.balance === "number" ? <p className="mt-1 text-xs">餘額 {formatTwd(doc.balance)}</p> : null}
+                      {doc.next === "完成" ? (
                         <button type="button" disabled className={buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" })}>
                           完成
                         </button>
                       ) : (
                         <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} />
-                      )
+                      )}
+                      </>
                     ) : live ? (
                       <>
                         <LiveSlipActions doc={doc} run={action.run} busy={action.busy} />

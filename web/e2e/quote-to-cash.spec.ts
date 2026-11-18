@@ -118,9 +118,12 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   }
   await other.close();
 
-  const partial = await page.request.post("/api/erp/deposit", { data: { sales_order: quoteNo, amount: 3000 }, headers: { origin: new URL(page.url()).origin } });
-  expect(partial.status()).toBe(200);
-  expect((await partial.json()).created.balance).toBe(9600);
+  await page.goto("/workspace/erp/sales");
+  const partialCard = page.locator("li").filter({ hasText: quoteNo });
+  await partialCard.getByLabel("訂金金額").fill("3000");
+  await partialCard.getByRole("button", { name: "收訂金" }).click();
+  await expect(partialCard).toContainText("NT$9,600");
+  await page.goto("/workspace/erp/finance");
   await page.reload();
   await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$9,600");
 

@@ -26,6 +26,7 @@ export function ledgerToSalesDoc(head: LedgerHead, pack: Pick<IndustryPack, "ful
     item: head.item,
     qty: head.qty,
     amount: head.untaxed,
+    balance: head.balance,
     tax: head.tax,
     taxable: true,
     step,
