@@ -9,7 +9,14 @@ npm run dev
 
 開啟 http://localhost:3000
 
-報價到收款的瀏覽器測試只打本機示範殼。它會自己開開發伺服器，並把 ERPNext、膠水、寄信、工作階段這些變數設成空字串。空字串才擋得住 `.env.local`：變數若是被拿掉，Next 會把檔案裡的網址填回來。登入表單不會送出，單據只寫在這個瀏覽器的 sessionStorage。`E2E_BASE_URL` 不是 `127.0.0.1` 或 `localhost` 時，設定檔會在開瀏覽器前拒絕。
+報價到收款寫進本機測試帳本（Cloudflare D1，wrangler `--local`，庫名 `dropout-ledger-test`）。先套 migration，再開開發伺服器。瀏覽器測試會自己做這兩步，並把 ERPNext、膠水、寄信、工作階段這些變數設成空字串。空字串才擋得住 `.env.local`：變數若是被拿掉，Next 會把檔案裡的網址填回來。登入表單不會送出。練習頁的單仍只在這個瀏覽器；生意頁送出的報價會留下，收款頁讀同一個單號。`E2E_BASE_URL` 不是 `127.0.0.1` 或 `localhost` 時，設定檔會在開瀏覽器前拒絕。
+
+```bash
+npx wrangler d1 migrations apply dropout-ledger-test --local
+npm run dev
+```
+
+然後打開生意頁 `/workspace/erp/sales` 送出一張報價，再到帳款頁 `/workspace/erp/finance` 的「測試帳本」。重新整理後單號還在。未稅 12000 的含稅是 NT$12,600（未稅加 5%，伺服器算整數）。發票狀態是「尚未開統一發票」。
 
 ```bash
 npm run test:e2e
@@ -48,11 +55,11 @@ npm run test:e2e
 | `GET /api/chat/open` | 以登入者對應的 Chatwoot 使用者單一登入，沒有對應就說明原因 |
 | `GET /api/shop/profile` | 下載 ShopProfile（導入工具 `plan`／`provision` 的輸入） |
 | `POST /api/sync/replay` | 重送同步失敗的事件（限 System Manager） |
-| `POST /api/erp/quotation` | 開報價單（`dropout_core.actions.create_quotation`） |
+| `POST /api/erp/quotation` | 開報價，寫進測試帳本。合計由伺服器算，不呼叫 ERPNext |
 | `POST /api/erp/course-bom` | 新增／更新課程 BOM（`dropout_core.actions.upsert_course_bom`，對應 ERPNext `Product Bundle`） |
 | `POST /api/booking` | 客人預約課程（公開頁 `/book?from=line|ig|fb|counter`）。ERPNext 用 API key 接上時呼叫 `dropout_core.actions.book_course`：材料夠就送出課程訂單、ERPNext 隨單保留材料包；不夠就留草稿當候補。只能員工登入時改走系統同步表單成待確認名單；都沒接是練習模式 |
 | `POST /api/erp/stock-movement` | 登記 WMS 上課領用耗用、教學損耗／報廢與跨店調撥（`dropout_core.actions.record_stock_movement`，對應 ERPNext `Stock Entry`） |
-| `POST /api/erp/advance` | 這張單的下一步：報價→訂單→出貨→發票→收款；採購→收貨→帳單→付款 |
+| `POST /api/erp/advance` | 這張單的下一步：報價→訂單→交付→發票→收款，寫進測試帳本。進貨不在這一刀 |
 | `POST /api/crm/lead` | 新增客人；同 Email／電話會對到原本那位，不重建 |
 | `POST /api/letter/newsletter`、`POST /api/letter/send` | 電子報草稿、寄出（Frappe Newsletter 的佇列與退訂連結） |
 | `POST /api/meetings/skip` | 這場會議不派機器人／恢復 |
@@ -66,7 +73,7 @@ npm run test:e2e
 
 ## 資料來源：每個系統各自示範或真實
 
-不設任何環境變數就是示範模式，每一頁都標「示範資料」。設了哪個系統，那個系統就讀真的；**讀不到時顯示錯誤，不會偷偷退回示範**。沒有權限的區塊會寫出名字，而不是空白。
+生意頁和收款頁的單據來自測試帳本，不看 `ERPNEXT_URL`。其他頁沒設環境變數時仍是示範資料，畫面上會標「示範資料」。設了哪個系統，那個系統就讀真的；**讀不到時顯示錯誤，不會偷偷退回示範**。沒有權限的區塊會寫出名字，而不是空白。
 
 | 變數 | 系統 | 說明 |
 | --- | --- | --- |

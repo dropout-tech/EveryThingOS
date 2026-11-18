@@ -30,12 +30,15 @@ type SalesBoardProps = {
   initial: SalesDoc[];
   deskUrl?: string;
   catalog?: Catalog | null;
+  /** 平台測試帳本。單據以伺服器回傳的為準，不寫進這個分頁。 */
+  ledger?: boolean;
 };
 
-export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps) {
+export function SalesBoard({ pack, initial, deskUrl, catalog, ledger = false }: SalesBoardProps) {
   const live = Boolean(deskUrl);
+  const ledgerMode = ledger && !live;
   const action = useLiveAction();
-  const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live);
+  const [docs, setDocs] = useBoardState(demoKey("sales", pack.id), initial, live || ledgerMode);
   const trade: Trade = tradeOf(pack);
   const [party, setParty] = useState("");
   const [amount, setAmount] = useState("");
@@ -50,7 +53,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (live) return;
+    if (live || ledgerMode) return;
     const inbox = peekDemoState<SalesDoc[]>(demoKey("inbox", pack.id), []);
     if (!inbox.length) return;
     const stored = peekDemoState<SalesDoc[]>(demoKey("sales", pack.id), initial);
@@ -62,7 +65,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
     }
     setDocs([...incoming, ...stored]);
     writeDemoState(demoKey("inbox", pack.id), [] as SalesDoc[]);
-  }, [live, pack.id, initial, setDocs]);
+  }, [live, ledgerMode, pack.id, initial, setDocs]);
   const focus = nextSalesDoc(docs);
 
   function onAdvance(doc: SalesDoc) {
@@ -77,6 +80,29 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
       writeDemoState(demoKey("stock-delta", pack.id), { ...delta, "PKG-BOX": (delta["PKG-BOX"] ?? 0) - doc.qty });
     }
     setNote(`${doc.party}：${doc.next}。同一張單往前走。${doc.channel === "外帶" && next.step === "fulfill" ? "外帶容器另扣。" : ""}`);
+  }
+
+  async function onCreateLedger(event: FormEvent) {
+    event.preventDefault();
+    const parsed = Number(amount.replace(/[,，\s]/g, ""));
+    if (!party.trim()) {
+      setFormError("請填客戶名稱。");
+      return;
+    }
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setFormError("金額要是 1 到一千萬之間的數字。");
+      return;
+    }
+    setFormError(null);
+    const result = await action.run(
+      "/api/erp/quotation",
+      { party_type: "Customer", party: party.trim(), items: [{ item_code: pack.itemType, qty: 1, rate: parsed }] },
+      (response) => `已開 ${response.created!.name}。含 5% 營業稅。`,
+    );
+    if (result?.ok) {
+      setParty("");
+      setAmount("");
+    }
   }
 
   function onCreate(event: FormEvent) {
@@ -109,16 +135,23 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
 
   return (
     <div className="space-y-4">
-      {live ? (
+      {ledgerMode ? (
+      <form onSubmit={onCreateLedger} noValidate className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-end">
+        <Field label="誰在問" className="sm:w-48" error={formError && !party.trim() ? formError : null}>
+          <input value={party} onChange={(event) => setParty(event.target.value)} maxLength={40} placeholder="客戶名稱" autoComplete="off" className="field" />
+        </Field>
+        <Field label="未稅金額" className="sm:w-36" error={formError && party.trim() ? formError : null}>
+          <input value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="numeric" placeholder="12000" className="field" />
+        </Field>
+        <button type="submit" disabled={action.busy} className={buttonClass({ variant: focus ? "secondary" : "primary" })}>
+          {action.busy ? "開單中…" : "開一張報價"}
+        </button>
+        <p className="text-xs text-cream-dim sm:basis-full">未稅加 5%，由伺服器算成整數新台幣。發票狀態是尚未開統一發票。</p>
+      </form>
+      ) : live ? (
         <div className="glass space-y-2 p-4">
           {catalog ? <LiveQuoteForm catalog={catalog} action={action} emphasis={focus ? "secondary" : "primary"} /> : null}
-          <p className="text-xs text-cream-dim">
-            報價、轉訂單、出貨、開發票、收款都直接寫進 ERPNext，照你的角色權限。要改細節時{" "}
-            <DeskLink href={`${deskUrl}/app/quotation/new`} className="underline underline-offset-2">
-              在 ERPNext 開單
-            </DeskLink>
-            。
-          </p>
+          <p className="text-xs text-cream-dim">報價、下一步、收款寫進測試帳本，不送到 ERPNext。</p>
         </div>
       ) : (
       <form onSubmit={onCreate} noValidate className="glass grid gap-3 p-4 sm:flex sm:flex-wrap sm:items-end">
@@ -186,7 +219,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
           title={focus.overdueDays ? `${focus.party} 逾期 ${focus.overdueDays} 天` : `${focus.party}：${salesPlain(focus.step)}`}
           detail={`下一步只做「${focus.next}」。其餘的單在下面，每張還是只有這一個按鈕。`}
           action={
-            live ? (
+            ledgerMode || live ? (
               <AdvanceButton doctype={focus.doctype} name={focus.no} label={focus.next} run={action.run} busy={action.busy} className={buttonClass({ variant: "primary" })} />
             ) : (
               <button type="button" onClick={() => onAdvance(focus)} className={buttonClass({ variant: "primary" })}>
@@ -224,6 +257,7 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                       <SlipText party={doc.party} lines={[{ item: doc.item, qty: doc.qty, rate: doc.amount / doc.qty }]} previousBalance={doc.previousBalance} />
                     ) : null}
                     <p className="mt-1 font-medium">{formatTwd(doc.amount + doc.tax)}{doc.taxable === false ? " · 未稅" : ""}</p>
+                    {doc.invoiceStatus ? <p className="mt-1 text-xs text-cream-dim">{doc.invoiceStatus}</p> : null}
                     {doc.deposit ? <p className="mt-1 text-xs text-cream-dim">訂金 {formatTwd(doc.deposit)}，尾款另計</p> : null}
                     {doc.kind === "change" ? <p className="mt-1 text-xs text-cream-dim">追加，原單 {doc.parentNo}</p> : null}
                     {doc.kind === "monthly" ? <p className="mt-1 text-xs text-cream-dim">併進本月月結</p> : null}
@@ -237,7 +271,15 @@ export function SalesBoard({ pack, initial, deskUrl, catalog }: SalesBoardProps)
                     {doc.overdueDays ? (
                       <p className="mt-1 text-xs text-warn">已逾期 {doc.overdueDays} 天</p>
                     ) : null}
-                    {live ? (
+                    {ledgerMode ? (
+                      doc.next === "完成" ? (
+                        <button type="button" disabled className={buttonClass({ variant: "secondary", size: "sm", block: true, className: "mt-2" })}>
+                          完成
+                        </button>
+                      ) : (
+                        <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} />
+                      )
+                    ) : live ? (
                       <>
                         <LiveSlipActions doc={doc} run={action.run} busy={action.busy} />
                         {doc.next !== "完成" ? <AdvanceButton doctype={doc.doctype} name={doc.no} label={doc.next} run={action.run} busy={action.busy} /> : null}

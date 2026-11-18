@@ -81,7 +81,7 @@ export function LiveQuoteForm({ catalog, action, emphasis = "primary" }: { catal
         <button type="submit" disabled={action.busy} className={emphasis === "primary" ? "btn btn-primary" : "btn btn-secondary"}>
           {action.busy ? "開單中…" : "開一張報價"}
         </button>
-        <span className="text-xs text-cream-dim">未稅約 {formatTwd(total)}；稅依 ERPNext 的稅別範本計算。</span>
+        <span className="text-xs text-cream-dim">瀏覽器上的未稅約 {formatTwd(total)} 只是預覽。送出後以伺服器算出的整數新台幣為準，未稅加 5%。</span>
       </div>
     </form>
   );

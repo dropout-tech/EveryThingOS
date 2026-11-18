@@ -81,6 +81,11 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <p className="mt-1">{pack.workflow.stages.join(" → ")}</p>
         </div>
         <div>
+          <p className="text-sm text-cream-dim">帳本</p>
+          <p className="mt-1">測試帳本</p>
+          <p className="mt-1 text-xs text-cream-dim">報價到收款寫在本機測試庫，不經 ERPNext。發票狀態是尚未開統一發票。</p>
+        </div>
+        <div>
           <p className="text-sm text-cream-dim">連線</p>
           <ul className="mt-1 space-y-1 text-sm">
             {SYSTEMS.map(([id, label, demo]) => (

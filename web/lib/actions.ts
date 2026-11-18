@@ -4,7 +4,23 @@ import { publicOrigin } from "./auth";
 import { fleetMode, liveConfig, writeBlocked } from "./sources/config";
 import { deskUrl, erpPost, SourceError } from "./sources/erpnext";
 
-export type ActionResult = { ok: boolean; message?: string; created?: { doctype: string; name: string; href?: string }; href?: string; [key: string]: unknown };
+export type ActionResult = {
+  ok: boolean;
+  message?: string;
+  created?: {
+    doctype: string;
+    name: string;
+    href?: string;
+    grand_total?: number;
+    untaxed?: number;
+    tax?: number;
+    balance?: number;
+    received?: number;
+    invoice_status?: string;
+  };
+  href?: string;
+  [key: string]: unknown;
+};
 
 /**
  * Write routes only accept same-origin JSON.

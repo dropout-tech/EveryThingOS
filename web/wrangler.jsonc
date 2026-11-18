@@ -17,5 +17,15 @@
   "observability": {
     "enabled": true,
     "traces": { "enabled": true }
-  }
+  },
+  // 測試帳本。database_id 是占位，正式庫還沒建。這一刀只用 wrangler --local。
+  // 不要部署、不要建立 os.dropout.tw、不要把單據放進 R2。R2 只放檔案。
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "dropout-ledger-test",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
 }

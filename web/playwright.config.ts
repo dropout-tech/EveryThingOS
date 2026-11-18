@@ -28,7 +28,9 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL?.trim()
     ? undefined
     : {
-        command: blankDemoEnvCommand(`npm run dev -- --hostname 127.0.0.1 --port ${port}`),
+        command: blankDemoEnvCommand(
+          `sh -c ${JSON.stringify(`npx wrangler d1 migrations apply dropout-ledger-test --local && npm run dev -- --hostname 127.0.0.1 --port ${port}`)}`,
+        ),
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120_000,

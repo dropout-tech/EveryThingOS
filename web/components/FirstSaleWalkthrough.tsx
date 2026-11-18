@@ -12,11 +12,11 @@ const TAG = "練習・";
 
 /** What each step means on the floor, and what the same button does once ERPNext is connected. */
 const STEPS = [
-  { title: "報價", plain: "客人在問", what: "填客人和金額，開一張報價。稅 5% 自動加。", real: "接上 ERPNext 後，「生意」的開報價會建一張報價單（Quotation）並送出。" },
-  { title: "客人答應", plain: "答應要了", what: "客人說好，同一張單按「轉成訂單」。不用重打一次。", real: "ERPNext 從報價轉出訂單（Sales Order），交期沒填就先抓 7 天後。" },
-  { title: "出貨／履行", plain: "做完／貨走了", what: "東西交給客人了，按下一步。", real: "ERPNext 開出貨單（Delivery Note）；有庫存的商品，庫存會跟著扣。" },
-  { title: "請他付錢", plain: "請他付錢", what: "開發票給客人。這張單會出現在「誰欠我們」。", real: "ERPNext 開銷項發票（Sales Invoice），記上應收帳款；有接電子發票的公司，發票號碼會回寫到這張單。" },
-  { title: "收款", plain: "錢進來了", what: "錢收到了，按「記入已收」，這筆生意就走完了。", real: "ERPNext 記一筆收款（Payment Entry）沖掉這張發票，帳齡跟著少一筆。" },
+  { title: "報價", plain: "客人在問", what: "填客人和金額，開一張報價。稅 5% 自動加。", real: "生意頁的開報價寫進測試帳本，單號和含稅金額由伺服器產生。" },
+  { title: "客人答應", plain: "答應要了", what: "客人說好，同一張單按「轉成訂單」。不用重打一次。", real: "同一張單在測試帳本轉成訂單，單號不變。" },
+  { title: "出貨／履行", plain: "做完／貨走了", what: "東西交給客人了，按下一步。", real: "同一張單記上已交付。庫存不在這一刀。" },
+  { title: "請他付錢", plain: "請他付錢", what: "開發票給客人。這張單會出現在「誰欠我們」。", real: "同一張單記上應收。狀態是尚未開統一發票，不會上傳加值中心。" },
+  { title: "收款", plain: "錢進來了", what: "錢收到了，按「記入已收」，這筆生意就走完了。", real: "測試帳本記一筆收款，沖掉餘額。收款頁讀同一個單號。" },
 ] as const;
 
 const ORDER = SALES_STEPS.map((s) => s.id);
@@ -78,7 +78,7 @@ export function FirstSaleWalkthrough({ pack, seed, person, live }: { pack: Pack;
     <div className="space-y-5">
       <p className="glass-well inline-flex items-center gap-2 px-3 py-1.5 text-xs" role="note">
         <span className="rounded-full bg-orange px-2 py-0.5 text-ink">練習</span>
-        {live ? "只存在這個瀏覽器分頁，不會寫進 ERPNext。真的要開單，到「生意」。" : "用練習帳本，關掉分頁就清掉，不會動到任何真的資料。"}
+        {live ? "只存在這個瀏覽器分頁。真的要開單，到「生意」，會寫進測試帳本。" : "用練習帳本，關掉分頁就清掉，不會動到任何真的資料。"}
       </p>
 
       <ol className="grid gap-2 sm:grid-cols-5" aria-label="第一筆生意的五步">
