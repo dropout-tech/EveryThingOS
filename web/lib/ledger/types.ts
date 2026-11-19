@@ -1,5 +1,4 @@
 /** 這一刀寫死的測試租戶。登入改接 Google 之前，不讀請求裡的公司。 */
-export const LEDGER_TENANT_ID = "test";
 
 /** 這一刀不是統一發票，狀態固定這一句。 */
 export const INVOICE_STATUS = "尚未開統一發票";

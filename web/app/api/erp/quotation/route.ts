@@ -1,3 +1,4 @@
+import { readActor } from "@/lib/accounts/guard";
 import type { NextRequest } from "next/server";
 import { readJson, refuse, reply, sameOrigin } from "@/lib/actions";
 import { LedgerError } from "@/lib/ledger/errors";
@@ -12,6 +13,8 @@ type Body = { party_type?: string; party?: string; items?: { item_code?: string;
 /** 開一張報價進測試帳本。合計只信伺服器，不呼叫 ERPNext。 */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
+  const actor = await readActor();
+  if (actor.status !== "ok") return refuse(actor.status === "error" ? actor.message : "請先登入", actor.status === "error" && actor.kind === "unreachable" ? 503 : 401);
   const body = await readJson<Body>(request);
   const party = cleanPartyName(body?.party ?? "");
   const partyType = body?.party_type === "Lead" ? "Lead" : body?.party_type === "Customer" ? "Customer" : null;
@@ -24,7 +27,7 @@ export async function POST(request: NextRequest) {
   const priced = priceLines(items);
   if (!priced.ok) return refuse(priced.error);
   try {
-    const created = await createQuote(await openLedger(), { party, partyType, priced });
+    const created = await createQuote(await openLedger(), actor.account.companyId, { party, partyType, priced });
     return reply({
       ok: true,
       created: {

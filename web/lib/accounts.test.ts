@@ -48,7 +48,7 @@ describe("Google 登入與本機 D1 權限", () => {
     assert.deepEqual(seen, ["https://oauth2.googleapis.com/token", "https://openidconnect.googleapis.com/v1/userinfo"]);
   });
 
-  it("第一位 Google 使用者是老闆，同事要邀請，信標成未寄出", async () => {
+  it("預先授權的 Google 使用者是老闆，同事要邀請，信標成未寄出", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "accounts-d1-"));
     const opened = await openAccountsAt(dir);
     const original = globalThis.fetch;
@@ -56,8 +56,15 @@ describe("Google 登入與本機 D1 權限", () => {
       throw new Error("帳號庫不該對外連線");
     };
     try {
+      delete process.env.OWNER_BOOTSTRAP_EMAILS;
+      assert.equal((await acceptGoogle(opened.db, { companyId: "local", profile: boss })).ok, false);
+      process.env.OWNER_BOOTSTRAP_EMAILS = " BOSS@example.com, second@example.com ";
       const owner = await acceptGoogle(opened.db, { companyId: "local", profile: boss });
       assert.equal(owner.ok && owner.account.role, "owner");
+      assert.equal((await acceptGoogle(opened.db, { companyId: "local", profile: { ...colleague, email: "second@example.com" } })).ok, false);
+      await assert.rejects(opened.db.prepare("INSERT INTO company_founders (company_id, account_id) VALUES (?, ?)").bind("local", "second").run());
+      assert.equal((await opened.db.prepare("SELECT * FROM company_founders WHERE company_id = ?").bind("local").all()).results?.length, 1);
+      delete process.env.OWNER_BOOTSTRAP_EMAILS;
       const stranger = await acceptGoogle(opened.db, { companyId: "local", profile: colleague });
       assert.equal(stranger.ok, false);
       if (!owner.ok) return;

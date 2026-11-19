@@ -1,3 +1,4 @@
+import { readActor } from "@/lib/accounts/guard";
 import type { NextRequest } from "next/server";
 import { readJson, refuse, reply, sameOrigin } from "@/lib/actions";
 import { LedgerError } from "@/lib/ledger/errors";
@@ -11,10 +12,12 @@ type Body = { sales_order?: string; amount?: number };
 /** 記一筆收款到測試帳本。金額收成整數新台幣，不呼叫 ERPNext。 */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
+  const actor = await readActor();
+  if (actor.status !== "ok") return refuse(actor.status === "error" ? actor.message : "請先登入", actor.status === "error" && actor.kind === "unreachable" ? 503 : 401);
   const body = await readJson<Body>(request);
   if (!body?.sales_order?.trim()) return refuse("請指定訂單");
   try {
-    const created = await recordPayment(await openLedger(), body.sales_order.trim(), Number(body.amount));
+    const created = await recordPayment(await openLedger(), actor.account.companyId, body.sales_order.trim(), Number(body.amount));
     return reply({
       ok: true,
       created: {

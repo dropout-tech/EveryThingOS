@@ -45,12 +45,11 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
     const body = (await res.json().catch(() => ({}))) as { ok?: boolean; message?: string; created?: { name?: string; grand_total?: number; invoice_status?: string } };
     return { status: res.status, ok: body.ok ?? false, message: body.message ?? "", name: body.created?.name ?? "", total: body.created?.grand_total ?? null, invoice: body.created?.invoice_status ?? "" };
   });
-  expect(opened.status).toBe(200);
-  expect(opened.ok).toBe(true);
-  expect(opened.name).toMatch(/^QT-\d{4}$/);
-  expect(opened.total).toBe(1);
-  expect(opened.invoice).toBe("尚未開統一發票");
-  expect(opened.message).not.toContain("ERPNext");
+  const spoofed = await page.request.post("/api/erp/quotation", { headers: { origin: "http://evil.invalid", "x-forwarded-host": "evil.invalid", "x-forwarded-proto": "http", "content-type": "application/json" }, data: {} });
+  expect(spoofed.status()).toBe(403);
+  expect(opened.status).toBe(401);
+  expect(opened.ok).toBe(false);
+  expect(opened.name).toBe("");
 
   await expect(page.getByRole("heading", { name: "用 Google 登入 EveryThingOS" })).toBeVisible();
   await page.getByRole("link", { name: "用 Google 登入" }).click();
@@ -59,6 +58,8 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   const cookies = await page.context().cookies();
   expect(cookies.some((cookie) => cookie.name === "dropout_session" || cookie.name === "dropout_login")).toBe(false);
   await shot(page, "01-login-demo.png");
+  const login = await page.request.post("/api/test-login");
+  expect(login.status()).toBe(200);
 
   await page.goto("/?setup=1");
   await page.getByRole("button", { name: "接案／專業" }).click();
@@ -115,6 +116,7 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   await page.reload();
   await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText("NT$0");
 
+  await page.context().clearCookies({ name: "dropout_session" });
   await page.goto("/workspace/practice");
   await expect(page.getByRole("heading", { name: "第一筆生意，先走一次" })).toBeVisible();
   await expect(page.getByText("不會動到任何真的資料")).toBeVisible();
@@ -130,7 +132,7 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
 
   await page.goto("/workspace/erp/finance");
   await expect(page.getByText("示範資料", { exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toContainText(PARTY);
+  await expect(page.getByRole("region", { name: "測試帳本" }).getByRole("row", { name: new RegExp(quoteNo) })).toHaveCount(0);
   await expect(page.getByText(`練習・${PRACTICE_PARTY}`)).toHaveCount(0);
   await shot(page, "08-finance-not-linked.png");
 

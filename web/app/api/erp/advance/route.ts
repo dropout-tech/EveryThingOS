@@ -1,3 +1,4 @@
+import { readActor } from "@/lib/accounts/guard";
 import type { NextRequest } from "next/server";
 import { readJson, refuse, reply, sameOrigin } from "@/lib/actions";
 import { LedgerError } from "@/lib/ledger/errors";
@@ -11,11 +12,13 @@ const SALES = new Set(["Quotation", "Sales Order", "Delivery Note", "Sales Invoi
 /** 同一張單的下一步，寫進測試帳本。不呼叫 ERPNext。 */
 export async function POST(request: NextRequest) {
   if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
+  const actor = await readActor();
+  if (actor.status !== "ok") return refuse(actor.status === "error" ? actor.message : "請先登入", actor.status === "error" && actor.kind === "unreachable" ? 503 : 401);
   const body = await readJson<{ doctype?: string; name?: string }>(request);
   if (!body?.doctype || !body.name?.trim()) return refuse("缺少單據");
   if (!SALES.has(body.doctype)) return refuse("這一刀只記報價到收款");
   try {
-    const created = await advanceQuote(await openLedger(), body.name.trim(), body.doctype);
+    const created = await advanceQuote(await openLedger(), actor.account.companyId, body.name.trim(), body.doctype);
     return reply({
       ok: true,
       created: {
