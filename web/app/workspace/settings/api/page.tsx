@@ -7,7 +7,7 @@ import { loadIntegrations } from "@/lib/integrations-server";
 export const metadata = { title: "對外 API 與 Webhook" };
 
 const DEMO: Integrations = {
-  apiBase: "https://glue.example.tw/v1",
+  apiBase: "https://example.invalid/v1",
   maxKeys: 10,
   maxWebhooks: 5,
   events: ["customer.created", "lead.created", "quote.sent", "sales_order.submitted", "delivery.submitted", "invoice.submitted", "payment.received"],
@@ -44,7 +44,7 @@ export default async function ApiSettingsPage() {
     <ModuleFrame
       kicker="設定"
       title="對外 API 與 Webhook"
-      hint="讓蝦皮、momo、會計師、你們自己的程式或 Zapier／n8n／Make 讀寫客人與單據；有新訂單、收到錢時主動通知它們。資料一樣以 ERPNext 為準。"
+      hint="這裡顯示本機示範資料。"
     >
       {source.origin === "denied" ? (
         <p className="glass p-5 text-sm text-cream-dim">{source.message}。請公司裡職務是「老闆」的人來設定。</p>

@@ -103,7 +103,7 @@ export default async function LetterPage() {
           <h2 className="text-sm font-medium">最近的信</h2>
           {desk ? (
             <a href={`${desk}/app/newsletter/new`} className="text-sm text-cream-dim hover:text-cream" target="_blank" rel="noreferrer">
-              用 ERPNext 排版
+              排版（尚未開放）
             </a>
           ) : null}
         </div>
@@ -140,7 +140,7 @@ export default async function LetterPage() {
         </dl>
       </section>
 
-      <SourceNote source={source} demoText="示範資料。接上 ERPNext 後換成你們的名單與寄信紀錄。" />
+      <SourceNote source={source} demoText="示範資料，名單與寄信紀錄僅供參考。" />
     </ModuleFrame>
   );
 }

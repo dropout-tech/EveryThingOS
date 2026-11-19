@@ -1,5 +1,5 @@
 -- 平台自己的測試帳本。每張表都有 tenant_id。
--- 這一刀的租戶在程式裡寫死，不信請求傳來的公司。
+-- 租戶由登入帳號的公司決定，不信請求傳來的公司。
 -- 不寫年費帳單的 invoices，也不寫 DoBusiness 的庫。
 
 CREATE TABLE IF NOT EXISTS ledger_counters (

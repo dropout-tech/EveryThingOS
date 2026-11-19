@@ -9,9 +9,13 @@ export async function POST(request: NextRequest) {
       !["127.0.0.1", "localhost"].includes(request.nextUrl.hostname)) return new NextResponse(null, { status: 404 });
   const secret = process.env.SESSION_SECRET;
   if (secret !== "local-e2e-only-session-secret") return new NextResponse(null, { status: 404 });
-  const result = await acceptGoogle(await accountsDb(), { companyId: "local", profile: { sub: "local-e2e", email: "e2e@example.invalid", emailVerified: true, name: "本機測試" } });
+  const variant = request.nextUrl.searchParams.get("as");
+  if (variant && !["company-b", "stranger"].includes(variant)) return new NextResponse(null, { status: 404 });
+  const companyId = variant === "company-b" ? "local-e2e-b" : variant === "stranger" ? "local-e2e-uninvited" : "local";
+  const email = variant === "stranger" ? "uninvited@example.invalid" : "e2e@example.invalid";
+  const result = await acceptGoogle(await accountsDb(), { companyId, profile: { sub: "local-e2e", email, emailVerified: true, name: "本機測試" } });
   if (!result.ok) return NextResponse.json(result, { status: result.status });
-  const value = await seal({ accountId: result.account.id, user: result.account.email, site: "local", role: result.account.role, expiresAt: Date.now() + 3600000 }, secret);
+  const value = await seal({ accountId: result.account.id, user: result.account.email, site: companyId, role: result.account.role, expiresAt: Date.now() + 3600000 }, secret);
   const response = NextResponse.json({ ok: true });
   response.cookies.set(SESSION_COOKIE, value, { httpOnly: true, sameSite: "lax", path: "/" });
   return response;

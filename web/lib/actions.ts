@@ -1,7 +1,6 @@
 import "server-only";
 import { NextResponse, type NextRequest } from "next/server";
-import { fleetMode, liveConfig, writeBlocked } from "./sources/config";
-import { deskUrl, erpPost, SourceError } from "./sources/erpnext";
+import { fleetMode } from "./sources/config";
 
 export type ActionResult = {
   ok: boolean;
@@ -48,26 +47,7 @@ export function refuse(message: string, status = 400) {
   return reply({ ok: false, message }, status);
 }
 
-const STATUS: Record<SourceError["kind"], number> = { login: 401, denied: 403, unreachable: 502, upstream: 502 };
-
-/**
- * Runs one ERPNext write as the current user and turns desk paths into full links.
- * `always` is for actions that must keep working when the contract has lapsed,
- * such as removing a person who left the company.
- */
-export async function erpAction(request: NextRequest, method: string, args: Record<string, unknown>, { always = false } = {}) {
+export async function erpAction(request: NextRequest, _method: string, _args: Record<string, unknown>, _options: { always?: boolean } = {}) {
   if (!sameOrigin(request)) return refuse("這個請求不是從 EveryThingOS 送出的", 403);
-  const config = await liveConfig();
-  if (!config.erpnext) return refuse("ERPNext 還沒接上，現在是練習模式", 409);
-  const blocked = always ? null : writeBlocked(config);
-  if (blocked) return refuse(blocked, 423);
-  try {
-    const result = await erpPost<ActionResult>(method, args, config);
-    if (result.created?.href) result.created.href = deskUrl(result.created.href, config);
-    if (typeof result.href === "string") result.href = deskUrl(result.href, config);
-    return reply(result);
-  } catch (error) {
-    if (error instanceof SourceError) return refuse(error.message, STATUS[error.kind]);
-    return refuse(error instanceof Error ? error.message : String(error), 500);
-  }
+  return refuse("這項功能目前是本機示範", 409);
 }

@@ -65,7 +65,7 @@ async function assertMeetingsStayClosed(page: Page, shot: Shot): Promise<string>
 
 async function assertStatusIsDemo(page: Page, shot: Shot): Promise<string> {
   await page.goto("/status");
-  await expect(page.getByText("這是示範資料。接上監看後，這裡顯示真的檢查結果。")).toBeVisible();
+  await expect(page.getByText("目前顯示本機示範，沒有外部系統監控資料。")).toBeVisible();
   await shot(page, "30-status-demo.png");
   return "狀態頁標成示範資料";
 }

@@ -46,6 +46,7 @@ export function OsShell({ industry, shop, children, company, team = false, repor
         </div>
         <p className="nav-section">工作</p>
         <SideNav items={items} />
+        <div className="px-5 space-y-2"><Link className="block" href="/workspace/tasks">任務</Link><Link className="block" href="/workspace/documents">文件</Link></div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="os-top sticky top-0 z-30">

@@ -19,7 +19,7 @@ function env(name: string) {
 
 export default async function ConsultingPage() {
   await connection();
-  const demo = !(env("GLUE_URL") && env("CONSULTING_FORM_SITE"));
+  const demo = true;
 
   return (
     <>

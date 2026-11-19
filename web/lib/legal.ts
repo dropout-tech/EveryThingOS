@@ -29,7 +29,7 @@ export const CONTRACT = {
   monthlyNoticeDays: 7,
   graceDays: 14,
   exportDays: 90,
-  exportPath: "設定 → 下載全部資料（客戶、商品、銷項發票 CSV，或整站 ERPNext 備份）",
+  exportPath: "設定 → 下載全部資料（客戶、商品、銷項發票 CSV，或整站備份）",
 };
 
 const aiMonthFee = Math.round(PRICE_YEAR_TWD / 12);
@@ -80,7 +80,7 @@ const lifecycleTable = {
 
 const dataEnd = [
   `只能看、暫停、解約時，資料都留著，登入、看資料、管人、下載備份照常；只是不能新增或修改業務資料。`,
-  `匯出方式：${CONTRACT.exportPath}。整站備份是整個站台的資料庫與檔案，可以搬到任何 ERPNext v15。`,
+  `匯出方式：${CONTRACT.exportPath}。整站備份是這個平台自己的資料庫與檔案。`,
   `解約生效日起 ${CONTRACT.exportDays} 天內可以登入匯出；第 ${CONTRACT.exportDays + 1} 天起刪除站台，並刪除 R2 上這個站台的所有備份；刪除前留的最後一份備份另外保存 30 天後刪除，只用來處理刪除後 30 天內的爭議。刪除後無法復原，DropOut 會以 Email 告知刪除完成。`,
   "法律要求保存的資料（例如會計憑證），由客戶自己匯出保存。",
 ];
@@ -89,7 +89,7 @@ const subprocessors = {
   head: ["廠商", "做什麼", "會碰到的資料", "地區"],
   rows: [
     ["Cloudflare, Inc.", "網站外殼、系統同步、檔案與備份（R2）、Tunnel、營運後台登入關卡、交易信", "所有經過網站的資料、備份檔", "美國公司，全球節點"],
-    [ENTITY.host, "主機：ERPNext、對話（Chatwoot）、會議機器人（Vexa）", "所有客戶資料", ENTITY.host],
+    [ENTITY.host, "主機：本平台資料庫與工作區服務", "所有客戶資料", ENTITY.host],
     ["Resend（或屆時選定的寄信服務）", "電子報、續約提醒寄送", "收件人 Email、姓名、信件內容", "美國"],
     ["綠界科技 ECPay、藍新金流 NewebPay", "官網收款（客戶有開商店才用）", "訂單金額、付款人聯絡資料", "台灣"],
     ["綠界科技 ECPay（電子發票加值中心）", "開立、作廢電子發票", "買受人統編、載具、Email、品項金額", "台灣"],
@@ -165,7 +165,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "9. 智慧財產與開源",
         paragraphs: [
-          "EveryThingOS 的外殼、識別、產業包與整合程式屬於 DropOut。底下使用的開源軟體（ERPNext GPL-3.0、Frappe MIT、Chatwoot 社群版 MIT、Vexa Apache-2.0 等）依各自授權，客戶的權利不因本條款減少。",
+          "EveryThingOS 的外殼、識別、產業包與整合程式屬於 DropOut。本平台自建程式與識別屬於 DropOut。若使用其他開源元件，依各自授權，客戶的權利不因本條款減少。",
         ],
       },
       { heading: "10. 服務水準", paragraphs: [`月可用率 ${SLA.uptime}，未達標依服務水準文件抵扣費用。詳見服務水準。`] },
@@ -396,7 +396,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "1. 登入",
         items: [
-          "用 Google 登入（授權碼加 PKCE）。平台不存密碼，也不把 ERPNext 當成登入身份。",
+          "用 Google 登入（授權碼加 PKCE）。平台不存密碼，也不把外部系統當成登入身份。",
           "帳號、職務與邀請記在平台自己的 Cloudflare D1（本機庫名 everythingos-accounts）。這不是年費帳單那顆庫。",
           "登入狀態用加密的 Cookie（AES-GCM）保存，而且綁定那一家公司；拿 A 公司的登入去開 B 公司，會被要求重新登入。",
           "兩步驟用 Google 帳號自己的驗證。平台不另寄驗證碼。",
@@ -404,7 +404,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
           "老闆可停用同事、改職務。公司至少留一位老闆。停用後，那個 Google 帳號不能再進來。",
           "邀請信若沒有接上寄信，狀態是未寄出，不會寄到外面。",
         ],
-        paragraphs: ["還沒設定 Google 用戶端時，登入按鈕停在這一頁，不會改用密碼，也不會改用 ERPNext 或共用整合帳號。"],
+        paragraphs: ["還沒設定 Google 用戶端時，登入按鈕停在這一頁，不會改用密碼，也不會改用密碼或共用整合帳號。"],
       },
       {
         heading: "2. 誰能看什麼",
@@ -422,8 +422,8 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "4. 公司之間隔開",
         items: [
-          "一家公司一個 ERPNext 站台，各自獨立的資料庫。",
-          "對話（Chatwoot）一家一個帳戶；會議機器人（Vexa）一家一把金鑰。",
+          "一家公司一份平台資料，依公司隔離。",
+          "對話與會議功能若尚未自建完成，不會改去接外部系統。",
           "各公司連線用的金鑰先加密（AES-GCM）再存進資料庫。",
         ],
       },
@@ -439,7 +439,7 @@ export const LEGAL_DOCS: Record<LegalDoc["slug"], LegalDoc> = {
       {
         heading: "6. 備份",
         items: [
-          "每個站台每天用 ERPNext 內建的 S3 備份，把資料庫與檔案存到 Cloudflare R2，每家一個資料夾，還原時不會混到別家。",
+          "備份與還原規劃改為本平台自己的資料庫與檔案，每家隔離，還原時不會混到別家。尚未完成的備份流程會另行說明，請勿再依舊的 ERPNext 備份步驟操作。",
           `客戶自己隨時可以匯出：${CONTRACT.exportPath}。合約到期改成只能看、暫停、解約時也能匯出。`,
         ],
       },

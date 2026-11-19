@@ -16,8 +16,8 @@ import { currentIndustry } from "@/lib/workspace";
 export const metadata = { title: "對話" };
 
 const CHAT_NOTES: Record<string, string> = {
-  "not-connected": "對話系統還沒接上。導入時用導入工具開 Chatwoot 帳戶。",
-  "no-user": "你的 ERPNext 帳號還沒對應到對話系統的使用者，請管理員在導入工具重跑「對話帳號」。",
+  "not-connected": "對話功能目前僅供示範。",
+  "no-user": "對話功能目前是示範，不會送到外部聊天系統。",
   "sso-failed": "對話系統沒有給登入連結，請稍後再試。",
 };
 

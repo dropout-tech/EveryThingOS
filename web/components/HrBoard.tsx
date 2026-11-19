@@ -136,7 +136,7 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false, hero
         />
       ) : (
         <section className="glass space-y-3 p-5">
-          <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。請人資在 ERPNext 的員工資料填上你的使用者帳號，就能在這裡打卡。</p>
+          <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。人事主檔完成前，這一頁是示範。</p>
         </section>
       )}
 
@@ -161,7 +161,7 @@ export function HrBoard({ data, live, openDemands = [], classBoard = false, hero
               {live ? <p className="text-xs text-cream-dim">允許定位的話，打卡會記下位置。不允許也能打卡。</p> : null}
             </>
           ) : (
-            <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。請人資在 ERPNext 的員工資料填上你的使用者帳號，就能在這裡打卡。</p>
+            <p className="text-sm text-cream-dim">你的帳號還沒連到員工資料。人事主檔完成前，這一頁是示範。</p>
           )}
         </section>
       ) : null}

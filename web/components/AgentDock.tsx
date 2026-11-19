@@ -35,7 +35,7 @@ export function AgentDock({ open }: { open: boolean }) {
       }
       say("agent", typeof data.message === "string" && data.message.trim() ? data.message : "這一步不會寫入單據。");
     } catch {
-      say("agent", "代理人還沒接上。單據仍然在 ERPNext。");
+      say("agent", "代理人還沒接上。單據在本機測試帳本。");
     } finally {
       setBusy(false);
     }
@@ -63,7 +63,7 @@ export function AgentDock({ open }: { open: boolean }) {
       if (data.ok && data.created?.name) say("agent", `已寫入 ${data.created.name}`);
       else say("agent", data.message?.trim() || "這一步不會寫入單據。");
     } catch {
-      say("agent", "代理人還沒接上。單據仍然在 ERPNext。");
+      say("agent", "代理人還沒接上。單據在本機測試帳本。");
     } finally {
       setBusy(false);
     }

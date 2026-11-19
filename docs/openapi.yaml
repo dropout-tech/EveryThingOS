@@ -1,3 +1,4 @@
+# 2026-11-19: 下文若描述 ERPNext／glue／Chatwoot 接線，已作廢；平台改為自建 D1。CRM／ERP 路徑名稱可保留。
 openapi: 3.1.0
 info:
   title: EveryThingOS Public API

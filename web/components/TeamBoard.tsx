@@ -139,7 +139,7 @@ export function TeamBoard({ team, live }: { team: Team; live: boolean }) {
         {team.profiles.map((p) => (
           <div key={p.name} className="glass-well p-4 text-sm">
             <p>{p.name}</p>
-            <p className="mt-1 text-xs text-cream-dim">{p.note || `${p.roles.length} 個 ERPNext 角色`}</p>
+            <p className="mt-1 text-xs text-cream-dim">{p.note || `${p.roles.length} 個職務權限`}</p>
           </div>
         ))}
       </section>

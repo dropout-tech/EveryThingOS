@@ -39,7 +39,7 @@ export function AgentPanel({ open, busy, transcript, proposal, onAsk, onConfirm,
   return (
     <aside className="glass space-y-3 p-4" aria-label="代理人" aria-busy={busy || undefined}>
       <h2 className="text-lg font-medium leading-snug">代理人</h2>
-      <p className="text-sm text-cream-dim">進階版可以請他開下一張單。單據仍然進 ERPNext。</p>
+      <p className="text-sm text-cream-dim">進階版可以請他開下一張單。單據寫進本機測試帳本。</p>
       {transcript.length > 0 ? (
         <ol className="space-y-2" aria-label="對話">
           {transcript.map((turn, index) => (

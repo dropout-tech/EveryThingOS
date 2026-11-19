@@ -114,15 +114,16 @@ test("租戶隔離及並發收款明細一致", async () => {
   const quote = await createQuote(proxy.env.DB, "a", { party: "A", partyType: "Customer", priced });
   assert.deepEqual(await listHeads(proxy.env.DB, "b"), []);
   await assert.rejects(recordPayment(proxy.env.DB, "b", quote.no, 1), /找不到/);
-  const results = await Promise.allSettled([recordPayment(proxy.env.DB, "a", quote.no, 525), recordPayment(proxy.env.DB, "a", quote.no, 525)]);
-  assert.equal(results.filter((r) => r.status === "fulfilled").length, 2);
-  await assert.rejects(recordPayment(proxy.env.DB, "a", quote.no, 100), /不能超過餘額/);
+  const results = await Promise.allSettled(Array.from({ length: 3 }, () => recordPayment(proxy.env.DB, "a", quote.no, 600)));
+  assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+  assert.equal(results.filter((r) => r.status === "rejected").length, 2);
+  await assert.rejects(recordPayment(proxy.env.DB, "a", quote.no, 600), /不能超過餘額/);
   const head = (await listHeads(proxy.env.DB, "a"))[0]!;
   const payments = await proxy.env.DB.prepare("SELECT COALESCE(SUM(amount), 0) AS total FROM ledger_payments WHERE tenant_id = ?").bind("a").first<{total: number}>();
   const counter = await proxy.env.DB.prepare("SELECT n FROM ledger_counters WHERE tenant_id = ? AND name = 'n'").bind("a").first<{n: number}>();
   assert.equal(head.received + head.balance, head.total);
   assert.equal(payments?.total, head.received);
-  assert.equal(counter?.n, 3);
+  assert.equal(counter?.n, 2);
  } finally { await proxy.dispose(); }
 });
 
@@ -198,4 +199,17 @@ test("部分收款先完成時，舊資料的結清必須失敗，重試不會�
   } finally {
     await proxy.dispose();
   }
+});
+
+test("既有客人的類型不會被報價覆寫", async () => {
+  const proxy = await database();
+  try {
+    const db = proxy.env.DB;
+    await db.prepare("INSERT INTO ledger_parties (tenant_id,id,name,party_type,created_at) VALUES ('test','existing','客人','Customer','2026')").run();
+    const priced = priceLines([{ itemCode: "服務", qty: 1, rate: 100 }]);
+    if (!priced.ok) throw new Error(priced.error);
+    await createQuote(db, "test", { party: "客人", partyId: "existing", partyType: "Lead", priced });
+    const row = await db.prepare("SELECT party_type FROM ledger_parties WHERE tenant_id = 'test' AND id = 'existing'").first<{party_type: string}>();
+    assert.equal(row?.party_type, "Customer");
+  } finally { await proxy.dispose(); }
 });

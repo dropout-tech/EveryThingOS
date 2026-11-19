@@ -23,16 +23,16 @@ function Section({ id, title, hint, report, children }: { id: ReportSection; tit
         </h2>
         {link ? (
           <DeskLink href={link} className="text-sm text-cream-dim hover:text-cream">
-            在 ERPNext 打開
+            打開明細
           </DeskLink>
         ) : null}
       </div>
       {hint ? <p className="-mt-2 text-xs text-cream-dim">{hint}</p> : null}
       {report.denied.includes(id) ? (
-        <p className="text-sm text-cream-dim">你的 ERPNext 角色看不到這一段。需要的話，請老闆到「團隊」調整職務。</p>
+        <p className="text-sm text-cream-dim">你的職務看不到這一段。需要的話，請老闆到「團隊」調整職務。</p>
       ) : report.failed.includes(id) ? (
         <p role="alert" className="text-sm text-warn">
-          這一段現在拿不到，其他段落不受影響。原因記在 ERPNext 的
+          這一段現在拿不到，其他段落不受影響。原因：
           {report.links?.errors ? (
             <DeskLink href={report.links.errors} className="underline">
               錯誤紀錄
@@ -242,7 +242,7 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
       </Section>
     ),
     margin: (
-      <Section id="margin" title="毛利" hint="照 ERPNext 毛利報表算：營收減掉出貨當下的成本。服務類沒有成本的品項，毛利等於營收。" report={report}>
+      <Section id="margin" title="毛利" hint="毛利：營收減掉出貨當下的成本。服務類沒有成本的品項，毛利等於營收。" report={report}>
         {() => (
           <>
             <PercentLine rows={margin!} label="每月毛利率折線圖" />
@@ -252,7 +252,7 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
       </Section>
     ),
     aging: (
-      <Section id="aging" title="誰欠我們多久（帳齡）" hint="照 ERPNext 應收帳款報表，從付款到期日算起。" report={report}>
+      <Section id="aging" title="誰欠我們多久（帳齡）" hint="從付款到期日算起。" report={report}>
         {() => (aging!.total ? <AgingBar aging={aging!} /> : <p className="text-sm text-cream-dim">沒有人欠款。</p>)}
       </Section>
     ),
@@ -312,10 +312,10 @@ export function ReportBoard({ report, demo }: { report: OwnerReport; demo: boole
         </Section>
     ),
     lowStock: (
-      <Section id="lowStock" title="快不夠的貨" hint="跟 ERPNext 自動補貨同一個算法：預計數量（現有＋已訂未到－已接單未出）低於再訂購點。" report={report}>
+      <Section id="lowStock" title="快不夠的貨" hint="預計數量（現有＋已訂未到－已接單未出）低於再訂購點時列入。" report={report}>
         {() => {
           const rows = report.lowStock!;
-          if (!rows.length) return <p className="text-sm text-cream-dim">沒有低於再訂購點的貨。品項要在 ERPNext 設好再訂購點才會列進來。</p>;
+          if (!rows.length) return <p className="text-sm text-cream-dim">沒有低於再訂購點的貨。品項要先設好再訂購點才會列進來。</p>;
           return (
             <div className="-mx-5 sm:mx-0 sm:overflow-x-auto">
               <table className="table-stack sm:min-w-[36rem]">

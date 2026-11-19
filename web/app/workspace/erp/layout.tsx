@@ -17,7 +17,7 @@ export default async function ErpLayout({ children }: LayoutProps<"/workspace/er
         showFinance={mods.includes("finance")}
         live={live}
       />
-      <p className="text-xs text-cream-dim">{live ? "這裡的每一步都寫進 ERPNext，照你的角色權限。" : "練習帳：按了只改這台電腦的畫面，還沒寫進你們真正的帳本。"}</p>
+      <p className="text-xs text-cream-dim">{live ? "這裡的每一步寫進本機測試帳本，依登入公司隔離。" : "練習帳：按了只改這台電腦的畫面，還沒寫進你們真正的帳本。"}</p>
       {children}
     </div>
   );

@@ -12,7 +12,7 @@ export const metadata = { title: "儀表板" };
 
 export default async function ReportsPage({ searchParams }: PageProps<"/workspace/reports">) {
   const months = parseMonths((await searchParams).months);
-  const frame = { kicker: "儀表板", title: "生意整體怎麼樣", hint: "營收、毛利、誰欠錢、誰買最多、成交率、快不夠的貨。數字都從 ERPNext 來。按「自訂儀表板」挑卡片、排順序。" };
+  const frame = { kicker: "儀表板", title: "生意整體怎麼樣", hint: "營收、毛利、誰欠錢、誰買最多、成交率、快不夠的貨。按「自訂儀表板」挑卡片、排順序。尚未自建的數字會標示示範。" };
 
   const me = await getMe();
   if (me.origin === "live" && !canSeeReports(me.data ? me.data.roles : [])) {
@@ -38,7 +38,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/workspac
         />
       ) : null}
       <ReportBoard report={source.data} demo={source.origin === "demo"} />
-      <SourceNote source={source} demoText="示範資料。接上 ERPNext 後換成你們的營收、帳齡、客人與庫存。" />
+      <SourceNote source={source} demoText="示範資料，數字僅供參考。" />
     </ModuleFrame>
   );
 }

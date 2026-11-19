@@ -145,6 +145,7 @@ export type SalesDoc = {
   /** 已經出了幾件。沒寫時，剩餘等於訂購數量。 */
   deliveredQty?: number;
   amount: number;
+  balance?: number;
   tax: number;
   /** false = 未稅報價，稅額是 0。沒寫則沿用營業稅 5%。 */
   taxable?: boolean;

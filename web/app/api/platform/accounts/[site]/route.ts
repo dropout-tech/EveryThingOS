@@ -27,6 +27,6 @@ export async function POST(request: NextRequest, { params }: RouteContext<"/api/
           });
   if (!res.ok || !res.data) return refuse(res.text || `回應 ${res.status}`, res.status === 409 ? 409 : 502);
   const a = res.data.account;
-  const erp = res.data.erpnext === false ? "（ERPNext 沒有回應，後台要等每日排程才會跟上；殼與膠水已經生效）" : "";
+  const erp = res.data.erpnext === false ? "（帳本沒有回應；變更已寫在本平台）" : "";
   return reply({ ok: true, message: `${a.company}：${a.lifecycle.message || "使用中"}${erp}`, account: a });
 }

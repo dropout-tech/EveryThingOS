@@ -89,7 +89,7 @@ export default async function HrPage() {
     return (
       <ModuleFrame kicker="人事" title="這家公司還沒開人事">
         <EmptyState
-          title="ERPNext 還沒裝人事模組，所以這裡沒有打卡、請假與薪資。"
+          title="人事自建尚未完成，所以這裡沒有可用的打卡、請假與薪資。"
           detail="請 EveryThingOS 導入顧問在導入工具選「人事」：會裝上 Frappe HRMS 與台灣的薪資元件、勞健保費率和假別。"
           help="module-hr"
         />
@@ -107,7 +107,7 @@ export default async function HrPage() {
     <ModuleFrame
       kicker={shelf.hrKicker}
       title={manager ? shelf.hrTitle : "打卡與我的班表"}
-      hint={manager ? shelf.hrHint : "上班、下班各按一次。請假到 ERPNext 填假單，主管核准後會出現在這裡。"}
+      hint={manager ? shelf.hrHint : "上班、下班各按一次。請假與核准的自建流程尚未完成，這一頁是示範。"}
     >
       <Hint id="hr" help="module-hr" />
       {shelf.classBoard && holdLines(holds).length ? (
@@ -127,7 +127,7 @@ export default async function HrPage() {
         cover={trade.coverShift}
         rateLine={`${pack.nameZh}有 ${trade.staff.length} 位練習員工（${trade.staff.map((person) => `${person.name}·${person.role}`).join("、")}）。實發先空白。`}
       />
-      <SourceNote source={source} demoText="示範資料。接上 ERPNext 人事後，換成你們的同事、假單與薪資。" />
+      <SourceNote source={source} demoText="示範資料，同事、假單與薪資僅供參考。" />
     </ModuleFrame>
   );
 }

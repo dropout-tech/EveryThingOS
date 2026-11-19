@@ -129,8 +129,8 @@ export async function acceptGoogle(db: AccountDb, input: { companyId: string; pr
     await audit(db, input.companyId, existing.name, "登入", profile.email);
     return { ok: true, account: toPublic({ ...existing, google_sub: profile.sub, last_login: last }) };
   }
-  const allowed = (process.env.OWNER_BOOTSTRAP_EMAILS ?? "").split(",").map((email) => email.trim().toLowerCase());
-  if (!allowed.includes(profile.email.toLowerCase())) return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。請老闆在團隊頁邀請這個信箱。" };
+  const allowed = (process.env.OWNER_BOOTSTRAP_EMAILS ?? "").split(",").map((entry) => entry.trim().toLowerCase());
+  if (!allowed.includes(`${profile.email.toLowerCase()}:${input.companyId.toLowerCase()}`)) return { ok: false, status: 403, code: "denied", message: "這個 Google 帳號還沒被邀請。請老闆在團隊頁邀請這個信箱。" };
   const now = new Date().toISOString();
   const created: AccountRecord = {
     id: id(),

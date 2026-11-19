@@ -29,14 +29,14 @@ export function OvertimeForm({ staff, today, live, run, busy, onPractice }: Prop
     setError(null);
     const who = staff.find((s) => s.id === parsed.value.employee)?.name ?? parsed.value.employee;
     if (!live) {
-      onPractice(`練習：${who} ${OVERTIME_KINDS[parsed.value.kind]} ${parsed.value.hours} 小時，沒有送出。接上 ERPNext 後會依倍數算出加班費，進當月薪資單。`);
+      onPractice(`練習：${who} ${OVERTIME_KINDS[parsed.value.kind]} ${parsed.value.hours} 小時，沒有送出。這筆資料不會寫入薪資單。`);
       return;
     }
     const result = await run("/api/hr/overtime", parsed.value, (r) => String(r.message ?? `已記 ${who} 的加班`));
     if (result?.ok) setForm((current) => ({ ...current, hours: "2", reason: "" }));
   }
 
-  if (!staff.length) return <p className="text-sm text-cream-dim">還沒有在職員工，先到 ERPNext 建員工資料。</p>;
+  if (!staff.length) return <p className="text-sm text-cream-dim">還沒有在職員工。人事主檔完成前，這一頁是示範。</p>;
 
   return (
     <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" noValidate>

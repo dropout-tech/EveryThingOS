@@ -33,7 +33,7 @@ export function ErpSubnav({ showSales, showPurchase, showStock, showFinance, liv
 
   return (
     <>
-      {header ? <PageHeader kicker="生意" title={header.title} hint={header.hint} badge={live ? <Badge tone="ok">已接 ERPNext</Badge> : <Badge tone="practice" />} /> : null}
+      {header ? <PageHeader kicker="生意" title={header.title} hint={header.hint} badge={live ? <Badge tone="ok">本機帳本</Badge> : <Badge tone="practice" />} /> : null}
       {items.length > 1 ? (
         <nav className="segmented" aria-label="生意的四段">
           {items.map((item) => {

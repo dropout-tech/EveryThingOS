@@ -70,51 +70,6 @@ function clean(body: Record<string, unknown>): PlatformStatus {
   };
 }
 
-/**
- * Platform status for the public page. Without GLUE_URL it is labelled demo
- * data. On a company's own host (multi-company mode) it also asks the glue for
- * that company's checks, using the shell's token.
- */
-export async function platformStatus(): Promise<StatusView> {
-  const glue = env("GLUE_URL");
-  if (!glue) return { origin: "demo", data: demo() };
-  const site = fleetMode() ? (await liveConfig()).tenant?.site : undefined;
-  try {
-    const res = await fetch(`${glue.replace(/\/+$/, "")}/status${site ? `?site=${encodeURIComponent(site)}` : ""}`, {
-      headers: site ? { authorization: `Bearer ${env("SHELL_TOKEN")}` } : {},
-      cache: "no-store",
-      signal: AbortSignal.timeout(6_000),
-    });
-    const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
-    if (body && typeof body === "object" && body.components) return { origin: "live", data: clean(body) };
-    throw new Error(`狀態服務回應 ${res.status}`);
-  } catch (error) {
-    const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
-    return {
-      origin: "error",
-      message: timedOut ? "狀態服務 6 秒內沒有回應" : "現在連不上狀態服務",
-      data: {
-        status: "degraded",
-        generated_at: new Date().toISOString(),
-        checked_at: null,
-        components: { glue: "down", erpnext: "unknown", shell: "up" },
-        availability_30d: {},
-        incidents: [],
-      },
-    };
-  }
-}
-
-/** Liveness of the glue for `/api/health`; null when this deployment has no glue. */
-export async function glueReachable(): Promise<{ ok: boolean; status: number | null; ms: number } | null> {
-  const glue = env("GLUE_URL");
-  if (!glue) return null;
-  const started = Date.now();
-  try {
-    const res = await fetch(`${glue.replace(/\/+$/, "")}/health`, { cache: "no-store", signal: AbortSignal.timeout(5_000) });
-    const body = (await res.json().catch(() => null)) as { ok?: boolean } | null;
-    return { ok: res.ok && body?.ok === true, status: res.status, ms: Date.now() - started };
-  } catch {
-    return { ok: false, status: null, ms: Date.now() - started };
-  }
-}
+/** Public status uses local demonstration data. */
+export async function platformStatus(): Promise<StatusView> { return { origin: "demo", data: demo() }; }
+export async function glueReachable(): Promise<{ ok: boolean; status: number | null; ms: number } | null> { return null; }
