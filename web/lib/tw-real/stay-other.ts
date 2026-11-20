@@ -7,7 +7,7 @@ export const stayScript: SceneScript = {
     {
       step: "問日期人數",
       detail: "客人來問，我先問哪幾天、幾個人，住房還是借場地。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "報價",
@@ -52,7 +52,7 @@ export const stayScript: SceneScript = {
     {
       step: "邀再訪",
       detail: "人走了，我寄一封短的邀再來，信末留下店裡的 LINE。",
-      href: "/workspace/letter",
+      href: "/workspace/crm",
     },
   ],
 };
@@ -94,7 +94,7 @@ export const otherScript: SceneScript = {
     {
       step: "半途跟一聲",
       detail: "做到一半我跟他說現在做到哪，這張報價的範圍還沒做完。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "交付",

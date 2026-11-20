@@ -5,9 +5,19 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ["wrangler"],
   async redirects() {
+    const home = "/workspace";
+    const retired = (base: string) => [
+      { source: base, destination: home, permanent: false },
+      { source: `${base}/:path*`, destination: home, permanent: false },
+    ];
     return [
-      { source: "/workspace/reply", destination: "/workspace", permanent: true },
-      { source: "/workspace/funnel", destination: "/workspace", permanent: true },
+      { source: "/workspace/reply", destination: home, permanent: false },
+      { source: "/workspace/reply/:path*", destination: home, permanent: false },
+      { source: "/workspace/funnel", destination: home, permanent: false },
+      { source: "/workspace/funnel/:path*", destination: home, permanent: false },
+      ...retired("/workspace/hr"),
+      ...retired("/workspace/chat"),
+      ...retired("/workspace/letter"),
     ];
   },
 };

@@ -7,7 +7,7 @@ export const eduScript: SceneScript = {
     {
       step: "詢問",
       detail: "家長在 LINE 問這期怎麼上、什麼時候可以帶小孩來試聽。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "約試聽",
@@ -47,7 +47,7 @@ export const eduScript: SceneScript = {
     {
       step: "課後跟家長說",
       detail: "下課我用 LINE 跟家長說今天上了什麼、回家要練哪裡。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "續報下期",
@@ -64,7 +64,7 @@ export const careScript: SceneScript = {
     {
       step: "線上預約",
       detail: "客人在 LINE 約好哪一天來、想做哪一項。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "到店",
@@ -99,7 +99,7 @@ export const careScript: SceneScript = {
     {
       step: "提醒",
       detail: "下次已經約好了，我用 LINE 提醒客人那天要來。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "回訪",

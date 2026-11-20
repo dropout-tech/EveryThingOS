@@ -1,5 +1,6 @@
-import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-export default function RetiredHrLayout() {
-  redirect("/workspace");
+/** 路由在 next.config 層就 3xx，此 layout 僅保留檔案結構。 */
+export default function HrLayout({ children }: { children: ReactNode }) {
+  return children;
 }

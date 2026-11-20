@@ -1,3 +1,4 @@
+import { remapRetiredWorkspaceHref } from "./retired-demo";
 import type { FeatureId, ShopProfile } from "./shop";
 
 /** Step ids match `dropout_core.onboarding.checklist`. */
@@ -32,8 +33,8 @@ export const CHECKLIST: ChecklistStep[] = [
   { id: "items", label: "匯入商品與價格", why: "商品有售價，開報價時選一下就帶出金額和稅。", cta: "匯入商品", place: "desk:/app/data-import/new?reference_doctype=Item", help: "import-data", modules: ["sales", "stock", "purchase", "website"] },
   { id: "first_quotation", label: "開第一張報價", why: "從報價開始，後面的訂單、出貨、發票、收款都是同一張單往下走。", cta: "去開報價", place: "/workspace/erp/sales", help: "module-sales", modules: ["sales"] },
   { id: "first_payment", label: "收到第一筆錢", why: "收款記進去，誰還欠錢、這個月賺多少才算得準。", cta: "去收款", place: "/workspace/erp/sales", help: "module-sales", modules: ["sales", "finance"] },
-  { id: "channels", label: "接上 LINE 和對話", why: "LINE、IG、FB、官網的訊息進同一個收件匣，自動對到客人。", cta: "看對話", place: "/workspace/chat", help: "module-chat", modules: ["chat"] },
-  { id: "newsletter", label: "寫第一封電子報", why: "只寄給說好的人；退訂一次，所有行銷通道一起關。", cta: "去寫一封", place: "/workspace/letter", help: "module-letter", modules: ["letter"] },
+  { id: "channels", label: "接上 LINE 和對話", why: "LINE、IG、FB、官網的訊息進同一個收件匣，自動對到客人。", cta: "看說明", place: "/help/module-chat", help: "module-chat", modules: ["chat"] },
+  { id: "newsletter", label: "寫第一封電子報", why: "只寄給說好的人；退訂一次，所有行銷通道一起關。", cta: "看說明", place: "/help/module-letter", help: "module-letter", modules: ["letter"] },
   { id: "employees", label: "建立員工資料", why: "員工資料連到登入帳號，才能打卡、請假、算薪水。", cta: "建員工資料", place: "desk:/app/employee/new", help: "module-hr", modules: ["hr"] },
   { id: "einvoice", label: "開出第一張電子發票", why: "發票開立後交給加值中心上傳，客人收得到、營業稅也對得上。", cta: "看發票", place: "/workspace/erp/finance", help: "module-finance", modules: ["finance", "sales"] },
 ];
@@ -59,7 +60,7 @@ export function resolveChecklist(steps: ChecklistStep[], live: { id: string; don
     .filter((step) => !live || byId.get(step.id)?.applies !== false)
     .map((step) => {
       const desk = step.place.startsWith("desk:");
-      const href = desk ? (deskBase ? `${deskBase}${step.place.slice(5)}` : `/help/${step.help}`) : step.place;
+      const href = desk ? (deskBase ? `${deskBase}${step.place.slice(5)}` : `/help/${step.help}`) : remapRetiredWorkspaceHref(step.place);
       return {
         id: step.id,
         label: step.label,
@@ -95,7 +96,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "推「生意」裡卡住的單", detail: "每張單只有一個下一步按鈕：轉訂單、出貨、開發票、收款。", href: "/workspace/erp/sales" },
       { title: "看「儀表板」", detail: "成交漏斗、帳齡、快不夠的貨，一頁看完。", href: "/workspace/reports" },
-      { title: "核准假單", detail: "有開人事的公司，等你核准的假單在「人事」。", href: "/workspace/hr" },
+      { title: "核准假單", detail: "假單核准的自建流程尚未完成，看說明。", href: "/help/module-hr" },
     ],
   },
   業務: {
@@ -104,7 +105,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     three: [
       { title: "在「客人」記下新認識的人", detail: "同一個 Email 或電話會對到原本那位，不會重複建。", href: "/workspace/crm" },
       { title: "在「生意」開報價", detail: "選客人、選商品，稅 5% 自動加；客人答應就按「轉成訂單」。", href: "/workspace/erp/sales" },
-      { title: "回「對話」裡的訊息", detail: "LINE、IG、FB、官網的訊息都在同一個收件匣。", href: "/workspace/chat" },
+      { title: "回客人的訊息", detail: "LINE、IG、FB、官網的訊息會對到客人卡片；對話模組尚未開放。", href: "/help/module-chat" },
     ],
   },
   倉管: {
@@ -138,7 +139,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     role: "客服",
     who: "對話、客人資料",
     three: [
-      { title: "打開「對話」收件匣", detail: "每則新對話會自動找到或建立客人。", href: "/workspace/chat" },
+      { title: "回客人的訊息", detail: "每則新對話會自動找到或建立客人；對話收件匣尚未開放。", href: "/help/module-chat" },
       { title: "在「客人」查這個人", detail: "之前問過什麼、買過什麼，都在同一張客人卡片。", href: "/workspace/crm" },
       { title: "新朋友記下來", detail: "電話打來的、現場來的，在「客人」按新增。", href: "/workspace/crm" },
     ],
@@ -147,7 +148,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     role: "行銷",
     who: "電子報、名單、官網",
     three: [
-      { title: "在「電子報」寫一封", detail: "挑名單、寫內容、寄出；退訂連結會自動加。", href: "/workspace/letter" },
+      { title: "行銷名單與電子報", detail: "電子報自建尚未完成，看說明。", href: "/help/module-letter" },
       { title: "看「客人」裡新進的名單", detail: "官網表單、對話進來的人都會出現在這裡。", href: "/workspace/crm" },
       { title: "看「官網」的表單名單", detail: "上架商品、網路訂單、近 30 天表單名單。", href: "/workspace/website" },
     ],
@@ -156,7 +157,7 @@ export const ROLE_GUIDES: Record<RoleName, RoleGuide> = {
     role: "人資",
     who: "員工資料、請假核准、打卡、薪資",
     three: [
-      { title: "看「人事」今天誰請假", detail: "打卡、核准假單在同一頁做完。", href: "/workspace/hr" },
+      { title: "看誰請假、誰上班", detail: "打卡與假單的自建流程尚未完成，看說明。", href: "/help/module-hr" },
       { title: "月底跑薪資", detail: "薪資發放的自建流程尚未完成，看說明。", href: "/help/module-hr" },
       { title: "每年核對費率", detail: "勞健保、勞退、扣繳每年會變，第一次發薪前一定要核對。", href: "/help/module-hr" },
     ],

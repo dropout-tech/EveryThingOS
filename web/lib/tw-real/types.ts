@@ -6,8 +6,6 @@ export const BEAT_HREFS = [
   "/workspace/erp/stock",
   "/workspace/erp/purchase",
   "/workspace/erp/finance",
-  "/workspace/letter",
-  "/workspace/chat",
 ] as const;
 
 export type BeatHref = (typeof BEAT_HREFS)[number];

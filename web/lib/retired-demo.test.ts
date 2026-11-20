@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { isRetiredDemoHref, withoutRetiredDemoModules } from "./retired-demo.ts";
+import { isRetiredDemoApiPath, isRetiredDemoHref, remapRetiredWorkspaceHref, withoutRetiredDemoModules } from "./retired-demo.ts";
 import { navItemsForShop } from "./shop.ts";
 
 describe("retired demo modules", () => {
@@ -23,5 +23,16 @@ describe("retired demo modules", () => {
 
   it("模組清單會拿掉示範三項", () => {
     assert.deepEqual(withoutRetiredDemoModules(["crm", "hr", "chat", "letter", "finance"]), ["crm", "finance"]);
+  });
+
+  it("下架 API 路徑固定七支", () => {
+    assert.equal(isRetiredDemoApiPath("/api/hr/checkin"), true);
+    assert.equal(isRetiredDemoApiPath("/api/chat/open"), true);
+    assert.equal(isRetiredDemoApiPath("/api/erp/quotation"), false);
+  });
+
+  it("指南連結改到今天，不再連下架頁", () => {
+    assert.equal(remapRetiredWorkspaceHref("/workspace/chat"), "/workspace");
+    assert.equal(remapRetiredWorkspaceHref("/workspace/crm"), "/workspace/crm");
   });
 });

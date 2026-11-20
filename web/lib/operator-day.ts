@@ -21,7 +21,7 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
   if (beat) return { href: beat.href, hint: beat.detail };
   const t = stage;
   if (/留言|私訊|回覆|貼文|社群|IG/.test(t)) {
-    return { href: "/workspace/chat", hint: "留言轉成對話" };
+    return { href: "/workspace/crm", hint: "在客人卡片跟訊息" };
   }
   if (/請款|結帳|收款|發票|對帳|訂金|尾款|學費|帳單|押金|報關|沖帳|續約|續報/.test(t)) {
     return { href: "/workspace/erp/finance", hint: "收到錢才算完" };
@@ -39,7 +39,7 @@ function classifyStage(stage: string, pack: IndustryPack): StageTarget {
     return { href: "/workspace/erp/sales", hint: "做成一筆生意" };
   }
   if (/活動|企劃|落地|磁鐵|籌備/.test(t) && pack.modules.funnel) {
-    return { href: "/workspace/letter", hint: "寄電子報把人帶回來" };
+    return { href: "/workspace/crm", hint: "名單與跟進在同一張客人" };
   }
   return { href: "/workspace/crm", hint: "跟人跟到答應" };
 }
@@ -100,9 +100,9 @@ export function industryTodayJobs(
     href: /庫存|貨|效期|報廢|料|序號/.test(pain) && pack.modules.erp.inventory
       ? "/workspace/erp/stock"
       : /預約|超賣|訂位|檔期|班/.test(pain)
-        ? "/workspace/hr"
+        ? "/workspace"
         : /對話|私訊|留言|客服/.test(pain)
-          ? "/workspace/chat"
+          ? "/workspace/crm"
           : index === 0
             ? home
             : "/workspace/erp/sales",

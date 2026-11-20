@@ -45,6 +45,9 @@ async function payPurchase(page: Page, shot: Shot): Promise<string> {
 }
 
 async function assertHrRetired(page: Page, shot: Shot): Promise<string> {
+  const res = await page.request.get("/workspace/hr", { maxRedirects: 0 });
+  expect([307, 308]).toContain(res.status());
+  expect(await res.text()).not.toContain("打卡與我的班表");
   await page.goto("/workspace/hr");
   await expect(page).toHaveURL(/\/workspace\/?$/);
   await shot(page, "28-hr-retired.png");
@@ -52,6 +55,9 @@ async function assertHrRetired(page: Page, shot: Shot): Promise<string> {
 }
 
 async function assertChatRetired(page: Page, shot: Shot): Promise<string> {
+  const res = await page.request.get("/workspace/chat", { maxRedirects: 0 });
+  expect([307, 308]).toContain(res.status());
+  expect(await res.text()).not.toContain("不會送到 Instagram");
   await page.goto("/workspace/chat");
   await expect(page).toHaveURL(/\/workspace\/?$/);
   await shot(page, "32-chat-retired.png");

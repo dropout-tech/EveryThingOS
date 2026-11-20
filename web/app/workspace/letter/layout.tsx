@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-export default function RetiredLetterLayout() {
-  redirect("/workspace");
+export default function LetterLayout({ children }: { children: ReactNode }) {
+  return children;
 }

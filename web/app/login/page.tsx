@@ -11,7 +11,7 @@ const REASONS: Record<string, { title: string; next: string }> = {
   token: { title: "Google 沒有完成登入。", next: "再試一次。" },
   profile: { title: "讀不到這個 Google 帳號的 Email。", next: "請改用有 Email、而且已驗證的 Google 帳號。" },
   unverified: { title: "這個 Google 信箱還沒驗證。", next: "請換一個已驗證的信箱。" },
-  denied: { title: "這個 Google 帳號還沒被邀請。", next: "請老闆在團隊頁邀請這個信箱。第一位登入的人會成為老闆。" },
+  denied: { title: "這個 Google 帳號還沒被邀請。", next: "請老闆在團隊頁邀請這個信箱。" },
   disabled: { title: "這個帳號已停用。", next: "請老闆恢復之後再登入。" },
   access_denied: { title: "你在 Google 取消了授權。", next: "要進來，請再登入一次並允許。" },
   bound: { title: "這個信箱已經綁了另一個 Google 帳號。", next: "請用當初登入的那個 Google，或請老闆到團隊頁協助。" },

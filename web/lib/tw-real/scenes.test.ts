@@ -119,10 +119,9 @@ describe("台灣現場十步", () => {
 
   it("今天的下一步跟這一步寫的頁走，不另猜", () => {
     const make = SCENE_SCRIPTS.find((script) => script.id === "make")!;
-    const path = industryDayPath(packFor(make));
-    const look = path.find((step) => step.label === "看圖");
-    assert.equal(look?.href, "/workspace/chat");
-    assert.match(look?.hint ?? "", /這次給的圖/);
+    const look = make.beats.find((beat) => beat.step === "看圖");
+    assert.equal(look?.href, "/workspace/crm");
+    assert.match(look?.detail ?? "", /這次給的圖/);
   });
 
   it("練習先做跟得最遠的那位，一次只進一格", () => {
