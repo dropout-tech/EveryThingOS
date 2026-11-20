@@ -122,7 +122,9 @@ export async function acceptGoogle(db: AccountDb, input: { companyId: string; pr
   if (!profile.emailVerified) return { ok: false, status: 403, code: "unverified", message: "這個 Google 信箱還沒驗證" };
   const existing = await byEmail(db, input.companyId, profile.email);
   if (existing && existing.enabled !== 1) return { ok: false, status: 403, code: "disabled", message: "這個帳號已停用" };
-  if (existing?.google_sub && existing.google_sub !== profile.sub) return { ok: false, status: 409, message: "這個信箱已經綁了另一個 Google 帳號" };
+  if (existing?.google_sub && existing.google_sub !== profile.sub) {
+    return { ok: false, status: 409, code: "bound", message: "這個信箱已經綁了另一個 Google 帳號" };
+  }
   if (existing) {
     const last = stamp();
     await db.prepare("UPDATE accounts SET google_sub = ?, name = ?, last_login = ? WHERE id = ?").bind(profile.sub, existing.name || profile.name, last, existing.id).run();

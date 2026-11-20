@@ -7,7 +7,7 @@ export const foodScript: SceneScript = {
     {
       step: "訂位",
       detail: "客人用電話或 LINE 訂位，我記幾位、幾點到，沒訂的現場進來也收。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "客人到",
@@ -52,7 +52,7 @@ export const foodScript: SceneScript = {
     {
       step: "約下次",
       detail: "收桌時問他們下次要不要還坐同一桌，之後用 LINE 再跟一聲。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
   ],
 };

@@ -8,6 +8,7 @@ import { openInvoice } from "@/lib/billing";
 import { guideScope, roleFor } from "@/lib/guide";
 import { getMe } from "@/lib/sources";
 import { liveConfig } from "@/lib/sources/config";
+import { withoutRetiredDemoModules } from "@/lib/retired-demo";
 import { currentIndustry, currentShop } from "@/lib/workspace";
 
 function Unavailable({ title, detail }: { title: string; detail: string }) {
@@ -44,7 +45,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   return (
     <OsShell
       industry={industry}
-      shop={{ ...shop, modules: featuresFor(shop.modules, roles) }}
+      shop={{ ...shop, modules: featuresFor(withoutRetiredDemoModules(shop.modules), roles) }}
       company={config.tenant?.company}
       team={canManageTeam(roles)}
       reports={canSeeReports(roles)}

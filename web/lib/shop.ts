@@ -14,6 +14,7 @@ import {
   stayScript,
 } from "./tw-real/index";
 import type { IndustryPack } from "./types";
+import { isRetiredDemoHref, withoutRetiredDemoModules } from "./retired-demo";
 
 export const SHOP_COOKIE = "dropout_shop";
 
@@ -111,9 +112,9 @@ export function defaultsForScene(sceneId: string): FeatureId[] {
     case "food":
       return ["crm", "sales", "stock", "finance"];
     case "edu":
-      return ["crm", "sales", "stock", "finance", "chat", "hr"];
+      return ["crm", "sales", "stock", "finance"];
     case "care":
-      return ["crm", "finance", "chat"];
+      return ["crm", "finance"];
     case "make":
     case "farm":
     case "move":
@@ -142,7 +143,7 @@ export function recommendModules(sceneId: string, size: ShopSize, picked: Featur
   if (size === "large" && (sceneId === "retail" || sceneId === "stay" || sceneId === "edu")) {
     set.add("website");
   }
-  return FEATURES.map((item) => item.id).filter((id) => set.has(id));
+  return withoutRetiredDemoModules(FEATURES.map((item) => item.id).filter((id) => set.has(id)));
 }
 
 export function parseShop(raw: string | undefined | null): ShopProfile | null {
@@ -157,7 +158,7 @@ export function parseShop(raw: string | undefined | null): ShopProfile | null {
     return {
       scene,
       size,
-      modules: modules.length ? modules : defaultsForScene(scene),
+      modules: withoutRetiredDemoModules(modules.length ? modules : defaultsForScene(scene)),
       ...readLook(value),
       ...(value.customModules === true ? { customModules: true } : {}),
       ...(value.nameLocked === true ? { nameLocked: true } : {}),
@@ -181,7 +182,7 @@ export function shopFromPack(pack: IndustryPack, before?: ShopProfile | null): S
   return {
     scene,
     size,
-    modules: before?.customModules ? before.modules : recommendModules(scene, size, modules),
+    modules: withoutRetiredDemoModules(before?.customModules ? before.modules : recommendModules(scene, size, modules)),
     ...(before?.brand ? { brand: before.brand } : {}),
     name: before?.nameLocked ? before.name : pack.nameZh,
     ...(before?.nameLocked ? { nameLocked: true } : {}),
@@ -248,9 +249,10 @@ export function navItemsForShop(shop: ShopProfile, { team = false, reports = fal
     website: "官網",
     hr: "人事",
   };
+  const modules = withoutRetiredDemoModules(shop.modules);
   const items = [{ href: "/workspace", label: "今天" }];
   for (const id of FEATURES.map((item) => item.id)) {
-    if (shop.modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
+    if (modules.includes(id)) items.push({ href: moduleHref(id), label: labels[id] });
   }
   if (reports) items.push({ href: "/workspace/reports", label: "儀表板" });
   if (team) items.push({ href: "/workspace/team", label: "團隊" });
@@ -259,13 +261,15 @@ export function navItemsForShop(shop: ShopProfile, { team = false, reports = fal
 }
 
 export function hrefAllowed(href: string, shop: ShopProfile): boolean {
+  if (isRetiredDemoHref(href)) return false;
   if (href === "/workspace" || href.startsWith("/workspace/settings") || href.startsWith("/workspace/erp/compare")) {
     return true;
   }
+  const modules = withoutRetiredDemoModules(shop.modules);
   if (href.startsWith("/workspace/erp") && !href.includes("/stock") && !href.includes("/purchase") && !href.includes("/sales") && !href.includes("/finance")) {
-    return shop.modules.includes("sales") || shop.modules.includes("finance") || shop.modules.includes("stock");
+    return modules.includes("sales") || modules.includes("finance") || modules.includes("stock");
   }
-  return shop.modules.some((id) => {
+  return modules.some((id) => {
     const target = moduleHref(id);
     return href === target || href.startsWith(`${target}/`);
   });

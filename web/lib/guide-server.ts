@@ -2,7 +2,7 @@ import "server-only";
 import { canManageTeam, canSeeReports, featuresFor } from "./access";
 import { buildBooks } from "./erp";
 import { checklistFor, resolveChecklist, type ChecklistItem } from "./guide";
-import { navItemsForShop } from "./shop";
+import { hrefAllowed, navItemsForShop } from "./shop";
 import { getChecklist, getMe } from "./sources";
 import type { IndustryPack } from "./types";
 import { currentShop } from "./workspace";
@@ -20,7 +20,10 @@ export async function workspaceGuide(pack: IndustryPack): Promise<WorkspaceGuide
   const me = await getMe();
   const roles = me.origin === "live" && me.data ? me.data.roles : null;
   const modules = featuresFor(shop?.modules ?? [], roles);
-  const allowed = navItemsForShop({ scene: shop?.scene ?? "other", size: shop?.size ?? "small", modules }, { team: canManageTeam(roles), reports: canSeeReports(roles) }).map((item) => item.href);
+  const shopProfile = { scene: shop?.scene ?? "other", size: shop?.size ?? "small", modules };
+  const allowed = navItemsForShop(shopProfile, { team: canManageTeam(roles), reports: canSeeReports(roles) })
+    .map((item) => item.href)
+    .filter((href) => hrefAllowed(href, shopProfile));
   const steps = checklistFor(shop);
 
   const live = await getChecklist();

@@ -12,7 +12,7 @@ export const retailScript: SceneScript = {
     {
       step: "問要什麼",
       detail: "我問他今天要哪一款、尺寸或顏色，把需求逐項寫在對話裡，貨還沒對過先不說有。",
-      href: "/workspace/chat",
+      href: "/workspace/crm",
     },
     {
       step: "對貨架",
@@ -52,7 +52,7 @@ export const retailScript: SceneScript = {
     {
       step: "約下次",
       detail: "貨交給他之後，我寄一封短函約下次換季或補貨再來，信末留下店裡的 LINE。",
-      href: "/workspace/letter",
+      href: "/workspace/crm",
     },
   ],
 };

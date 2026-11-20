@@ -82,7 +82,7 @@ describe("一百個行業各走各的", () => {
     assert.equal(freight.some((rule) => rule.keyword === "報名"), false);
     assert.notEqual(seedReplyInbox(pack("clinic"))[0]?.post, "春季主視覺");
     assert.equal(recommendModules("food", "small", ["sales"]).includes("hr"), false);
-    assert.equal(recommendModules("care", "solo", ["crm", "chat", "finance"]).includes("chat"), true);
+    assert.equal(recommendModules("care", "solo", ["crm", "chat", "finance"]).includes("chat"), false);
   });
 
   it("人事名單跟行業走，金屬廠和補習班不是同一組", () => {

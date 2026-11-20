@@ -9,11 +9,11 @@ export async function exerciseRemainingLocalFlows(page: Page, posts: string[], s
   const notes: LocalFlowNotes = {};
   notes.finance = await collectAndUpload(page, shot);
   notes.purchase = await payPurchase(page, shot);
-  notes.hr = await approveLeave(page, shot);
+  notes.hr = await assertHrRetired(page, shot);
   notes.meetings = await assertMeetingsStayClosed(page, shot);
   notes.status = await assertStatusIsDemo(page, shot);
   notes.reports = await customizeReports(page, shot);
-  notes.chat = await replyInPractice(page, shot);
+  notes.chat = await assertChatRetired(page, shot);
   notes.crm = await convertLeadLocally(page, shot);
   notes.website = await clickWebsitePractice(page, posts, shot);
   notes.team = await assertInviteDisabled(page, shot);
@@ -44,14 +44,24 @@ async function payPurchase(page: Page, shot: Shot): Promise<string> {
   return (await note.innerText()).trim();
 }
 
-async function approveLeave(page: Page, shot: Shot): Promise<string> {
+async function assertHrRetired(page: Page, shot: Shot): Promise<string> {
+  const res = await page.request.get("/workspace/hr", { maxRedirects: 0 });
+  expect([307, 308]).toContain(res.status());
+  expect(await res.text()).not.toContain("打卡與我的班表");
   await page.goto("/workspace/hr");
-  await expect(page.getByText("今天誰在承辦、誰請假")).toBeVisible();
-  await page.getByRole("button", { name: "核准", exact: true }).first().click();
-  const note = page.getByText(/沒有送出/);
-  await expect(note).toBeVisible();
-  await shot(page, "28-hr-approve-local.png");
-  return (await note.innerText()).trim();
+  await expect(page).toHaveURL(/\/workspace\/?$/);
+  await shot(page, "28-hr-retired.png");
+  return "人事示範頁已關閉，直打網址會回到今天";
+}
+
+async function assertChatRetired(page: Page, shot: Shot): Promise<string> {
+  const res = await page.request.get("/workspace/chat", { maxRedirects: 0 });
+  expect([307, 308]).toContain(res.status());
+  expect(await res.text()).not.toContain("不會送到 Instagram");
+  await page.goto("/workspace/chat");
+  await expect(page).toHaveURL(/\/workspace\/?$/);
+  await shot(page, "32-chat-retired.png");
+  return "對話示範頁已關閉，直打網址會回到今天";
 }
 
 async function assertMeetingsStayClosed(page: Page, shot: Shot): Promise<string> {
@@ -77,16 +87,6 @@ async function customizeReports(page: Page, shot: Shot): Promise<string> {
   await expect(page.getByRole("button", { name: "完成" })).toBeVisible();
   await shot(page, "31-reports-customize.png");
   return "自訂儀表板只改這一頁的卡片";
-}
-
-async function replyInPractice(page: Page, shot: Shot): Promise<string> {
-  await page.goto("/workspace/chat");
-  await page.getByLabel("回她").fill("E2E只留在這台電腦");
-  await page.getByRole("button", { name: "回她", exact: true }).click();
-  const note = page.getByText(/已寫下給 .+還沒傳到/);
-  await expect(note).toBeVisible();
-  await shot(page, "32-chat-reply-local.png");
-  return (await note.innerText()).trim();
 }
 
 async function convertLeadLocally(page: Page, shot: Shot): Promise<string> {

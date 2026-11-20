@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { erpAction, readJson, refuse } from "@/lib/actions";
+import { retiredDemoApiBlocked } from "@/lib/retired-demo-api";
 
 type Body = { subject?: string; message?: string; email_groups?: string[]; send?: boolean };
 
@@ -13,6 +14,8 @@ function paragraphs(text: string) {
 
 /** Writes a newsletter from plain text. Sending goes through ERPNext's own queue and unsubscribe link. */
 export async function POST(request: NextRequest) {
+  const blocked = retiredDemoApiBlocked(request);
+  if (blocked) return blocked;
   const body = await readJson<Body>(request);
   const subject = (body?.subject ?? "").trim().slice(0, 200);
   const message = (body?.message ?? "").trim().slice(0, 20000);

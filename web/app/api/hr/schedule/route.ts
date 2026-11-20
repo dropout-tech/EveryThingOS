@@ -1,9 +1,12 @@
 import type { NextRequest } from "next/server";
 import { erpAction, readJson, refuse } from "@/lib/actions";
 import { parseShiftInput } from "@/lib/schedule";
+import { retiredDemoApiBlocked } from "@/lib/retired-demo-api";
 
 /** Assigns a teacher/staff shift after checking teacher, room, and leave conflicts, preserving AI suggestion and supervisor review audit fields. */
 export async function POST(request: NextRequest) {
+  const blocked = retiredDemoApiBlocked(request);
+  if (blocked) return blocked;
   const raw = await readJson<Record<string, unknown>>(request);
   const parsed = parseShiftInput(raw);
   if (!parsed.ok) return refuse(parsed.message);

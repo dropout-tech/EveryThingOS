@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { here } from "@/lib/auth";
+import { retiredDemoApiBlocked } from "@/lib/retired-demo-api";
 import { liveConfig } from "@/lib/sources/config";
 import { liveMe } from "@/lib/sources/live";
 
@@ -9,6 +10,8 @@ function back(request: NextRequest, reason: string) {
 
 /** Opens Chatwoot already logged in, through the Platform API single sign-on link for this staff member. */
 export async function GET(request: NextRequest) {
+  const blocked = retiredDemoApiBlocked(request);
+  if (blocked) return blocked;
   const chat = (await liveConfig()).chatwoot;
   if (!chat) return back(request, "not-connected");
   if (!chat.platformToken) return NextResponse.redirect(`${chat.url}/app/login`);
