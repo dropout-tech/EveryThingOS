@@ -14,6 +14,7 @@ const REASONS: Record<string, { title: string; next: string }> = {
   denied: { title: "這個 Google 帳號還沒被邀請。", next: "請老闆在團隊頁邀請這個信箱。第一位登入的人會成為老闆。" },
   disabled: { title: "這個帳號已停用。", next: "請老闆恢復之後再登入。" },
   access_denied: { title: "你在 Google 取消了授權。", next: "要進來，請再登入一次並允許。" },
+  bound: { title: "這個信箱已經綁了另一個 Google 帳號。", next: "請用當初登入的那個 Google，或請老闆到團隊頁協助。" },
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {

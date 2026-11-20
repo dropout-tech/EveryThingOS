@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["wrangler"],
   async redirects() {
     return [
-      { source: "/workspace/reply", destination: "/workspace/chat", permanent: true },
-      { source: "/workspace/funnel", destination: "/workspace/letter", permanent: true },
+      { source: "/workspace/reply", destination: "/workspace", permanent: true },
+      { source: "/workspace/funnel", destination: "/workspace", permanent: true },
     ];
   },
 };

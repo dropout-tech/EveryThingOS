@@ -79,6 +79,10 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   await expect(page).toHaveURL(/\/workspace\/?$/);
   await expect(page.getByText("現在這一家是顧問公司")).toBeVisible();
   await expect(page.getByText("練習", { exact: true })).toBeVisible();
+  const workNav = page.getByRole("navigation", { name: "工作選單" });
+  await expect(workNav).not.toContainText("人事");
+  await expect(workNav).not.toContainText("對話");
+  await expect(workNav).not.toContainText("電子報");
   await shot(page, "03-today.png");
 
   await page.goto("/workspace/crm");
@@ -215,15 +219,12 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
   await shot(page, "08-finance-not-linked.png");
 
   await page.goto("/workspace/letter");
-  await expect(page.getByRole("heading", { name: "只寄給說好的人" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "寄出" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "看還沒確認的人" })).toBeVisible();
-  await expect(page.getByText("示範資料", { exact: true }).first()).toBeVisible();
-  await shot(page, "09-letter-not-sent.png");
+  await expect(page).toHaveURL(/\/workspace\/?$/);
+  await shot(page, "09-letter-retired.png");
 
   await page.goto("/workspace/chat");
-  await expect(page.getByText("不會送到 Instagram")).toBeVisible();
-  await shot(page, "10-chat-demo.png");
+  await expect(page).toHaveURL(/\/workspace\/?$/);
+  await shot(page, "10-chat-retired.png");
 
   await page.goto("/workspace/crm");
   await expect(page.getByRole("heading", { name: "一步一步跟到答應" })).toBeVisible();
@@ -247,7 +248,6 @@ test("本機從登入走到報價收款，帳寫進測試庫，不送出信件",
 
   const extraPages: [string, string, string][] = [
     ["/workspace/reports", "15-reports.png", "生意整體怎麼樣"],
-    ["/workspace/hr", "16-hr.png", "今天誰在承辦、誰請假"],
     ["/workspace/website", "17-website.png", "留下資料（練習）"],
     ["/workspace/team", "18-team.png", "這是範例團隊，按鈕先關著"],
     ["/workspace/erp/purchase", "19-purchase.png", "這一行沒有倉庫"],
